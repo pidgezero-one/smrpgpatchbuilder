@@ -2,8 +2,8 @@
 
 from typing import List, Union
 from random import random
-from types.numbers.classes import GlobalMutator, UInt16, UInt8
-from types.overworld_scripts.arguments.types.classes import ByteVar, ShortVar
+from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ByteVar, ShortVar
 
 
 def bools_to_int(*args: bool) -> int:
@@ -34,21 +34,6 @@ def bits_to_int(bits: List[int]) -> int:
     the bits argument. e.g. [0, 3] = 9"""
     bit_array: List[bool] = set_bits_to_true(bits)
     return bools_to_int(*bit_array)
-
-
-def set_difficulty(difficulty):
-    """Set the difficulty level for the global mutator that shuffles stats."""
-    GlobalMutator.set_difficulty(difficulty)
-
-
-def coin_flip(odds: float = 0.5):
-    """Weighted coin flip with odds."""
-    return random() < odds
-
-
-def mutate_normal(value, minimum: int = 0, maximum: int = 0xFF):
-    """Mutate a stat value using the global mutator."""
-    return GlobalMutator.get_mutator().mutate_normal(value, minimum, maximum)
 
 
 def cast_const(value: Union[UInt16, UInt8, int]) -> Union[UInt16, UInt8]:

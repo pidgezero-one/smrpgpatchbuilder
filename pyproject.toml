@@ -13,6 +13,9 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies=[
+	"Django==5.1.7"
+]
 
 [project.urls]
 Homepage = "https://github.com/pidgezero-one/smrpgpatchbuilder"

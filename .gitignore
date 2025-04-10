@@ -1,3 +1,5 @@
 **/__pycache__
 **/.DS_Store
 .pytest_cache
+src/disassembler_output
+src/assembler_output
