@@ -87,6 +87,8 @@ script = SubroutineOrBanklessScript(
 )
 ```
 
+You might have noticed that this has much more code than the first subroutine in the Lazy Shell screenshot. This is because this script outputs files for contiguous code blocks, not necessarily contiguous cutscenes. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
+
 Finally, the script outputs python files that import all of these disassembled SMRPG scripts. Here's a short one that contains flower bonus messages, Toad tutorials, and their associated subroutines, aka everything in the 0x02xxxx range:
 ```
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection
@@ -108,11 +110,24 @@ This will produce a series of files that represents all of the battle animation 
 Things to be careful about:
 - This script will try to recursively find every subroutine and sprite queue that gets used by your pointer-indexed battle animation types (item animations, ally spells, etc, any animation type that uses a pointer table). For un-indexed animation types (battle behaviours) I hardcoded some of the ranges it'll need to look for in the original game. That means if you've changed the start or end of any monster behaviours then this will not work correctly and you will need to supply those ranges yourself in the `banks` dict. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
 
+Now if you've worked with Lazy Shell's battle animation editor in any great capacity you know that there are commands like object queues whose offsets depend on the value of AMEM $60. I did my best to have the script keep an estimate of what your $AMEM 60 value is as it steps through your ROM's code so that it can disassemble and include the correct object queues.
+
 ### Battle animation assembler
 
 Takes the files created by the battle animation disassembler and converts them back into bytes that could be patched into a rom. That means you can edit the files produced by the disassembler to whatever you want, and this would be how you get your changes back into bytes.
 
-**This does not create a ROM patch, it creates .img files that consist only of bytes that have the starting address in the filename. You can use a program like Flexhex to put these img files over the starting address.** The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory ansd then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on `AnimationScriptBank`s in your own project, it will return bytearrays that you can do whatever you want with.
+You can use it like this:
+
+```
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+-r, -t, and -b are optional individually, but there needs to be at least one present. 
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the contents of your battle animation files.
+- If you include `-t`, it will output plain text files (split up according to the address the byte string starts at) with your assembled bytes. You can use this for debugging, such as if you want to side-by-side compare your results against the Lazy Shell editor's hex. It's all on one line though so it might be hard to use.
+- If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
+
+The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory ansd then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on `AnimationScriptBank`s in your own project, it will return bytearrays that you can do whatever you want with.
 
 Things to be careful about:
 - Battle animations are extremely finnicky, they aren't like event scripts or action scripts which are entirely indexed with a pointer table. There's not a whole lot of accountability I can add to this program to make sure that sprite queues begin where they are supposed to begin. Therefore some commands in your script files will have identifiers like "queuestart_0xsomeaddress". When it's assembling your script bank, if it determines that an animation queue's starting address does not match what's in its `queuestart` identifier, it will throw an error.
