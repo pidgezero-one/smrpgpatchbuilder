@@ -1,10 +1,67 @@
 # SMRPG Patch Builder
 
-Freeform editing of various kinds of SMRPG scripts and sprites. You can disassemble the contents of your ROM, edit the output, reassemble, and then patch to your ROM. Some basic coding knowledge is ideal for using this, but scripts overall are made to resemble how they're written in Lazy Shell.
+Freeform editing of various kinds of SMRPG scripts and sprites. 
+
+You can disassemble the contents of your ROM, which turns your ROM into Python code like this:
+
+```python
+# This is event 32, which is for treasure chests that don't contain coins
+script = EventScript([
+	JmpToEvent(E3072_FLOWER_STAR_FC_OR_MUSHROOM_CHEST)
+])
+```
+
+You can edit that however you like. For example you could make a dialog run every time you open a chest (not sure why you'd want to, but you could do it):
+```python
+script = EventScript([
+	RunDialog(
+		dialog_id=DI0520_LITTLE_SHORT_ON_COINS,
+		above_object=MEM_70A8,
+		closable=True,
+		sync=False,
+		multiline=True,
+		use_background=True,
+	),
+	JmpToEvent(E3072_FLOWER_STAR_FC_OR_MUSHROOM_CHEST)
+])
+```
+
+If you want to use any `Jump to address` commands, you can do it by putting labels on your commands. You don't need to worry about ROM addresses at all!
+```python
+script = EventScript([
+	JmpIfBitClear(UNKNOWN_7049_4, ["LabelGoesHere"]), # This will skip the RunDialog command by jumping to the SetBit command
+	RunDialog(
+		dialog_id=DI0520_LITTLE_SHORT_ON_COINS,
+		above_object=MEM_70A8,
+		closable=True,
+		sync=False,
+		multiline=True,
+		use_background=True,
+	),
+	SetBit(INSUFFICIENT_COINS, identifier="LabelGoesHere"),
+	JmpToEvent(E3072_FLOWER_STAR_FC_OR_MUSHROOM_CHEST)
+])
+```
+
+You have total freedom to put commands anywhere you want, just like in Lazy Shell. And then you can convert that Python code back into a patch for your ROM. The names of each command in a script, and the arguments that they take, are meant to resemble how they're written in Lazy Shell.
+
+You don't need a whole lot of coding knowledge if you just want to use these scripts to read, modify, and output a patch for your SMRPG code. But you can import this repo and use its classes in your own Python projects if you like, if for example you're working on something complicated and non-static like SMRPG Randomizer. You can assemble your entire bank of scripts into bytes like this:
+```python
+bank = EventScriptBank(
+    pointer_table_start=0x1E0000,
+    start=0x1E0C00,
+    end=0x1F0000,
+    scripts=[
+		# This is where you would put all of your EventScript instances, in order
+	])
+patchbytes = bank.render() # This outputs a bytearray
+```
 
 Most of this was designed to be used with smrpg randomizer. A lot of it can be reused, but there'll be a lot of stuff in here that doesn't match up to the original game, like descriptions of what event script variables are used for, unused enemy classes being missing, certain item implementations being missing (there's no alto card item class in here for example), etc. You can extend this code for your purposes however you like.
 
-## How to use scripts
+This repo allows you to parse, modify, and rebuild event scripts, NPC animation scripts, monster AI scripts, and battle animation scripts.
+
+## How to use this repo's standalone tools
 
 These instructions are for bash terminals, aka mac/linux only (no powershell). If you want to do this on windows you'll need to figure out on your own what the equivalent steps are here (but you can probably use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) and these steps will likely still work after some finagling).
 
@@ -18,9 +75,9 @@ Everything beyond this point must be in your venv. You'll know you're doing that
 (MyVirtualEnvironmentNameWhateverIWant) stefkischak@Stefs-MBP smrpgpatchbuilder %
 ```
 
-### Battle animation disassembler
+### Disassembling battle animations
 
-Run this script **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all battle animations and convert them into Python code. For example:
+Run this **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all battle animations and convert them into Python code. For example:
 
 ```bash
 PTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom" 
@@ -87,7 +144,7 @@ script = SubroutineOrBanklessScript(
 )
 ```
 
-You might have noticed that this has much more code than the first subroutine in the Lazy Shell screenshot. This is because this script outputs files for contiguous code blocks, not necessarily contiguous cutscenes. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
+You might have noticed that this has much more code than the first subroutine in the Lazy Shell screenshot. This is because this script outputs files for contiguous code blocks and not individual subroutines. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
 
 Finally, the script outputs python files that import all of these disassembled SMRPG scripts. Here's a short one that contains flower bonus messages, Toad tutorials, and their associated subroutines, aka everything in the 0x02xxxx range:
 ```
@@ -103,34 +160,30 @@ collection = AnimationScriptBankCollection([
 ])
 ```
 
-You can then import `collection` in your own Python files/projects which will give you the ability to modify your scripts and then convert them back to patchable bytes.
+(If you are importing this into your own python project, you can use `collection.render()` to get a `Dict[int,bytearray]` where the bytearray is your re-assembled bytes and the int is the ROM address you should begin patching them to.)
 
-This will produce a series of files that represents all of the battle animation code your ROM currently uses that the script could find. You can then copy and paste these files into your own Python project where you have this library imported, and edit them however you like. Then when you call `.render()` on your `AnimationScriptBank`, it will turn your edited battle animation code into bytes. From there you can write your own code to patch it to your ROM or whatever.
+Standalone, this will produce a series of files that represent all of the battle animation code your ROM currently uses that the script could find. The output folders will be inside `src`.
 
 Things to be careful about:
-- This script will try to recursively find every subroutine and sprite queue that gets used by your pointer-indexed battle animation types (item animations, ally spells, etc, any animation type that uses a pointer table). For un-indexed animation types (battle behaviours) I hardcoded some of the ranges it'll need to look for in the original game. That means if you've changed the start or end of any monster behaviours then this will not work correctly and you will need to supply those ranges yourself in the `banks` dict. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
-
-Now if you've worked with Lazy Shell's battle animation editor in any great capacity you know that there are commands like object queues whose offsets depend on the value of AMEM $60. I did my best to have the script keep an estimate of what your $AMEM 60 value is as it steps through your ROM's code so that it can disassemble and include the correct object queues.
+- I had to hardcode a lot of the ROM ranges that this will check. This is because pointers in battle animations aren't static, an object queue for example can start in a different place depending on what the value of AMEM $60 is. Even though the script will attempt to recursively trace all of you subroutines and queues and track AMEM $60 as best as it can to do this accurately, this can't be done perfectly because of things like `SetAMEMToRandomByte`, so a bunch more ranges are included because I determined that they were accessible via Lazy Shell animation types in one way or another. If you've changed the start or end of unindexed animations like monster behaviours in your ROM, then this will not work correctly and you will need to modify the `banks` dict of animationdisassembler.py. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
 
 ### Battle animation assembler
 
-Takes the files created by the battle animation disassembler and converts them back into bytes that could be patched into a rom. That means you can edit the files produced by the disassembler to whatever you want, and this would be how you get your changes back into bytes.
-
-You can use it like this:
+After you've changed the files produced by the disassembler to do whatever you want, you can use this:
 
 ```
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationassembler -r /path/to/rom/you/want/to/patch -t -b
 ```
 
--r, -t, and -b are optional individually, but there needs to be at least one present. 
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used. 
 - If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the contents of your battle animation files.
 - If you include `-t`, it will output plain text files (split up according to the address the byte string starts at) with your assembled bytes. You can use this for debugging, such as if you want to side-by-side compare your results against the Lazy Shell editor's hex. It's all on one line though so it might be hard to use.
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
-The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory ansd then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on `AnimationScriptBank`s in your own project, it will return bytearrays that you can do whatever you want with.
+The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on `AnimationScriptBank`s in your own project, it will return bytearrays that you can do whatever you want with.
 
 Things to be careful about:
-- Battle animations are extremely finnicky, they aren't like event scripts or action scripts which are entirely indexed with a pointer table. There's not a whole lot of accountability I can add to this program to make sure that sprite queues begin where they are supposed to begin. Therefore some commands in your script files will have identifiers like "queuestart_0xsomeaddress". When it's assembling your script bank, if it determines that an animation queue's starting address does not match what's in its `queuestart` identifier, it will throw an error.
-- Similarly, the disassembler identifies how long a subroutine is supposed to be. I do not recommend changing the subroutine lengths because that can throw off where sprite queues end up. If you want to change subroutines or break a subroutine block into multiple subroutines or delete some commands, you are more than free to do that, just make sure that the `SubroutineOrBanklessScript` still comes to a length that matches its `expected_size`.
-- If you change subroutines or anything that might change where a sprite queue starts, you can fill space with useless bytes to make sure that the expected starts/lengths are still respected. There are a few ways you can do this. 
-  - At the end of your subroutine, if you have 3 or more bytes left, you can give your return statement an identifier and put a `Jmp` before it that jumps to your return statement. Then you can fill all the remaining space between `Jmp` and your return statement with useless bytes. Useless bytes could be things like repeating a bunch of  `StopShakingObject()` commands when no object is shaking or `StopCurrentSoundEffect()` when there are no sound effects (both of these are single-byte commands and you can use them repeatedly to fill any space) or use `AddCoins(0)` for three filler bytes, etc.
+- Battle animations are finnicky and largely unindexed, and worse yet, GOTO targets can be changed depending on the value of AMEM $60. To keep everything stable, some commands in your script files will have labels like `queuestart_0xsomeaddress`. **Do not change these particular labels.** When your scripts are being assembled, if it determines that a queue doesn't start where its `queuestart` label indicates, the task will fail.
+- Similarly, the disassembler identifies how long a subroutine is supposed to be, so you'll see an `expected_size` argument in those scripts. **Don't change these lengths.** It can throw off where sprite queues end up. 
+  - If you want to change subroutines or break a subroutine block into multiple subroutines or delete some commands, you are more than free to do that, just make sure that the `SubroutineOrBanklessScript` still comes to a length that matches its `expected_size`. You can fill space with useless bytes to make sure that the expected starts/lengths are still respected. There are a few ways you can do this. 
+  - Example: At the end of your subroutine, if you have 3 or more bytes left, you can give your return statement an identifier and put a `Jmp` before it that jumps to your return statement. Then you can fill all the remaining space between `Jmp` and your return statement with useless bytes. Useless bytes could be things like repeating a bunch of  `StopShakingObject()` commands when no object is shaking or `StopCurrentSoundEffect()` when there are no sound effects (both of these are single-byte commands and you can use them repeatedly to fill any space) or use `AddCoins(0)` for three filler bytes, etc.
