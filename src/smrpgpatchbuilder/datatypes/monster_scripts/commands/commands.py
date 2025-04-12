@@ -33,6 +33,15 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
     _attack_2: Optional[Type[EnemyAttack]]
     _attack_3: Optional[Type[EnemyAttack]]
 
+    _opcode: int
+
+    @property 
+    def size(self) -> int:
+        if self.attack_2 is None and self.attack_3 is None:
+            return 1
+        assert self.attack_2 is not None and self.attack_3 is not None
+        return 4
+
     @property
     def attack_1(self) -> Type[EnemyAttack]:
         """The first (or only) attack that can be issued by this command."""
@@ -112,6 +121,7 @@ class SetTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Choose the target for the actions following this command."""
 
     _opcode: int = 0xE2
+    _size: int = 2
 
     def render(self) -> bytearray:
         return super().render(self.target)
@@ -121,6 +131,7 @@ class RunBattleDialog(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Run a battle dialog (by ID)."""
 
     _opcode: int = 0xE3
+    _size: int = 2
 
     _dialog_id: UInt8
 
@@ -145,6 +156,7 @@ class RunBattleEvent(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Run a battle event by ID. It is encouraged to use battle ID constants for this."""
 
     _opcode: int = 0xE5
+    _size: int = 2
 
     _event_id: UInt8
 
@@ -171,6 +183,7 @@ class IncreaseVarBy1(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """Increase the given 0x7EE00X variable by 1."""
 
     _opcode = bytearray([0xE6, 0x00])
+    _size: int = 3
 
     def render(self) -> bytearray:
         return super().render(self.render_var())
@@ -186,6 +199,7 @@ class SetVarBits(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """For the given 0x7EE00X variable, set bits denoted by an ordinality array."""
 
     _opcode = bytearray([0xE7, 0x00])
+    _size: int = 4
 
     _bits: Set[int] = set()
 
@@ -214,6 +228,7 @@ class ClearVarBits(SetVarBits):
     """For the given 0x7EE00X variable, clear bits denoted by an ordinality array."""
 
     _opcode = bytearray([0xE7, 0x01])
+    _size: int = 4
 
     @property
     def bits(self) -> Set[int]:
@@ -233,7 +248,8 @@ class ClearVarBits(SetVarBits):
 class ClearVar(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """Set the given 0x7EE00X variable to 0."""
 
-    _opcode = bytearray(0xE8)
+    _opcode: int = 0xE8
+    _size: int = 2
 
     def render(self) -> bytearray:
         return super().render(self.render_var())
@@ -243,6 +259,7 @@ class RemoveTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will no longer be active or targetable."""
 
     _opcode = bytearray([0xEA, 0x00, 0x00])
+    _size: int = 4
 
     def render(self) -> bytearray:
         return super().render(self.target)
@@ -252,6 +269,7 @@ class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will become active and targetable."""
 
     _opcode = bytearray([0xEA, 0x01, 0x00])
+    _size: int = 4
 
     def render(self) -> bytearray:
         return super().render(self.target)
@@ -260,7 +278,8 @@ class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 class MakeInvulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will not take damage from any source."""
 
-    _opcode = bytearray([0xEB, 0x00, 0x00])
+    _opcode = bytearray([0xEB, 0x00])
+    _size: int = 3
 
     def render(self) -> bytearray:
         return super().render(self.target)
@@ -271,7 +290,8 @@ class MakeVulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     This reverses the effects of any previous MakeInvulnerable commands applied to this target.
     """
 
-    _opcode = bytearray([0xEB, 0x01, 0x00])
+    _opcode = bytearray([0xEB, 0x01])
+    _size: int = 3
 
     def render(self) -> bytearray:
         return super().render(self.target)
@@ -288,6 +308,7 @@ class Set7EE005ToRandomNumber(UsableMonsterScriptCommand, MonsterScriptCommand):
     to a random number in a given range."""
 
     _opcode: int = 0xED
+    _size: int = 2
 
     _upper_bound: UInt8
 
@@ -317,6 +338,13 @@ class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
     _spell_1: Type[Spell]
     _spell_2: Optional[Type[Spell]]
     _spell_3: Optional[Type[Spell]]
+
+    @property 
+    def size(self) -> int:
+        if self.spell_2 is None and self.spell_3 is None:
+            return 2
+        assert self.spell_2 is not None and self.spell_3 is not None
+        return 4
 
     @property
     def spell_1(self) -> Type[Spell]:
@@ -398,6 +426,7 @@ class DoMonsterBehaviour(UsableMonsterScriptCommand, MonsterScriptCommand):
     It is recommended to use monster behaviour constants for this."""
 
     _opcode: int = 0xF1
+    _size: int = 2
 
     _animation_id: UInt8
 
@@ -423,6 +452,7 @@ class SetUntargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptC
     """The target will not be targetable by any following commands."""
 
     _opcode = bytearray([0xF2, 0x00])
+    _size: int = 3
 
 
 class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCommand):
@@ -431,12 +461,14 @@ class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCom
     """
 
     _opcode = bytearray([0xF2, 0x01])
+    _size: int = 3
 
 
 class EnableCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Enable the given party command types (Attack, Spell, Item)."""
 
     _opcode = bytearray([0xF3, 0x00])
+    _size: int = 3
 
     _commands: List[CommandType]
 
@@ -467,6 +499,7 @@ class DisableCommand(EnableCommand):
     """Disable the given party command types (Attack, Spell, Item)."""
 
     _opcode = bytearray([0xF3, 0x01])
+    _size: int = 3
 
     @property
     def commands(self) -> List[CommandType]:
@@ -492,12 +525,19 @@ class RestoreInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     _opcode = bytearray([0xF4, 0x00, 0x01, 0x00])
 
 
+class DoNothing(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
+    """Don't do anything."""
+
+    _opcode: int = 0xFB
+
+
 class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by being targeted by any command in a list of command types.
+    """Begin an if-block triggered by being targf0xeted by any command in a list of command types.
     Any following commands between this one and the next Return command will only be executed
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x01])
+    _size: int = 4
 
     _commands: List[CommandType]
 
@@ -533,6 +573,7 @@ class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x02])
+    _size: int = 4
 
     _spells: List[Type[Spell]]
 
@@ -568,6 +609,7 @@ class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x03])
+    _size: int = 4
 
     _items: List[Type[Item]]
 
@@ -605,6 +647,7 @@ class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x04])
+    _size: int = 4
 
     _elements: List[Element]
 
@@ -636,7 +679,34 @@ class IfTargetedByRegularAttack(MonsterScriptCommandNoArgs, UsableMonsterScriptC
     Any following commands between this one and the next Return command will only be executed
     if the condition of this command is met."""
 
-    _opcode = bytearray([0xF4, 0x05, 0x00, 0x00])
+    _opcode = bytearray([0xFC, 0x05, 0x00, 0x00])
+
+
+class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
+    """Begin an if-block triggered by the target's HP falling below a certain threshold.
+    Any following commands between this one and the next Return command will only be executed
+    if the condition of this command is met."""
+
+    _opcode = bytearray([0xFC, 0x06])
+    _size: int = 4
+
+    _threshold: UInt8
+
+    @property
+    def threshold(self) -> UInt8:
+        """The HP value to fall below in order to trigger this if-block."""
+        return self._threshold
+
+    def set_threshold(self, threshold: int) -> None:
+        """Set the HP value to fall below in order to trigger this if-block."""
+        self._threshold = UInt8(threshold)
+
+    def __init__(self, target: Target, threshold: int, identifier: Optional[str] = None) -> None:
+        super().__init__(target, identifier)
+        self.set_threshold(threshold)
+
+    def render(self) -> bytearray:
+        return super().render(self.target, self.threshold)
 
 
 class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
@@ -644,6 +714,7 @@ class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
     Any following commands between this one and the next Return command will only be executed
     if the condition of this command is met."""
 
+    _size: int = 4
     _opcode = bytearray([0xFC, 0x07])
 
     _threshold: UInt16
@@ -672,6 +743,7 @@ class IfTargetAfflictedBy(MonsterScriptCommandOneTarget, UsableMonsterScriptComm
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x08])
+    _size: int = 4
 
     _statuses: List[Status]
 
@@ -728,6 +800,7 @@ class IfTurnCounterEquals(UsableMonsterScriptCommand, MonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x0A])
+    _size: int = 4
 
     _phase: UInt8
 
@@ -754,6 +827,7 @@ class IfVarLessThan(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x0C])
+    _size: int = 4
 
     _threshold: UInt8
 
@@ -803,6 +877,10 @@ class IfTargetAlive(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x10, 0x00])
+    _size = 4
+
+    def render(self):
+        return super().render(self.target)
 
 
 class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
@@ -811,6 +889,10 @@ class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x10, 0x01])
+    _size = 4
+
+    def render(self):
+        return super().render(self.target)
 
 
 class IfVarBitsSet(SetVarBits):
@@ -819,6 +901,7 @@ class IfVarBitsSet(SetVarBits):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x11])
+    _size: int = 4
 
     @property
     def bits(self) -> Set[int]:
@@ -837,6 +920,7 @@ class IfVarBitsClear(ClearVarBits):
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x12])
+    _size: int = 4
 
     @property
     def bits(self) -> Set[int]:
@@ -861,6 +945,7 @@ class IfCurrentlyInFormationID(UsableMonsterScriptCommand, MonsterScriptCommand)
     if the condition of this command is met."""
 
     _opcode = bytearray([0xFC, 0x13])
+    _size: int = 4
 
     _formation_id: UInt16
 
@@ -911,3 +996,18 @@ class StartCounterCommands(MonsterScriptCommandNoArgs, UsableMonsterScriptComman
     that targeted it."""
 
     _opcode: int = 0xFF
+
+
+class Db(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
+    """Catch-all for any unknown commands."""
+    
+    _opcode: bytearray = []
+
+    @property
+    def size(self) -> int:
+        return len(self._opcode)
+
+    def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
+        super().__init__(identifier)
+        self._opcode = contents
+

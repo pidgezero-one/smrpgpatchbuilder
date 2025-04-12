@@ -121,7 +121,7 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
     @property
     def script_count(self) -> UInt16:
         """The expected total number of individual scripts to be included across both ranges."""
-        return UInt16((self.start - self.pointer_table_start) // 2)
+        return UInt16((self.range_1_start - self.pointer_table_start) // 2)
 
     @property
     def scripts(self) -> List[MonsterScript]:
@@ -196,9 +196,11 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         expected_size_2 = self.range_2_end - self.range_2_start
 
         if len(bank_1) < expected_size_1:
-            bank_1 += bytearray([0xFF] * expected_size_1)
+            filler = bytearray([0xFF] * (expected_size_1 - len(bank_1)))
+            bank_1 += filler
         if len(bank_2) < expected_size_2:
-            bank_2 += bytearray([0xFF] * expected_size_2)
+            filler2 = bytearray([0xFF] * (expected_size_2 - len(bank_2)))
+            bank_2 += filler2
         assert len(bank_1) == expected_size_1
         assert len(bank_2) == expected_size_2
 

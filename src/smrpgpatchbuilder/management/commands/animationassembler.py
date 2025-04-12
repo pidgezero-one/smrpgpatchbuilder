@@ -17,7 +17,6 @@ class Command(BaseCommand):
 		parser.add_argument("-r", "--rom", dest="rom", help="Specify a path to a Mario RPG rom if you want to output your assembled bytes as a bps patch.")
 
 	def handle(self, *args, **options):
-		# filepaths = ["./disassembler_output/battle_animation/collection_0x3Axxxx.py", "./disassembler_output/battle_animation/collection_0x35xxxx.py", "./disassembler_output/battle_animation/collection_0x02xxxx.py"]
 		filepaths = [
 			"disassembler_output.battle_animation.collection_0x3Axxxx",
 			"disassembler_output.battle_animation.collection_0x35xxxx",

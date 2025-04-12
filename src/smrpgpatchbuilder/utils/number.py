@@ -21,7 +21,9 @@ def bools_to_int(*args: bool) -> int:
 def set_bits_to_true(bits: List[int]) -> List[bool]:
     """Sets bools in a list to true according to the indexes given
     in the bits argument."""
-    array_size: int = max(bits) + 1
+    array_size = 0
+    if len(bits) > 0:
+        array_size = max(bits) + 1
     bit_array: List[bool] = [False] * array_size
     for bit in bits:
         bit_array[bit] = True
@@ -32,6 +34,8 @@ def bits_to_int(bits: List[int]) -> int:
     """Accepts a slice of ints and creates an int value
     by setting bits to true at the indexes indicated by
     the bits argument. e.g. [0, 3] = 9"""
+    if len(bits) == 0:
+        return 0
     bit_array: List[bool] = set_bits_to_true(bits)
     return bools_to_int(*bit_array)
 

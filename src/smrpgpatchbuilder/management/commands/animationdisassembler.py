@@ -1,9 +1,3 @@
-"""
-Usage:
-
-PTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom"
-"""
-
 from django.core.management.base import BaseCommand
 from smrpgpatchbuilder.utils.disassembler_common import (
     shortify,
@@ -14,7 +8,6 @@ from smrpgpatchbuilder.utils.disassembler_common import (
 import re
 import os
 import shutil
-import numbers
 from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *
 from copy import deepcopy
 

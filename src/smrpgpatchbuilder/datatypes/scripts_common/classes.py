@@ -17,7 +17,7 @@ from copy import deepcopy
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ByteVar, ShortVar
-from smrpgpatchbuilder.datatypes.numbers.classes import Int8, Int16, UInt16, UInt8
+from smrpgpatchbuilder.datatypes.numbers.classes import Int8, Int16, UInt16, UInt8, UInt4
 
 
 class IdentifierException(Exception):
@@ -143,6 +143,8 @@ class ScriptCommand:
             elif isinstance(arg, UInt8):
                 output.append(arg.to_byte())
             elif isinstance(arg, Int8):
+                output.append(arg.to_byte())
+            elif isinstance(arg, UInt4):
                 output.append(arg.to_byte())
             elif isinstance(arg, int) and 0 <= arg <= 0xFF:
                 output.append(arg)
