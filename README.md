@@ -247,7 +247,7 @@ script = MonsterScript([
 	IfHPBelow(0),
 	DoMonsterBehaviour(3),
 	IncreaseVarBy1(0x7EE00E),
-	RemoveTarget(MARIO),
+	RemoveTarget(SELF),
 	Wait1TurnandRestartScript(),
 	IfTargetedByCommand([COMMAND_ATTACK]),
 	SetVarBits(0x7EE00F, [0]),
