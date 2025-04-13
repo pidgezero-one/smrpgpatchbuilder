@@ -1,6 +1,8 @@
 """Functions that help with dialog development."""
 
+from typing import List
 import re
+
 
 COMPRESSION_TABLE = [
     ("[0x7000]", b"\x1C\x00"),
@@ -20,19 +22,6 @@ COMPRESSION_TABLE = [
     ("[end]", b"\x06"),
     ("[select]", b"\x07"),
     ("[delay]", b"\x0C"),
-    ("Booster", b"\x18"),
-    ("Booster", b"\x19"),
-    ("Mario", b"\x13"),
-    (" and ", b"\x15"),
-    (" to ", b"\x11"),
-    (" I ", b"\x14"),
-    (" the", b"\x0E"),
-    (" you", b"\x0F"),
-    ("in", b"\x10"),
-    ("’s ", b"\x12"),
-    ("'s ", b"\x12"),
-    ("is ", b"\x16"),
-    (" so", b"\x17"),
     ("“", b"\x22"),
     ("”", b"\x23"),
     ("♥", b"\x24"),
@@ -64,11 +53,27 @@ COMPRESSION_TABLE = [
     ("&", b"\x9C"),
 ]
 
+DEFAULT_COMPRESSION_TABLE = [
+    ("Booster", b"\x18"),
+    ("Booster", b"\x19"),
+    ("Mario", b"\x13"),
+    (" and ", b"\x15"),
+    (" to ", b"\x11"),
+    (" I ", b"\x14"),
+    (" the", b"\x0E"),
+    (" you", b"\x0F"),
+    ("in", b"\x10"),
+    ("’s ", b"\x12"),
+    ("'s ", b"\x12"),
+    ("is ", b"\x16"),
+    (" so", b"\x17")
+]
 
-def compress(string: str) -> bytearray:
+
+def compress(string: str, compression_table: List[tuple[str, bytearray]]) -> bytearray:
     """Turns a dialog string into bytes."""
     output = bytearray()
-    tbl = dict(COMPRESSION_TABLE)
+    tbl = dict(compression_table)
     cursor = 0
     while cursor < len(string):
         regex_result = re.search(r"^(\x20\x20\x20\x20\x20+)", string[cursor:])
@@ -100,4 +105,38 @@ def compress(string: str) -> bytearray:
     last_byte = output[len(output) - 1]
     if last_byte not in [0x00, 0x06]:
         output.append(0x00)  # Null terminate strings.
+    return output
+
+
+def decompress(b, compression_table: List[tuple[str, bytearray]]) -> bytearray:
+    output = ''
+    tbl = dict(compression_table) 
+    cursor = 0
+    while cursor < len(b):
+        if b[cursor] == 0x0B:
+            cursor += 1
+            spaces = b[cursor]
+            output += ' ' * spaces
+            cursor += 1
+            continue
+        if b[cursor] == 0x0D:
+            cursor += 1
+            delay = b[cursor]
+            output += '[delay_%i]' % delay
+            cursor += 1
+            continue
+        tbl_match = None
+        for key in tbl:
+            # check if bytes at cursor position equals any of the compression table bytearrays
+            check = zip(tbl[key], b[cursor:])
+            matches = [(b1, b2) for (b1, b2) in check if b1 == b2]
+            if len(matches) == len(tbl[key]):
+                tbl_match = key
+                break
+        if tbl_match:
+            output += tbl_match
+            cursor += len(tbl[tbl_match])
+            continue
+        output += chr(b[cursor])
+        cursor += 1
     return output

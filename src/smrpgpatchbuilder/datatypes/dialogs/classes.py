@@ -1,6 +1,6 @@
 """Base classes related to dialogs and dialog collections"""
 
-from typing import List
+from typing import List, Dict
 from smrpgpatchbuilder.datatypes.dialogs.ids.misc import (
     DIALOG_BANK_22_BEGINS,
     DIALOG_BANK_22_ENDS,
@@ -16,7 +16,8 @@ from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
 from .ids.types.classes import DialogBankID
-from .utils import compress
+from .utils import compress, COMPRESSION_TABLE, DEFAULT_COMPRESSION_TABLE
+
 
 
 class Dialog:
@@ -56,6 +57,12 @@ class DialogCollection:
 
     _dialogs: List[Dialog]
     _raw_data: List[list[str]]
+    _dialog_bank_22_begins: int = DIALOG_BANK_22_BEGINS
+    _dialog_bank_22_ends: int = DIALOG_BANK_22_ENDS
+    _dialog_bank_23_begins: int = DIALOG_BANK_23_BEGINS
+    _dialog_bank_23_ends: int = DIALOG_BANK_23_ENDS
+    _dialog_bank_24_begins: int = DIALOG_BANK_24_BEGINS
+    _dialog_bank_24_ends: int = DIALOG_BANK_24_ENDS
 
     @property
     def dialogs(self) -> List[Dialog]:
@@ -89,11 +96,27 @@ class DialogCollection:
             for index, string in enumerate(bank):
                 self.raw_data[bank_index][index] = string.replace(search, replace)
 
-    def __init__(self, dialogs: List[Dialog], raw_data: List[list[str]]) -> None:
+    def _set_compression_table(self, compression_table: List[tuple[str, bytearray]]) -> None:
+        """Set the compression table for this dialog collection."""
+        self._compression_table = compression_table
+
+    @property
+    def compression_table(self) -> List[tuple[str, bytearray]]:
+        """Get the compression table for this dialog collection."""
+        return self._compression_table
+    
+    def __init__(self, dialogs: List[Dialog], raw_data: List[list[str]], compression_table: List[tuple[str, bytearray]] = DEFAULT_COMPRESSION_TABLE, dialog_bank_22_begins = DIALOG_BANK_22_BEGINS, dialog_bank_22_ends = DIALOG_BANK_22_ENDS, dialog_bank_23_begins = DIALOG_BANK_23_BEGINS, dialog_bank_23_ends = DIALOG_BANK_23_ENDS, dialog_bank_24_begins = DIALOG_BANK_24_BEGINS, dialog_bank_24_ends = DIALOG_BANK_24_ENDS) -> None:
         self._set_dialogs(dialogs)
         self._set_raw_data(raw_data)
+        self._set_compression_table([*COMPRESSION_TABLE, *compression_table])
+        self._dialog_bank_22_begins = dialog_bank_22_begins
+        self._dialog_bank_22_ends = dialog_bank_22_ends
+        self._dialog_bank_23_begins = dialog_bank_23_begins
+        self._dialog_bank_23_ends = dialog_bank_23_ends
+        self._dialog_bank_24_begins = dialog_bank_24_begins
+        self._dialog_bank_24_ends = dialog_bank_24_ends
 
-    def get_patch(self) -> Patch:
+    def render(self) -> Dict[int, bytearray]:
         """Get ROM patch for dialogs."""
         if len(self.dialogs) != 4096:
             raise ValueError("must be exactly 4096 dialogs")
@@ -103,9 +126,9 @@ class DialogCollection:
         new_pointer_table: List[int] = [-1] * 4096
 
         compressed_text = [
-            [compress(d) for d in self._raw_data[0]],
-            [compress(d) for d in self._raw_data[1]],
-            [compress(d) for d in self._raw_data[2]],
+            [compress(d, self.compression_table) for d in self._raw_data[0]],
+            [compress(d, self.compression_table) for d in self._raw_data[1]],
+            [compress(d, self.compression_table) for d in self._raw_data[2]],
         ]
 
         assembled_dialog_data = []
@@ -180,13 +203,13 @@ class DialogCollection:
 
             # make sure it's not overflowing, fill up with empty data if space left
             if bank_index == 0:
-                max_length = DIALOG_BANK_22_ENDS - DIALOG_BANK_22_BEGINS
+                max_length = self._dialog_bank_22_ends - self._dialog_bank_22_begins
                 empty_space = max_length - len(assembled_bank_dialog_data)
             elif bank_index == 1:
-                max_length = DIALOG_BANK_23_ENDS - DIALOG_BANK_23_BEGINS
+                max_length = self._dialog_bank_23_ends - self._dialog_bank_23_begins
                 empty_space = max_length - len(assembled_bank_dialog_data)
             else:
-                max_length = DIALOG_BANK_24_ENDS - DIALOG_BANK_24_BEGINS
+                max_length = self._dialog_bank_24_ends - self._dialog_bank_24_begins
                 empty_space = max_length - len(assembled_bank_dialog_data)
             if empty_space < 0:
                 length = len(assembled_bank_dialog_data)
@@ -209,10 +232,9 @@ class DialogCollection:
             assembled_pointers.append(val & 0xFF)
             assembled_pointers.append(val >> 8)
 
-        patch = Patch()
-        patch.add_data(0x37E000, assembled_pointers)
-        patch.add_data(0x220000, assembled_dialog_data[0])
-        patch.add_data(0x230000, assembled_dialog_data[1])
-        patch.add_data(0x240000, assembled_dialog_data[2])
-
-        return patch
+        return {
+            0x37E000: assembled_pointers,
+            0x220000: assembled_dialog_data[0],
+            0x230000: assembled_dialog_data[1],
+            0x240000: assembled_dialog_data[2],
+        }

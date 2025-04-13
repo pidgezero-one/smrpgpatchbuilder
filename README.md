@@ -30,7 +30,7 @@ script = EventScript([
 ])
 ```
 
-If you want to use any `Jump to address` commands, you can do it by putting labels on your commands. You don't need to worry about ROM addresses at all!
+If you want to use any `Jump to address` commands, you can do it by putting labels on your commands. You don't need to worry about ROM addresses at all! (However, just like in Lazy Shell, commads in 0x1Exxxx can only jump to other commands in 0x1Exxxx and not in 0x1Fxxxx, etc. These are called **banks** and you can jump to any command in any script as long as it's in the same bank.)
 ```python
 script = EventScript([
 	JmpIfBitClear(UNKNOWN_7049_4, ["LabelGoesHere"]), # This will skip the RunDialog command by jumping to the SetBit command
@@ -68,6 +68,7 @@ This repo allows you to parse, modify, and rebuild:
 - Monster AI ([disassemble](#disassembling-monster-ai) | [assemble](#assembling-monster-ai))
 - Event scripts (soon)
 - NPC animations (soon)
+- Dialogs ([disassemble](#disassembling-dialogs) | [assemble](assembling-dialogs))
 
 TODO: Command class reference
 
@@ -276,4 +277,74 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py battleassembler -r /path/t
 - If you include `-t`, it will output plain text files (split up according to the address the byte string starts at) with your assembled bytes. You can use this for debugging, such as if you want to side-by-side compare your results against the Lazy Shell editor's hex. It's all on one line though so it might be hard to use.
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
-The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `MonsterScriptBank` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+The assembler script is really just a glorified wrapper that imports the disassembler output and then calls the script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `MonsterScriptBank` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+
+### Disassembling dialogs
+
+Dialogs in SMRPG are split into banks 0x22xxxx, 0x23xxxx, 0x24xxxx. You can disassemble dialog info into files that you can more or less edit as text.
+
+Run this **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all overworld dialogs and convert them into Python code. For example:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogdisassembler --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom" 
+```
+
+This will output to a subfolder, `./src/disassembler_output/dialogs`. This one's a bit slower, I could have written the code a lot better, oh well.
+
+You'll see a file called dialogs.py:
+
+```python
+from smrpgpatchbuilder.datatypes.dialogs.classes import DialogCollection
+from .contents.dialog_pointers import pointers
+from .contents.dialog_table_0x22 import dialog_data as data_0
+from .contents.dialog_table_0x23 import dialog_data as data_1
+from .contents.dialog_table_0x24 import dialog_data as data_2
+
+data = DialogCollection(pointers, [data_0, data_1, data_2], ...)
+```
+
+A `DialogCollection` represents all of the dialog in the game. If you're importing this in your own project, `.render()` will produce a `Dict[int, bytearray]` where the int is the address to patch the bytearray at.
+
+Disassembled dialog data is split up into two parts. You'll see three files full of actual dialog data that look like this:
+```python
+dialog_data[315] = ''' Thanks a million, Mario!
+ Say[delay][delay],...[delay][delay]were my treasures OK?[await]
+ [select]  (They sure were)
+ [select]  (I wouldn't say so)[await]'''
+dialog_data[316] = ''' Oh! That’s great news!
+ What a relief![await]'''
+```
+
+And one pointer file that looks like this:
+```python
+...
+pointers[793] = Dialog(bank=0x22, index=315, pos=22)
+pointers[794] = Dialog(bank=0x22, index=316, pos=0)
+...
+```
+
+The data files contain the actual dialog text. They're broken up into individual strings based on where text-terminating characters were in the original game. You can add or delete dialogs in these tables as you like (I think), as long as the whole file doesn't have too much text to fit into the ROM.
+
+The pointer table is what you'll need to make your dialogs work. Don't change the length of this table or any of the `bank` properties.
+The `index` property corresponds to which entry in the data file you want. So in the above example, dialog 793 references data entry 315 (in the 0x22 file, as indicated by the `bank` property), which is the "Thanks a million, Mario!" dialog. To use this in your romhack, you'd run dialog ID 793 in your event scripts to get a NPC to say that.
+The `pos` property determines where the dialog should actually start. In the first example, `pos=22` means that the dialog will actually start after 22 characters. So if you run dialog 793 in your event script, the NPC will actually start talking at "Say... were my treasures OK?"
+
+"But wait, there's more than 22 characters before that!" Yes - this script accommodates **compression tables**. The string "in" is actually represented by a single byte, 0x10. By default, SMRPG has space for twelve of these compressions and they use bytes 0x0E to 0x19 inclusive. The disassembler will parse the compression table in your rom and include it in the output dialogs.py file.
+
+You'll also see that some special characters I've represented with directives like `[await]` and `[pause]` etc, just so that it's easier for you to understand what's actually happening in the dialog. These are single bytes in the game as well and they will be assembled as such.
+
+
+### Assembling dialogs
+
+After you've changed the dialog data files output by the disassembler, including changing your compression table in dialogs.py if you like, you can run:
+
+```
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used. 
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the contents of your battle animation files.
+- If you include `-t`, it will output plain text files (split up according to the address the byte string starts at) with your assembled bytes. You can use this for debugging, such as if you want to side-by-side compare your results against the Lazy Shell editor's hex. It's all on one line though so it might be hard to use.
+- If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
+
+The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls the dialog collection's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `DialogCollection` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
