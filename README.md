@@ -61,13 +61,12 @@ bank = EventScriptBank(
 patchbytes = bank.render() # This outputs a bytearray
 ```
 
-Most of this was designed to be used with smrpg randomizer. A lot of it can be reused, but there'll be a lot of stuff in here that doesn't match up to the original game, like descriptions of what event script variables are used for, unused enemy classes being missing, certain item implementations being missing (there's no alto card item class in here for example), etc. But you can extend this code's base classes for your purposes however you like.
+Most of this was designed to be used with smrpg randomizer. A lot of it can be reused, but there'll be a lot of stuff in here that doesn't match up to the original game, like the const names I've given to variables like event IDs, dialog IDs, etc. But you can extend this code's base classes for your purposes however you like.
 
 This repo allows you to parse, modify, and rebuild:
 - Battle animations ([disassemble](#disassembling-battle-animations) | [assemble](#assembling-battle-animations))
 - Monster AI ([disassemble](#disassembling-monster-ai) | [assemble](#assembling-monster-ai))
-- Event scripts (soon)
-- NPC animations (soon)
+- Event scripts and overworld NPC animations  ([disassemble](#disassembling-overworld-scripts) | [assemble](assembling-overworld-scripts))
 - Dialogs ([disassemble](#disassembling-dialogs) | [assemble](assembling-dialogs))
 
 TODO: Command class reference
@@ -278,6 +277,74 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py battleassembler -r /path/t
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
 The assembler script is really just a glorified wrapper that imports the disassembler output and then calls the script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `MonsterScriptBank` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+
+### Disassembling overworld scripts
+
+You can convert all 4096 overworld scripts and 1024 standalone NPC animations into Python code as well. One command will do both at the same time:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py eventconverter --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom" 
+```
+
+This runs really, really slowly. I originally wrote disassembled events as dicts rather than command classes, and then wrote another script to convert them, so it does one and then the other. Possibly an issue to fix in a future revision, but I couldn't be bothered with how annoying it is to deal with embedded NPC animations.
+
+Here is event 255 as it appears in Lazy Shell:
+![alt text](image-2.png)
+
+And here's how it looks when converted to Python:
+```python
+# E0255_EXP_STAR_HIT
+
+script = EventScript([
+	DisableObjectTrigger(MEM_70A8),
+	StartSyncEmbeddedActionScript(target=MEM_70A8, prefix=0xF1, subscript=[
+		SetObjectMemoryBits(arg_1=0x0B, bits=[0, 1]),
+		Db(bytearray(b'\xfd\xf2'))
+	]),
+	SetSyncActionScript(MEM_70A8, A1022_HIT_BY_EXP_STAR),
+	IncEXPByPacket(),
+	JmpIfVarEqualsConst(PRIMARY_TEMP_7000, 0, ["EVENT_255_ret_13"]),
+	SetBit(UNKNOWN_7064_5, identifier="EVENT_255_set_bit_5"),
+	SetBit(EXP_STAR_BIT_6),
+	UnfreezeAllNPCs(),
+	Pause(3),
+	CreatePacketAtObjectCoords(packet=P031_LEVELUP_TEXT, object=MARIO, destinations=["EVENT_255_set_bit_5"]),
+	PlaySound(sound=SO095_LEVEL_UP_WITH_STAR, channel=6),
+	SetVarToConst(TIMER_701E, 64),
+	RunBackgroundEventWithPauseReturnOnExit(event_id=E0254_EXP_STAR_HIT_SUBROUTINE, timer_var=TIMER_701E),
+	Return(identifier="EVENT_255_ret_13")
+])
+```
+
+Similarly, here's action script 2:
+![alt text](image-3.png)
+
+And here's how it looks in Python:
+```
+#A0002_FLASH_AFTER_RUNNING_AWAY_IFRAMES
+
+script = ActionScript([
+	ObjectMemorySetBit(arg_1=0x30, bits=[4]),
+	JmpIfBitClear(TEMP_707C_1, ["'ACTION_2_start_loop_n_times_3'"]),
+	ClearSolidityBits(bit_4=True, cant_walk_through=True),
+	StartLoopNTimes(15),
+	Pause(2),
+	VisibilityOff(),
+	Pause(2),
+	VisibilityOn(),
+	EndLoop(),
+	SetSolidityBits(bit_4=True, cant_walk_through=True),
+	ObjectMemoryClearBit(arg_1=0x30, bits=[4]),
+	Return()
+])
+```
+
+Things to be aware of:
+- Yo'ster Isle (events 470, 1837, 1839, 3329, 3729) has some weird implementation of this called "non-embedded action queues." That's event script code that's supposed to be read as NPC animation script code, despite having no header to indicate that. Non-embedded action queues are expected to begin at a certain offset relative to the start of the event. You can edit these events if you like, and the assembler will just insert dummy commands to fill space to keep the NEAQ where the game expects it. However, if you have too much code before the NEAQ that pushes it to a greater offset than it needs to be, you'll get an error when building your patch.
+- There's a couple of overrides that are technically legal but that you should probably never do. Normally, when you're using commands that jump to other commands, you specify another command's `identifier` property as the destination, so that this code will take care of filling these in with ROM addresses for you. However, event 580 in the original game issues a jump to an address that isn't associated to an event. I've flagged this with `ILLEGAL_JUMP` in the identifier, which means you can also provide a destination of `ILLEGAL_JUMP_XXXX` to a jump command where `XXXX` is a four-digit hex int indicating the offset you want to jump to. I *strongly* recommend against ever doing this.
+- Similarly, queue 53 and queue 137 in the original game use sound ID 255. I have no idea what that is, sounds are only supposed to go up to 163 or something like that. This is another thing that's technically legal but that you shouldn't do.
+
+### Assembling overworld scripts
 
 ### Disassembling dialogs
 

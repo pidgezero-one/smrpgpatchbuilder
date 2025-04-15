@@ -45,21 +45,20 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.misc impor
     TOTAL_SCRIPTS as TOTAL_ACTION_SCRIPTS,
 )
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import (
-    AreaObject,
-    PartyCharacter,
-    Battlefield,
-    Colour,
-    Coord,
-    ControllerInput,
-    Direction,
-    IntroTitleText,
-    PaletteType,
-    Layer,
-    Scene,
-    Tutorial,
-    Packet,
-)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object import AreaObject
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import  PartyCharacter
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import  Battlefield
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.colour import  Colour
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.coord import  Coord
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.controller_input import  ControllerInput
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.direction import Direction
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.intro_title_text import IntroTitleText
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.palette_type import PaletteType
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.layer import Layer
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.scene import Scene
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.tutorial import Tutorial
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.packet import Packet
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids.misc import (
     TOTAL_ROOMS,
     TOTAL_MUSIC,
@@ -72,7 +71,9 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.ids.misc import (
 from smrpgpatchbuilder.datatypes.items.classes import Equipment, Item, Weapon, Armor, Accessory
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ByteVar, Flag, ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import  Flag
 from smrpgpatchbuilder.datatypes.scripts_common.classes import InvalidCommandArgumentException
 from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
 

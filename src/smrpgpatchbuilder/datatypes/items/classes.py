@@ -3,10 +3,10 @@
 from copy import deepcopy
 import random
 import math
-from typing import List, TypeVar
+from typing import List, TypeVar, Optional
 
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import (
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import (
     PartyCharacter,
 )
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, ByteField, BitMapSet
@@ -17,6 +17,9 @@ from smrpgpatchbuilder.datatypes.spells.enums import Status, Element, TempStatBu
 
 from .enums import (
     ItemTypeValue,
+    EffectType, 
+    InflictFunction, 
+    OverworldMenuBehaviour
 )
 from .constants import (
     ITEMS_BASE_ADDRESS,
@@ -28,24 +31,53 @@ class Item:
     """Parent class representing an item."""
 
     _item_id: int = 0
-    _type_value: ItemTypeValue = ItemTypeValue.ITEM
+
     _item_name: str = ""
     _description: str = ""
-    _consumable: bool = False
-    _equip_chars: List[PartyCharacter] = []
+
+    _price: int = 0
+
     _speed: int = 0
+    _variance: UInt8 = UInt8(0)
+    _inflict: int = 0
     _attack: int = 0
     _defense: int = 0
     _magic_attack: int = 0
     _magic_defense: int = 0
-    _variance: UInt8 = UInt8(0)
-    _prevent_ko: bool = False
+
+    _type_value: ItemTypeValue = ItemTypeValue.ITEM
+    _effect_type: Optional[EffectType]
+    _inflict_type: Optional[InflictFunction]
+    _inflict_element: Optional[Element]
+
+    _equip_chars: List[PartyCharacter] = []
     _elemental_immunities: List[Element] = []
     _elemental_resistances: List[Element] = []
     _status_immunities: List[Status] = []
     _temp_buffs: List[TempStatBuff] = []
-    _price: int = 0
+
+    _prevent_ko: bool = False
+    _hide_damage: bool = False
+    _usable_battle: bool = False
+    _usable_overworld: bool = False
+    _reusable: bool = False
+
+    _overworld_menu_behaviour: OverworldMenuBehaviour = OverworldMenuBehaviour.LEAD_TO_HP
+    _overworld_menu_fill_fp: bool = False
+    _overworld_menu_fill_hp: bool = False
+
+    _can_target_others: bool = False
+    _can_target_self: bool = True
+    _one_side_only: bool = False
+    _koed_target_only: bool = False 
+    _target_enemies: bool = False
+    _target_all: bool = False
+
     _frog_coin_item: bool = False
+
+    @property
+    def index(self) -> int:
+        return self._item_id
 
     @property
     def item_id(self) -> int:
@@ -170,6 +202,143 @@ class Item:
         """Set item cost, regardless of currency type."""
         maximum: int = 999 if self.frog_coin_item else 9999
         self._price = min(maximum, price)
+        
+    @property
+    def inflict(self) -> int:
+        """The inflict value used in effect resolution"""
+        return self._inflict
+    def set_inflict(self, inflict: int) -> None:
+        """Update the inflict value used in effect resolution"""
+        self._inflict = inflict
+
+    @property
+    def effect_type(self) -> Optional[EffectType]:
+        """The type of effect this represents"""
+        return self._effect_type
+    def set_effect_type(self, effect_type: Optional[EffectType]) -> None:
+        """Update the effect type"""
+        self._effect_type = effect_type
+
+    @property
+    def inflict_type(self) -> Optional[InflictFunction]:
+        """The function that determines infliction logic"""
+        return self._inflict_type
+    def set_inflict_type(self, inflict_type: Optional[InflictFunction]) -> None:
+        """Update the inflict type function"""
+        self._inflict_type = inflict_type
+
+    @property
+    def inflict_element(self) -> Optional[Element]:
+        """The elemental type associated with this effect"""
+        return self._inflict_element
+    def set_inflict_element(self, inflict_element: Optional[Element]) -> None:
+        """Update the infliction element"""
+        self._inflict_element = inflict_element
+
+    @property
+    def prevent_ko(self) -> bool:
+        """Whether this prevents KO"""
+        return self._prevent_ko
+    def set_prevent_ko(self, prevent_ko: bool) -> None:
+        """Set whether this prevents KO"""
+        self._prevent_ko = prevent_ko
+
+    @property
+    def hide_damage(self) -> bool:
+        """Whether to hide damage display"""
+        return self._hide_damage
+    def set_hide_damage(self, hide_damage: bool) -> None:
+        """Set whether to hide damage display"""
+        self._hide_damage = hide_damage
+
+    @property
+    def usable_battle(self) -> bool:
+        """Whether this can be used in battle"""
+        return self._usable_battle
+    def set_usable_battle(self, usable_battle: bool) -> None:
+        """Set battle usability"""
+        self._usable_battle = usable_battle
+
+    @property
+    def usable_overworld(self) -> bool:
+        """Whether this can be used in the overworld"""
+        return self._usable_overworld
+    def set_usable_overworld(self, usable_overworld: bool) -> None:
+        """Set overworld usability"""
+        self._usable_overworld = usable_overworld
+
+    @property
+    def overworld_menu_behaviour(self) -> OverworldMenuBehaviour:
+        """The menu behavior when used in the overworld"""
+        return self._overworld_menu_behaviour
+    def set_overworld_menu_behaviour(self, behaviour: OverworldMenuBehaviour) -> None:
+        """Set overworld menu behavior"""
+        self._overworld_menu_behaviour = behaviour
+
+    @property
+    def overworld_menu_fill_fp(self) -> bool:
+        """Whether this fills FP in the overworld"""
+        return self._overworld_menu_fill_fp
+    def set_overworld_menu_fill_fp(self, fill_fp: bool) -> None:
+        """Set whether this fills FP in the overworld"""
+        self._overworld_menu_fill_fp = fill_fp
+
+    @property
+    def overworld_menu_fill_hp(self) -> bool:
+        """Whether this fills HP in the overworld"""
+        return self._overworld_menu_fill_hp
+    def set_overworld_menu_fill_hp(self, fill_hp: bool) -> None:
+        """Set whether this fills HP in the overworld"""
+        self._overworld_menu_fill_hp = fill_hp
+
+    @property
+    def can_target_others(self) -> bool:
+        """Whether this can target others"""
+        return self._can_target_others
+    def set_can_target_others(self, can_target_others: bool) -> None:
+        """Set whether this can target others"""
+        self._can_target_others = can_target_others
+
+    @property
+    def can_target_self(self) -> bool:
+        """Whether this can target self"""
+        return self._can_target_self
+    def set_can_target_self(self, can_target_self: bool) -> None:
+        """Set whether this can target self"""
+        self._can_target_self = can_target_self
+
+    @property
+    def one_side_only(self) -> bool:
+        """Whether this can only target one character"""
+        return self._one_side_only
+    def set_one_side_only(self, one_side_only: bool) -> None:
+        """Set single target only restriction"""
+        self._one_side_only = one_side_only
+
+    @property
+    def koed_target_only(self) -> bool:
+        """Whether this can only target KOed characters"""
+        return self._koed_target_only
+    def set_koed_target_only(self, koed_target_only: bool) -> None:
+        """Set KOed target only restriction"""
+        self._koed_target_only = koed_target_only
+
+    @property
+    def target_enemies(self) -> bool:
+        """Whether this can target enemies"""
+        return self._target_enemies
+    def set_target_enemies(self, target_enemies: bool) -> None:
+        """Set enemy targeting"""
+        self._target_enemies = target_enemies
+
+    @property
+    def target_all(self) -> bool:
+        """Whether this can target party members"""
+        return self._target_all
+    def set_target_all(self, target_all: bool) -> None:
+        """Set party targeting"""
+        self._target_all = target_all
+
 
     @property
     def frog_coin_item(self) -> bool:
@@ -376,9 +545,50 @@ class Weapon(Equipment):
     _item_id: int = 0
     _type_value: ItemTypeValue = ItemTypeValue.WEAPON
 
+    _half_time_window_begins: UInt8 = 0
+    _perfect_window_begins: UInt8 = 0
+    _perfect_window_ends: UInt8 = 0
+    _half_time_window_ends: UInt8 = 0
+
     def set_variance(self, variance: int) -> None:
         """Sets the variance range on this weapon's damage RNG."""
         self._variance = UInt8(variance)
+
+    @property
+    def half_time_window_begins(self) -> UInt8:
+        """Frame where half timing window starts"""
+        return self._half_time_window_begins
+    
+    def set_half_time_window_begins(self, value: int) -> None:
+        """Set frame for half timing window start"""
+        self._half_time_window_begins = UInt8(value)
+
+    @property
+    def perfect_window_begins(self) -> UInt8:
+        """Frame where perfect timing window starts"""
+        return self._perfect_window_begins
+    
+    def set_perfect_window_begins(self, value: int) -> None:
+        """Set frame for perfect timing window start"""
+        self._perfect_window_begins = UInt8(value)
+
+    @property
+    def perfect_window_ends(self) -> UInt8:
+        """Frame where perfect timing window ends"""
+        return self._perfect_window_ends
+    
+    def set_perfect_window_ends(self, value: int) -> None:
+        """Set frame for perfect timing window end"""
+        self._perfect_window_ends = UInt8(value)
+
+    @property
+    def half_time_window_ends(self) -> UInt8:
+        """Frame where half timing window ends"""
+        return self._half_time_window_ends
+    
+    def set_half_time_window_ends(self, value: int) -> None:
+        """Set frame for half timing window end"""
+        self._half_time_window_ends = UInt8(value)
 
 
 class Armor(Equipment):
@@ -397,3 +607,7 @@ class Accessory(Equipment):
 class RegularItem(Item):
     """Base class for most obtainable, non-equippable items."""
     _type_value: ItemTypeValue = ItemTypeValue.ITEM
+
+    @property
+    def consumable(self) -> bool:
+        return self._reusable == False

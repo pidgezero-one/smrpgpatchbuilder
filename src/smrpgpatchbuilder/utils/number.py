@@ -1,9 +1,9 @@
 """Numerical util functions."""
 
 from typing import List, Union
-from random import random
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ByteVar, ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 
 
 def bools_to_int(*args: bool) -> int:

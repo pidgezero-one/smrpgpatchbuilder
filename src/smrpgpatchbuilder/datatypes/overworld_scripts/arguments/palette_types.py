@@ -1,6 +1,6 @@
 """Int subclass instances representing special effects that can be applied to a palette."""
 
-from .types.classes import PaletteType
+from .types.palette_type import PaletteType
 
 NOTHING = PaletteType(0x00)
 GLOW = PaletteType(0x06)

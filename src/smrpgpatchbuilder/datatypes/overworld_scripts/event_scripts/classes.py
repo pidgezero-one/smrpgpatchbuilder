@@ -7,6 +7,10 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
     EventScriptCommandActionScriptContainer,
     UsableEventScriptCommand,
+    NonEmbeddedActionQueuePrototype
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.commands import (
+    StopSound
 )
 
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
@@ -185,9 +189,20 @@ class EventScriptBank(ScriptBank[EventScript]):
         command: UsableEventScriptCommand
 
         # build command name and pointer table : address table
-        for script in self.scripts:
+        for script_id, script in self.scripts:
             self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
-            for command in script.contents:
+            initial_position = position
+            for index, command in script.contents:
+                # If this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
+                if isinstance(command, NonEmbeddedActionQueuePrototype):
+                    relative_offset: int = position - initial_position
+                    if relative_offset <= command.required_offset:
+                        for _ in range(relative_offset):
+                            script.contents.insert(index, StopSound())
+                            position += 1
+                    else:
+                        raise ScriptBankTooLongException(f"too many commands in script {script_id} before non-embedded action queue")
+                        
                 position = self._associate_address(command, position)
 
         # replace jump placeholders with addresses

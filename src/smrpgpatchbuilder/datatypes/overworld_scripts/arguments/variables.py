@@ -4,7 +4,9 @@ These are variable usages as used in SMRPG randomizer.
 You can import these and rename them in your codebase if you like, 
 or just not use them."""
 
-from .types.classes import ShortVar, ByteVar, Flag
+from .types.byte_var import ByteVar
+from .types.short_var import ShortVar
+from .types.flag import Flag
 
 PRIMARY_TEMP_7000 = ShortVar(0x7000)
 UNKNOWN_7002 = ShortVar(0x7002)
@@ -1130,7 +1132,7 @@ SHOGUN_5_CLEARED = Flag(0x7097, 4)
 UNKNOWN_7097_5 = Flag(0x7097, 5)
 UNKNOWN_7097_6 = Flag(0x7097, 6)
 UNKNOWN_7097_7 = Flag(0x7097, 7)
-UNKNOWN_7098_0 = Flag(0x7099, 0)
+UNKNOWN_7098_0 = Flag(0x7098, 0)
 UNKNOWN_STAR_PIECE = Flag(0x7098, 1)
 NIMBUS_INN_UNKNOWN_1 = Flag(0x7098, 2)
 NIMBUS_INN_UNKNOWN_2 = Flag(0x7098, 3)

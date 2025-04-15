@@ -6,7 +6,7 @@ from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.script_ids import *
 
-from .types.classes import Packet
+from .types.packet import Packet
 
 P000_FLASHING_POOF_FLOWER = Packet(
     packet_id=0,

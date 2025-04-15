@@ -16,7 +16,8 @@ from copy import deepcopy
 
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ByteVar, ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 from smrpgpatchbuilder.datatypes.numbers.classes import Int8, Int16, UInt16, UInt8, UInt4
 
 
@@ -542,7 +543,10 @@ class ScriptBank(Generic[ScriptT]):
         for destination in identifiers:
             key: str = destination.name
             if key not in self.addresses:
-                raise IdentifierException(f"couldn't find destination {key}")
+                if "ILLEGAL_JUMP_" in key:
+                    destination.set_address((int(key[-4:], 16) &0xFFFF))
+                else:
+                    raise IdentifierException(f"couldn't find destination {key}")
             destination.set_address(self.addresses[key] % 0xFFFF)
 
     def _populate_jumps(self, script: Script) -> None:

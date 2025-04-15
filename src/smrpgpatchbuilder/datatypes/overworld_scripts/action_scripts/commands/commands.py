@@ -22,13 +22,25 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids.misc import
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids.misc import TOTAL_ROOMS, TOTAL_SOUNDS
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import COORD_F
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import (
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object import (
     AreaObject,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.direction import (
     Direction,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.coord import (
     Coord,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import (
     ByteVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import (
     Flag,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import (
     ShortVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.packet import (
     Packet,
 )
 from .types.classes import (
@@ -48,7 +60,7 @@ from .types.classes import (
 # script operations
 
 
-class JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
+class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
     """Goto action script by ID.\n
     It is highly recommended to use contextual action script
     const names for this."""
@@ -77,7 +89,7 @@ class JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.destination)
 
 
-class Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Goto a specific command by command identifier."""
 
     _opcode: int = 0xD2
@@ -87,7 +99,7 @@ class Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(*self.destinations)
 
 
-class JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Run a specific action script as a subroutine, by command identifier."""
 
     _opcode: int = 0xD3
@@ -97,7 +109,7 @@ class JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(*self.destinations)
 
 
-class StartLoopNFrames(UsableActionScriptCommand, ActionScriptCommand):
+class A_StartLoopNFrames(UsableActionScriptCommand, ActionScriptCommand):
     """Loop all commands over N frames that are between this command
     and the next `EndLoop` command."""
 
@@ -122,7 +134,7 @@ class StartLoopNFrames(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.length)
 
 
-class StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
+class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
     """Loop all commands over N loop iterations that are between this command
     and the next `EndLoop` command."""
 
@@ -147,13 +159,13 @@ class StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.count)
 
 
-class EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """If previous commands were part of a loop, this is where the loop ends."""
 
     _opcode: int = 0xD7
 
 
-class Pause(UsableActionScriptCommand, ActionScriptCommand):
+class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
     """Pause the active script for the given number of frames"""
 
     _length: Union[UInt8, UInt16]
@@ -189,19 +201,19 @@ class Pause(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(0xF1, frames)
 
 
-class JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Return to the beginning of the script containing this command"""
 
     _opcode: int = 0xF9
 
 
-class JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)"""
 
     _opcode: int = 0xFA
 
 
-class Return(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Return(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Exits the execution of the current script or subroutine."""
 
     _opcode: int = 0xFE
@@ -3989,7 +4001,7 @@ class PlaySound(UsableActionScriptCommand, ActionScriptCommand):
     def set_sound(self, sound: int) -> None:
         """Set the ID of the sound to play.\n
         It is recommended to use contextual const names for sound effect IDs."""
-        assert 0 <= sound < TOTAL_SOUNDS
+        assert 0 <= sound < TOTAL_SOUNDS or sound == 255 # 255 shouldn't be allowed, but action script 53 uses it in the original game
         self._sound = UInt8(sound)
 
     @property

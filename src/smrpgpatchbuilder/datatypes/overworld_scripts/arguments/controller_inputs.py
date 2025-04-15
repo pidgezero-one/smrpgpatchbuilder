@@ -1,6 +1,6 @@
 """Int subclass instances representing inputs from a specific controller button."""
 
-from .types.classes import ControllerInput
+from .types.controller_input import ControllerInput
 
 LEFT = ControllerInput(0)
 RIGHT = ControllerInput(1)

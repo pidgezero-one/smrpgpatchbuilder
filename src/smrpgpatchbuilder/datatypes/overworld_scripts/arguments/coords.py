@@ -1,7 +1,7 @@
 """Int subclass instances representing coordinate axes for commands requiring a coordinate
 or coordinate set."""
 
-from .types.classes import Coord
+from .types.coord import Coord
 
 COORD_X = Coord(0x00)
 COORD_Y = Coord(0x01)

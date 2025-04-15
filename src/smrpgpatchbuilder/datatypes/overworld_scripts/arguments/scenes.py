@@ -1,6 +1,6 @@
 """Int subclass instances representing IDs for some predefined cutscenes and screen transitions."""
 
-from .types.classes import Scene
+from .types.scene import Scene
 
 SC00_OPEN_GAME_SELECT_MENU = Scene(0)
 SC01_OPEN_OVERWORLD_MENU = Scene(1)

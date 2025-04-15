@@ -18,11 +18,10 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptCommandAnySizeMem,
     ScriptCommandShortMem,
 )
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import (
-    AreaObject,
-    ShortVar,
-    ByteVar,
-)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object import AreaObject
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import PRIMARY_TEMP_7000
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8
@@ -237,6 +236,12 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
 
     _subscript: ActionScript
     _header_size: int = 0
+    _required_offset: int = 0
+
+    @property
+    def required_offset(self) -> int:
+        """The required offset of the start of the non-embedded queue relative to the start of the event."""
+        return self._required_offset
 
     @property
     def subscript(self) -> ActionScript:
@@ -249,12 +254,14 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
 
     def __init__(
         self,
+        required_offset: int,
         subscript: Optional[List[UsableActionScriptCommand]],
         identifier: Optional[str] = None,
     ) -> None:
         if subscript is None:
             subscript = []
         super().__init__(identifier)
+        self._required_offset = required_offset
         self._subscript = Subscript()
         self.set_subscript(subscript)
 

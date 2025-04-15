@@ -1,6 +1,6 @@
 """Int subclass instances representing valid directions in which an object can walk or face."""
 
-from .types.classes import Direction
+from .types.direction import Direction
 
 EAST = Direction(0b0)
 SOUTHEAST = Direction(0b1)

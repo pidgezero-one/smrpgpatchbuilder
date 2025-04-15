@@ -1,28 +1,33 @@
 from django.core.management.base import BaseCommand
-from randomizer.types.overworld_scripts.event_scripts.ids.script_ids import *
-from randomizer.types.overworld_scripts.action_scripts.ids.script_ids import *
-from randomizer.types.overworld_scripts.packets.collection import packets
-from randomizer.types.overworld_scripts.constants.battlefields import *
-from randomizer.types.overworld_scripts.constants.music_names import *
-from randomizer.types.overworld_scripts.constants.sound_names import *
-from randomizer.types.overworld_scripts.constants.scenes import *
-from randomizer.types.overworld_scripts.constants.overworld_names import *
-from randomizer.types.overworld_scripts.constants.room_names import *
-from randomizer.types.overworld_scripts.constants.coords import *
-from randomizer.types.overworld_scripts.constants.tutorials import *
-from randomizer.types.overworld_scripts.constants.shops_ids import *
-from randomizer.types.overworld_scripts.arguments.variables import *
-from randomizer.types.overworld_scripts.variables.classes import Flag, ShortVar, ByteVar
-from randomizer.data.eventscripts.events import scripts as e_scripts
-from randomizer.data.actionscripts.actions import scripts as a_scripts
 
-from randomizer.types.overworld_scripts.action_scripts.commands.commands import *
-
-from randomizer.management.disassembler_common import (
+from smrpgpatchbuilder.utils.disassembler_common import (
     writeline,
 )
+from smrpgpatchbuilder.datatypes.scripts_common.classes import (
+    ShortVar,
+    ByteVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import (
+    Flag
+)
+from .legacy.eventdisassembler import Command as EventDisassemblerCommand
+from .legacy.objectsequencedisassembler import Command as AnimationDisassemblerCommand
 
-import sys, re
+from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids.script_ids import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.script_ids import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.ids.music_names import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.ids.sound_names import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.ids.overworld_names import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.ids.room_names import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.ids.shops_ids import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *
+
+import sys, re, os, shutil
 
 DIALOGS = [
     "DI0000_INN_BANNER",
@@ -4201,243 +4206,263 @@ EQSLOTS = [
     "Armor",
     "Accessory",
 ]
-ITEMS = [
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Hammer",
-    "FroggieStick",
-    "NokNokShell",
-    "PunchGlove",
-    "FingerShot",
-    "Cymbals",
-    "Chomp",
-    "Masher",
-    "ChompShell",
-    "SuperHammer",
-    "HandGun",
-    "WhompGlove",
-    "SlapGlove",
-    "TroopaShell",
-    "Parasol",
-    "HurlyGloves",
-    "DoublePunch",
-    "RibbitStick",
-    "SpikedLink",
-    "MegaGlove",
-    "WarFan",
-    "HandCannon",
-    "StickyGlove",
-    "UltraHammer",
-    "SuperSlap",
-    "DrillClaw",
-    "StarGun",
-    "SonicCymbal",
-    "LazyShellWeapon",
-    "FryingPan",
-    "LuckyHammer",
-    None,
-    "Shirt",
-    "Pants",
-    "ThickShirt",
-    "ThickPants",
-    "MegaShirt",
-    "MegaPants",
-    "WorkPants",
-    "MegaCape",
-    "HappyShirt",
-    "HappyPants",
-    "HappyCape",
-    "HappyShell",
-    "PolkaDress",
-    "SailorShirt",
-    "SailorPants",
-    "SailorCape",
-    "NauticaDress",
-    "CourageShell",
-    "FuzzyShirt",
-    "FuzzyPants",
-    "FuzzyCape",
-    "FuzzyDress",
-    "FireShirt",
-    "FirePants",
-    "FireCape",
-    "FireShell",
-    "FireDress",
-    "HeroShirt",
-    "PrincePants",
-    "StarCape",
-    "HealShell",
-    "RoyalDress",
-    "SuperSuit",
-    "LazyShellArmor",
-    None,
-    None,
-    None,
-    "ZoomShoes",
-    "SafetyBadge",
-    "JumpShoes",
-    "SafetyRing",
-    "Amulet",
-    "ScroogeRing",
-    "ExpBooster",
-    "AttackScarf",
-    "RareScarf",
-    "BtubRing",
-    "AntidotePin",
-    "WakeUpPin",
-    "FearlessPin",
-    "TrueformPin",
-    "CoinTrick",
-    "GhostMedal",
-    "JinxBelt",
-    "Feather",
-    "TroopaPin",
-    "SignalRing",
-    "QuartzCharm",
-    None,
-    "Mushroom",
-    "MidMushroom",
-    "MaxMushroom",
-    "HoneySyrup",
-    "MapleSyrup",
-    "RoyalSyrup",
-    "PickMeUp",
-    "AbleJuice",
-    "Bracer",
-    "Energizer",
-    "YoshiAde",
-    "RedEssence",
-    "KerokeroCola",
-    "YoshiCookie",
-    "PureWater",
-    "SleepyBomb",
-    "BadMushroom",
-    "FireBomb",
-    "IceBomb",
-    "FlowerTab",
-    "FlowerJar",
-    "FlowerBox",
-    "YoshiCandy",
-    "FroggieDrink",
-    "MukuCookie",
-    "Elixir",
-    "Megalixir",
-    "SeeYa",
-    "TempleKey",
-    "GoodieBag",
-    "EarlierTimes",
-    "FreshenUp",
-    "RareFrogCoin",
-    "Wallet",
-    "CricketPie",
-    "RockCandy",
-    "CastleKey1",
-    None,
-    "CastleKey2",
-    "BambinoBomb",
-    "SheepAttack",
-    "CarboCookie",
-    "ShinyStone",
-    None,
-    "RoomKey",
-    "ElderKey",
-    "ShedKey",
-    "LambsLure",
-    "FrightBomb",
-    "MysteryEgg",
-    None,
-    None,
-    "LuckyJewel",
-    None,
-    "SopranoCard",
-    "AltoCard",
-    "TenorCard",
-    "Crystalline",
-    "PowerBlast",
-    "WiltShroom",
-    "RottenMush",
-    "MoldyMush",
-    "Seed",
-    "Fertilizer",
-    "WasteBasket",
-    "BigBooFlag",
-    "DryBonesFlag",
-    "GreaperFlag",
-    None,
-    None,
-    "CricketJam",
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Fireworks",
-    None,
-    "BrightCard",
-    "Mushroom2",
-    "StarEgg",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Shoes",
-    "Brooch",
-    "Ring",
-    "Crown",
+ITEMS = ["DummyWeapon",
+"DummyArmor",
+"DummyAccessory",
+"Empty3",
+"Empty4",
+"Hammer",
+"FroggieStick",
+"NokNokShell",
+"PunchGlove",
+"FingerShot",
+"Cymbals",
+"Chomp",
+"Masher",
+"ChompShell",
+"SuperHammer",
+"HandGun",
+"WhompGlove",
+"SlapGlove",
+"TroopaShell",
+"Parasol",
+"HurlyGloves",
+"DoublePunch",
+"RibbitStick",
+"SpikedLink",
+"MegaGlove",
+"WarFan",
+"HandCannon",
+"StickyGlove",
+"UltraHammer",
+"SuperSlap",
+"DrillClaw",
+"StarGun",
+"SonicCymbal",
+"LazyShellWeapon",
+"FryingPan",
+"LuckyHammer",
+"Spare36",
+"Shirt",
+"Pants",
+"ThickShirt",
+"ThickPants",
+"MegaShirt",
+"MegaPants",
+"WorkPants",
+"MegaCape",
+"HappyShirt",
+"HappyPants",
+"HappyCape",
+"HappyShell",
+"PolkaDress",
+"SailorShirt",
+"SailorPants",
+"SailorCape",
+"NauticaDress",
+"CourageShell",
+"FuzzyShirt",
+"FuzzyPants",
+"FuzzyCape",
+"FuzzyDress",
+"FireShirt",
+"FirePants",
+"FireCape",
+"FireShell",
+"FireDress",
+"HeroShirt",
+"PrincePants",
+"StarCape",
+"HealShell",
+"RoyalDress",
+"SuperSuit",
+"LazyShellArmor",
+"Spare71",
+"Spare72",
+"Spare73",
+"ZoomShoes",
+"SafetyBadge",
+"JumpShoes",
+"SafetyRing",
+"Amulet",
+"ScroogeRing",
+"ExpBooster",
+"AttackScarf",
+"RareScarf",
+"BtubRing",
+"AntidotePin",
+"WakeUpPin",
+"FearlessPin",
+"TrueformPin",
+"CoinTrick",
+"GhostMedal",
+"JinxBelt",
+"Feather",
+"TroopaPin",
+"SignalRing",
+"QuartzCharm",
+"Spare95",
+"Mushroom",
+"MidMushroom",
+"MaxMushroom",
+"HoneySyrup",
+"MapleSyrup",
+"RoyalSyrup",
+"PickMeUp",
+"AbleJuice",
+"Bracer",
+"Energizer",
+"YoshiAde",
+"RedEssence",
+"KerokeroCola",
+"YoshiCookie",
+"PureWater",
+"SleepyBomb",
+"BadMushroom",
+"FireBomb",
+"IceBomb",
+"FlowerTab",
+"FlowerJar",
+"FlowerBox",
+"YoshiCandy",
+"FroggieDrink",
+"MukuCookie",
+"Elixir",
+"Megalixir",
+"SeeYa",
+"TempleKey",
+"GoodieBag",
+"EarlierTimes",
+"FreshenUp",
+"RareFrogCoin",
+"Wallet",
+"CricketPie",
+"RockCandy",
+"CastleKey1",
+"DebugBomb",
+"CastleKey2",
+"BambinoBomb",
+"SheepAttack",
+"CarboCookie",
+"ShinyStone",
+"Dummy139",
+"RoomKey",
+"ElderKey",
+"ShedKey",
+"LambsLure",
+"FrightBomb",
+"MysteryEgg",
+"BeetleBox",
+"BeetleBox2",
+"LuckyJewel",
+"Dummy149",
+"SopranoCard",
+"AltoCard",
+"TenorCard",
+"Crystalline",
+"PowerBlast",
+"WiltShroom",
+"RottenMush",
+"MoldyMush",
+"Seed",
+"Fertilizer",
+"WasteBasket",
+"BigBooFlag",
+"DryBonesFlag",
+"GreaperFlag",
+"SecretGame",
+"SCrowBomb",
+"CricketJam",
+"BaneBomb",
+"DoomBomb",
+"FearBomb",
+"SleepBomb",
+"MuteBomb",
+"Fireworks",
+"Bomb",
+"BrightCard",
+"Mushroom2",
+"StarEgg",
+"Dummy177",
+"Dummy178",
+"Dummy179",
+"Dummy180",
+"Dummy181",
+"Dummy182",
+"Dummy183",
+"Dummy184",
+"Dummy185",
+"Dummy186",
+"Dummy187",
+"Dummy188",
+"Dummy189",
+"Dummy190",
+"Dummy191",
+"Dummy192",
+"Dummy193",
+"Dummy194",
+"Dummy195",
+"Dummy196",
+"Dummy197",
+"Dummy198",
+"Dummy199",
+"Dummy200",
+"Dummy201",
+"Dummy202",
+"Dummy203",
+"Dummy204",
+"Dummy205",
+"Dummy206",
+"Dummy207",
+"Dummy208",
+"Dummy209",
+"Dummy210",
+"Dummy211",
+"Dummy212",
+"Dummy213",
+"Dummy214",
+"Dummy215",
+"Dummy216",
+"Dummy217",
+"Dummy218",
+"Dummy219",
+"Dummy220",
+"Dummy221",
+"Dummy222",
+"Dummy223",
+"Dummy224",
+"Dummy225",
+"Dummy226",
+"Dummy227",
+"Dummy228",
+"Dummy229",
+"Dummy230",
+"Dummy231",
+"Dummy232",
+"Dummy233",
+"Dummy234",
+"Dummy235",
+"Dummy236",
+"Dummy237",
+"Dummy238",
+"Dummy239",
+"Dummy240",
+"Dummy241",
+"Dummy242",
+"Dummy243",
+"Dummy244",
+"Dummy245",
+"Dummy246",
+"Dummy247",
+"Dummy248",
+"Dummy249",
+"Dummy250",
+"Dummy251",
+"Dummy252",
+"Dummy253",
+"Dummy254",
+"Dummy255",
 ]
-
 
 def get_item_class(input):
     if isinstance(input, int):
@@ -4881,6 +4906,7 @@ def convert_event_script_command(cmd, valid_identifiers):
             args["prefix"] = f"0x{cmdargs[2]:02X}"
         elif cmd["command"] == "non_embedded_action_queue":
             cls = "NonEmbeddedActionQueue"
+            args["required_offset"] = f"0x{cmd["internal_offset"]:02X}"
         args["subscript"] = contents
     elif cmd["command"] in ["set_action_script", "set_temp_action_script"]:
         if cmd["command"] == "set_action_script":
@@ -5347,7 +5373,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         else:
             args["value"] = str(cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
-    elif cmd["command"] == "jmp_if_var_not_equals_const":
+    elif cmd["command"] == "jmp_if_var_not_equals_const" or cmd["command"] == "jmp_if_var_not_equals_short":
         cls = "JmpIfVarNotEqualsConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
@@ -5880,23 +5906,23 @@ def convert_action_script_command(cmd, valid_identifiers):
         cmdargs = cmd["args"]
 
     if cmd["command"] == "visibility_on":
-        cls = "VisibilityOn"
+        cls = "A_VisibilityOn"
     elif cmd["command"] == "visibility_off":
-        cls = "VisibilityOff"
+        cls = "A_VisibilityOff"
     elif cmd["command"] == "sequence_playback_on":
-        cls = "SequencePlaybackOn"
+        cls = "A_SequencePlaybackOn"
     elif cmd["command"] == "sequence_playback_off":
-        cls = "SequencePlaybackOff"
+        cls = "A_SequencePlaybackOff"
     elif cmd["command"] == "sequence_looping_on":
-        cls = "SequenceLoopingOn"
+        cls = "A_SequenceLoopingOn"
     elif cmd["command"] == "sequence_looping_off":
-        cls = "SequenceLoopingOff"
+        cls = "A_SequenceLoopingOff"
     elif cmd["command"] == "fixed_f_coord_on":
-        cls = "FixedFCoordOn"
+        cls = "A_FixedFCoordOn"
     elif cmd["command"] == "fixed_f_coord_off":
-        cls = "FixedFCoordOff"
+        cls = "A_FixedFCoordOff"
     elif cmd["command"] == "set_sprite_sequence":
-        cls = "SetSpriteSequence"
+        cls = "A_SetSpriteSequence"
         args["index"] = str(cmdargs[0])
         if cmdargs[1] > 0:
             args["sprite_offset"] = str(cmdargs[1])
@@ -5911,7 +5937,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         if 15 in flags:
             args["mirror_sprite"] = "True"
     elif cmd["command"] == "reset_properties":
-        cls = "ResetProperties"
+        cls = "A_ResetProperties"
     elif cmd["command"] in [
         "overwrite_solidity",
         "set_solidity_bits",
@@ -5919,13 +5945,13 @@ def convert_action_script_command(cmd, valid_identifiers):
         "set_movement_bits",
     ]:
         if cmd["command"] == "overwrite_solidity":
-            cls = "OverwriteSolidity"
+            cls = "A_OverwriteSolidity"
         elif cmd["command"] == "set_solidity_bits":
-            cls = "SetSolidityBits"
+            cls = "A_SetSolidityBits"
         elif cmd["command"] == "clear_solidity_bits":
-            cls = "ClearSolidityBits"
+            cls = "A_ClearSolidityBits"
         elif cmd["command"] == "set_movement_bits":
-            cls = "SetMovementsBits"
+            cls = "A_SetMovementsBits"
         flags = cmdargs[0]
         if 0 in flags:
             args["bit_0"] = "True"
@@ -5944,11 +5970,11 @@ def convert_action_script_command(cmd, valid_identifiers):
         if 7 in flags:
             args["bit_7"] = "True"
     elif cmd["command"] == "set_palette_row":
-        cls = "SetPaletteRow"
+        cls = "A_SetPaletteRow"
         include_argnames = False
         args["row"] = str(cmdargs[0])
     elif cmd["command"] == "inc_palette_row_by":
-        cls = "IncPaletteRowBy"
+        cls = "A_IncPaletteRowBy"
         include_argnames = False
         args["rows"] = str(cmdargs[0] & 0x0F)
     elif cmd["command"] == "set_animation_speed":
@@ -5972,20 +5998,20 @@ def convert_action_script_command(cmd, valid_identifiers):
             raise Exception("illegal speed")
         flags = cmdargs[1]
         if 0 in flags and 1 not in flags:
-            cls = "SetWalkingSpeed"
+            cls = "A_SetWalkingSpeed"
         elif 1 in flags and 0 not in flags:
-            cls = "SetSequenceSpeed"
+            cls = "A_SetSequenceSpeed"
         elif 0 in flags and 1 in flags:
-            cls = "SetAllSpeeds"
+            cls = "A_SetAllSpeeds"
         else:
             raise Exception("%s %r speed has no type" % (cmd["identifier"], flags))
     elif cmd["command"] == "set_object_memory_bits":
-        cls = "SetObjectMemoryBits"
+        cls = "A_SetObjectMemoryBits"
         args["arg_1"] = f"0x{cmdargs[0]:02X}"
         bits = cmdargs[1]
         args["bits"] = "%r" % bits
     elif cmd["command"] == "set_vram_priority":
-        cls = "SetVRAMPriority"
+        cls = "A_SetVRAMPriority"
         priority = cmdargs[0]
         include_argnames = False
         if priority == 0:
@@ -5997,198 +6023,198 @@ def convert_action_script_command(cmd, valid_identifiers):
         elif priority == 3:
             args["priority"] = "PRIORITY_3"
     elif cmd["command"] == "bpl_26_27_28":
-        cls = "BPL262728"
+        cls = "A_BPL262728"
     elif cmd["command"] == "bmi_26_27_28":
-        cls = "BMI262728"
+        cls = "A_BMI262728"
     elif cmd["command"] == "embedded_animation_routine":
-        cls = "EmbeddedAnimationRoutine"
+        cls = "A_EmbeddedAnimationRoutine"
         include_argnames = False
         args["args"] = "%r" % bytearray(cmdargs)
     elif cmd["command"] == "bpl_26_27":
-        cls = "BPL2627"
+        cls = "A_BPL2627"
     elif (
         cmd["command"] == "jmp_if_object_within_range"
         or cmd["command"] == "jmp_if_object_within_range_same_z"
     ):
         if cmd["command"] == "jmp_if_object_within_range":
-            cls = "JmpIfObjectWithinRange"
+            cls = "A_JmpIfObjectWithinRange"
         elif cmd["command"] == "jmp_if_object_within_range_same_z":
-            cls = "JmpIfObjectWithinRangeSameZ"
+            cls = "A_JmpIfObjectWithinRangeSameZ"
         args["object"] = AREA_OBJECTS[cmdargs[0]]
         args["usually"] = str(cmdargs[1])
         args["tiles"] = str(cmdargs[2])
         args["destinations"] = '["%s"]' % cmdargs[3]
     elif cmd["command"] == "unknown_jmp_3C":
-        cls = "UnknownJmp3C"
+        cls = "A_UnknownJmp3C"
         include_argnames = False
         args["arg1"] = f"0x{cmdargs[0]:02X}"
         args["arg2"] = f"0x{cmdargs[1]:02X}"
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "jmp_if_mario_in_air":
-        cls = "JmpIfMarioInAir"
+        cls = "A_JmpIfMarioInAir"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "create_packet_at_npc_coords":
-        cls = "CreatePacketAtObjectCoords"
+        cls = "A_CreatePacketAtObjectCoords"
         args["packet"] = get_packet_name(cmdargs[0])
         args["object"] = AREA_OBJECTS[cmdargs[1]]
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "create_packet_at_7010":
-        cls = "CreatePacketAt7010"
+        cls = "A_CreatePacketAt7010"
         args["packet"] = get_packet_name(cmdargs[0])
         args["destinations"] = '["%s"]' % cmdargs[1]
     elif cmd["command"] == "walk_1_step_east":
-        cls = "Walk1StepEast"
+        cls = "A_Walk1StepEast"
     elif cmd["command"] == "walk_1_step_southeast":
-        cls = "Walk1StepSoutheast"
+        cls = "A_Walk1StepSoutheast"
     elif cmd["command"] == "walk_1_step_south":
-        cls = "Walk1StepSouth"
+        cls = "A_Walk1StepSouth"
     elif cmd["command"] == "walk_1_step_southwest":
-        cls = "Walk1StepSouthwest"
+        cls = "A_Walk1StepSouthwest"
     elif cmd["command"] == "walk_1_step_west":
-        cls = "Walk1StepWest"
+        cls = "A_Walk1StepWest"
     elif cmd["command"] == "walk_1_step_northwest":
-        cls = "Walk1StepNorthwest"
+        cls = "A_Walk1StepNorthwest"
     elif cmd["command"] == "walk_1_step_north":
-        cls = "Walk1StepNorth"
+        cls = "A_Walk1StepNorth"
     elif cmd["command"] == "walk_1_step_northeast":
-        cls = "Walk1StepNortheast"
+        cls = "A_Walk1StepNortheast"
     elif cmd["command"] == "walk_1_step_f_direction":
-        cls = "Walk1StepFDirection"
+        cls = "A_Walk1StepFDirection"
     elif cmd["command"] == "add_z_coord_1_step":
-        cls = "AddZCoord1Step"
+        cls = "A_AddZCoord1Step"
     elif cmd["command"] == "dec_z_coord_1_step":
-        cls = "DecZCoord1Step"
+        cls = "A_DecZCoord1Step"
     elif cmd["command"] == "shift_east_steps":
-        cls = "WalkEastSteps"
+        cls = "A_WalkEastSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southeast_steps":
-        cls = "WalkSoutheastSteps"
+        cls = "A_WalkSoutheastSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_south_steps":
-        cls = "ShiftSouthSteps"
+        cls = "A_ShiftSouthSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southwest_steps":
-        cls = "WalkSouthwestSteps"
+        cls = "A_WalkSouthwestSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_west_steps":
-        cls = "WalkWestSteps"
+        cls = "A_WalkWestSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northwest_steps":
-        cls = "WalkNorthwestSteps"
+        cls = "A_WalkNorthwestSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_north_steps":
-        cls = "ShiftNorthSteps"
+        cls = "A_ShiftNorthSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northeast_steps":
-        cls = "WalkNortheastSteps"
+        cls = "A_WalkNortheastSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_f_direction_steps":
-        cls = "WalkFDirectionSteps"
+        cls = "A_WalkFDirectionSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_z_20_steps":
-        cls = "ShiftZ20Steps"
+        cls = "A_ShiftZ20Steps"
     elif cmd["command"] == "shift_z_up_steps":
-        cls = "ShiftZUpSteps"
+        cls = "A_ShiftZUpSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_z_down_steps":
-        cls = "ShiftZDownSteps"
+        cls = "A_ShiftZDownSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_z_up_20_steps":
-        cls = "ShiftZUp20Steps"
+        cls = "A_ShiftZUp20Steps"
     elif cmd["command"] == "shift_z_down_20_steps":
-        cls = "ShiftZDown20Steps"
+        cls = "A_ShiftZDown20Steps"
     elif cmd["command"] == "shift_east_pixels":
-        cls = "WalkEastPixels"
+        cls = "A_WalkEastPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southeast_pixels":
-        cls = "WalkSoutheastPixels"
+        cls = "A_WalkSoutheastPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_south_pixels":
-        cls = "ShiftSouthPixels"
+        cls = "A_ShiftSouthPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southwest_pixels":
-        cls = "WalkSouthwestPixels"
+        cls = "A_WalkSouthwestPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_west_pixels":
-        cls = "WalkWestPixels"
+        cls = "A_WalkWestPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northwest_pixels":
-        cls = "WalkNorthwestPixels"
+        cls = "A_WalkNorthwestPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_north_pixels":
-        cls = "ShiftNorthPixels"
+        cls = "A_ShiftNorthPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northeast_pixels":
-        cls = "WalkNortheastPixels"
+        cls = "A_WalkNortheastPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_f_direction_pixels":
-        cls = "WalkFDirectionPixels"
+        cls = "A_WalkFDirectionPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "walk_f_direction_16_pixels":
-        cls = "WalkFDirection16Pixels"
+        cls = "A_WalkFDirection16Pixels"
     elif cmd["command"] == "shift_z_up_pixels":
-        cls = "ShiftZUpPixels"
+        cls = "A_ShiftZUpPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_z_down_pixels":
-        cls = "ShiftZDownPixels"
+        cls = "A_ShiftZDownPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "face_east":
-        cls = "FaceEast"
+        cls = "A_FaceEast"
     elif cmd["command"] == "face_east_7C":
-        cls = "FaceEast7C"
+        cls = "A_FaceEast7C"
     elif cmd["command"] == "face_southeast":
-        cls = "FaceSoutheast"
+        cls = "A_FaceSoutheast"
     elif cmd["command"] == "face_south":
-        cls = "FaceSouth"
+        cls = "A_FaceSouth"
     elif cmd["command"] == "face_southwest":
-        cls = "FaceSouthwest"
+        cls = "A_FaceSouthwest"
     elif cmd["command"] == "face_southwest_7D":
-        cls = "FaceSouthwest7D"
+        cls = "A_FaceSouthwest7D"
     elif cmd["command"] == "face_west":
-        cls = "FaceWest"
+        cls = "A_FaceWest"
     elif cmd["command"] == "face_northwest":
-        cls = "FaceNorthwest"
+        cls = "A_FaceNorthwest"
     elif cmd["command"] == "face_north":
-        cls = "FaceNorth"
+        cls = "A_FaceNorth"
     elif cmd["command"] == "face_northeast":
-        cls = "FaceNortheast"
+        cls = "A_FaceNortheast"
     elif cmd["command"] == "face_mario":
-        cls = "FaceMario"
+        cls = "A_FaceMario"
     elif cmd["command"] == "turn_clockwise_45_degrees":
-        cls = "TurnClockwise45Degrees"
+        cls = "A_TurnClockwise45Degrees"
     elif cmd["command"] == "turn_random_direction":
-        cls = "TurnRandomDirection"
+        cls = "A_TurnRandomDirection"
     elif cmd["command"] == "turn_clockwise_45_degrees_n_times":
-        cls = "TurnClockwise45DegreesNTimes"
+        cls = "A_TurnClockwise45DegreesNTimes"
         include_argnames = False
         args["count"] = str(cmdargs[0])
     elif (
         cmd["command"] == "jump_to_height_silent" or cmd["command"] == "jump_to_height"
     ):
-        cls = "JumpToHeight"
+        cls = "A_JumpToHeight"
         args["height"] = str(cmdargs[0])
         if cmd["command"] == "jump_to_height_silent":
             args["silent"] = "True"
@@ -6202,39 +6228,39 @@ def convert_action_script_command(cmd, valid_identifiers):
         "shift_xy_pixels",
     ]:
         if cmd["command"] == "walk_to_xy_coords":
-            cls = "WalkToXYCoords"
+            cls = "A_WalkToXYCoords"
         elif cmd["command"] == "walk_xy_steps":
-            cls = "WalkXYSteps"
+            cls = "A_WalkXYSteps"
         elif cmd["command"] == "shift_to_xy_coords":
-            cls = "ShiftToXYCoords"
+            cls = "A_ShiftToXYCoords"
         elif cmd["command"] == "shift_xy_steps":
-            cls = "ShiftXYSteps"
+            cls = "A_ShiftXYSteps"
         elif cmd["command"] == "shift_xy_pixels":
-            cls = "ShiftXYPixels"
+            cls = "A_ShiftXYPixels"
         args["x"] = str(cmdargs[0])
         args["y"] = str(cmdargs[1])
     elif cmd["command"] == "maximize_sequence_speed":
-        cls = "MaximizeSequenceSpeed"
+        cls = "A_MaximizeSequenceSpeed"
     elif cmd["command"] == "maximize_sequence_speed_86":
-        cls = "MaximizeSequenceSpeed86"
+        cls = "A_MaximizeSequenceSpeed86"
     elif cmd["command"] == "transfer_to_object_xy":
-        cls = "TransferToObjectXY"
+        cls = "A_TransferToObjectXY"
         include_argnames = False
         args["object"] = AREA_OBJECTS[cmdargs[0]]
     elif cmd["command"] == "run_away_shift":
-        cls = "RunAwayShift"
+        cls = "A_RunAwayShift"
     elif cmd["command"] == "transfer_to_7016_7018":
-        cls = "TransferTo70167018"
+        cls = "A_TransferTo70167018"
     elif cmd["command"] == "walk_to_7016_7018":
-        cls = "WalkTo70167018"
+        cls = "A_WalkTo70167018"
     elif (
         cmd["command"] == "bounce_to_xy_with_height"
         or cmd["command"] == "bounce_xy_steps_with_height"
     ):
         if cmd["command"] == "bounce_to_xy_with_height":
-            cls = "BounceToXYWithHeight"
+            cls = "A_BounceToXYWithHeight"
         elif cmd["command"] == "bounce_xy_steps_with_height":
-            cls = "BounceXYStepsWithHeight"
+            cls = "A_BounceXYStepsWithHeight"
         args["x"] = str(cmdargs[0])
         args["y"] = str(cmdargs[1])
         args["height"] = str(cmdargs[2])
@@ -6244,51 +6270,51 @@ def convert_action_script_command(cmd, valid_identifiers):
         "transfer_xyzf_pixels",
     ]:
         if cmd["command"] == "transfer_to_xyzf":
-            cls = "TransferToXYZF"
+            cls = "A_TransferToXYZF"
         elif cmd["command"] == "transfer_xyzf_steps":
-            cls = "TransferXYZFSteps"
+            cls = "A_TransferXYZFSteps"
         elif cmd["command"] == "transfer_xyzf_pixels":
-            cls = "TransferXYZFPixels"
+            cls = "A_TransferXYZFPixels"
         args["x"] = str(cmdargs[0])
         args["y"] = str(cmdargs[1])
         args["z"] = str(cmdargs[2])
         args["direction"] = DIRECTIONS[cmdargs[3]]
     elif cmd["command"] == "transfer_to_object_xyz":
-        cls = "TransferToObjectXYZ"
+        cls = "A_TransferToObjectXYZ"
         include_argnames = False
         args["object"] = AREA_OBJECTS[cmdargs[0]]
     elif cmd["command"] == "walk_to_7016_7018_701A":
-        cls = "WalkTo70167018701A"
+        cls = "A_WalkTo70167018701A"
     elif cmd["command"] == "transfer_to_7016_7018_701A":
-        cls = "TransferTo70167018701A"
+        cls = "A_TransferTo70167018701A"
     elif cmd["command"] == "stop_sound":
-        cls = "StopSound"
+        cls = "A_StopSound"
     elif cmd["command"] == "play_sound":
-        cls = "PlaySound"
+        cls = "A_PlaySound"
         args["sound"] = get_sound_name(cmdargs[0])
         args["channel"] = str(cmdargs[1])
     elif cmd["command"] == "play_sound_balance":
-        cls = "PlaySoundBalance"
+        cls = "A_PlaySoundBalance"
         args["sound"] = get_sound_name(cmdargs[0])
         args["balance"] = str(cmdargs[1])
     elif cmd["command"] == "fade_out_sound_to_volume":
-        cls = "FadeOutSoundToVolume"
+        cls = "A_FadeOutSoundToVolume"
         args["duration"] = str(cmdargs[0])
         args["volume"] = str(cmdargs[1])
     elif cmd["command"] == "set_bit":
-        cls = "SetBit"
+        cls = "A_SetBit"
         include_argnames = False
         args["flag"] = get_flag(cmdargs[0], cmdargs[1])
     elif cmd["command"] == "set_mem_704x_at_700C_bit":
-        cls = "SetMem704XAt700CBit"
+        cls = "A_SetMem704XAt700CBit"
     elif cmd["command"] == "clear_bit":
-        cls = "ClearBit"
+        cls = "A_ClearBit"
         include_argnames = False
         args["flag"] = get_flag(cmdargs[0], cmdargs[1])
     elif cmd["command"] == "clear_mem_704x_at_700C_bit":
-        cls = "ClearMem704XAt700CBit"
+        cls = "A_ClearMem704XAt700CBit"
     elif cmd["command"] == "set_var_to_const":
-        cls = "SetVarToConst"
+        cls = "A_SetVarToConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         if cmdargs[0] == 0x70A7:
@@ -6298,50 +6324,50 @@ def convert_action_script_command(cmd, valid_identifiers):
                 args["value"] = str(cmdargs[1])
         else:
             args["value"] = str(cmdargs[1])
-    elif cmd["command"] == "add_const_to_var":
-        cls = "AddConstToVar"
+    elif cmd["command"] == "add_const_to_var" or cmd["command"] == "add":
+        cls = "A_AddConstToVar"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         args["value"] = str(cmdargs[1])
     elif cmd["command"] == "inc" or cmd["command"] == "inc_short":
-        cls = "Inc"
+        cls = "A_Inc"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "dec":
-        cls = "Dec"
+        cls = "A_Dec"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "copy_var_to_var":
-        cls = "CopyVarToVar"
+        cls = "A_CopyVarToVar"
         args["from_var"] = get_var(cmdargs[0])
         args["to_var"] = get_var(cmdargs[1])
     elif cmd["command"] == "set_var_to_random":
-        cls = "SetVarToRandom"
+        cls = "A_SetVarToRandom"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         args["value"] = str(cmdargs[1])
-    elif cmd["command"] == "add_var_to_700C":
-        cls = "AddVarTo700C"
+    elif cmd["command"] == "add_var_to_700C" or cmd["command"] == "add_short_mem_to_700C":
+        cls = "A_AddVarTo700C"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif (
         cmd["command"] == "dec_var_from_700C"
         or cmd["command"] == "dec_short_mem_from_700C"
     ):
-        cls = "DecVarFrom700C"
+        cls = "A_DecVarFrom700C"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "swap_vars":
-        cls = "SwapVars"
+        cls = "A_SwapVars"
         include_argnames = False
         args["from_var"] = get_var(cmdargs[0])
         args["to_var"] = get_var(cmdargs[1])
     elif cmd["command"] == "move_7010_7015_to_7016_701B":
-        cls = "Move70107015To7016701B"
+        cls = "A_Move70107015To7016701B"
     elif cmd["command"] == "move_7016_701B_to_7010_7015":
-        cls = "Move7016701BTo70107015"
-    elif cmd["command"] == "compare_var_to_const":
-        cls = "CompareVarToConst"
+        cls = "A_Move7016701BTo70107015"
+    elif cmd["command"] == "compare_var_to_const" or cmd["command"] == "mem_compare" or cmd["command"] == "mem_compare_val":
+        cls = "A_CompareVarToConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         if cmdargs[0] == 0x70A7:
@@ -6352,13 +6378,13 @@ def convert_action_script_command(cmd, valid_identifiers):
         else:
             args["value"] = str(cmdargs[1])
     elif cmd["command"] == "compare_700C_to_var":
-        cls = "Compare700CToVar"
+        cls = "A_Compare700CToVar"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "set_700C_to_current_level":
-        cls = "Set700CToCurrentLevel"
+        cls = "A_Set700CToCurrentLevel"
     elif cmd["command"] == "set_700C_to_object_coord":
-        cls = "Set700CToObjectCoord"
+        cls = "A_Set700CToObjectCoord"
         args["object"] = AREA_OBJECTS[cmdargs[0]]
         coord = cmdargs[1]
         if coord == 0:
@@ -6376,55 +6402,55 @@ def convert_action_script_command(cmd, valid_identifiers):
         if len(cmdargs[2]) > 0:
             args["bit_7"] = "True"
     elif cmd["command"] == "set_700C_to_pressed_button":
-        cls = "Set700CToPressedButton"
+        cls = "A_Set700CToPressedButton"
     elif cmd["command"] == "set_700C_to_tapped_button":
-        cls = "Set700CToTappedButton"
+        cls = "A_Set700CToTappedButton"
     elif cmd["command"] == "jmp_to_script":
-        cls = "JmpToScript"
+        cls = "A_JmpToScript"
         include_argnames = False
         args["destination"] = get_action_name(cmdargs[0])
     elif cmd["command"] == "jmp":
-        cls = "Jmp"
+        cls = "A_Jmp"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_to_subroutine":
-        cls = "JmpToSubroutine"
+        cls = "A_JmpToSubroutine"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "start_loop_n_times":
-        cls = "StartLoopNTimes"
+        cls = "A_StartLoopNTimes"
         include_argnames = False
         args["count"] = str(cmdargs[0])
     elif cmd["command"] == "start_loop_n_frames":
-        cls = "StartLoopNFrames"
+        cls = "A_StartLoopNFrames"
         include_argnames = False
         args["length"] = str(cmdargs[0])
     elif cmd["command"] == "load_mem":
-        cls = "LoadMemory"
+        cls = "A_LoadMemory"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "end_loop":
-        cls = "EndLoop"
+        cls = "A_EndLoop"
     elif cmd["command"] == "jmp_if_bit_clear":
-        cls = "JmpIfBitClear"
+        cls = "A_JmpIfBitClear"
         include_argnames = False
         args["bit"] = get_flag(cmdargs[0], cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "jmp_if_bit_set":
-        cls = "JmpIfBitSet"
+        cls = "A_JmpIfBitSet"
         include_argnames = False
         args["bit"] = get_flag(cmdargs[0], cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "jmp_if_mem_704x_at_700C_bit_set":
-        cls = "JmpIfMem704XAt700CBitSet"
+        cls = "A_JmpIfMem704XAt700CBitSet"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_mem_704x_at_700C_bit_clear":
-        cls = "JmpIfMem704XAt700CBitClear"
+        cls = "A_JmpIfMem704XAt700CBitClear"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_var_equals_const":
-        cls = "JmpIfVarEqualsConst"
+        cls = "A_JmpIfVarEqualsConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         if cmdargs[0] == 0x70A7:
@@ -6436,7 +6462,7 @@ def convert_action_script_command(cmd, valid_identifiers):
             args["value"] = str(cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "jmp_if_var_not_equals_const":
-        cls = "JmpIfVarNotEqualsConst"
+        cls = "A_JmpIfVarNotEqualsConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         if cmdargs[0] == 0x70A7:
@@ -6449,45 +6475,45 @@ def convert_action_script_command(cmd, valid_identifiers):
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] in ["jmp_if_700C_all_bits_clear", "jmp_if_700C_any_bits_set"]:
         if cmd["command"] == "jmp_if_700C_all_bits_clear":
-            cls = "JmpIf700CAllBitsClear"
+            cls = "A_JmpIf700CAllBitsClear"
         elif cmd["command"] == "jmp_if_700C_any_bits_set":
-            cls = "JmpIf700CAnyBitsSet"
+            cls = "A_JmpIf700CAnyBitsSet"
         bits = cmdargs[0]
         args["destinations"] = '["%s"]' % cmdargs[1]
     elif cmd["command"] == "jmp_if_random_above_128":
-        cls = "JmpIfRandom1of2"
+        cls = "A_JmpIfRandom1of2"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_random_above_66":
-        cls = "JmpIfRandom2of3"
+        cls = "A_JmpIfRandom2of3"
         include_argnames = False
         args["destinations"] = "%r" % cmdargs
     elif cmd["command"] == "jmp_if_loaded_memory_is_0":
-        cls = "JmpIfLoadedMemoryIs0"
+        cls = "A_JmpIfLoadedMemoryIs0"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_loaded_memory_is_not_0":
-        cls = "JmpIfLoadedMemoryIsNot0"
+        cls = "A_JmpIfLoadedMemoryIsNot0"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_comparison_result_is_greater_or_equal":
-        cls = "JmpIfComparisonResultIsGreaterOrEqual"
+        cls = "A_JmpIfComparisonResultIsGreaterOrEqual"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_comparison_result_is_lesser":
-        cls = "JmpIfComparisonResultIsLesser"
+        cls = "A_JmpIfComparisonResultIsLesser"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_loaded_memory_is_below_0":
-        cls = "JmpIfLoadedMemoryIsBelow0"
+        cls = "A_JmpIfLoadedMemoryIsBelow0"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "jmp_if_loaded_memory_is_above_or_equal_0":
-        cls = "JmpIfLoadedMemoryIsAboveOrEqual0"
+        cls = "A_JmpIfLoadedMemoryIsAboveOrEqual0"
         include_argnames = False
         args["destinations"] = '["%s"]' % cmdargs[0]
     elif cmd["command"] == "pause":
-        cls = "Pause"
+        cls = "A_Pause"
         include_argnames = False
         args["length"] = str(cmdargs[0])
     elif cmd["command"] in [
@@ -6497,59 +6523,59 @@ def convert_action_script_command(cmd, valid_identifiers):
         "disable_trigger_in_level",
     ]:
         if cmd["command"] == "summon_to_level":
-            cls = "SummonObjectToSpecificLevel"
+            cls = "A_SummonObjectToSpecificLevel"
         elif cmd["command"] == "remove_from_level":
-            cls = "RemoveObjectFromSpecificLevel"
+            cls = "A_RemoveObjectFromSpecificLevel"
         elif cmd["command"] == "enable_trigger_in_level":
-            cls = "EnableObjectTriggerInSpecificLevel"
+            cls = "A_EnableObjectTriggerInSpecificLevel"
         elif cmd["command"] == "disable_trigger_in_level":
-            cls = "DisableObjectTriggerInSpecificLevel"
+            cls = "A_DisableObjectTriggerInSpecificLevel"
         include_argnames = False
         args["object"] = AREA_OBJECTS[cmdargs[0]]
         args["level_id"] = get_room_name(cmdargs[1])
     elif cmd["command"] == "summon_object_at_70A8_to_current_level":
-        cls = "SummonObjectAt70A8ToCurrentLevel"
+        cls = "A_SummonObjectAt70A8ToCurrentLevel"
     elif cmd["command"] == "remove_object_at_70A8_from_current_level":
-        cls = "RemoveObjectAt70A8FromCurrentLevel"
+        cls = "A_RemoveObjectAt70A8FromCurrentLevel"
     elif cmd["command"] == "enable_trigger_at_70A8":
-        cls = "EnableTriggerOfObjectAt70A8InCurrentLevel"
+        cls = "A_EnableTriggerOfObjectAt70A8InCurrentLevel"
     elif cmd["command"] == "disable_trigger_at_70A8":
-        cls = "DisableObjectTriggerInSpecificLevel"
+        cls = "A_DisableObjectTriggerInSpecificLevel"
     elif cmd["command"] in ["jmp_if_object_in_level", "jmp_if_object_not_in_level"]:
         if cmd["command"] == "jmp_if_object_in_level":
-            cls = "JmpIfObjectInSpecificLevel"
+            cls = "A_JmpIfObjectInSpecificLevel"
         elif cmd["command"] == "jmp_if_object_not_in_level":
-            cls = "JmpIfObjectNotInSpecificLevel"
+            cls = "A_JmpIfObjectNotInSpecificLevel"
         include_argnames = False
         args["object"] = AREA_OBJECTS[cmdargs[0]]
         args["level_id"] = get_room_name(cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "jmp_to_start_of_this_script":
-        cls = "JmpToStartOfThisScript"
+        cls = "A_JmpToStartOfThisScript"
     elif cmd["command"] == "jmp_to_start_of_this_script_FA":
-        cls = "JmpToStartOfThisScriptFA"
+        cls = "A_JmpToStartOfThisScriptFA"
     elif cmd["command"] == "ret":
-        cls = "Return"
+        cls = "A_Return"
     elif cmd["command"] == "end_all":
-        cls = "EndAll"
+        cls = "A_EndAll"
     elif cmd["command"] == "shadow_on":
-        cls = "ShadowOn"
+        cls = "A_ShadowOn"
     elif cmd["command"] == "shadow_off":
-        cls = "ShadowOff"
+        cls = "A_ShadowOff"
     elif cmd["command"] == "floating_on":
-        cls = "FloatingOn"
+        cls = "A_FloatingOn"
     elif cmd["command"] == "floating_off":
-        cls = "FloatingOff"
+        cls = "A_FloatingOff"
     elif cmd["command"] in ["object_memory_set_bit", "object_memory_clear_bit"]:
         if cmd["command"] == "object_memory_set_bit":
-            cls = "ObjectMemorySetBit"
+            cls = "A_ObjectMemorySetBit"
         elif cmd["command"] == "object_memory_clear_bit":
-            cls = "ObjectMemoryClearBit"
+            cls = "A_ObjectMemoryClearBit"
         args["arg_1"] = f"0x{cmdargs[0]:02X}"
         bits = cmdargs[1]
         args["bits"] = "%r" % bits
     elif cmd["command"] == "object_memory_modify_bits":
-        cls = "ObjectMemoryModifyBits"
+        cls = "A_ObjectMemoryModifyBits"
         args["arg_1"] = f"0x{cmdargs[0]:02X}"
         set_flags = cmdargs[1]
         if len(set_flags) > 0:
@@ -6558,16 +6584,16 @@ def convert_action_script_command(cmd, valid_identifiers):
         if len(clear_bits) > 0:
             args["clear_bits"] = "%r" % clear_bits
     elif cmd["command"] == "set_priority":
-        cls = "SetPriority"
+        cls = "A_SetPriority"
         include_argnames = False
         args["priority"] = str(cmdargs[0])
     elif cmd["command"] == "jmp_if_object_in_air":
-        cls = "JmpIfObjectInAir"
+        cls = "A_JmpIfObjectInAir"
         include_argnames = False
         args["object"] = AREA_OBJECTS[cmdargs[0]]
         args["destinations"] = '["%s"]' % cmdargs[1]
     elif cmd["command"] == "create_packet_at_7010_with_event":
-        cls = "CreatePacketAt7010WithEvent"
+        cls = "A_CreatePacketAt7010WithEvent"
         args["packet"] = get_packet_name(cmdargs[0])
         args["event_id"] = get_event_name(cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
@@ -6577,29 +6603,29 @@ def convert_action_script_command(cmd, valid_identifiers):
         "mem_700C_and_const",
     ]:
         if cmd["command"] == "mem_700C_and_const":
-            cls = "Mem700CAndConst"
+            cls = "A_Mem700CAndConst"
         elif cmd["command"] == "mem_700C_or_const":
-            cls = "Mem700COrConst"
+            cls = "A_Mem700COrConst"
         elif cmd["command"] == "mem_700C_xor_const":
-            cls = "Mem700CXorConst"
+            cls = "A_Mem700CXorConst"
         include_argnames = False
         args["value"] = f"0x{cmdargs[0]:04X}"
     elif cmd["command"] in ["mem_700C_or_var", "mem_700C_and_var"]:
         if cmd["command"] == "mem_700C_and_var":
-            cls = "Mem700CAndVar"
+            cls = "A_Mem700CAndVar"
         elif cmd["command"] == "mem_700C_or_var":
-            cls = "Mem700COrVar"
+            cls = "A_Mem700COrVar"
         elif cmd["command"] == "mem_700C_xor_var":
-            cls = "Mem700CXorVar"
+            cls = "A_Mem700CXorVar"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "mem_700C_shift_left":
-        cls = "VarShiftLeft"
+        cls = "A_VarShiftLeft"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         args["shift"] = str(cmdargs[1])
     elif cmd["command"] == "db":
-        cls = "Db"
+        cls = "A_Db"
         include_argnames = False
         args["args"] = "%r" % bytearray(cmdargs)
     else:
@@ -6638,7 +6664,21 @@ def convert_script(script, valid_identifiers, converter):
 
 def produce_action_script(index, script, valid_identifiers):
     output = "#%s" % get_action_name(index)
-    output += "\n\nfrom randomizer.scripts.action.script_imports import *"
+    output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.ids import *"
     output += "\n\nscript = ActionScript([\n\t"
 
     contents = convert_script(script, valid_identifiers, convert_action_script_command)
@@ -6651,7 +6691,22 @@ def produce_action_script(index, script, valid_identifiers):
 
 def produce_event_script(index, script, valid_identifiers):
     output = "# %s" % get_event_name(index)
-    output += "\n\nfrom randomizer.scripts.event.script_imports import *"
+    output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.ids import *"
     output += "\n\nscript = EventScript([\n\t"
 
     contents = convert_script(script, valid_identifiers, convert_event_script_command)
@@ -6663,19 +6718,33 @@ def produce_event_script(index, script, valid_identifiers):
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
+
     def handle(self, *args, **options):
         ajt = []
         ejt = []
 
+        disassembler = EventDisassemblerCommand()
+        e_scripts = disassembler.handle(rom=options["rom"])
+        disassembler2 = AnimationDisassemblerCommand()
+        a_scripts = disassembler2.handle(rom=options["rom"])
+
+        output_path = "./src/disassembler_output/overworld_scripts"
+        event_path = f"{output_path}/event/scripts"
+        action_path = f"{output_path}/animation/scripts"
+        shutil.rmtree(output_path, ignore_errors=True)
+
+        os.makedirs(event_path, exist_ok=True)
+        os.makedirs(action_path, exist_ok=True)
+
         for i, script_dict in enumerate(a_scripts):
-            # print(get_action_name(i))
             for cmd in script_dict:
                 if "args" in cmd:
                     ajt.extend([a for a in cmd["args"] if isinstance(a, str)])
             actions_jumped_to.extend(list(set(ajt)))
 
         for i, script_dict in enumerate(e_scripts):
-            # print(get_event_name(i))
             for cmd in script_dict:
                 if "args" in cmd:
                     ejt.extend([a for a in cmd["args"] if isinstance(a, str)])
@@ -6686,15 +6755,52 @@ class Command(BaseCommand):
             events_jumped_to.extend(list(set(ejt)))
 
         for i, script in enumerate(a_scripts):
-            print(get_action_name(i))
             output = produce_action_script(i, script, actions_jumped_to)
-            file = open("randomizer/scripts/action/scripts/script_%i.py" % (i), "w")
+            file = open(f"{action_path}/script_{i}.py", "w")
             writeline(file, output)
             file.close()
 
+        open(f"{output_path}/animation/__init__.py", "w")
+        open(f"{action_path}/__init__.py", "w")
+        file = open(f"{output_path}/animation/actionqueues.py", "w")
+        output = "from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import ActionScriptBank"
+        for i, script in enumerate(a_scripts):
+            output += f"\nfrom .animation.scripts.script{i} import script as script_{i}"
+        output += "\n\nactions = ActionScriptBank([\n"
+        for i, script in enumerate(a_scripts):
+            output += f"\tscript_{i},\n"
+        output += "])"
+        writeline(file, output)
+        file.close()
+
+        open(f"{output_path}/event/__init__.py", "w")
+        open(f"{event_path}/__init__.py", "w")
         for i, script in enumerate(e_scripts):
-            print(get_event_name(i))
             output = produce_event_script(i, script, events_jumped_to)
-            file = open("randomizer/scripts/event/scripts/script_%i.py" % (i), "w")
+            file = open(f"{event_path}/script_{i}.py", "w")
             writeline(file, output)
             file.close()
+
+        file = open(f"{output_path}/event/events.py", "w")
+        output = "from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import EventScriptController, EventScriptBank"
+        for i, script in enumerate(e_scripts):
+            output += f"\nfrom .event.scripts.script{i} import script as script_{i}"
+        output += "\n\nevents = EventScriptController([\n"
+        output += "\tEventScriptBank(pointer_table_start=0x1E0000, start=0x1E0C00, end=0x1F0000, scripts=[\n"
+        for i in range(0, 1536):
+            output += f"\t\tscript_{i},\n"
+        output += "\t]),\n"
+
+        output += "\tEventScriptBank(pointer_table_start=0x1F0000, start=0x1F0C00, end=0x200000, scripts=[\n"
+        for i in range(1536, 3072):
+            output += f"\t\tscript_{i},\n"
+        output += "\t]),\n"
+
+        output += "\tEventScriptBank(pointer_table_start=0x200000, start=0x200800, end=0x20E000, scripts=[\n"
+        for i in range(3072, 4096):
+            output += f"\t\tscript_{i},\n"
+        output += "\t])\n"
+        
+        output += "])"
+        writeline(file, output)
+        file.close()

@@ -15,7 +15,8 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 )
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import PRIMARY_TEMP_700C
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.classes import ShortVar, ByteVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 
 
 class ActionScriptCommand(ScriptCommand):

@@ -1,6 +1,6 @@
 """Int subclass instances representing a graphical layer in a level."""
 
-from .types.classes import Layer
+from .types.layer import Layer
 
 LAYER_L1 = Layer(0)
 LAYER_L2 = Layer(1)

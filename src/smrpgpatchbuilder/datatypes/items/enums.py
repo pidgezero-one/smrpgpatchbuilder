@@ -3,7 +3,7 @@
 import enum
 
 
-class EffectType(enum.Enum):
+class EffectTypeOld(enum.Enum):
     """Enumeration to describe the type of effect an item will have on its target."""
 
     NORMAL = enum.auto()
@@ -31,3 +31,22 @@ class ItemTypeValue(enum.IntEnum):
     ARMOR = 0b01
     ACCESSORY = 0b10
     ITEM = 0b11
+
+class EffectType(enum.Enum):
+    INFLICTION = enum.auto()
+    PROTECTION = enum.auto()
+    NULLIFICATION = enum.auto()
+
+class InflictFunction(enum.Enum):
+    ITEM_MORPH = enum.auto()
+    REVIVE = enum.auto()
+    RESTORE_FP = enum.auto()
+    INCREASE_STATS_ITEM = enum.auto()
+    RESTORE_HP = enum.auto()
+    RESTORE_ALL_HP_FP = enum.auto()
+    RAISE_MAX_FP = enum.auto()
+    INSTANT_DEATH = enum.auto()
+
+class OverworldMenuBehaviour(enum.Enum):
+    LEAD_TO_HP = enum.auto()
+    LEAD_TO_FP = enum.auto()

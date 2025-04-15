@@ -3,8 +3,10 @@ that can be used in action and event script commands.\n
 The first 11 are in the range specifiable as party characters."""
 
 from typing import List
-from .types.classes import (
+from .types.area_object import (
     AreaObject,
+)
+from .types.party_character import (
     PartyCharacter,
 )
 

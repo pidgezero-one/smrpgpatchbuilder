@@ -1,7 +1,7 @@
 """Int subclass instances representing the various valid battlefields
 that can be used in SMRPG Randomizer."""
 
-from .types.classes import Battlefield
+from .types.battlefield import Battlefield
 
 BF01_FOREST_MAZE_BOWYERS_PAD = Battlefield(1)
 BF02_BEAN_VALLEY_BEANSTALKS = Battlefield(2)

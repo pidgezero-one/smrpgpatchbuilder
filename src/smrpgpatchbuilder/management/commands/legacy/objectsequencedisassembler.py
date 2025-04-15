@@ -1,32 +1,29 @@
 from django.core.management.base import BaseCommand
-from randomizer.management.disassembler_common import (
+from smrpgpatchbuilder.utils.disassembler_common import (
     shortify,
     bit,
     dbyte,
-    hbyte,
     named,
     con,
     byte,
     byte_int,
     short,
     short_int,
-    build_table,
-    use_table_name,
-    get_flag_string,
+    parse_flags,
     flags,
     con_int,
     flags_short,
     con_bitarray,
     writeline,
 )
-from randomizer.helpers.objectsequencetables import (
+from .objectsequencetables import (
     sequence_speed_table,
     vram_priority_table,
     _0x08_flags,
     _0x0A_flags,
     _0x10_flags,
 )
-from randomizer.helpers.eventtables import (
+from .eventtables import (
     npc_packet_table,
     area_object_table,
     radial_direction_table,
@@ -564,7 +561,7 @@ fd_sequence_lens = [
 # I'll refactor this later
 
 
-def tok(rom, start, end, should_print=True):
+def tok(rom, start, end):
     dex = start
     script = []
     while dex <= end:
@@ -576,15 +573,6 @@ def tok(rom, start, end, should_print=True):
             local_lens = fd_sequence_lens
 
         l = local_lens[cmd]
-        if l == 0:
-            print(hex(cmd), hex(rom[dex + 2]), hex(dex))
-            for i in script:
-                print(list(map(hex, i)))
-            print(hex(cmd), hex(dex))
-            1 / 0
-        bytestring = [("0x%02x" % i) for i in rom[dex : dex + l]]
-        if should_print:
-            print(hex(dex), " ".join(bytestring))
         script.append((rom[dex : dex + l], dex))
         dex += l
     return script
@@ -602,7 +590,7 @@ def parse_line(line, offset):
     if table[cmd]:
         name, args = table[cmd](rest)
     else:
-        name, args = "db", ["0x%02x" % (i) for i in line]
+        name, args = "db", line
     return name, args
 
 
@@ -615,25 +603,24 @@ names = [None] * 256
 def set_sprite_sequence(args):
     sprite = args[0] & 0x07
     flag_short = shortify(args, 0)
-    f = get_flag_string(flag_short, "_0x08Flags", _0x08_flags, [3, 4, 6, 15])
+    f = parse_flags(flag_short, "_0x08Flags", _0x08_flags, [3, 4, 6, 15])
     sequence = args[1] & 0x7F
-    return "set_sprite_sequence", ["%i" % sequence, "%i" % sprite, "%s" % f]
+    return "set_sprite_sequence", [sequence, sprite, f]
 
 
 def set_animation_speed(args):
     speed = args[0] & 0x07
     flag_short = args[0] >> 6
-    f = get_flag_string(flag_short, "_0x10Flags", _0x10_flags, [0, 1])
+    f = parse_flags(flag_short, "_0x10Flags", _0x10_flags, [0, 1])
     return "set_animation_speed", [
-        "%s" % (use_table_name("SequenceSpeeds", sequence_speed_table, speed)),
-        "%s" % f,
+        speed, f
     ]
 
 
 def set_object_memory_bits(obj):
     def inner_set_object_memory_bits(args):
-        f = get_flag_string(args[0])
-        return "set_object_memory_bits", ["0x%02x" % (obj), "%s" % f]
+        f = parse_flags(args[0])
+        return "set_object_memory_bits", [obj, f]
 
     return inner_set_object_memory_bits
 
@@ -644,10 +631,7 @@ def transfer_to_xyzf(args):
     z = args[2] & 0x1F
     direction = args[2] >> 5
     return "transfer_to_xyzf", [
-        "%i" % x,
-        "%i" % y,
-        "%i" % z,
-        "%s" % use_table_name("RadialDirections", radial_direction_table, direction),
+        x, y, z, direction
     ]
 
 
@@ -657,10 +641,7 @@ def transfer_xyzf_steps(args):
     z = args[2] & 0x1F
     direction = args[2] >> 5
     return "transfer_xyzf_steps", [
-        "%i" % x,
-        "%i" % y,
-        "%i" % z,
-        "%s" % use_table_name("RadialDirections", radial_direction_table, direction),
+        x, y, z, direction
     ]
 
 
@@ -670,15 +651,12 @@ def transfer_xyzf_pixels(args):
     z = args[2] & 0x1F
     direction = args[2] >> 5
     return "transfer_xyzf_pixels", [
-        "%i" % x,
-        "%i" % y,
-        "%i" % z,
-        "%s" % use_table_name("RadialDirections", radial_direction_table, direction),
+        x, y, z, direction
     ]
 
 
 def fade_out_sound_to_volume(args):
-    return "fade_out_sound_to_volume", ["%i" % (args[0]), "%i" % (args[1])]
+    return "fade_out_sound_to_volume", args
 
 
 def parse_target_bit(cmd, args):
@@ -691,7 +669,7 @@ def parse_target_bit(cmd, args):
 def set_bit(cmd):
     def inner_set_bit(args):
         addr, bit = parse_target_bit(cmd, args)
-        return "set_bit", ["0x%04x" % addr, "%i" % bit]
+        return "set_bit", [addr, bit]
 
     return inner_set_bit
 
@@ -699,7 +677,7 @@ def set_bit(cmd):
 def clear_bit(cmd):
     def inner_clear_bit(args):
         addr, bit = parse_target_bit(cmd - 0xA4, args)
-        return "clear_bit", ["0x%04x" % addr, "%i" % bit]
+        return "clear_bit", [addr, bit]
 
     return inner_clear_bit
 
@@ -710,13 +688,13 @@ def parse_object_coord(cmd):
         unit = bit(args, 0, 6)
         coord = cmd - 0xC4
         func_params = [
-            "%s" % (use_table_name("AreaObjects", area_object_table, obj)),
-            "%s" % (use_table_name("Coords", coord_table, coord)),
-            "%s" % get_flag_string(args[0], bits=[7]),
+            obj,
+            coord,
+            parse_flags(args[0], bits=[7]),
         ]
         if cmd < 0xC9:
             func_params.append(
-                "%s" % (use_table_name("CoordUnits", coord_unit_table, unit))
+                unit
             )
         return "set_700C_to_object_coord", func_params
 
@@ -728,9 +706,7 @@ def jmp_if_bit_clear(cmd):
         addr, bit = parse_target_bit(cmd - 0xDC, args)
         to_addr = shortify(args, 1)
         return "jmp_if_bit_clear", [
-            "0x%04x" % addr,
-            "%i" % bit,
-            "0x%04x" % to_addr,
+            addr, bit, to_addr,
         ]
 
     return inner_jmp_if_bit_clear
@@ -741,21 +717,19 @@ def jmp_if_bit_set(cmd):
         addr, bit = parse_target_bit(cmd - 0xD8, args)
         to_addr = shortify(args, 1)
         return "jmp_if_bit_set", [
-            "0x%04x" % addr,
-            "%i" % bit,
-            "0x%04x" % to_addr,
+            addr, bit, to_addr,
         ]
 
     return inner_jmp_if_bit_set
 
 
 def pause(args):
-    return "pause", ["%i" % (args[0] + 1)]
+    return "pause", [args[0] + 1]
 
 
-def pause(args):
+def pauseshort(args):
     s = shortify(args, 0)
-    return "pause", ["%i" % (s + 1)]
+    return "pause", [s + 1]
 
 
 def set_object_presence_in_level(args):
@@ -767,8 +741,7 @@ def set_object_presence_in_level(args):
     else:
         func = "remove_from_level"
     return func, [
-        "%s" % (use_table_name("AreaObjects", area_object_table, obj)),
-        "%s" % (use_table_name("Rooms", room_table, level)),
+        obj, level
     ]
 
 
@@ -781,8 +754,7 @@ def set_object_trigger_in_level(args):
     else:
         func = "disable_trigger_in_level"
     return func, [
-        "%s" % (use_table_name("AreaObjects", area_object_table, obj)),
-        "%s" % (use_table_name("Rooms", room_table, level)),
+        obj, level
     ]
 
 
@@ -796,16 +768,14 @@ def jmp_depending_on_object_presence(args):
     else:
         func = "jmp_if_object_not_in_level"
     return func, [
-        "%s" % (use_table_name("AreaObjects", area_object_table, obj)),
-        "%s" % (use_table_name("Rooms", room_table, level)),
-        "0x%04x" % (addr),
+        obj, level, addr
     ]
 
 
-def mem_7000_shift_left(args):
+def mem_700C_shift_left(args):
     addr = 2 * args[0] + 0x7000
     shift = 256 - args[1]
-    return "mem_7000_shift_left", ["0x%04x" % (addr), "%i" % (shift)]
+    return "mem_700C_shift_left", [addr, shift]
 
 
 names[0x00] = named("visibility_on")
@@ -1046,7 +1016,7 @@ names[0xBC] = named("copy_var_to_var", dbyte(0x7000), dbyte(0x7000))
 names[0xBD] = named("swap_vars", dbyte(0x7000), dbyte(0x7000))
 names[0xBE] = named("move_7010_7015_to_7016_701B")
 names[0xBF] = named("move_7016_701B_to_7010_7015")
-names[0xC0] = named("mem_compare_val", short_int())
+names[0xC0] = named("mem_compare_val", con(0x700C), short_int())
 names[0xC1] = named("compare_700C_to_var", dbyte(0x7000))
 names[0xC2] = named("mem_compare", dbyte(0x7000), short_int())
 names[0xC3] = named("set_700C_to_current_level")
@@ -1094,7 +1064,7 @@ names[0xED] = named("jmp_if_comparison_result_is_lesser", short())
 names[0xEE] = named("jmp_if_loaded_memory_is_below_0", short())
 names[0xEF] = named("jmp_if_loaded_memory_is_above_or_equal_0", short())
 names[0xF0] = pause
-names[0xF1] = pause
+names[0xF1] = pauseshort
 names[0xF2] = set_object_presence_in_level
 names[0xF3] = set_object_trigger_in_level
 names[0xF4] = named("summon_object_at_70A8_to_current_level")
@@ -1162,7 +1132,7 @@ fd_names[0xB2] = named("mem_700C_xor_const", short())
 fd_names[0xB3] = named("mem_700C_and_var", dbyte(0x7000))
 fd_names[0xB4] = named("mem_700C_or_var", dbyte(0x7000))
 fd_names[0xB5] = named("mem_700C_xor_var", dbyte(0x7000))
-fd_names[0xB6] = mem_7000_shift_left
+fd_names[0xB6] = mem_700C_shift_left
 # 0xB7 - 0xFF undocumented
 
 jmp_cmds = [
@@ -1216,18 +1186,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
 
-        parser.add_argument(
-            "-d",
-            "--debug",
-            action="store_true",
-            help="If set, dumps to a gitignored folder instead of overwriting the scripts sourced by SMRPG Randomizer",
-        )
-
     def get_embedded_script(self, arr):
         if isinstance(arr, str):
             arr = eval(arr)
         commands_output = []
-        a = tok(arr, 0, len(arr) - 1, False)
+        a = tok(arr, 0, len(arr) - 1)
         offset = 0
         for line, _ in a:
             if line[0] == 0xFD:
@@ -1243,10 +1206,10 @@ class Command(BaseCommand):
             if table[cmd]:
                 name, args = table[cmd](rest)
             else:
-                name, args = "db", ["0x%02x" % (i) for i in line]
+                name, args = "db", line
             if has_jump:
                 arg_index = get_jump_args(line, args)
-                jump_args = [(int(ja, 16)) for ja in args[arg_index:]]
+                jump_args = [ja for ja in args[arg_index:]]
             else:
                 jump_args = []
             commands_output.append(
@@ -1255,7 +1218,6 @@ class Command(BaseCommand):
                     "name": name,
                     "args": rest,
                     "parsed_args": args,
-                    "text": ".%s(%s)" % (name, ", ".join(args)),
                     "has_jump": has_jump,
                     "original_offset": offset,
                     "jumps": jump_args,
@@ -1270,12 +1232,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        debug = options["debug"]
-
-        dest = "randomizer/data/actionscripts"
-        if debug:
-            dest = "randomizer/management/commands/output/disassembler/action"
-
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
 
@@ -1288,7 +1244,7 @@ class Command(BaseCommand):
         event_lengths = []
         for i in range(len(ptrs)):
             ptr = ptrs[i]
-            print("[%04i] @ [%x]-------------------\n" % (i, ptr))
+            # print("[%04i] @ [%x]-------------------\n" % (i, ptr))
             if i < len(ptrs) - 1:
                 event_lengths.append(ptrs[i + 1] - ptrs[i])
                 script_content = tok(rom, ptrs[i], ptrs[i + 1] - 1)
@@ -1296,7 +1252,7 @@ class Command(BaseCommand):
                 event_lengths.append(end - ptrs[i])
                 script_content = tok(rom, ptrs[i], end)
             scripts.append(script_content)
-            print("\n\n\n")
+            # print("\n\n\n")
 
         # translate lines into commands and note any jump addresses
         for i in range(len(scripts)):
@@ -1309,7 +1265,7 @@ class Command(BaseCommand):
                 if line[0] in jmp_cmds or line[0] in jmp_cmds_double:
                     arg_index = get_jump_args(line, args)
                     jump_args = [
-                        (int(ja, 16) | (offset & 0xFF0000)) for ja in args[arg_index:]
+                        (ja | (offset & 0xFF0000)) for ja in args[arg_index:]
                     ]
                 else:
                     jump_args = []
@@ -1338,7 +1294,7 @@ class Command(BaseCommand):
                         candidates = [c for c in sd if c["original_offset"] == j]
                         if len(candidates) > 0:
                             jumped_command = candidates[0]
-                            jumps.append("'%s'" % jumped_command["identifier"])
+                            jumps.append("%s" % jumped_command["identifier"])
                 if commands_to_replace == 0:
                     new_args = cmd["args"]
                 else:
@@ -1351,7 +1307,8 @@ class Command(BaseCommand):
                 this_script.append(cmd_with_named_jumps)
             scripts_with_named_jumps.append(this_script)
 
-        # output
+        return scripts_with_named_jumps
+        # output (old)
         for i in range(len(scripts_with_named_jumps)):
             file = open("%s/script_%i.py" % (dest, i), "w")
             writeline(file, "# AUTOGENERATED DO NOT EDIT!!")
