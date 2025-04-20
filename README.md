@@ -87,6 +87,11 @@ Everything you do beyond this point must be in your venv. You'll know you're in 
 (MyVirtualEnvironmentNameWhateverIWant) stefkischak@Stefs-MBP smrpgpatchbuilder %
 ```
 
+## How to run tests
+
+In your venv:
+`PYTHONPATH=src pytest src/tests`
+
 ### Disassembling battle animations
 
 Run this **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all battle animations and convert them into Python code. For example:
@@ -322,12 +327,12 @@ Similarly, here's action script 2:
 ![alt text](image-3.png)
 
 And here's how it looks in Python:
-```
+```python
 #A0002_FLASH_AFTER_RUNNING_AWAY_IFRAMES
 
 script = ActionScript([
 	A_ObjectMemorySetBit(arg_1=0x30, bits=[4]),
-	A_JmpIfBitClear(TEMP_707C_1, ["'ACTION_2_start_loop_n_times_3'"]),
+	A_JmpIfBitClear(TEMP_707C_1, ["ACTION_2_start_loop_n_times_3"]),
 	A_ClearSolidityBits(bit_4=True, cant_walk_through=True),
 	A_StartLoopNTimes(15),
 	A_Pause(2),
@@ -341,7 +346,7 @@ script = ActionScript([
 ])
 ```
 
-All action script command are prefixed with `A_`. This is to distinguish them from event script commands.
+All action script commands are prefixed with `A_`. This is to distinguish them from event script commands.
 
 Things to be aware of:
 - This will produce scripts that add up to exactly the amount of bytes each bank can contain. To free up space, go to the final script (event 4095, action 1023) and delete all of the trailing `EndAll` class instantiators.

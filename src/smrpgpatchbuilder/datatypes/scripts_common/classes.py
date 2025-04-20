@@ -548,7 +548,7 @@ class ScriptBank(Generic[ScriptT]):
                     return
                 else:
                     raise IdentifierException(f"couldn't find destination {key}")
-            destination.set_address(self.addresses[key] % 0xFFFF)
+            destination.set_address(self.addresses[key] & 0xFFFF)
 
     def _populate_jumps(self, script: Script) -> None:
         affected_commands = [

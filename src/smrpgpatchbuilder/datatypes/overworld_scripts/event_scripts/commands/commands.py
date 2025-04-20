@@ -82,8 +82,20 @@ from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
 
 
 class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
-    """Loop all commands over N frames that are between this command
-    and the next `EndLoop` command."""
+    """Loop all commands over N frames that are between this command and the next `EndLoop` command.\n
+    
+    **Lazy Shell command**  
+    `Loop start, timer = ...`
+    
+    **Opcode**  
+    `0xD5`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        length (int): Duration (in frames) to loop over.
+    """
 
     _opcode: int = 0xD5
     _size: int = 3
@@ -107,8 +119,20 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
-    """Loop all commands over N loop iterations that are between this command
-    and the next `EndLoop` command."""
+    """Loop all commands over N loop iterations that are between this command and the next `EndLoop` command.\n
+    
+    **Lazy Shell command**  
+    `Loop start, count = ...`
+    
+    **Opcode**  
+    `0xD4`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        length (int): Number/count of times to loop.
+    """
 
     _opcode: int = 0xD4
     _size: int = 2
@@ -132,13 +156,36 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
 
 
 class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """If previous commands were part of a loop, this is where the loop ends."""
+    """If previous commands were part of a loop, this is where the loop ends.\n
+    
+    **Lazy Shell command**  
+    `Loop end`
+    
+    **Opcode**  
+    `0xD7`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode: int = 0xD7
 
 
 class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Goto a specific command by command identifier."""
+    """Goto a specific command. This uses another event's label instead of its address, which is calculated at build time.\n
+    
+    **Lazy Shell command**  
+    `Jump to address...`
+    
+    **Opcode**  
+    `0xD2`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of whatever command you want to jump to.
+    """
 
     _opcode: int = 0xD2
     _size: int = 3
@@ -149,8 +196,19 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     """Goto event script by ID.\n
-    It is highly recommended to use contextual event script
-    const names for this."""
+    
+    **Lazy Shell command**  
+    `Jump to event...`
+    
+    **Opcode**  
+    `0xD0`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        destination (int): The ID of the event you want to jump to.
+    """
 
     _opcode: int = 0xD0
     _size: int = 3
@@ -177,20 +235,54 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
 
 
 class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Return to the beginning of the script containing this command"""
+    """Return to the beginning of the script containing this command.  
+    (Unknown how this differs from `JmpToStartOfThisScriptFA`.)
+    
+    **Lazy Shell command**  
+    `Jump to start of script`
+    
+    **Opcode**  
+    `0xF9`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode: int = 0xF9
 
 
 class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Return to the beginning of the script containing this command.\n
-    (Unknown how this differs from `JmpToStartOfThisScript`.)"""
+    """Return to the beginning of the script containing this command.  
+    (Unknown how this differs from `JmpToStartOfThisScript`.)
+    
+    **Lazy Shell command**  
+    `Jump to start of script`
+    
+    **Opcode**  
+    `0xFA`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode: int = 0xFA
 
 
 class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Run a specific event script as a subroutine, by command identifier."""
+    """Run a chunk of event script code as a subroutine starting at a specified command. This uses another event's label instead of its address, which is calculated at build time.\n
+    
+    **Lazy Shell command**  
+    `Jump to subroutine...`
+    
+    **Opcode**  
+    `0xD3`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+    """
 
     _opcode: int = 0xD3
     _size: int = 3
@@ -200,26 +292,72 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Move this script from being a background process to being
-    the main process."""
+    """Move this script from being a background process to being the main process.\n
+    
+    **Lazy Shell command**  
+    `Move script to main thread`
+    
+    **Opcode**  
+    `0xFD 0x40`
+    
+    **Size**  
+    2 bytes
+    """
 
     _opcode = bytearray([0xFD, 0x40])
 
 
 class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Move this script to run as the first of two background processes."""
+    """Move this script to run as the first of two background processes.\n
+    
+    **Lazy Shell command**  
+    `Move script to background thread 1`
+    
+    **Opcode**  
+    `0xFD 0x41`
+    
+    **Size**  
+    2 bytes
+    """
 
     _opcode = bytearray([0xFD, 0x41])
 
 
 class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Move this script to run as the second of two background processes."""
+    """Move this script to run as the second of two background processes.\n
+    
+    **Lazy Shell command**  
+    `Move script to background thread 2`
+    
+    **Opcode**  
+    `0xFD 0x42`
+    
+    **Size**  
+    2 bytes
+    """
 
     _opcode = bytearray([0xFD, 0x42])
 
 
 class Pause(UsableEventScriptCommand, EventScriptCommand):
-    """Pause the active script for the given number of frames"""
+    """Pause the active script for a number of frames.\n
+    
+    **Lazy Shell command**  
+    `Pause script for {xx} frames...`  
+    `Pause script for {xxxx} frames...`
+    
+    **Opcode**  
+    `0xF0`  
+    `0xF1`
+    
+    **Size**  
+    2 bytes  
+    3 bytes
+
+
+    Args:
+        length (int): Length of time (in frames) to pause. If this number is 256 or lower (you read that correctly, 256 or lower, not 255 or lower) this command will use the {xx} version (`0xF0`, 2 bytes). If larger, it will use the {xxxx} version (`0xF1`, 3 bytes).
+    """
 
     _length: Union[UInt8, UInt16]
 
@@ -258,13 +396,36 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)\n
+    
+    **Lazy Shell command**  
+    `Remember last object`
+    
+    **Opcode**  
+    `0xFD 0x32`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode = bytearray([0xFD, 0x32])
 
 
 class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
-    """If a background event is paused, resume it."""
+    """If a background event is paused, resume it.\n
+    
+    **Lazy Shell command**  
+    `Resume background event...`
+    
+    **Opcode**  
+    `0x47`
+    
+    **Size**  
+    2 bytes
+
+    Args:
+        timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+    """
 
     _opcode: int = 0x47
     _size: int = 2
@@ -289,7 +450,22 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Run an event (by ID) as a background event.\n
-    It is recommended to use event script const names."""
+    
+    **Lazy Shell command**  
+    `Run background event...`
+    
+    **Opcode**  
+    `0x40`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        event_id (int): The ID of the event you want to run in the background.
+        return_on_level_exit (bool): If true, the background event will stop when the current level is unloaded.
+        bit_6 (bool): (unknown)
+        run_as_second_script (bool): If true, the event will run in background thread 2 instead of background thread 1.
+    """
 
     _opcode: int = 0x40
     _size: int = 3
@@ -358,7 +534,23 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown exactly how this differs from `RunBackgroundEvent`)\n
+    
+    **Lazy Shell command**  
+    `Run background event, pause...`
+    
+    **Opcode**  
+    `0x44`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        event_id (int): The ID of the event you want to run in the background.
+        timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+        bit_4 (bool): (unknown)
+        bit_5 (bool): (unknown)
+    """
 
     _opcode: int = 0x44
     _size: int = 3
@@ -430,7 +622,24 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
 class RunBackgroundEventWithPauseReturnOnExit(
     UsableEventScriptCommand, EventScriptCommand
 ):
-    """(unknown)"""
+    """(unknown exactly how this differs from `RunBackgroundEvent` with `return_on_level_exit` set to true)\n
+    
+    **Lazy Shell command**  
+    `Run background event, pause...`
+    
+    **Opcode**  
+    `0x45`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        event_id (int): The ID of the event you want to run in the background.
+        timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+        bit_4 (bool): (unknown)
+        bit_5 (bool): (unknown)
+    """
+
 
     _opcode: int = 0x45
     _size: int = 3
@@ -501,7 +710,20 @@ class RunBackgroundEventWithPauseReturnOnExit(
 
 class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
     """When the current script ends, start running the script denoted by ID.\n
-    It is recommended to use event script const names."""
+    
+    **Lazy Shell command**  
+    `Run event at return...`
+    
+    **Opcode**  
+    `0xFD 0x46`
+    
+    **Size**  
+    4 bytes
+
+    Args:
+        event_id (int): The ID of the event you want to run on return.
+    """
+
 
     _opcode = bytearray([0xFD, 0x46])
     _size: int = 4
@@ -527,10 +749,23 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
-    """Run aother event by IDas a subroutine (function).\n
+    """Run another event by ID as a subroutine (function).\n
     The game will crash if you call this method from code that is
     already itself being run as a subroutine, so be careful using it.\n
-    It is recommended to use event script const names."""
+    
+    **Lazy Shell command**  
+    `Run event as subroutine...`
+    
+    **Opcode**  
+    `0xD1`
+    
+    **Size**  
+    3 bytes
+
+    Args:
+        event_id (int): The ID of the event you want to run as a subroutine.
+    """
+
 
     _opcode: int = 0xD1
     _size: int = 3
@@ -556,13 +791,36 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Halt all background events on all threads."""
+    """Halt all background events on all threads.\n
+    
+    **Lazy Shell command**  
+    `Stop all background events`
+    
+    **Opcode**  
+    `0xFD 0x43`
+    
+    **Size**  
+    2 bytes
+    """
 
     _opcode = bytearray([0xFD, 0x43])
 
 
 class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
-    """Stop a background event."""
+    """Stop a background event."\n
+    
+    **Lazy Shell command**  
+    `Stop background event...`
+    
+    **Opcode**  
+    `0x46`
+    
+    **Size**  
+    2 bytes
+
+    Args:
+        timer_var (ShortVar): The timer memory variable associated to the event you're stopping, probably set by `ResumeBackgroundEvent`, `RunBackgroundEventWithPause`, or `RunBackgroundEventWithPauseReturnOnExit`. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+    """
 
     _opcode: int = 0x46
     _size: int = 2
@@ -586,29 +844,587 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Exits the execution of the current script or subroutine."""
+    """Ends the script or subroutine.  
+    Every event needs to include this or `ReturnAll` because it indicates where the next script starts.\n
+    
+    **Lazy Shell command**  
+    `Return`
+    
+    **Opcode**  
+    `0xFE`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode: int = 0xFE
 
 
-class EndAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Exits the execution of the current script or subroutine, as well as
-    any events that may have called this script as a subroutine."""
+class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
+    """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.  
+    Every event needs to include this or `Return` because it indicates where the next script starts.  
+    If your scripts do not add up to exactly the size of your bank, any remaining bytes are automatically filled with `ReturnAll` (you don't have to do this manually).\n
+    
+    **Lazy Shell command**  
+    `Return all`
+    
+    **Opcode**  
+    `0xFF`
+    
+    **Size**  
+    1 byte
+    """
 
     _opcode: int = 0xFF
 
 
 class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown, some kind of unused return command, unsure how it differs from others)\n
+    
+    **Lazy Shell command**  
+    N/A
+    
+    **Opcode**  
+    `0xFD 0xFE`
+    
+    **Size**  
+    2 bytes
+    """
 
     _opcode = bytearray([0xFD, 0xFE])
 
 
-class Db(UsableEventScriptCommand, EventScriptCommand):
-    """Catch-all command class representing any command not represented by other
-    EventScriptCommand subclasses.
-    Use this sparingly as there are no safety checks to make sure that
-    the number of arguments in the command are correct."""
+_valid_unknowncmd_opcodes: List[int] = [
+    0, #00
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #10
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #20
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #30
+    0,
+    0,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    3, #40
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0, #50
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0, #60
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0, #70
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #80
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0, #90
+    0,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0, #A0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #B0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #C0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0, #D0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #E0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #F0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+_valid_unknowncmd_opcodes_fd: List[int] = [
+    0, #00
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #10
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #20
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #30
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    4,
+    0, #40
+    0,
+    0,
+    0,
+    2,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #50
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    0, #60
+    0,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #70
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #80
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    3,
+    0,
+    5,
+    2,
+    5,
+    3,
+    0, #90
+    0,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    3,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0, #A0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    0,
+    0,
+    0,
+    2,
+    0,
+    2,
+    2,
+    2,
+    0, #B0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #C0
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    2,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #D0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #E0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0, #F0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+
+class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
+    """Catch-all class for most undocumented commands that don't act as GOTOs.  
+    Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.  
+    You can't use this if your bytearray starts with an opcode that already has a class. For example `UnknownCommand(bytearray([0xA4, 0x24]))` will fail because `ClearBit` already uses opcode `0xA4`.
+    
+    **Lazy Shell command**  
+    Almost any lazy shell command represented solely as bytes, i.e. `{FD-45}` in the original game's event #478
+    
+    **Opcode**  
+    Any that don't already belong to another class
+    
+    **Size**  
+    Determined by the first byte (or two bytes if first byte is `0xFD`)
+    """
 
     _contents: bytearray
 
@@ -619,6 +1435,21 @@ class Db(UsableEventScriptCommand, EventScriptCommand):
 
     def set_contents(self, contents: bytearray) -> None:
         """Set the whole contents of the command as bytes, including the opcode."""
+        first_byte = contents[0]
+        if first_byte == 0xFD:
+            opcode = contents[1]
+            expected_length = _valid_unknowncmd_opcodes_fd[opcode]
+            if expected_length[opcode] == 0:
+                raise InvalidCommandArgumentException(f"do not use UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it")
+            if len(contents) != expected_length:
+                raise InvalidCommandArgumentException(f"opcode 0xFD 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
+        else:
+            opcode = first_byte
+            expected_length = _valid_unknowncmd_opcodes[opcode]
+            if expected_length == 0:
+                raise InvalidCommandArgumentException(f"do not use UnknownCommand for opcode 0x{opcode:02X}, there is already a class for it")
+            if len(contents) != expected_length:
+                raise InvalidCommandArgumentException(f"opcode 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
         self._contents = contents
 
     @property

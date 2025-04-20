@@ -5889,7 +5889,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "return_fd":
         cls = "ReturnFD"
     elif cmd["command"] == "db":
-        cls = "Db"
+        cls = "UnknownCommand"
         include_argnames = False
         args["args"] = "%r" % bytearray(cmdargs)
     else:

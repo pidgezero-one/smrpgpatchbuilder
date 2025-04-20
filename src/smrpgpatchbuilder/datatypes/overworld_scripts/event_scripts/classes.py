@@ -195,13 +195,9 @@ class EventScriptBank(ScriptBank[EventScript]):
 
         # build command name and pointer table : address table
         for script_id, script in enumerate(self.scripts):
-            # if script_id <  549:
-            #print(script_id, f"0x{position:06X}")
             self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
             initial_position = position
             for index, command in enumerate(script.contents):
-                # if script_id == 687:
-                #     print(script_id, index, f"0x{position:06X}", command)
                 # If this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
                 if isinstance(command, NonEmbeddedActionQueuePrototype):
                     relative_offset: int = position - initial_position
