@@ -61,9 +61,21 @@ from .types.classes import (
 
 
 class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
-    """Goto action script by ID.\n
-    It is highly recommended to use contextual action script
-    const names for this."""
+    """Goto action script by ID. This shouldn't be used in embedded queues.
+
+    ## Lazy Shell command
+        `Action script = ...`  
+
+    ## Opcode
+        `0xD0`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destination (int): The ID of the script to jump to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD0
     _size: int = 3
@@ -90,7 +102,21 @@ class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
-    """Goto a specific command by command identifier."""
+    """Goto a specific command by command identifier.
+
+    ## Lazy Shell command
+        `Jump to address...`  
+
+    ## Opcode
+        `0xD2`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD2
     _size: int = 3
@@ -100,7 +126,22 @@ class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
 
 class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
-    """Run a specific action script as a subroutine, by command identifier."""
+    """Run a specific action script as a subroutine, by command identifier.
+
+    ## Lazy Shell command
+        `Jump to subroutine...`  
+
+    ## Opcode
+        `0xD3`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+
+    """
 
     _opcode: int = 0xD3
     _size: int = 3
@@ -109,34 +150,25 @@ class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(*self.destinations)
 
 
-class A_StartLoopNFrames(UsableActionScriptCommand, ActionScriptCommand):
-    """Loop all commands over N frames that are between this command
-    and the next `EndLoop` command."""
-
-    _opcode: int = 0xD5
-    _size: int = 3
-    _length: UInt16
-
-    @property
-    def length(self) -> UInt16:
-        """The total duration of the loop, in frames"""
-        return self._length
-
-    def set_length(self, length: int) -> None:
-        """Set the total duration of the loop, in frames"""
-        self._length = UInt16(length)
-
-    def __init__(self, length: int, identifier: Optional[str] = None) -> None:
-        super().__init__(identifier)
-        self.set_length(length)
-
-    def render(self) -> bytearray:
-        return super().render(self.length)
 
 
 class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
-    """Loop all commands over N loop iterations that are between this command
-    and the next `EndLoop` command."""
+    """Loop all commands over N loop iterations that are between this command and the next `EndLoop` command.
+
+    ## Lazy Shell command
+        `Loop start, count = ...`  
+
+    ## Opcode
+        `0xD4`
+
+    ## Size
+        2 bytes
+
+    Args:
+        count (int): Number of times to loop
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
 
     _opcode: int = 0xD4
     _size: int = 2
@@ -160,13 +192,44 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """If previous commands were part of a loop, this is where the loop ends."""
+    """If previous commands were part of a loop, this is where the loop ends.
+
+    ## Lazy Shell command
+        `Loop end`  
+
+    ## Opcode
+        `0xD7`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+
+    """
 
     _opcode: int = 0xD7
 
 
 class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
-    """Pause the active script for the given number of frames"""
+    """Pause the active script for a number of frames
+
+    ## Lazy Shell command
+        `Pause script for {xx} frames...`  
+        `Pause script for {xxxx} frames...`
+
+    ## Opcode
+        `0xF0`  
+        `0xF1`
+
+    ## Size
+        2 bytes  
+        3 bytes
+
+    Args:
+        length (int): Length of time (in frames) to pause. If this number is 256 or lower (you read that correctly, 256 or lower, not 255 or lower) this command will use the {xx} version (`0xF0`, 2 bytes). If larger, it will use the {xxxx} version (`0xF1`, 3 bytes).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+"""
 
     _length: Union[UInt8, UInt16]
 
@@ -205,41 +268,640 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """Return to the beginning of the script containing this command"""
+    """Return to the beginning of the script containing this command
 
+    ## Lazy Shell command
+        (not documented in Lazy Shell)
+
+    ## Opcode
+        `0xF9`
+
+    ## Size
+        1 byte
+
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
     _opcode: int = 0xF9
 
 
 class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown how this differs from `A_JmpToStartOfThisScript`)
+
+    ## Lazy Shell command
+        (not documented in Lazy Shell)
+
+    ## Opcode
+        `0xFA`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xFA
 
 
-class A_Return(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """Exits the execution of the current script or subroutine."""
+class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+    """Ends the script or subroutine.  
+    Every standalone action script needs to include this or `A_ReturnAll` because it indicates where the next script starts.\n
+
+    ## Lazy Shell command
+        `Return queue`  
+
+    ## Opcode
+        `0xFE`
+
+    ## Size
+        1 byte
+
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xFE
 
 
-class A_EndAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """Exits the execution of the current script or subroutine, as well as
-    any events that may have called this script as a subroutine."""
+class A_ReturnAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+    """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.  
+    Every standalone action script needs to include this or `A_ReturnQueue` because it indicates where the next script starts.  
+    If your scripts do not add up to exactly the size of your bank, any remaining bytes are automatically filled with `A_ReturnAll` (you don't have to do this manually).\n
+
+    ## Lazy Shell command
+        `Return all`  
+
+    ## Opcode
+        `0xFF`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xFF
 
 
-class A_Db(UsableActionScriptCommand, ActionScriptCommand):
-    """Catch-all command class representing any command not represented by other
-    ActionScriptCommand subclasses.
-    Use this sparingly as there are no safety checks to make sure that
-    the number of arguments in the command are correct."""
+
+_valid_unknowncmd_queue_opcodes = [
+    0, #00
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #10
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2, #20
+    0,
+    0,
+    2,
+    5,
+    5,
+    0,
+    0,
+    0,
+    2,
+    0,
+    5,
+    3,
+    3,
+    3,
+    7,
+    3, #30
+    3,
+    3,
+    3,
+    2,
+    3,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #40
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0, #50
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0, #60
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0, #70
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #80
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0, #90
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0, #A0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #B0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,  #C0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    0, #D0
+    1,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #E0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,  #F0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    -1,
+    1,
+    1,
+]
+
+_valid_unknowncmd_queue_opcodes_fd = [
+    0, #00
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, #10
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #20
+    5,
+    2,
+    2,
+    4,
+    4,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #30
+    8,
+    8,
+    7,
+    5,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0,
+    0,
+    7,
+    5, #40
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #50
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    2,
+    2,
+    2,
+    2, #60
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #70
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #80
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #90
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    0,
+    3,
+    2, #A0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    0, #B0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #C0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    4,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #D0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #e0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #F0
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+]
+
+
+class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
+    """Catch-all class for most undocumented commands that don't act as GOTOs.  
+    Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.  
+    You can't use this if your bytearray starts with an opcode that already has a class. For example `UnknownCommand(bytearray([0xFD, 0x9E, 0x03]))` will fail because `A_PlaySound` already uses opcode `0xFD 0x9E`.
+    
+    ## Lazy Shell command
+        Almost any lazy shell command represented solely as bytes, i.e. `{25-C0-03-80-FF}` in the original game's animation queue script #8
+    
+    ## Opcode
+        Any that don't already belong to another class
+    
+    ## Size
+        Determined by the first byte (or two bytes if first byte is `0xFD`). Same as the length of `contents` if you did it right.
+
+    Args:
+        contents (bytearray): The entire byte string that this command consists of.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _contents: bytearray
 
     @property
     def contents(self) -> bytearray:
-        """The whole contents of the command as bytes, including the opcode."""
+        """Set the whole contents of the command as bytes, including the opcode."""
+        first_byte = contents[0]
+        if first_byte == 0xFD:
+            opcode = contents[1]
+            expected_length = _valid_unknowncmd_queue_opcodes_fd[opcode]
+            if expected_length[opcode] == 0:
+                raise InvalidCommandArgumentException(f"do not use A_UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it")
+            if len(contents) != expected_length:
+                raise InvalidCommandArgumentException(f"opcode 0xFD 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
+        else:
+            opcode = first_byte
+            expected_length = _valid_unknowncmd_queue_opcodes[opcode]
+            if expected_length == 0:
+                raise InvalidCommandArgumentException(f"do not use A_UnknownCommand for opcode 0x{opcode:02X}, there is already a class for it")
+            if len(contents) != expected_length:
+                raise InvalidCommandArgumentException(f"opcode 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
         return self._contents
 
     def set_contents(self, contents: bytearray) -> None:
@@ -262,28 +924,87 @@ class A_Db(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """The NPC running this script will have its sprite become visible."""
+    """The NPC running this script will have its sprite become visible.
+
+    ## Lazy Shell command
+        `Visibility on`  
+
+    ## Opcode
+        `0x00`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x00
 
 
 class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """The NPC running this script will have its sprite become invisible.\n
-    This does not impact or deactivate the NPC's collision data."""
+    """The NPC running this script will have its sprite become invisible.
+
+    ## Lazy Shell command
+        `Visibility off`  
+
+    ## Opcode
+        `0x01`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x01
 
 
 class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """The NPC's sprite is reset to its default state (mold 0 or sequence 0).
-    Some other changes made by action script commands may also be reversed."""
+    """The NPC's sprite is reset to its default state (mold 0 or sequence 0).  
+    Some other changes made by action script commands may also be reversed.
+
+    ## Lazy Shell command
+        `Reset properties`  
+
+    ## Opcode
+        `0x09`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x09
 
 
 class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
-    This will completely overwrite both set AND unset bits for the NPC."""
+    This will completely overwrite both set AND unset bits for the NPC.
+
+    ## Lazy Shell command
+        `Solidity bits = ...`  
+
+    ## Opcode
+        `0x0A`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit_0 (bool): (unknown)
+        cant_walk_under (bool): If true, neither the player nor any NPCs can walk under this NPC
+        cant_pass_walls (bool): If false, this NPC can walk through walls
+        cant_jump_through (bool): If true, neither the player nor any NPCs can jump through this NPC
+        bit_4 (bool): (unknown)
+        cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
+        cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0A
     _size: int = 2
@@ -407,7 +1128,28 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
 
 class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
-    Specified bits will be set, unspecified bits will be unchanged."""
+    Specified bits will be set, unspecified bits will be unchanged.
+
+    ## Lazy Shell command
+        `Solidity set {xx} bits...`  
+
+    ## Opcode
+        `0x0B`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit_0 (bool): (unknown)
+        cant_walk_under (bool): If true, neither the player nor any NPCs can walk under this NPC
+        cant_pass_walls (bool): If false, this NPC can walk through walls
+        cant_jump_through (bool): If true, neither the player nor any NPCs can jump through this NPC
+        bit_4 (bool): (unknown)
+        cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
+        cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0B
     _size: int = 2
@@ -530,9 +1272,29 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
-    """Change the NPC's collision behavioural rules within the current room.
-    Bits set to "True" in this command will be cleared (as confusing as that sounds),
-    unspecified bits will be unchanged."""
+    """Change the NPC's collision behavioural rules within the current room.  
+    Bits set to `True` in this command will be cleared (as confusing as that sounds), unspecified bits will be unchanged.
+
+    ## Lazy Shell command
+        `Solidity clear {xx} bits...`  
+
+    ## Opcode
+        `0x0C`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit_0 (bool): (unknown)
+        cant_walk_under (bool): If set to true in this command, the player and NPCs CAN walk under this NPC
+        cant_pass_walls (bool): If set to true in this command, this NPC CAN walk through walls
+        cant_jump_through (bool): If set to true in this command, the player and NPCs CAN jump through this NPC
+        bit_4 (bool): (unknown)
+        cant_pass_npcs (bool): If set to true in this command, this NPC CAN walk through other NPCs on the field
+        cant_walk_through (bool): If set to true in this command, the player and other NPCs on the field CAN walk through this NPC
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0C
     _size: int = 2
@@ -655,7 +1417,28 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown how this differs from solidity bits)"""
+    """(unknown how this differs from `A_SetSolidityBits`)
+
+    ## Lazy Shell command
+        `Movement set {xx} bits...`  
+
+    ## Opcode
+        `0x15`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit_0 (bool): (unknown)
+        cant_walk_under (bool): If true, neither the player nor any NPCs can walk under this NPC
+        cant_pass_walls (bool): If false, this NPC can walk through walls
+        cant_jump_through (bool): If true, neither the player nor any NPCs can jump through this NPC
+        bit_4 (bool): (unknown)
+        cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
+        cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x15
     _size: int = 2
@@ -778,7 +1561,21 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
-    """Set the rules for how this NPC's sprite overlaps with the player's."""
+    """Set the rules for how this NPC's sprite overlaps with the player's.
+
+    ## Lazy Shell command
+        `VRAM priority = ...`  
+
+    ## Opcode
+        `0x13`
+
+    ## Size
+        2 bytes
+
+    Args:
+        priority (VRAMPriority): The priority level. Must be 0, 1, 2, or 3. Priority 3 is rendered in front of anything overlapping it, Priority 0 is rendered underneath everything overlapping it.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x13
     _size: int = 2
@@ -804,7 +1601,21 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown how this differs from vram priority)"""
+    """(unknown how this differs from `A_SetVRAMPriority`)
+
+    ## Lazy Shell command
+        `Priority = ...`  
+
+    ## Opcode
+        `0xFD 0x0F`
+
+    ## Size
+        3 bytes
+
+    Args:
+        priority (int): The priority level. Must be 0, 1, 2, or 3. 
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x0F])
     _size: int = 3
@@ -829,25 +1640,77 @@ class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """Begin showing the NPC's shadow when airborne."""
+    """Begin showing the NPC's shadow when airborne.
+
+    ## Lazy Shell command
+        `Shadow on/off` (`on` case only)  
+
+    ## Opcode
+        `0xFD 0x00`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x00])
 
 
 class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """The NPC's shadow when airborne will no longer be visible."""
+    """The NPC's shadow when airborne will no longer be visible.
+
+    ## Lazy Shell command
+        `Shadow on/off` (`off` case only)  
+
+    ## Opcode
+        `0xFD 0x01`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x01])
 
 
 class A_FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """When run, the NPC is not affected by gravity."""
+    """The NPC will not be affected by gravity.
+
+    ## Lazy Shell command
+        `Floating on`  
+
+    ## Opcode
+        `0xFD 0x02`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x02])
 
 
 class A_FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """When run, the NPC becomes affected by gravity."""
+    """The NPC becomes affected by gravity.
+
+    ## Lazy Shell command
+        `Floating off`  
+
+    ## Opcode
+        `0xFD 0x03`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x03])
 
@@ -856,7 +1719,22 @@ class A_FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
 
 
 class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `TBD, to be filled in manually by me`  
+
+    ## Opcode
+        *No `_opcode` found*
+
+    ## Size
+        2 bytes
+
+    Args:
+        arg_1 (int): Description here to be filled out by me
+        bits (Union[List[int], Set[int]]): Description here to be filled out by me
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _arg_1: int
@@ -3997,7 +4875,7 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_arg1(arg1)
-        self.set_arg2(arg2)
+        self.set_arg(arg2)
 
     def render(self) -> bytearray:
         return super().render(self.arg1, self.arg2, *self.destinations)

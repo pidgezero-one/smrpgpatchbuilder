@@ -1148,7 +1148,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0,
+    -1,
     0,
     0,
 ]
@@ -1423,7 +1423,7 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
     Any that don't already belong to another class
     
     **Size**  
-    Determined by the first byte (or two bytes if first byte is `0xFD`)
+    Determined by the first byte (or two bytes if first byte is `0xFD`). Same as the length of `contents` if you did it right.
     """
 
     _contents: bytearray

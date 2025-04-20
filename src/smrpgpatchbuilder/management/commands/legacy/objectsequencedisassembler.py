@@ -300,6 +300,22 @@ sequence_lens = [
 # replicant function - appears to mean it's the same as event function???
 # may need to import info from event disassembler
 fd_sequence_lens = [
+    2, #00
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3, #10
     2,
     2,
     2,
@@ -315,23 +331,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    3,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
+    2, #20
     5,
     2,
     2,
@@ -347,7 +347,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2,
+    2, #30
     8,
     8,
     7,
@@ -363,7 +363,7 @@ fd_sequence_lens = [
     2,
     5,
     7,
-    5,
+    5, #40
     2,
     2,
     2,
@@ -379,7 +379,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2,
+    2, #50
     2,
     2,
     2,
@@ -395,6 +395,60 @@ fd_sequence_lens = [
     2,
     2,
     2,
+    2, #60
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #70
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #80
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, #90
+    2,
+    2,
+    2,
+    2,
+    2,
     2,
     2,
     2,
@@ -404,62 +458,8 @@ fd_sequence_lens = [
     2,
     3,
     2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
     3,
-    2,
-    3,
-    2,
+    2, #A0
     2,
     2,
     2,
@@ -475,7 +475,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2,
+    2, #B0
     4,
     4,
     4,
@@ -491,7 +491,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2,
+    2, #C0
     2,
     2,
     2,
@@ -507,6 +507,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
+    2, #D0
     2,
     2,
     2,
@@ -522,6 +523,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
+    2, #e0
     2,
     2,
     2,
@@ -537,9 +539,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2,
-    2,
-    2,
+    2, #F0
     2,
     2,
     2,
@@ -1033,8 +1033,7 @@ names[0xD0] = named("jmp_to_script", short_int())
 names[0xD2] = named("jmp", short())
 names[0xD3] = named("jmp_to_subroutine", short())
 names[0xD4] = named("start_loop_n_times", byte_int())
-# technically undocumented, but it's a pretty safe assumption
-names[0xD5] = named("start_loop_n_frames", short_int())
+# 0xD5 undocumented
 names[0xD6] = named("load_mem", dbyte(0x7000))
 names[0xD7] = named("end_loop")
 names[0xD8] = jmp_if_bit_set(0xD8)
@@ -1120,12 +1119,11 @@ fd_names[0x3E] = named(
     short_int(),
     short(),
 )
-# 0x3F - 0x9B undocumented
-# 0x1A - 0x9B undocumente
+# 0x3F - 0x9D undocumented
 fd_names[0x9E] = named(
     "play_sound", byte(prefix="Sounds", table=sound_table), con_int(4)
 )
-# 0x9D - 0xAF undocumented
+# 0x9F - 0xAF undocumented
 fd_names[0xB0] = named("mem_700C_and_const", short())
 fd_names[0xB1] = named("mem_700C_or_const", short())
 fd_names[0xB2] = named("mem_700C_xor_const", short())

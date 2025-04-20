@@ -6562,9 +6562,9 @@ def convert_action_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "jmp_to_start_of_this_script_FA":
         cls = "A_JmpToStartOfThisScriptFA"
     elif cmd["command"] == "ret":
-        cls = "A_Return"
+        cls = "A_ReturnQueue"
     elif cmd["command"] == "end_all":
-        cls = "A_EndAll"
+        cls = "A_ReturnAll"
     elif cmd["command"] == "shadow_on":
         cls = "A_ShadowOn"
     elif cmd["command"] == "shadow_off":
@@ -6632,7 +6632,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         args["address"] = get_var(cmdargs[0])
         args["shift"] = str(cmdargs[1])
     elif cmd["command"] == "db":
-        cls = "A_Db"
+        cls = "A_UnknownCommand"
         include_argnames = False
         args["args"] = "%r" % bytearray(cmdargs)
     else:
