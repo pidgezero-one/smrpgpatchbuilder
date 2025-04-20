@@ -1,6 +1,7 @@
 """Base classes supporting event script assembly."""
 
 from typing import List, Optional, Type, cast, Union
+from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
     ActionScript,
 )
@@ -136,7 +137,7 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
 
     _target: AreaObject
     _sync: bool
-    _subscript: Subscript
+    _subscript: Subscript = Subscript([])
     _header_size: int = 2
 
     @property
@@ -179,8 +180,10 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
         self.set_target(target)
         self.set_sync(sync)
         if subscript is None:
-            subscript = []
-        self.set_subscript(subscript)
+            ss = []
+        else:
+            ss = deepcopy(subscript)
+        self._subscript = Subscript(ss)
 
 
 class ActionQueuePrototype(ActionSubcriptCommandPrototype):
@@ -262,7 +265,7 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
             subscript = []
         super().__init__(identifier)
         self._required_offset = required_offset
-        self._subscript = Subscript()
+        self._subscript = ActionScript()
         self.set_subscript(subscript)
 
     def render(self) -> bytearray:

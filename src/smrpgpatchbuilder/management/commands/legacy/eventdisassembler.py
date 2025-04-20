@@ -1137,6 +1137,7 @@ jmp_cmds = [
     0x3F,
     0x3E,
     0x3A,
+    0x3B,
     0xD2,
     0xD3,
     0x41,
@@ -2361,7 +2362,7 @@ class Command(BaseCommand):
                     "jumps": jump_args,
                 }
                 if nonembedded:
-                    new_sd["internal_offset"] = initial_offset
+                    new_sd["internal_offset"] = offset - initial_offset
                 if (line[0] < 0x30 and line[1] <= 0xF1) or nonembedded:
                     new_sd["subscript"] = subscript
                 sd.append(new_sd)
@@ -2396,6 +2397,8 @@ class Command(BaseCommand):
                     # "offset": cmd["original_offset"],
                     "identifier": cmd["identifier"],
                 }
+                if "internal_offset" in cmd.keys():
+                    cmd_with_named_jumps["internal_offset"] = cmd["internal_offset"]
 
                 if "subscript" in cmd.keys():
                     subscript = []

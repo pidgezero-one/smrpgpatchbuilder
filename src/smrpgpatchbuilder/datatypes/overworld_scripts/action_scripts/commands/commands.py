@@ -171,16 +171,23 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
     _length: Union[UInt8, UInt16]
 
     @property
-    def length(self) -> Union[UInt8, UInt16]:
+    def length(self) -> int:
         """The length of the pause, in frames"""
-        return self._length
-
+        return self._length + 1
+    
+    @property
+    def size(self) -> int:
+        if isinstance(self._length, UInt8):
+            return 2
+        else:
+            return 3
+        
     def set_length(self, length: int) -> None:
         """Set the length of the pause, in frames, from 1 to 0x10000"""
         if 1 <= length <= 0x100:
-            self._length = UInt8(length)
+            self._length = UInt8(length-1)
         elif 1 <= length <= 0x10000:
-            self._length = UInt16(length)
+            self._length = UInt16(length-1)
         else:
             raise InvalidCommandArgumentException(
                 f"illegal pause duration in {self.identifier}: {length}"
@@ -189,13 +196,9 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(self, length: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_length(length)
-        if isinstance(self.length, UInt8):
-            self._size: int = 2
-        else:
-            self._size: int = 3
 
     def render(self) -> bytearray:
-        frames = self.length - 1
+        frames = self._length
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
         return super().render(0xF1, frames)
@@ -219,14 +222,14 @@ class A_Return(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     _opcode: int = 0xFE
 
 
-class EndAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_EndAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Exits the execution of the current script or subroutine, as well as
     any events that may have called this script as a subroutine."""
 
     _opcode: int = 0xFF
 
 
-class Db(UsableActionScriptCommand, ActionScriptCommand):
+class A_Db(UsableActionScriptCommand, ActionScriptCommand):
     """Catch-all command class representing any command not represented by other
     ActionScriptCommand subclasses.
     Use this sparingly as there are no safety checks to make sure that
@@ -258,27 +261,27 @@ class Db(UsableActionScriptCommand, ActionScriptCommand):
 # visibility & collision
 
 
-class VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC running this script will have its sprite become visible."""
 
     _opcode: int = 0x00
 
 
-class VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC running this script will have its sprite become invisible.\n
     This does not impact or deactivate the NPC's collision data."""
 
     _opcode: int = 0x01
 
 
-class ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC's sprite is reset to its default state (mold 0 or sequence 0).
     Some other changes made by action script commands may also be reversed."""
 
     _opcode: int = 0x09
 
 
-class OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
+class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
     This will completely overwrite both set AND unset bits for the NPC."""
 
@@ -402,7 +405,7 @@ class OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(flags)
 
 
-class SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
     Specified bits will be set, unspecified bits will be unchanged."""
 
@@ -526,7 +529,7 @@ class SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(flags)
 
 
-class ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
+class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
     Bits set to "True" in this command will be cleared (as confusing as that sounds),
     unspecified bits will be unchanged."""
@@ -651,7 +654,7 @@ class ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(flags)
 
 
-class SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown how this differs from solidity bits)"""
 
     _opcode: int = 0x15
@@ -774,7 +777,7 @@ class SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(flags)
 
 
-class SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
     """Set the rules for how this NPC's sprite overlaps with the player's."""
 
     _opcode: int = 0x13
@@ -800,7 +803,7 @@ class SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.priority)
 
 
-class SetPriority(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown how this differs from vram priority)"""
 
     _opcode = bytearray([0xFD, 0x0F])
@@ -825,25 +828,25 @@ class SetPriority(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.priority)
 
 
-class ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Begin showing the NPC's shadow when airborne."""
 
     _opcode = bytearray([0xFD, 0x00])
 
 
-class ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC's shadow when airborne will no longer be visible."""
 
     _opcode = bytearray([0xFD, 0x01])
 
 
-class FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """When run, the NPC is not affected by gravity."""
 
     _opcode = bytearray([0xFD, 0x02])
 
 
-class FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """When run, the NPC becomes affected by gravity."""
 
     _opcode = bytearray([0xFD, 0x03])
@@ -852,7 +855,7 @@ class FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
 # memory
 
 
-class SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)"""
 
     _size: int = 2
@@ -872,7 +875,7 @@ class SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
     @property
     def bits(self) -> Set[int]:
         """(unknown)"""
-        return self.bits
+        return self._bits
 
     def set_bits(self, bits: Union[List[int], Set[int]]) -> None:
         """(unknown)"""
@@ -903,7 +906,7 @@ class SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
         )
 
 
-class ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
+class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)"""
 
     _size: int = 2
@@ -948,7 +951,7 @@ class ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
         self.set_props(arg_1, bits)
 
     def render(self) -> bytearray:
-        args = (self.arg_1, self.bits)
+        args = (self.arg_1, list(self.bits))
         if args == (0x08, [4]):
             opcode = bytearray([0xFD, 0x0A])
         elif args == (0x09, [7]):
@@ -976,7 +979,7 @@ class ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(opcode)
 
 
-class ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
+class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)"""
 
     _size: int = 2
@@ -1019,7 +1022,7 @@ class ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
         self.set_props(arg_1, bits)
 
     def render(self) -> bytearray:
-        args = (self.arg_1, self.bits)
+        args = (self.arg_1, list(self.bits))
         if args == (0x08, [3, 4]):
             opcode = bytearray([0xFD, 0x0B])
         elif args == (0x09, [7]):
@@ -1043,7 +1046,7 @@ class ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(opcode)
 
 
-class ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
+class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)"""
 
     _size: int = 2
@@ -1097,7 +1100,7 @@ class ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
         self.set_props(arg_1, set_bits, clear_bits)
 
     def render(self) -> bytearray:
-        args = (self.arg_1, self.set_bits, self.clear_bits)
+        args = (self.arg_1, list(self.set_bits), list(self.clear_bits))
         if args == (0x09, [5], [4, 6]):
             return super().render(0xFD, 0x0E)
         if args == (0x0C, [4], [3, 5]):
@@ -1107,7 +1110,7 @@ class ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
         )
 
 
-class SetBit(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
     """Set a bit in the range of long-term memory bits dedicated for use in
     event and action scripts.\n
     It is recommended to specify the bit using the const names defined for
@@ -1143,7 +1146,7 @@ class SetBit(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(opcode, arg)
 
 
-class ClearBit(UsableActionScriptCommand, ActionScriptCommand):
+class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
     """Clear a bit in the range of long-term memory bits dedicated for use in
     event and action scripts.\n
     It is recommended to specify the bit using the const names defined for
@@ -1183,7 +1186,7 @@ class ClearBit(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(opcode, arg)
 
 
-class JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Jump to a point in script bank indicated by the provided identifier,
     but only if the given long-term memory bit is set.\n
     It is recommended to specify the bit using the const names defined for
@@ -1223,7 +1226,7 @@ class JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(opcode, arg, *self.destinations)
 
 
-class JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Jump to a point in script bank indicated by the provided identifier,
     but only if the given long-term memory bit is clear.\n
     It is recommended to specify the bit using the const names defined for
@@ -1268,7 +1271,7 @@ class JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(opcode, arg, *self.destinations)
 
 
-class SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """For the literal value currently stored at $700C, set the bit that
     corresponds to this index (starting from $7040 bit 0).\n
     For example, if $700C is set to 5, then $7040 bit 5 will be set. If
@@ -1277,7 +1280,7 @@ class SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     _opcode: int = 0xA3
 
 
-class ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """For the literal value currently stored at $700C, clear the bit that
     corresponds to this index (starting from $7040 bit 0).\n
     For example, if $700C is set to 5, then $7040 bit 5 will be cleared. If
@@ -1286,7 +1289,7 @@ class ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs
     _opcode: int = 0xA7
 
 
-class JmpIfMem704XAt700CBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfMem704XAt700CBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Jump to a point in script bank indicated by the provided identifier,
     but only if the bit corresponding to the index indicated by the value
     of $700C is set.\n
@@ -1301,7 +1304,7 @@ class JmpIfMem704XAt700CBitSet(UsableActionScriptCommand, ActionScriptCommandWit
         return super().render(*self.destinations)
 
 
-class JmpIfMem704XAt700CBitClear(
+class A_JmpIfMem704XAt700CBitClear(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """Jump to a point in script bank indicated by the provided identifier,
@@ -1318,7 +1321,7 @@ class JmpIfMem704XAt700CBitClear(
         return super().render(*self.destinations)
 
 
-class SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
     """Set the given long-term memory variable to the given numerical literal.\n
     It is recommended to use contextual const names for these variables."""
 
@@ -1387,7 +1390,7 @@ class SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         )
 
 
-class AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
+class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
     """Add the given numerical literal to the given long-term memory variable.\n
     It is recommended to use contextual const names for these variables."""
 
@@ -1450,7 +1453,7 @@ class AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         )
 
 
-class Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
+class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
     """Increase the given variable by 1."""
 
     def render(self) -> bytearray:
@@ -1465,7 +1468,7 @@ class Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         )
 
 
-class Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
+class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
     """Decrease the given variable by 1."""
 
     def render(self) -> bytearray:
@@ -1480,7 +1483,7 @@ class Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         )
 
 
-class CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
+class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
     """Copy the value from one variable to another variable."""
 
     _from_var: Union[ShortVar, ByteVar]
@@ -1520,6 +1523,8 @@ class CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
+        self._from_var = from_var
+        self._to_var = to_var
         self.set_addresses(from_var, to_var)
 
     def render(self) -> bytearray:
@@ -1539,7 +1544,7 @@ class CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
         )
 
 
-class CompareVarToConst(
+class A_CompareVarToConst(
     UsableActionScriptCommand, ActionScriptCommandShortAddrAndValueOnly
 ):
     """Compare the value stored at a given variable to a literal constant.
@@ -1562,7 +1567,7 @@ class CompareVarToConst(
         super().__init__(address, value, identifier)
 
 
-class Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Compare the value stored at $700C to the value stored at a given variable.
     The result of this comparison can be used in JmpIfComparisonResultIs... commands
     or JmpIfLoadedMemory... commands."""
@@ -1571,7 +1576,7 @@ class Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     _size: int = 2
 
 
-class JmpIfComparisonResultIsGreaterOrEqual(
+class A_JmpIfComparisonResultIsGreaterOrEqual(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """Depending on the result of an earlier CompareVarToConst or Compare700CToVar,
@@ -1585,7 +1590,7 @@ class JmpIfComparisonResultIsGreaterOrEqual(
         return super().render(*self.destinations)
 
 
-class JmpIfComparisonResultIsLesser(
+class A_JmpIfComparisonResultIsLesser(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """Depending on the result of an earlier CompareVarToConst or Compare700CToVar,
@@ -1599,7 +1604,7 @@ class JmpIfComparisonResultIsLesser(
         return super().render(*self.destinations)
 
 
-class SetVarToRandom(
+class A_SetVarToRandom(
     UsableActionScriptCommand, ActionScriptCommandShortAddrAndValueOnly
 ):
     """Set the given variable to a random number between 0 and the
@@ -1611,21 +1616,21 @@ class SetVarToRandom(
         return super().render(0xB7, self.address, self.value)
 
 
-class AddVarTo700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_AddVarTo700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Add the value stored at the given variable to $700C."""
 
     _opcode: int = 0xB8
     _size: int = 2
 
 
-class DecVarFrom700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_DecVarFrom700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Subtract the value stored at the given variable to $700C."""
 
     _opcode: int = 0xB9
     _size: int = 2
 
 
-class SwapVars(UsableActionScriptCommand, ActionScriptCommand):
+class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
     """Switch the values stored at two variables between each other."""
 
     _opcode: int = 0xBD
@@ -1665,21 +1670,21 @@ class SwapVars(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.from_var, self.to_var)
 
 
-class Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7010, $7012, and $7014
     to replace the 16 bit values stored at $7016, $7018, and $701A."""
 
     _opcode: int = 0xBE
 
 
-class Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7016, $7018, and $701A
     to replace the 16 bit values stored at $7010, $7012, and $7014."""
 
     _opcode: int = 0xBF
 
 
-class JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the given variable matches the given value, jump to the section of code
     beginning with the given identifier."""
 
@@ -1751,7 +1756,7 @@ class JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps
         )
 
 
-class JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the given variable does not match the given value, jump to the section of code
     beginning with the given identifier."""
 
@@ -1823,7 +1828,7 @@ class JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJ
         )
 
 
-class JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If all of the stated bits are clear on $700C, go to to the script command
     indicated by the given identifier."""
 
@@ -1857,7 +1862,7 @@ class JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWithJm
         return super().render(flags, *self.destinations)
 
 
-class JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If any of the stated bits are set on $700C, go to to the script command
     indicated by the given identifier."""
 
@@ -1891,7 +1896,7 @@ class JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJmps
         return super().render(flags, *self.destinations)
 
 
-class JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """There is a 2/3 chance that, when this command is executed, a goto will be performed
     to the command indicated by the given identifier."""
 
@@ -1902,7 +1907,7 @@ class JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(*self.destinations)
 
 
-class JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """There is a 50/50 chance that, when this command is executed, a goto will be performed
     to the command indicated by the given identifier."""
 
@@ -1913,7 +1918,7 @@ class JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(*self.destinations)
 
 
-class JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command.
     Jump to the code indicated by the given identifier if the comparison result was zero
     (both values were equal)."""
@@ -1925,7 +1930,7 @@ class JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJmp
         return super().render(*self.destinations)
 
 
-class JmpIfLoadedMemoryIsAboveOrEqual0(
+class A_JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """'Loaded Memory' in most cases refers to the result of a comparison command.
@@ -1939,7 +1944,7 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
         return super().render(*self.destinations)
 
 
-class JmpIfLoadedMemoryIsBelow0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfLoadedMemoryIsBelow0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command.
     Jump to the code indicated by the given identifier if the comparison result indicated
     that the first value was greater than the second value."""
@@ -1951,7 +1956,7 @@ class JmpIfLoadedMemoryIsBelow0(UsableActionScriptCommand, ActionScriptCommandWi
         return super().render(*self.destinations)
 
 
-class JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command.
     Jump to the code indicated by the given identifier if the comparison result was not zero
     (values were not equal, irrespective of which was larger or smaller)."""
@@ -1963,7 +1968,7 @@ class JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWith
         return super().render(*self.destinations)
 
 
-class Mem700CAndConst(
+class A_Mem700CAndConst(
     UsableActionScriptCommand, ActionScriptCommandBasicShortOperation
 ):
     """Perform an AND operation between the value of $700C and a given literal number,
@@ -1972,7 +1977,7 @@ class Mem700CAndConst(
     _opcode = bytearray([0xFD, 0xB0])
 
 
-class Mem700CAndVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_Mem700CAndVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform an AND operation between the value of $700C and a given variable,
     save the result to $700C."""
 
@@ -1980,14 +1985,14 @@ class Mem700CAndVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     _size: int = 3
 
 
-class Mem700COrConst(UsableActionScriptCommand, ActionScriptCommandBasicShortOperation):
+class A_Mem700COrConst(UsableActionScriptCommand, ActionScriptCommandBasicShortOperation):
     """Perform an OR operation between the value of $700C and a given literal number,
     save the result to $700C."""
 
     _opcode = bytearray([0xFD, 0xB1])
 
 
-class Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform an OR operation between the value of $700C and a given variable,
     save the result to $700C."""
 
@@ -1995,7 +2000,7 @@ class Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     _size: int = 3
 
 
-class Mem700CXorConst(
+class A_Mem700CXorConst(
     UsableActionScriptCommand, ActionScriptCommandBasicShortOperation
 ):
     """Perform a XOR operation between the value of $700C and a given literal number,
@@ -2004,7 +2009,7 @@ class Mem700CXorConst(
     _opcode = bytearray([0xFD, 0xB2])
 
 
-class Mem700CXorVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_Mem700CXorVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform a XOR operation between the value of $700C and a given variable,
     save the result to $700C."""
 
@@ -2012,7 +2017,7 @@ class Mem700CXorVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     _size: int = 3
 
 
-class VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
+class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
     """Shift the specified variable to the left by the given amount of bits."""
 
     _opcode = bytearray([0xFD, 0xB6])
@@ -2050,17 +2055,17 @@ class VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.address, 0xFF - self.shift)
 
 
-class LoadMemory(UsableActionScriptCommand, ActionScriptCommandShortMem):
+class A_LoadMemory(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """(unknown)"""
 
     _opcode = 0xD6
-    _size: int = 3
+    _size: int = 2
 
 
 # sequencing
 
 
-class SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
     """Change the active sprite sequence or static mold for the NPC."""
 
     _opcode: int = 0x08
@@ -2174,25 +2179,25 @@ class SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(arg)
 
 
-class SequencePlaybackOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_SequencePlaybackOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to resume."""
 
     _opcode: int = 0x02
 
 
-class SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Halts the NPC's active sprite sequence."""
 
     _opcode: int = 0x03
 
 
-class SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to loop infinitely."""
 
     _opcode: int = 0x04
 
 
-class SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to half upon completion of its
     current iteration."""
 
@@ -2217,7 +2222,6 @@ class _SetAnimationSpeed(ActionScriptCommand):
     def set_speed(self, speed: SequenceSpeed) -> None:
         """Designate the speed at which to perform this action."""
         self._speed = speed
-        assert self.speed or self.sequence
 
     @property
     def sequence(self) -> bool:
@@ -2227,7 +2231,7 @@ class _SetAnimationSpeed(ActionScriptCommand):
     def set_sequence(self, sequence: bool) -> None:
         """If true, this change will apply to the character's sequence playback speed."""
         self._sequence = sequence
-        assert self.speed or self.sequence
+        assert self.walking or self.sequence
 
     @property
     def walking(self) -> bool:
@@ -2237,6 +2241,7 @@ class _SetAnimationSpeed(ActionScriptCommand):
     def set_walking(self, walking: bool) -> None:
         """If true, this change will apply to the character's walking speed."""
         self._walking = walking
+        assert self.walking or self.sequence
 
     def __init__(
         self,
@@ -2247,15 +2252,18 @@ class _SetAnimationSpeed(ActionScriptCommand):
     ) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
-        self.set_sequence(sequence)
-        self.set_walking(walking)
+        if sequence:
+            self.set_sequence(sequence)
+        if walking:
+            self.set_walking(walking)
 
     def render(self) -> bytearray:
+        assert self.walking or self.sequence
         flags = bools_to_int(self.walking, self.sequence) << 6
         return super().render(UInt8(self.speed + flags))
 
 
-class SetSequenceSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
+class A_SetSequenceSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to the duration of each frame in the NPC's
     active sequence."""
 
@@ -2267,7 +2275,7 @@ class SetSequenceSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
         super().__init__(speed, sequence=True, walking=False, identifier=identifier)
 
 
-class SetWalkingSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
+class A_SetWalkingSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to the NPC's walking speed."""
 
     def __init__(
@@ -2278,7 +2286,7 @@ class SetWalkingSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
         super().__init__(speed, sequence=False, walking=True, identifier=identifier)
 
 
-class SetAllSpeeds(_SetAnimationSpeed, UsableActionScriptCommand):
+class A_SetAllSpeeds(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to both the duration of each frame in the NPC's
     active sequence and the NPC's walking speed."""
 
@@ -2290,7 +2298,7 @@ class SetAllSpeeds(_SetAnimationSpeed, UsableActionScriptCommand):
         super().__init__(speed, sequence=True, walking=True, identifier=identifier)
 
 
-class EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand):
+class A_EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)"""
 
     _args: bytearray
@@ -2315,14 +2323,14 @@ class EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.args)
 
 
-class MaximizeSequenceSpeed(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_MaximizeSequenceSpeed(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the NPC's sequence speed to its highest value.\n
     Not known if this actually works."""
 
     _opcode: int = 0x85
 
 
-class MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the NPC's sequence speed to its highest value.\n
     Not known if this actually works."""
 
@@ -2332,21 +2340,21 @@ class MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNoAr
 # positioning
 
 
-class FixedFCoordOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FixedFCoordOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC will not change from the direction it is currently facing,
     regardless of any other movements makes."""
 
     _opcode: int = 0x06
 
 
-class FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The direction the NPC faces will depend on its other actions and
     not be locked."""
 
     _opcode: int = 0x07
 
 
-class JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If this NPC and the specified NPC are less than the given number of tiles
     apart (ignoring Z axis), go to the section of code indicated by the identifier."""
 
@@ -2404,7 +2412,7 @@ class JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWithJ
         )
 
 
-class JmpIfObjectWithinRangeSameZ(
+class A_JmpIfObjectWithinRangeSameZ(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """If this NPC and the specified NPC are less than the given number of tiles
@@ -2465,307 +2473,327 @@ class JmpIfObjectWithinRangeSameZ(
         )
 
 
-class Walk1StepEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step east"""
 
     _opcode: int = 0x40
 
 
-class Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step southeast"""
 
     _opcode: int = 0x41
 
 
-class Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step south"""
 
     _opcode: int = 0x42
 
 
-class Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step southwest"""
 
     _opcode: int = 0x43
 
 
-class Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step west"""
 
     _opcode: int = 0x44
 
 
-class Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step northwest"""
 
     _opcode: int = 0x45
 
 
-class Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step note"""
 
     _opcode: int = 0x46
 
 
-class Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step northeast"""
 
     _opcode: int = 0x47
 
 
-class Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step in the direction the NPC is currently facing"""
 
     _opcode: int = 0x48
 
 
-class AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Rise 1 step on the Z axis"""
 
     _opcode: int = 0x4A
 
 
-class DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Lower 1 step on the Z axis"""
 
     _opcode: int = 0x4B
 
 
-class WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps eastward."""
 
     _opcode: int = 0x50
 
 
-class WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southeastward."""
 
     _opcode: int = 0x51
 
 
-class WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southward."""
 
     _opcode: int = 0x52
 
 
-class WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southwestward."""
 
     _opcode: int = 0x53
 
 
-class WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps westward."""
 
     _opcode: int = 0x54
 
 
-class WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northwestward."""
 
     _opcode: int = 0x55
 
 
-class WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northward."""
 
     _opcode: int = 0x56
 
 
-class WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northeastward."""
 
     _opcode: int = 0x57
 
 
-class WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps in the direction the NPC is currently facing."""
 
     _opcode: int = 0x58
 
 
-class ShiftZ20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ShiftZ20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Shift 20 steps upward on the Z axis."""
 
     _opcode: int = 0x59
 
 
-class ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Shift the given number of steps upward on the Z axis."""
 
     _opcode: int = 0x5A
 
 
-class ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
+class A_ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Shift the given number of steps downward on the Z axis."""
 
     _opcode: int = 0x5B
 
 
-class ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Shift 20 steps upward on the Z axis."""
 
     _opcode: int = 0x5C
 
 
-class ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Shift 20 steps downward on the Z axis."""
 
     _opcode: int = 0x5D
 
 
-class WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels eastward."""
 
     _opcode: int = 0x60
 
 
-class WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southeastward."""
 
     _opcode: int = 0x61
 
 
-class WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southward."""
 
     _opcode: int = 0x62
 
 
-class WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southwestward."""
 
     _opcode: int = 0x63
 
 
-class WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels westward."""
 
     _opcode: int = 0x64
 
 
-class WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northwestward."""
 
     _opcode: int = 0x65
 
 
-class WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northward."""
 
     _opcode: int = 0x66
 
 
-class WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northeastward."""
 
     _opcode: int = 0x67
 
 
-class WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels in the direction the NPC is currently facing."""
 
     _opcode: int = 0x68
 
 
-class WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 16 pixels in the direction the NPC is currently facing."""
 
     _opcode: int = 0x69
 
 
-class ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Shift the given number of pixels upward on the Z axis."""
 
     _opcode: int = 0x6A
 
 
-class ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
+class A_ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Shift the given number of pixels downward on the Z axis."""
 
     _opcode: int = 0x6B
 
 
-class FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face eastward."""
 
     _opcode: int = 0x70
 
 
-class FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face eastward (unknown if this is different from FaceEast)."""
 
     _opcode: int = 0x7C
 
 
-class FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southeastward."""
 
     _opcode: int = 0x71
 
 
-class FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southward."""
 
     _opcode: int = 0x72
 
 
-class FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southwestward."""
 
     _opcode: int = 0x73
 
 
-class FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
     """Face southwestward (unknown if this is different from FaceSouthwest)."""
 
+    _size: int = 2
+    _arg: UInt8 = UInt8(0)
     _opcode: int = 0x7D
 
+    @property
+    def arg(self) -> UInt8:
+        """(unknown)"""
+        return self._arg
 
-class FaceWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+    def set_arg(self, arg: int) -> None:
+        """(unknown)"""
+        self._arg = UInt8(arg)
+
+    def __init__(
+        self, arg: int=0, identifier: Optional[str] = None
+    ) -> None:
+        super().__init__(identifier)
+        self.set_arg(arg)
+
+    def render(self) -> bytearray:
+        return super().render(self.arg)
+
+
+class A_FaceWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face westward."""
 
     _opcode: int = 0x74
 
 
-class FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northwestward."""
 
     _opcode: int = 0x75
 
 
-class FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northward."""
 
     _opcode: int = 0x76
 
 
-class FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northeastward."""
 
     _opcode: int = 0x77
 
 
-class FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face toward the player."""
 
     _opcode: int = 0x78
 
 
-class TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Turn clockwise 45 degrees once."""
 
     _opcode: int = 0x79
 
 
-class TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Turn any random direction supported by the NPC's VRAMsetting."""
 
     _opcode: int = 0x7A
 
 
-class TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptCommand):
+class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptCommand):
     """Turn clockwise 45 degrees, repeated a given number of times."""
 
     _opcode: int = 0x7B
@@ -2789,7 +2817,7 @@ class TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptComman
         return super().render(self.count)
 
 
-class JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
+class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
     """The NPC jumps off its current surface to a given height (unknown units)."""
 
     _size: int = 3
@@ -2827,40 +2855,40 @@ class JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(0x7F, self.height)
 
 
-class WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Walk to the indicated X-Y coordinates (performs walking animation)."""
 
     _opcode: int = 0x80
 
 
-class WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Walk the indicated number of steps in the X and Y directions
     (performs walking animation)."""
 
     _opcode: int = 0x81
 
 
-class ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift to the indicated X-Y coordinates (does not perform walking animation)."""
 
     _opcode: int = 0x82
 
 
-class ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift the indicated number of steps in the X and Y directions
     (does not perform walking animation)."""
 
     _opcode: int = 0x83
 
 
-class ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift the indicated number of pixels in the X and Y directions
     (does not perform walking animation)."""
 
     _opcode: int = 0x84
 
 
-class TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
+class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the X/Y coordinates of the specified object
     (ignore Z coord)."""
 
@@ -2889,7 +2917,7 @@ class TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.target_npc)
 
 
-class TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
+class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the X/Y/Z coordinates of the specified object."""
 
     _opcode: int = 0x95
@@ -2917,41 +2945,41 @@ class TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.target_npc)
 
 
-class RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)"""
 
     _opcode: int = 0x88
 
 
-class TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Instantly transfer this NPC to the X/Y pixel coordinates represented by the
     values currently stored at $7016 and $7018."""
 
     _opcode: int = 0x89
 
 
-class TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Transfer this NPC to the X/Y/Z pixel coordinates represented by the
     values currently stored at $7016, $7018, and $701A."""
 
     _opcode: int = 0x99
 
 
-class WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y pixel coordinates represented by the
     values currently stored at $7016 and $7018."""
 
     _opcode: int = 0x8A
 
 
-class WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y/Z pixel coordinates represented by the
     values currently stored at $7016, $7018, and $701A."""
 
     _opcode: int = 0x98
 
 
-class BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
+class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
     """This NPC jumps to a given X/Y coord set while also jumping to the specified height."""
 
     _opcode: int = 0x90
@@ -2999,7 +3027,7 @@ class BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.x, self.y, self.height)
 
 
-class BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
+class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
     """This NPC jumps the ground distance given by an X/Y coord set
     while also jumping to the specified height."""
 
@@ -3048,7 +3076,7 @@ class BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.x, self.y, self.height)
 
 
-class TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
+class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the given X/Y/Z coordinates, facing the given direction."""
 
     _opcode: int = 0x92
@@ -3114,7 +3142,7 @@ class TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.x, self.y, final_byte)
 
 
-class TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
+class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to coordinates which are X/Y/Z units away,
     facing the given direction."""
 
@@ -3181,7 +3209,7 @@ class TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.x, self.y, final_byte)
 
 
-class TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
+class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to coordinates which are X/Y/Z pixels away,
     facing the given direction."""
 
@@ -3251,7 +3279,7 @@ class TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
 # room objects and camera
 
 
-class Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
+class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
     """Sets $700C to the pixel or isometric coordinate value of one dimension
     from any NPC's current coordinates."""
 
@@ -3276,8 +3304,7 @@ class Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         return self._coord
 
     def set_coord(self, coord: Coord) -> None:
-        """Set the specific (not-F) coordinate whose value to store to $700C."""
-        assert coord != COORD_F
+        """Set the specific coordinate whose value to store to $700C."""
         self._coord = coord
 
     @property
@@ -3324,7 +3351,7 @@ class Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(opcode, arg_1)
 
 
-class CreatePacketAtObjectCoords(
+class A_CreatePacketAtObjectCoords(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """Create a packet spawning at any NPC's current coordinates.\n
@@ -3369,7 +3396,7 @@ class CreatePacketAtObjectCoords(
         return super().render(self.packet_id, self.target_npc, *self.destinations)
 
 
-class CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of
     $7010, $7012, and $7014.\n
     It is recommended to use contextual packet name constants for this."""
@@ -3401,7 +3428,7 @@ class CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmps)
         return super().render(self.packet_id, *self.destinations)
 
 
-class CreatePacketAt7010WithEvent(
+class A_CreatePacketAt7010WithEvent(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """Create a packet at pixel coordinates determined by the current values of
@@ -3451,7 +3478,7 @@ class CreatePacketAt7010WithEvent(
         return super().render(self.packet_id, self.event_id, *self.destinations)
 
 
-class SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
+class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
     """Summon the specified NPC to the given level.\n
     This will not really do anything if the NPC has not already been
     removed from the given level.\n
@@ -3494,7 +3521,7 @@ class SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptCommand
         return super().render(arg_1)
 
 
-class SummonObjectAt70A8ToCurrentLevel(
+class A_SummonObjectAt70A8ToCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
 ):
     """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
@@ -3505,7 +3532,7 @@ class SummonObjectAt70A8ToCurrentLevel(
     _opcode: int = 0xF4
 
 
-class RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
+class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
     """Remove the specified NPC to the given level.\n
     This will not really do anything if the NPC has already been
     removed from the given level.\n
@@ -3549,7 +3576,7 @@ class RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptComma
         return super().render(arg_1)
 
 
-class RemoveObjectAt70A8FromCurrentLevel(
+class A_RemoveObjectAt70A8FromCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
 ):
     """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
@@ -3560,7 +3587,7 @@ class RemoveObjectAt70A8FromCurrentLevel(
     _opcode: int = 0xF5
 
 
-class EnableObjectTriggerInSpecificLevel(
+class A_EnableObjectTriggerInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommand
 ):
     """Enable the object trigger of the NPC to the given level.\n
@@ -3607,7 +3634,7 @@ class EnableObjectTriggerInSpecificLevel(
         return super().render(arg_1)
 
 
-class EnableTriggerOfObjectAt70A8InCurrentLevel(
+class A_EnableTriggerOfObjectAt70A8InCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
 ):
     """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
@@ -3622,7 +3649,7 @@ class EnableTriggerOfObjectAt70A8InCurrentLevel(
     _opcode: int = 0xF6
 
 
-class DisableObjectTriggerInSpecificLevel(
+class A_DisableObjectTriggerInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommand
 ):
     """Disable the object trigger of the NPC to the given level.\n
@@ -3670,7 +3697,7 @@ class DisableObjectTriggerInSpecificLevel(
         return super().render(arg_1)
 
 
-class DisableTriggerOfObjectAt70A8InCurrentLevel(
+class A_DisableTriggerOfObjectAt70A8InCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
 ):
     """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
@@ -3681,7 +3708,7 @@ class DisableTriggerOfObjectAt70A8InCurrentLevel(
     _opcode: int = 0xF7
 
 
-class JmpIfObjectInSpecificLevel(
+class A_JmpIfObjectInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """If the specified NPC is not present in the specified level,
@@ -3729,7 +3756,7 @@ class JmpIfObjectInSpecificLevel(
         return super().render(arg_1, *self.destinations)
 
 
-class JmpIfObjectNotInSpecificLevel(
+class A_JmpIfObjectNotInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
     """If the specified NPC is not present in the specified level,
@@ -3778,7 +3805,7 @@ class JmpIfObjectNotInSpecificLevel(
         return super().render(arg_1, *self.destinations)
 
 
-class JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the specified NPC is currently airborne,
     jump to the code section beginning with the specified identifier."""
 
@@ -3808,7 +3835,7 @@ class JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         return super().render(self._target_npc, *self.destinations)
 
 
-class Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the value of $700C to the ID of the current level."""
 
     _opcode: int = 0xC3
@@ -3817,7 +3844,7 @@ class Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoArgs
 # controls
 
 
-class Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the bits of $700C to correspond to all currently pressed buttons.\n
     Dpad Left = 0\n
     Dpad Right = 1\n
@@ -3831,7 +3858,7 @@ class Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoArg
     _opcode: int = 0xCA
 
 
-class Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the bits of $700C to correspond to an individual tapped button.\n
     Dpad Left = 0\n
     Dpad Right = 1\n
@@ -3848,32 +3875,42 @@ class Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs
 # palettes
 
 
-class SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
+class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
     """Change the row offset of the default palette."""
 
     _opcode: int = 0x0D
     _size: int = 2
-    _row: UInt8
+    _row: UInt4
+    _upper: UInt4
 
     @property
-    def row(self) -> UInt8:
+    def row(self) -> UInt4:
         """The row offset relative to the default palette."""
         return self._row
 
     def set_row(self, row: int) -> None:
         """Designate the row offset relative to the default palette for this command."""
-        assert 0 <= row <= 15
-        self._row = UInt8(row)
+        self._row = UInt4(row)
 
-    def __init__(self, row: int, identifier: Optional[str] = None) -> None:
+    @property
+    def upper(self) -> UInt4:
+        """(unknown)"""
+        return self._upper 
+    
+    def set_upper(self, upper: int) -> None:
+        """(unknown)"""
+        self._upper = UInt4(upper)
+
+    def __init__(self, row: int, upper: int = 0, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_row(row)
+        self.set_upper(upper)
 
     def render(self) -> bytearray:
-        return super().render(self.row)
+        return super().render(UInt8((self._upper << 4) + self.row))
 
 
-class IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
+class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
     """Increase the row offset relative to the current palette by a given amount."""
 
     _rows: UInt8
@@ -3907,25 +3944,25 @@ class IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
 # branching / jumps
 
 
-class BPL262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_BPL262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)"""
 
     _opcode: int = 0x21
 
 
-class BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)"""
 
     _opcode: int = 0x22
 
 
-class BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)"""
 
     _opcode: int = 0x2A
 
 
-class UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """(unknown)"""
 
     _opcode: int = 0x3C
@@ -3960,13 +3997,13 @@ class UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_arg1(arg1)
-        self.set_arg1(arg2)
+        self.set_arg2(arg2)
 
     def render(self) -> bytearray:
         return super().render(self.arg1, self.arg2, *self.destinations)
 
 
-class JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
+class A_JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the player is currently airborne, go to the section of code
     beginning with the specified identifier."""
 
@@ -3980,13 +4017,13 @@ class JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 # music
 
 
-class StopSound(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+class A_StopSound(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Halt the playback of any sound effect that is currently playing."""
 
     _opcode: int = 0x9B
 
 
-class PlaySound(UsableActionScriptCommand, ActionScriptCommand):
+class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect by ID on the specified chanel.\n
     It is recommended to use contextual const names for sound effect IDs."""
 
@@ -4032,7 +4069,7 @@ class PlaySound(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.sound)
 
 
-class PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
+class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect at a given balance.\n
     It is recommended to use contextual const names for sound effect IDs."""
 
@@ -4072,7 +4109,7 @@ class PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
         return super().render(self.sound, self.balance)
 
 
-class FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
+class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
     """Fade out the currently playing sound to a specified volume over a specified
     time period (in frames)."""
 

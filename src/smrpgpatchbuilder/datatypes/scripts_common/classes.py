@@ -16,7 +16,7 @@ from copy import deepcopy
 
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar, TimerVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 from smrpgpatchbuilder.datatypes.numbers.classes import Int8, Int16, UInt16, UInt8, UInt4
 
@@ -135,7 +135,7 @@ class ScriptCommand:
                     f"illegal opcode in {self.identifier}: {self._opcode}"
                 )
         for arg in args:
-            if isinstance(arg, (ShortVar, ByteVar)):
+            if isinstance(arg, (ShortVar, ByteVar, TimerVar)):
                 output.append(arg.to_byte())
             elif isinstance(arg, UInt16):
                 output.extend(arg.little_endian())
@@ -545,6 +545,7 @@ class ScriptBank(Generic[ScriptT]):
             if key not in self.addresses:
                 if "ILLEGAL_JUMP_" in key:
                     destination.set_address((int(key[-4:], 16) &0xFFFF))
+                    return
                 else:
                     raise IdentifierException(f"couldn't find destination {key}")
             destination.set_address(self.addresses[key] % 0xFFFF)

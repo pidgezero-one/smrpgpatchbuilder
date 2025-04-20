@@ -1,6 +1,7 @@
 """Base classes supporting event script assembly."""
 
 from typing import List, Optional, Type, Union
+from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
     UsableActionScriptCommand,
 )
@@ -46,7 +47,11 @@ class EventScript(Script[UsableEventScriptCommand]):
         super().set_contents(script)
 
     def __init__(self, script: Optional[List[UsableEventScriptCommand]] = None) -> None:
-        super().__init__(script)
+        if script is None:
+            ss = []
+        else:
+            ss = deepcopy(script)
+        super().__init__(ss)
 
     def insert_before_nth_command(
         self, index: int, command: UsableEventScriptCommand
@@ -175,9 +180,9 @@ class EventScriptBank(ScriptBank[EventScript]):
         else:
             position += command.size
 
-        if position >= self.end:
+        if position > self.end:
             raise ScriptBankTooLongException(
-                f"command exceeded max bank size: {key} @ {position:06X}"
+                f"command exceeded max bank size: {key} @ 0x{position:06X}"
             )
         return position
 
@@ -189,15 +194,19 @@ class EventScriptBank(ScriptBank[EventScript]):
         command: UsableEventScriptCommand
 
         # build command name and pointer table : address table
-        for script_id, script in self.scripts:
+        for script_id, script in enumerate(self.scripts):
+            # if script_id <  549:
+            #print(script_id, f"0x{position:06X}")
             self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
             initial_position = position
-            for index, command in script.contents:
+            for index, command in enumerate(script.contents):
+                # if script_id == 687:
+                #     print(script_id, index, f"0x{position:06X}", command)
                 # If this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
                 if isinstance(command, NonEmbeddedActionQueuePrototype):
                     relative_offset: int = position - initial_position
                     if relative_offset <= command.required_offset:
-                        for _ in range(relative_offset):
+                        for _ in range(command.required_offset - relative_offset):
                             script.contents.insert(index, StopSound())
                             position += 1
                     else:
@@ -217,7 +226,7 @@ class EventScriptBank(ScriptBank[EventScript]):
                 self._populate_jumps(command.subscript)
 
         # finalize bytes
-        for script in self.scripts:
+        for i, script in enumerate(self.scripts):
             self.script_bytes.extend(script.render())
 
         # fill empty bytes

@@ -39,7 +39,7 @@ end = 0x21BFFF  # it would be extremely good to expand into this space
 pointers = {"start": 0x210000, "end": 0x2107FF}
 
 sequence_lens = [
-    1,
+    1, #00
     1,
     1,
     1,
@@ -55,12 +55,12 @@ sequence_lens = [
     2,
     2,
     1,
+    2, #10
     2,
     2,
     2,
     2,
     2,
-    2,
     1,
     1,
     1,
@@ -71,7 +71,7 @@ sequence_lens = [
     1,
     1,
     1,
-    2,
+    2, #20
     1,
     1,
     2,
@@ -87,7 +87,7 @@ sequence_lens = [
     3,
     3,
     7,
-    3,
+    3, #30
     3,
     3,
     3,
@@ -103,6 +103,7 @@ sequence_lens = [
     3,
     5,
     4,
+    1, #40
     1,
     1,
     1,
@@ -118,24 +119,7 @@ sequence_lens = [
     1,
     1,
     1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    1,
-    2,
-    2,
-    1,
-    1,
-    1,
-    1,
-    2,
+    2, #50
     2,
     2,
     2,
@@ -151,7 +135,23 @@ sequence_lens = [
     1,
     1,
     1,
+    2, #60
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
     1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1, #70
     1,
     1,
     1,
@@ -167,7 +167,7 @@ sequence_lens = [
     2,
     3,
     3,
-    3,
+    3, #80
     3,
     3,
     3,
@@ -183,11 +183,11 @@ sequence_lens = [
     1,
     1,
     1,
+    4, #90
     4,
     4,
     4,
     4,
-    4,
     2,
     2,
     2,
@@ -199,14 +199,14 @@ sequence_lens = [
     3,
     3,
     3,
+    2, #A0
+    2,
+    2,
+    1,
     2,
     2,
     2,
     1,
-    2,
-    2,
-    2,
-    1,
     3,
     3,
     2,
@@ -215,23 +215,23 @@ sequence_lens = [
     3,
     1,
     1,
-    4,
-    4,
-    2,
-    2,
-    2,
-    2,
-    3,
+    4, #B0
     4,
     2,
     2,
     2,
     2,
     3,
+    4,
+    2,
+    2,
+    2,
+    2,
+    3,
     3,
     1,
     1,
-    3,
+    3, #C0
     2,
     4,
     1,
@@ -247,7 +247,7 @@ sequence_lens = [
     1,
     1,
     1,
-    3,
+    3, #D0
     1,
     3,
     3,
@@ -263,7 +263,7 @@ sequence_lens = [
     4,
     4,
     3,
-    5,
+    5, #E0
     5,
     5,
     5,
@@ -279,7 +279,7 @@ sequence_lens = [
     3,
     3,
     3,
-    2,
+    2, #F0
     3,
     3,
     3,
@@ -1203,6 +1203,7 @@ class Command(BaseCommand):
                 rest = line[1:]
                 table = names
                 has_jump = (cmd in jmp_cmds) or (cmd in jmp_cmds_double)
+            # print (f"0x{cmd:02X}", f"0x{offset:06X}", line)
             if table[cmd]:
                 name, args = table[cmd](rest)
             else:
@@ -1262,21 +1263,22 @@ class Command(BaseCommand):
                 line, offset = script[j]
                 name, args = parse_line(line, offset)
                 identifier = "ACTION_%i_%s_%i" % (i, name, j)
-                if line[0] in jmp_cmds or line[0] in jmp_cmds_double:
+                if line[0] in jmp_cmds or line[0] in jmp_cmds_double or (line[0] == 0xFD and line[1] in jmp_cmds_fd):
                     arg_index = get_jump_args(line, args)
                     jump_args = [
                         (ja | (offset & 0xFF0000)) for ja in args[arg_index:]
                     ]
                 else:
                     jump_args = []
-                sd.append(
-                    {
+                c = {
                         "command": name,
                         "args": args,
                         "original_offset": offset,
                         "identifier": identifier,
                         "jumps": jump_args,
                     }
+                sd.append(
+                    c
                 )
             scripts_data.append(sd)
 

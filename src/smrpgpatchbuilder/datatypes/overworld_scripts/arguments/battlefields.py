@@ -3,6 +3,7 @@ that can be used in SMRPG Randomizer."""
 
 from .types.battlefield import Battlefield
 
+BF00_FOREST_MAZE = Battlefield(0)
 BF01_FOREST_MAZE_BOWYERS_PAD = Battlefield(1)
 BF02_BEAN_VALLEY_BEANSTALKS = Battlefield(2)
 BF03_SUNKEN_SHIP_KING_CALAMARIS_CELLAR = Battlefield(3)

@@ -4497,10 +4497,10 @@ SCRIPT_TYPE_EVENT = "event"
 SCRIPT_TYPE_ACTION = "action"
 
 LAYER_TYPES = [
-    "LAYER_1",
-    "LAYER_2",
-    "LAYER_3",
-    "LAYER_4",
+    "LAYER_L1",
+    "LAYER_L2",
+    "LAYER_L3",
+    "LAYER_L4",
     "NPC_SPRITES",
     "BACKGROUND",
     "HALF_INTENSITY",
@@ -5032,7 +5032,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "create_packet_at_npc_coords":
         cls = "CreatePacketAtObjectCoords"
         args["packet"] = get_packet_name(cmdargs[0])
-        args["object"] = AREA_OBJECTS[cmdargs[1]]
+        args["target_npc"] = AREA_OBJECTS[cmdargs[1]]
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "create_packet_at_7010":
         cls = "CreatePacketAt7010"
@@ -5111,7 +5111,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "enable_trigger_at_70A8":
         cls = "EnableTriggerOfObjectAt70A8InCurrentLevel"
     elif cmd["command"] == "disable_trigger_at_70A8":
-        cls = "DisableObjectTriggerInSpecificLevel"
+        cls = "DisableTriggerOfObjectAt70A8InCurrentLevel"
     elif cmd["command"] == "enter_area":
         cls = "EnterArea"
         args["room_id"] = get_room_name(cmdargs[0])
@@ -5126,7 +5126,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         if 15 in cmdargs[5]:
             args["run_entrance_event"] = "True"
     elif cmd["command"] == "equip_item_to_character":
-        cls = "DisableObjectTriggerInSpecificLevel"
+        cls = "EquipItemToCharacter"
         args["item"] = get_item_class(cmdargs[1])
         args["character"] = AREA_OBJECTS[cmdargs[0]]
         include_argnames = False
@@ -5189,10 +5189,10 @@ def convert_event_script_command(cmd, valid_identifiers):
             "fade_out_to_black_sync_duration",
             "fade_out_to_black_async_duration",
         ]:
-            args["duration"] = cmdargs[0]
+            args["duration"] = str(cmdargs[0])
     elif cmd["command"] == "fade_out_to_colour_duration":
         cls = "FadeOutToColour"
-        args["duration"] = cmdargs[0]
+        args["duration"] = str(cmdargs[0])
         args["colour"] = COLOURS[cmdargs[1]]
     elif cmd["command"] == "freeze_all_npcs_until_return":
         cls = "FreezeAllNPCsUntilReturn"
@@ -5228,15 +5228,16 @@ def convert_event_script_command(cmd, valid_identifiers):
         elif cmd["command"] == "jmp_if_7000_any_bits_set":
             cls = "JmpIf7000AnyBitsSet"
         bits = cmdargs[0]
+        args["bits"] = "%r" % bits
         args["destinations"] = '["%s"]' % cmdargs[1]
     elif cmd["command"] == "jmp_if_audio_memory_at_least":
         cls = "JmpIfAudioMemoryIsAtLeast"
-        args["threshold"] = '["%s"]' % cmdargs[0]
+        args["threshold"] = str(cmdargs[0])
         args["destinations"] = '["%s"]' % cmdargs[1]
         include_argnames = False
     elif cmd["command"] == "jmp_if_audio_memory_equals":
         cls = "JmpIfAudioMemoryEquals"
-        args["value"] = '["%s"]' % cmdargs[0]
+        args["value"] = cmdargs[0]
         args["destinations"] = '["%s"]' % cmdargs[1]
         include_argnames = False
     elif cmd["command"] == "jmp_if_bit_clear":
@@ -5506,8 +5507,8 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "palette_set_morphs":
         cls = "PaletteSetMorphs"
         args["palette_type"] = PALETTE_TYPES[cmdargs[0]]
-        args["palette_set"] = str(cmdargs[1])
-        args["duration"] = str(cmdargs[2])
+        args["duration"] = str(cmdargs[1])
+        args["palette_set"] = str(cmdargs[2])
         args["row"] = str(cmdargs[3])
     elif cmd["command"] == "pause":
         cls = "Pause"
@@ -5528,7 +5529,9 @@ def convert_event_script_command(cmd, valid_identifiers):
             layers.append(LAYER_TYPES[n])
         args["layers"] = "[%s]" % ", ".join(layers)
         args["pixel_size"] = str(cmdargs[1])
-        args["duration"] = str(cmdargs[2])
+        args["duration"] = str(cmdargs[2] & 0x3F)
+        args["bit_6"] = "True" if cmdargs[2] & 0x40 != 0 else "False"
+        args["bit_7"] = "True" if cmdargs[2] & 0x80 != 0 else "False"
     elif cmd["command"] == "play_music":
         cls = "PlayMusic"
         args["music_id"] = get_music_name(cmdargs[0])
@@ -5578,7 +5581,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "read_from_address":
         cls = "ReadFromAddress"
         include_argnames = False
-        cmd["address"] = f"0x{cmdargs[0]:04X}"
+        args["address"] = f"0x{cmdargs[0]:04X}"
     elif cmd["command"] == "remember_last_object":
         cls = "RememberLastObject"
     elif cmd["command"] == "remove_object_at_70A8_from_current_level":
@@ -5611,7 +5614,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         if 14 in cmdargs[1]:
             args["bit_6"] = "True"
         if 15 in cmdargs[1]:
-            args["bit_7"] = "True"
+            args["run_as_second_script"] = "True"
     elif cmd["command"] in [
         "run_background_event_with_pause",
         "run_background_event_with_pause_return_on_exit",
@@ -5690,7 +5693,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_7000_to_7F_mem_var":
         cls = "Set7000To7FMemVar"
         include_argnames = False
-        cmd["address"] = f"0x{cmdargs[0]:04X}"
+        args["address"] = f"0x{cmdargs[0]:04X}"
     elif cmd["command"] == "set_bit":
         cls = "SetBit"
         include_argnames = False
@@ -5700,14 +5703,14 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_bit_3_offset":
         cls = "Set0158Bit3Offset"
         include_argnames = False
-        cmd["address"] = f"0x{cmdargs[0]:04X}"
+        args["address"] = f"0x{cmdargs[0]:04X}"
     elif cmd["command"] in ["set_bit_7_offset", "clear_bit_7_offset"]:
         if cmd["command"] == "set_bit_7_offset":
             cls = "Set0158Bit7Offset"
         else:
             cls = "Clear0158Bit7Offset"
         include_argnames = False
-        cmd["address"] = f"0x{cmdargs[0]:04X}"
+        args["address"] = f"0x{cmdargs[0]:04X}"
         if 7 in cmdargs[1]:
             args["bit_7"] = "True"
     elif cmd["command"] == "set_var_to_random":
@@ -5719,7 +5722,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         cls = "Set7000ToCurrentLevel"
     elif cmd["command"] == "set_7000_to_object_coord":
         cls = "Set7000ToObjectCoord"
-        args["object"] = AREA_OBJECTS[cmdargs[0]]
+        args["target_npc"] = AREA_OBJECTS[cmdargs[0]]
         coord = cmdargs[1]
         if coord == 0:
             args["coord"] = "COORD_X"
@@ -5771,7 +5774,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         args["slot"] = str(cmdargs[0])
         include_argnames = False
     elif cmd["command"] == "set_7000_to_party_capacity":
-        cls = "SetObjectMemoryToVar"
+        cls = "Set7000ToPartySize"
     elif cmd["command"] == "slow_down_music":
         cls = "SlowDownMusic"
     elif cmd["command"] == "speed_up_music_to_normal":
@@ -5874,7 +5877,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         args["blue"] = str(cmdargs[2])
         args["speed"] = str(cmdargs[3])
         if 7 in cmdargs[5]:
-            args["bit_7"] = "True"
+            args["bit_15"] = "True"
     elif cmd["command"] == "unfreeze_all_npcs":
         cls = "UnfreezeAllNPCs"
     elif cmd["command"] == "unfreeze_camera":
@@ -5971,8 +5974,10 @@ def convert_action_script_command(cmd, valid_identifiers):
             args["bit_7"] = "True"
     elif cmd["command"] == "set_palette_row":
         cls = "A_SetPaletteRow"
-        include_argnames = False
-        args["row"] = str(cmdargs[0])
+        args["row"] = str(cmdargs[0] & 0xF)
+        upper = cmdargs[0] & 0xF0 >> 4
+        if upper != 0:
+            args["upper"] = str(upper)
     elif cmd["command"] == "inc_palette_row_by":
         cls = "A_IncPaletteRowBy"
         include_argnames = False
@@ -6040,7 +6045,7 @@ def convert_action_script_command(cmd, valid_identifiers):
             cls = "A_JmpIfObjectWithinRange"
         elif cmd["command"] == "jmp_if_object_within_range_same_z":
             cls = "A_JmpIfObjectWithinRangeSameZ"
-        args["object"] = AREA_OBJECTS[cmdargs[0]]
+        args["comparing_npc"] = AREA_OBJECTS[cmdargs[0]]
         args["usually"] = str(cmdargs[1])
         args["tiles"] = str(cmdargs[2])
         args["destinations"] = '["%s"]' % cmdargs[3]
@@ -6057,7 +6062,7 @@ def convert_action_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "create_packet_at_npc_coords":
         cls = "A_CreatePacketAtObjectCoords"
         args["packet"] = get_packet_name(cmdargs[0])
-        args["object"] = AREA_OBJECTS[cmdargs[1]]
+        args["target_npc"] = AREA_OBJECTS[cmdargs[1]]
         args["destinations"] = '["%s"]' % cmdargs[2]
     elif cmd["command"] == "create_packet_at_7010":
         cls = "A_CreatePacketAt7010"
@@ -6094,7 +6099,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_south_steps":
-        cls = "A_ShiftSouthSteps"
+        cls = "A_WalkSouthSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southwest_steps":
@@ -6110,7 +6115,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_north_steps":
-        cls = "A_ShiftNorthSteps"
+        cls = "A_WalkNorthSteps"
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northeast_steps":
@@ -6144,7 +6149,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_south_pixels":
-        cls = "A_ShiftSouthPixels"
+        cls = "A_WalkSouthPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_southwest_pixels":
@@ -6160,7 +6165,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_north_pixels":
-        cls = "A_ShiftNorthPixels"
+        cls = "A_WalkNorthPixels"
         include_argnames = False
         args["pixels"] = str(cmdargs[0])
     elif cmd["command"] == "shift_northeast_pixels":
@@ -6193,6 +6198,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         cls = "A_FaceSouthwest"
     elif cmd["command"] == "face_southwest_7D":
         cls = "A_FaceSouthwest7D"
+        args["arg"] = f"0x{cmdargs[0]:02X}"
     elif cmd["command"] == "face_west":
         cls = "A_FaceWest"
     elif cmd["command"] == "face_northwest":
@@ -6385,7 +6391,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         cls = "A_Set700CToCurrentLevel"
     elif cmd["command"] == "set_700C_to_object_coord":
         cls = "A_Set700CToObjectCoord"
-        args["object"] = AREA_OBJECTS[cmdargs[0]]
+        args["target_npc"] = AREA_OBJECTS[cmdargs[0]]
         coord = cmdargs[1]
         if coord == 0:
             args["coord"] = "COORD_X"
@@ -6479,6 +6485,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         elif cmd["command"] == "jmp_if_700C_any_bits_set":
             cls = "A_JmpIf700CAnyBitsSet"
         bits = cmdargs[0]
+        args["bits"] = "%r" % bits
         args["destinations"] = '["%s"]' % cmdargs[1]
     elif cmd["command"] == "jmp_if_random_above_128":
         cls = "A_JmpIfRandom1of2"
@@ -6540,7 +6547,7 @@ def convert_action_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "enable_trigger_at_70A8":
         cls = "A_EnableTriggerOfObjectAt70A8InCurrentLevel"
     elif cmd["command"] == "disable_trigger_at_70A8":
-        cls = "A_DisableObjectTriggerInSpecificLevel"
+        cls = "A_DisableTriggerOfObjectAt70A8InCurrentLevel"
     elif cmd["command"] in ["jmp_if_object_in_level", "jmp_if_object_not_in_level"]:
         if cmd["command"] == "jmp_if_object_in_level":
             cls = "A_JmpIfObjectInSpecificLevel"
@@ -6579,7 +6586,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         args["arg_1"] = f"0x{cmdargs[0]:02X}"
         set_flags = cmdargs[1]
         if len(set_flags) > 0:
-            args["set_flags"] = "%r" % set_flags
+            args["set_bits"] = "%r" % set_flags
         clear_bits = cmdargs[2]
         if len(clear_bits) > 0:
             args["clear_bits"] = "%r" % clear_bits
@@ -6649,7 +6656,7 @@ def convert_script(script, valid_identifiers, converter):
                     arg_strings.append("%s=%s" % (key, args[key]))
                 else:
                     arg_strings.append(args[key])
-            arg_string = ", ".join(arg_strings)
+            arg_string = ", ".join([f"{w}" if not isinstance(w, str) else w for w in arg_strings ])
 
             if use_identifier:
                 if len(arg_string) > 0:
@@ -6678,6 +6685,7 @@ def produce_action_script(index, script, valid_identifiers):
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.ids import *"
     output += "\n\nscript = ActionScript([\n\t"
 
@@ -6706,7 +6714,10 @@ def produce_event_script(index, script, valid_identifiers):
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.ids import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.dialogs.ids.dialog_ids import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
     output += "\n\nscript = EventScript([\n\t"
 
     contents = convert_script(script, valid_identifiers, convert_event_script_command)
@@ -6765,7 +6776,7 @@ class Command(BaseCommand):
         file = open(f"{output_path}/animation/actionqueues.py", "w")
         output = "from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import ActionScriptBank"
         for i, script in enumerate(a_scripts):
-            output += f"\nfrom .animation.scripts.script{i} import script as script_{i}"
+            output += f"\nfrom .scripts.script_{i} import script as script_{i}"
         output += "\n\nactions = ActionScriptBank([\n"
         for i, script in enumerate(a_scripts):
             output += f"\tscript_{i},\n"
@@ -6784,7 +6795,7 @@ class Command(BaseCommand):
         file = open(f"{output_path}/event/events.py", "w")
         output = "from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import EventScriptController, EventScriptBank"
         for i, script in enumerate(e_scripts):
-            output += f"\nfrom .event.scripts.script{i} import script as script_{i}"
+            output += f"\nfrom .scripts.script_{i} import script as script_{i}"
         output += "\n\nevents = EventScriptController([\n"
         output += "\tEventScriptBank(pointer_table_start=0x1E0000, start=0x1E0C00, end=0x1F0000, scripts=[\n"
         for i in range(0, 1536):

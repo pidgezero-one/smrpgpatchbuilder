@@ -54,7 +54,7 @@ class Battlefields(IntEnum):
 class BattleMusic(Music, Enum):
     """Enumeration for ID values for battle music."""
 
-    NORMAL = NormalBattleMusic
+    NORMAL_MUSIC = NormalBattleMusic
     BOSS_1 = MidbossMusic
     BOSS_2 = BossMusic
     SMITHY = Smithy1Music

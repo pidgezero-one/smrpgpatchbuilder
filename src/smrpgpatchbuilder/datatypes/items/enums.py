@@ -3,8 +3,8 @@
 import enum
 
 
-class EffectTypeOld(enum.Enum):
-    """Enumeration to describe the type of effect an item will have on its target."""
+""" class EffectTypeOld(enum.Enum):
+    # Enumeration to describe the type of effect an item will have on its target.
 
     NORMAL = enum.auto()
     ELEMENTAL_IMMUNITY = enum.auto()
@@ -12,7 +12,7 @@ class EffectTypeOld(enum.Enum):
     STATUS_PROTECTION = enum.auto()
     FEW_EFFECTS = enum.auto()
     BUFFS = enum.auto()
-
+ """
 
 class EquipStats(str, enum.Enum):
     """Enumeration for numerical stats that are directly affected by equips."""

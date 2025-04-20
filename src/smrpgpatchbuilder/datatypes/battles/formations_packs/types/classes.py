@@ -313,7 +313,7 @@ class Formation:
         self,
         members: List[Optional[FormationMember]],
         run_event_at_load: Optional[int] = None,
-        music: BattleMusic = BattleMusic.NORMAL,
+        music: BattleMusic = BattleMusic.NORMAL_MUSIC,
         can_run_away: bool = True,
         unknown_bit: bool = True,
         battlefield_override: Optional[Battlefields] = None,

@@ -1,6 +1,7 @@
 """Individual event script command classes.
 These are the building blocks of logical progression in SMRPG."""
 
+from copy import deepcopy
 from typing import List, Optional, Set, Type, Union, cast
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import (
     LAYER_L1,
@@ -72,7 +73,7 @@ from smrpgpatchbuilder.datatypes.items.classes import Equipment, Item, Weapon, A
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar, TimerVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import  Flag
 from smrpgpatchbuilder.datatypes.scripts_common.classes import InvalidCommandArgumentException
 from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
@@ -223,16 +224,23 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
     _length: Union[UInt8, UInt16]
 
     @property
-    def length(self) -> Union[UInt8, UInt16]:
+    def length(self) -> int:
         """The length of the pause, in frames"""
-        return self._length
+        return self._length + 1
+    
+    @property
+    def size(self) -> int:
+        if isinstance(self._length, UInt8):
+            return 2
+        else:
+            return 3
 
     def set_length(self, length: int) -> None:
         """Set the length of the pause, in frames, from 1 to 0x10000"""
         if 1 <= length <= 0x100:
-            self._length = UInt8(length)
+            self._length = UInt8(length-1)
         elif 1 <= length <= 0x10000:
-            self._length = UInt16(length)
+            self._length = UInt16(length-1)
         else:
             raise InvalidCommandArgumentException(
                 f"illegal pause duration in {self.identifier}: {length}"
@@ -241,13 +249,9 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
     def __init__(self, length: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_length(length)
-        if isinstance(self.length, UInt8):
-            self._size: int = 2
-        else:
-            self._size: int = 3
 
     def render(self) -> bytearray:
-        frames = self.length - 1
+        frames = self._length
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
         return super().render(0xF1, frames)
@@ -264,25 +268,23 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
     _opcode: int = 0x47
     _size: int = 2
-    _timer_var: ShortVar
+    _timer_var: TimerVar
 
     @property
-    def timer_var(self) -> ShortVar:
+    def timer_var(self) -> TimerVar:
         """(unknown)"""
         return self._timer_var
 
     def set_timer_var(self, timer_var: ShortVar) -> None:
         """(unknown, but must be $701C, $701E, $7020, or $7022)"""
-        assert timer_var in [TIMER_701C, TIMER_701E, TIMER_7020, TIMER_7022]
-        self._timer_var = timer_var
+        self._timer_var = TimerVar(timer_var)
 
     def __init__(self, timer_var: ShortVar, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
     def render(self) -> bytearray:
-        timer_byte: int = (self.timer_var - 0x701C) // 2
-        return super().render(timer_byte)
+        return super().render(self.timer_var)
 
 
 class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
@@ -359,9 +361,9 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)"""
 
     _opcode: int = 0x44
-    _size: int = 4
+    _size: int = 3
     _event_id: UInt16
-    _timer_var: ShortVar
+    _timer_var: TimerVar
     _bit_4: bool
     _bit_5: bool
 
@@ -377,14 +379,13 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         self._event_id = UInt16(event_id)
 
     @property
-    def timer_var(self) -> ShortVar:
+    def timer_var(self) -> TimerVar:
         """(unknown)"""
         return self._timer_var
 
     def set_timer_var(self, timer_var: ShortVar) -> None:
         """(unknown)"""
-        assert timer_var in [TIMER_701C, TIMER_701E, TIMER_7020, TIMER_7022]
-        self._timer_var = timer_var
+        self._timer_var = TimerVar(timer_var)
 
     @property
     def bit_4(self) -> bool:
@@ -421,7 +422,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
     def render(self) -> bytearray:
         flags: int = bools_to_int(self.bit_4, self.bit_5)
         flags = flags << 12
-        timer = self.timer_var << 14
+        timer = self.timer_var.to_byte() << 14
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
 
@@ -432,9 +433,9 @@ class RunBackgroundEventWithPauseReturnOnExit(
     """(unknown)"""
 
     _opcode: int = 0x45
-    _size: int = 4
+    _size: int = 3
     _event_id: UInt16
-    _timer_var: ShortVar
+    _timer_var: TimerVar
     _bit_4: bool
     _bit_5: bool
 
@@ -450,14 +451,13 @@ class RunBackgroundEventWithPauseReturnOnExit(
         self._event_id = UInt16(event_id)
 
     @property
-    def timer_var(self) -> ShortVar:
+    def timer_var(self) -> TimerVar:
         """(unknown)"""
         return self._timer_var
 
     def set_timer_var(self, timer_var: ShortVar) -> None:
         """(unknown)"""
-        assert timer_var in [TIMER_701C, TIMER_701E, TIMER_7020, TIMER_7022]
-        self._timer_var = timer_var
+        self._timer_var = TimerVar(timer_var)
 
     @property
     def bit_4(self) -> bool:
@@ -494,7 +494,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
     def render(self) -> bytearray:
         flags: int = bools_to_int(self.bit_4, self.bit_5)
         flags = flags << 12
-        timer = self.timer_var << 14
+        timer = self.timer_var.to_byte() << 14
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
 
@@ -522,6 +522,9 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_event_id(event_id)
 
+    def render(self) -> bytearray:
+        return super().render(self.event_id)
+
 
 class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
     """Run aother event by IDas a subroutine (function).\n
@@ -548,6 +551,9 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_event_id(event_id)
 
+    def render(self) -> bytearray:
+        return super().render(self.event_id)
+
 
 class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt all background events on all threads."""
@@ -560,25 +566,23 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
     _opcode: int = 0x46
     _size: int = 2
-    _timer_var: ShortVar
+    _timer_var: TimerVar
 
     @property
-    def timer_var(self) -> ShortVar:
+    def timer_var(self) -> TimerVar:
         """(unknown)"""
         return self._timer_var
 
     def set_timer_var(self, timer_var: ShortVar) -> None:
         """(unknown)"""
-        assert timer_var in [TIMER_701C, TIMER_701E, TIMER_7020, TIMER_7022]
-        self._timer_var = timer_var
+        self._timer_var = TimerVar(timer_var)
 
     def __init__(self, timer_var: ShortVar, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
     def render(self) -> bytearray:
-        timer_byte: int = (self.timer_var - 0x701C) // 2
-        return super().render(timer_byte)
+        return super().render(self.timer_var)
 
 
 class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -1034,7 +1038,7 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
         self.set_address(address)
 
     def render(self) -> bytearray:
-        return super().render(self.address - 0xF800)
+        return super().render(UInt16(self.address - 0xF800))
 
 
 class SetBit(UsableEventScriptCommand, EventScriptCommand):
@@ -1255,10 +1259,13 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.name}: 0x{from_var:04x} 0x{to_var:04x}"
             )
+
+    @property
+    def size(self) -> int:
         if PRIMARY_TEMP_7000 not in (self.from_var, self.to_var):
-            self._size = 3
+            return 3
         else:
-            self._size = 2
+            return 2
 
     @property
     def from_var(self) -> Union[ShortVar, ByteVar]:
@@ -1277,6 +1284,8 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
+        self._from_var = from_var
+        self._to_var = to_var
         self.set_addresses(from_var, to_var)
 
     def render(self) -> bytearray:
@@ -1949,8 +1958,10 @@ class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
         identifier: Optional[str] = None,
     ) -> None:
         if subscript is None:
-            subscript = []
-        super().__init__(target, False, subscript, identifier)
+            script = []
+        else:
+            script = deepcopy(subscript)
+        super().__init__(target, False, script, identifier)
 
 
 class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
@@ -3241,6 +3252,9 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         self.set_x(x)
         self.set_y(y)
 
+    def render(self) -> bytearray:
+        return super().render(self.object_1, self.object_2, self.x, self.y, *self.destinations)
+
 
 class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -3311,6 +3325,9 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         self.set_x(x)
         self.set_y(y)
 
+    def render(self) -> bytearray:
+        return super().render(self.object_1, self.object_2, self.x, self.y, *self.destinations)
+
 
 class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -3348,8 +3365,7 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         return self._coord
 
     def set_coord(self, coord: Coord) -> None:
-        """Set the specific (not-F) coordinate whose value to store to $7000."""
-        assert coord != COORD_F
+        """Set the specific coordinate whose value to store to $7000."""
         self._coord = coord
 
     @property
@@ -3919,7 +3935,7 @@ class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommand
     _opcode = bytearray([0xFD, 0x5E])
 
 
-class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
+class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand):
     """For the given equipment type on the given character,
     store the ID of the currently equipped item to $7000"""
 
@@ -4209,6 +4225,8 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
     _layers: Set[Layer]
     _pixel_size: UInt8
     _duration: UInt8
+    _bit_6: bool = False
+    _bit_7: bool = False
 
     @property
     def layers(self) -> Set[Layer]:
@@ -4241,22 +4259,44 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= duration <= 63
         self._duration = UInt8(duration)
 
+    @property
+    def bit_6(self) -> bool:
+        """(unknown)"""
+        return self._bit_6
+
+    def set_bit_6(self, bit_6: bool) -> None:
+        """(unknown)"""
+        self._bit_6 = bit_6
+
+    @property
+    def bit_7(self) -> bool:
+        """(unknown)"""
+        return self._bit_7
+
+    def set_bit_7(self, bit_7: bool) -> None:
+        """(unknown)"""
+        self._bit_7 = bit_7
+
     def __init__(
         self,
         layers: Union[List[Layer], Set[Layer]],
         pixel_size: int,
         duration: int,
+        bit_6: bool = False,
+        bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_layers(layers)
         self.set_pixel_size(pixel_size)
         self.set_duration(duration)
+        self.set_bit_6(bit_6)
+        self.set_bit_7(bit_7)
 
     def render(self) -> bytearray:
         layers: int = bits_to_int(cast(List[int], self.layers))
         arg_1 = UInt8(layers + (self.pixel_size << 4))
-        return super().render(arg_1, self.duration)
+        return super().render(arg_1, self.duration + (self.bit_6 << 6) + (self.bit_7 << 7))
 
 
 class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
@@ -4447,7 +4487,7 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self) -> bytearray:
         assembled_raw: int = (
-            self.red + (self.green << 5) + (self.blue << 10) + (self.bit_15 << 15)
+            (self.red >> 3) + (self.green << 2) + (self.blue << 7) + (self.bit_15 << 15)
         )
         assembled_short = UInt16(assembled_raw)
         assembled_layers_raw: int = bits_to_int(cast(List[int], self.layers))
@@ -4555,8 +4595,8 @@ class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandN
 class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen in from being unloaded."""
 
-    _sync: bool
-    _duration: Optional[UInt8]
+    _sync: bool = False
+    _duration: Optional[UInt8] = None
 
     @property
     def sync(self) -> bool:
@@ -4635,14 +4675,14 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
         self.set_colour(colour)
 
     def render(self) -> bytearray:
-        return super().render()
+        return super().render(self.duration, self.colour)
 
 
 class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen out to solid black."""
 
-    _sync: bool
-    _duration: Optional[UInt8]
+    _sync: bool = False
+    _duration: Optional[UInt8] = None
 
     @property
     def sync(self) -> bool:
@@ -4721,7 +4761,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
         self.set_colour(colour)
 
     def render(self) -> bytearray:
-        return super().render()
+        return super().render(self.duration, self.colour)
 
 
 class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -5930,7 +5970,7 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
         self.set_y(y)
 
     def render(self) -> bytearray:
-        return super().render()
+        return super().render(self.y, self.text)
 
 
 class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -6116,8 +6156,8 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
         return self._star
 
     def set_star(self, star: int) -> None:
-        """Choose the specific star piece to collect (1-7)."""
-        assert 1 <= star <= 7
+        """Choose the specific star piece to collect (1-7, 8 is valid for game ending)."""
+        assert 1 <= star <= 8
         self._star = UInt8(star)
 
     def __init__(self, star: int, identifier: Optional[str] = None) -> None:
@@ -6135,6 +6175,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
     _opcode: int = 0x4A
     _pack_id: UInt8
     _battlefield: Battlefield
+    _size = 4
 
     @property
     def pack_id(self) -> UInt8:
@@ -6154,7 +6195,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
     def set_battlefield(self, battlefield: Battlefield) -> None:
         """The battlefield on which the battle should take place."""
         assert (
-            0 <= battlefield <= 7 or 9 <= battlefield <= 27 or 30 <= battlefield <= 51
+            0 <= battlefield <= 25 or 28 <= battlefield <= 51
         )
         self._battlefield = battlefield
 
@@ -6166,7 +6207,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
         self.set_battlefield(battlefield)
 
     def render(self) -> bytearray:
-        return super().render(self.pack_id, self.battlefield)
+        return super().render(self.pack_id, UInt16(self.battlefield))
 
 
 class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoArgs):

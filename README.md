@@ -67,7 +67,9 @@ This repo allows you to parse, modify, and rebuild:
 - Battle animations ([disassemble](#disassembling-battle-animations) | [assemble](#assembling-battle-animations))
 - Monster AI ([disassemble](#disassembling-monster-ai) | [assemble](#assembling-monster-ai))
 - Event scripts and overworld NPC animations  ([disassemble](#disassembling-overworld-scripts) | [assemble](assembling-overworld-scripts))
-- Dialogs ([disassemble](#disassembling-dialogs) | [assemble](assembling-dialogs))
+- Overworld dialogs ([disassemble](#disassembling-dialogs) | [assemble](assembling-dialogs))
+- Battle dialogs (soon)
+- Overworld sprites (soon)
 
 TODO: Command class reference
 
@@ -267,7 +269,7 @@ Standalone, this will produce a series of files that represent all of the monste
 
 After you've changed the files produced by the disassembler to do whatever you want, you can use this:
 
-```
+```bash
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py battleassembler -r /path/to/rom/you/want/to/patch -t -b
 ```
 
@@ -286,7 +288,7 @@ You can convert all 4096 overworld scripts and 1024 standalone NPC animations in
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py eventconverter --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom" 
 ```
 
-This runs really, really slowly. I originally wrote disassembled events as dicts rather than command classes, and then wrote another script to convert them, so it does one and then the other. Possibly an issue to fix in a future revision, but I couldn't be bothered with how annoying it is to deal with embedded NPC animations.
+This runs really, really slowly and takes several hours. I originally wrote disassembled events as dicts rather than command classes, and then wrote another script to convert them, so it does one and then the other. Possibly an issue to fix in a future revision, but I couldn't be bothered with how annoying it is to deal with embedded NPC animations.
 
 Here is event 255 as it appears in Lazy Shell:
 ![alt text](image-2.png)
@@ -298,8 +300,8 @@ And here's how it looks when converted to Python:
 script = EventScript([
 	DisableObjectTrigger(MEM_70A8),
 	StartSyncEmbeddedActionScript(target=MEM_70A8, prefix=0xF1, subscript=[
-		SetObjectMemoryBits(arg_1=0x0B, bits=[0, 1]),
-		Db(bytearray(b'\xfd\xf2'))
+		A_SetObjectMemoryBits(arg_1=0x0B, bits=[0, 1]),
+		A_Db(bytearray(b'\xfd\xf2'))
 	]),
 	SetSyncActionScript(MEM_70A8, A1022_HIT_BY_EXP_STAR),
 	IncEXPByPacket(),
@@ -324,27 +326,45 @@ And here's how it looks in Python:
 #A0002_FLASH_AFTER_RUNNING_AWAY_IFRAMES
 
 script = ActionScript([
-	ObjectMemorySetBit(arg_1=0x30, bits=[4]),
-	JmpIfBitClear(TEMP_707C_1, ["'ACTION_2_start_loop_n_times_3'"]),
-	ClearSolidityBits(bit_4=True, cant_walk_through=True),
-	StartLoopNTimes(15),
+	A_ObjectMemorySetBit(arg_1=0x30, bits=[4]),
+	A_JmpIfBitClear(TEMP_707C_1, ["'ACTION_2_start_loop_n_times_3'"]),
+	A_ClearSolidityBits(bit_4=True, cant_walk_through=True),
+	A_StartLoopNTimes(15),
+	A_Pause(2),
+	A_VisibilityOff(),
 	Pause(2),
-	VisibilityOff(),
-	Pause(2),
-	VisibilityOn(),
-	EndLoop(),
-	SetSolidityBits(bit_4=True, cant_walk_through=True),
-	ObjectMemoryClearBit(arg_1=0x30, bits=[4]),
-	Return()
+	A_VisibilityOn(),
+	A_EndLoop(),
+	A_SetSolidityBits(bit_4=True, cant_walk_through=True),
+	A_ObjectMemoryClearBit(arg_1=0x30, bits=[4]),
+	A_Return()
 ])
 ```
 
+All action script command are prefixed with `A_`. This is to distinguish them from event script commands.
+
 Things to be aware of:
+- This will produce scripts that add up to exactly the amount of bytes each bank can contain. To free up space, go to the final script (event 4095, action 1023) and delete all of the trailing `EndAll` class instantiators.
 - Yo'ster Isle (events 470, 1837, 1839, 3329, 3729) has some weird implementation of this called "non-embedded action queues." That's event script code that's supposed to be read as NPC animation script code, despite having no header to indicate that. Non-embedded action queues are expected to begin at a certain offset relative to the start of the event. You can edit these events if you like, and the assembler will just insert dummy commands to fill space to keep the NEAQ where the game expects it. However, if you have too much code before the NEAQ that pushes it to a greater offset than it needs to be, you'll get an error when building your patch.
-- There's a couple of overrides that are technically legal but that you should probably never do. Normally, when you're using commands that jump to other commands, you specify another command's `identifier` property as the destination, so that this code will take care of filling these in with ROM addresses for you. However, event 580 in the original game issues a jump to an address that isn't associated to an event. I've flagged this with `ILLEGAL_JUMP` in the identifier, which means you can also provide a destination of `ILLEGAL_JUMP_XXXX` to a jump command where `XXXX` is a four-digit hex int indicating the offset you want to jump to. I *strongly* recommend against ever doing this.
+- There's a couple of overrides that are technically legal but that you should probably never do. Normally, when you're using commands that jump to other commands, you specify another command's `identifier` property as the destination, so that this code will take care of filling these in with ROM addresses for you. However, event 580 in the original game issues a jump to an address that isn't associated to an event. I've flagged this with `ILLEGAL_JUMP` in the identifier, which means you're allowed in general to use a destination of `ILLEGAL_JUMP_XXXX` where `XXXX` is a four-digit hex int indicating the offset you want to jump to and is unassociated with any other command. I *strongly* recommend against ever doing this.
 - Similarly, queue 53 and queue 137 in the original game use sound ID 255. I have no idea what that is, sounds are only supposed to go up to 163 or something like that. This is another thing that's technically legal but that you shouldn't do.
 
 ### Assembling overworld scripts
+
+The disassembler produces individual script files as well as two files (events.py and actionqueues.py) that contain them. events.py includes an `EventScriptController` that contains all of the event scripts in 0x1Exxxx, 0x1Fxxxx, and 0x20xxxx, each in their own `EventScriptBank`. Calling the `EventScriptController`'s `render()` method will produce three bytearrays that include a pointer table and script data, one per high byte. Standalone action scripts on the other hand are all contained in 0x21xxxx, so actionqueues.py only contains one `ActionScriptBank` and its `render()` method produces a single bytearray that contains the pointer table and script data in a contiguous block.
+
+After you've edited the script files to do whatever you want, you can assemble event scripts and NPC action scripts back into ROM data in one command, since the assembler is just a glorified wrapper for `render()`:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py eventassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used. 
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the contents of your battle animation files.
+- If you include `-t`, it will output plain text files (split up according to the address the byte string starts at) with your assembled bytes. You can use this for debugging, such as if you want to side-by-side compare your results against the Lazy Shell editor's hex. It's all on one line though so it might be hard to use.
+- If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
+
+This will assemble event scripts **and** standalone NPC action scripts.
 
 ### Disassembling dialogs
 
