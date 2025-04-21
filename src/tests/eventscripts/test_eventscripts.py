@@ -41,11 +41,25 @@ test_cases = [
         Set7000ToTappedButton(identifier="jmp_here"),
         Jmp(destinations=["jmp_here"])
     ], bytearray([0x9B, 0xCB, 0xD2, 0x03, 0x00])),
+    Case("NEAQ in desired position", [
+        StopSound(),
+        StopSound(),
+        StopSound(),
+        NonEmbeddedActionQueue(required_offset=0x03, subscript=[
+            A_AddConstToVar(PRIMARY_TEMP_700C, 10)
+        ]),
+    ], bytearray([0x9B, 0x9B, 0x9B, 0xAD, 0x0A, 0x00])),
+    Case("NEAQ is too early, inserts dummy commands to make up the difference", [
+        StopSound(),
+        NonEmbeddedActionQueue(required_offset=0x05, subscript=[
+            A_AddConstToVar(PRIMARY_TEMP_700C, 10)
+        ]),
+    ], bytearray([0x9B, 0x9B, 0x9B, 0x9B, 0x9B, 0xAD, 0x0A, 0x00])),
     ### This is where I need help writing test cases for every other command!
 ]
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
     script = EventScript(case.commands)
-    bank = EventScriptBank(0x1E0000, 0x1E0002, 0x1E0002+script.length, [script])
+    bank = EventScriptBank(0x1E0000, 0x1E0002, 0x1E0002+len(case.expected_bytes), [script])
     assert bank.render() == bytearray([0x02, 0x00]) + case.expected_bytes

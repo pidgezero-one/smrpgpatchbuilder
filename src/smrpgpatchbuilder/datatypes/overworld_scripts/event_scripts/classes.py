@@ -197,18 +197,20 @@ class EventScriptBank(ScriptBank[EventScript]):
         for script_id, script in enumerate(self.scripts):
             self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
             initial_position = position
+            c = deepcopy(script.contents)
             for index, command in enumerate(script.contents):
                 # If this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
                 if isinstance(command, NonEmbeddedActionQueuePrototype):
                     relative_offset: int = position - initial_position
                     if relative_offset <= command.required_offset:
                         for _ in range(command.required_offset - relative_offset):
-                            script.contents.insert(index, StopSound())
+                            c.insert(index, StopSound())
                             position += 1
                     else:
                         raise ScriptBankTooLongException(f"too many commands in script {script_id} before non-embedded action queue")
-                        
+                
                 position = self._associate_address(command, position)
+            script.set_contents(c)
 
         # replace jump placeholders with addresses
         for script in self.scripts:

@@ -2107,10 +2107,23 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
-    """Set a bit in the range of long-term memory bits dedicated for use in
-    event and action scripts.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Set a bit in the range of long-term memory bits dedicated for use in event and action scripts.  
+    
+    ## Lazy Shell command
+        `Memory $704x bit {xx} set...`  
+
+    ## Opcode
+        `0xA0`
+        `0xA1`
+        `0xA2`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit (Flag): The byte bit you wish to set. 
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _bit: Flag
@@ -2143,10 +2156,23 @@ class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
-    """Clear a bit in the range of long-term memory bits dedicated for use in
-    event and action scripts.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Clear a bit in the range of long-term memory bits dedicated for use in event and action scripts. 
+
+    ## Lazy Shell command
+        `Memory $704x bit {xx} clear...`  
+
+    ## Opcode
+        `0xA4`
+        `0xA5`
+        `0xA6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit (Flag): The byte bit you wish to clear. 
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _bit: Flag
@@ -2183,10 +2209,25 @@ class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the given long-term memory bit is set.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Goto a command indicated by its label, but only if the memory bit is set.
+
+    ## Lazy Shell command
+        `If memory $704x bit {xx} set...`  
+
+    ## Opcode
+        `0xD8`
+        `0xD9`
+        `0xDA`
+
+    ## Size
+        4 bytes
+
+    Args:
+        bit (Flag): The byte bit that needs to be set for the goto to happen. 
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
 
     _size: int = 4
     _bit: Flag
@@ -2223,10 +2264,25 @@ class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
 
 class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the given long-term memory bit is clear.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Goto a command indicated by its label, but only if the memory bit is clear.
+
+    ## Lazy Shell command
+        `If memory $704x bit {xx} clear...`  
+
+    ## Opcode
+        `0xDC`
+        `0xDD`
+        `0xDE`
+
+    ## Size
+        4 bytes
+
+    Args:
+        bit (Flag): The byte bit that needs to be clear for the goto to happen. 
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
 
     _size: int = 4
     _bit: Flag
@@ -2268,30 +2324,63 @@ class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
 
 class A_SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """For the literal value currently stored at $700C, set the bit that
-    corresponds to this index (starting from $7040 bit 0).\n
-    For example, if $700C is set to 5, then $7040 bit 5 will be set. If
-    $700C is set to 12, then $7041 bit 4 will be set."""
+    """For the literal value currently stored at $700C, set the bit that corresponds to this index (starting from $7040 bit 0).  
+    For example, if $700C is set to 5, then $7040 bit 5 will be set. If $700C is set to 12, then $7041 bit 4 will be set.
+
+    ## Lazy Shell command
+        `Memory $704x [x is @ $700C] bit set`  
+
+    ## Opcode
+        `0xA3`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xA3
 
 
 class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """For the literal value currently stored at $700C, clear the bit that
-    corresponds to this index (starting from $7040 bit 0).\n
-    For example, if $700C is set to 5, then $7040 bit 5 will be cleared. If
-    $700C is set to 12, then $7041 bit 4 will be cleared."""
+    """For the literal value currently stored at $700C, clear the bit that corresponds to this index (starting from $7040 bit 0).  
+    For example, if $700C is set to 5, then $7040 bit 5 will be cleared. If $700C is set to 12, then $7041 bit 4 will be cleared.
+
+    ## Lazy Shell command
+        `Memory $704x [x is @ $700C] bit clear`  
+
+    ## Opcode
+        `0xA7`
+
+    ## Size
+        1 byte
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xA7
 
 
 class A_JmpIfMem704XAt700CBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the bit corresponding to the index indicated by the value
-    of $700C is set.\n
-    For example, if $700C is set to 5, then this command will jump to the code
-    beginning at the given identifier if $7040 bit 5 is set. If $700C is set
-    to 12, then the jump will occur if $7041 bit 4 is set."""
+    """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $700C is set.  
+    For example, if $700C is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is set. If $700C is set to 12, then the jump will occur if $7041 bit 4 is set.
+
+    ## Lazy Shell command
+        `If Memory $704x [x @ $700C] bit set...`  
+
+    ## Opcode
+        `0xDB`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xDB
     _size: int = 3
@@ -2303,12 +2392,21 @@ class A_JmpIfMem704XAt700CBitSet(UsableActionScriptCommand, ActionScriptCommandW
 class A_JmpIfMem704XAt700CBitClear(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
 ):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the bit corresponding to the index indicated by the value
-    of $700C is clear.\n
-    For example, if $700C is set to 5, then this command will jump to the code
-    beginning at the given identifier if $7040 bit 5 is clear. If $700C is set
-    to 12, then the jump will occur if $7041 bit 4 is clear."""
+    """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $700C is clear.  
+    For example, if $700C is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is clear. If $700C is set to 12, then the jump will occur if $7041 bit 4 is clear.
+
+    ## Lazy Shell command
+        `If Memory $704x [x @ $700C] bit clear...`  
+
+    ## Opcode
+        `0xDF`
+
+    ## Size
+        3 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 3
     _opcode: int = 0xDF
@@ -2318,8 +2416,27 @@ class A_JmpIfMem704XAt700CBitClear(
 
 
 class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
-    """Set the given long-term memory variable to the given numerical literal.\n
-    It is recommended to use contextual const names for these variables."""
+    """Set the longterm mem var to a constant number value.
+
+    ## Lazy Shell command
+        `Memory $70Ax = ...`  
+        `Memory $700C = ...`  
+        `Memory $7xxx = ...`
+
+    ## Opcode
+        `0xA8`
+        `0xAC`
+        `0xB0`
+
+    ## Size
+        3 bytes if the variable is $700C or a single-byte var  
+        4 bytes if the variable is a short var
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to set
+        value (Union[int, Type[Item]]): The const you want to set the variable to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _value: Union[UInt8, UInt16]
     _address: Union[ShortVar, ByteVar]
@@ -2387,8 +2504,28 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
-    """Add the given numerical literal to the given long-term memory variable.\n
-    It is recommended to use contextual const names for these variables."""
+    """Add a const number value to a longterm mem var.  
+
+    ## Lazy Shell command
+        `Memory $70Ax += ...`  
+        `Memory $700C += ...`  
+        `Memory $7xxx += ...`
+
+    ## Opcode
+        `0xA9`
+        `0xAD`
+        `0xB1`
+
+    ## Size
+        3 bytes if the variable is $700C or a single-byte var  
+        4 bytes if the variable is a short var
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to add to
+        value (Union[int, Type[Item]]): The const you want to add to the variable
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
 
     _value: Union[UInt8, UInt16]
     _address: Union[ShortVar, ByteVar]
@@ -2450,7 +2587,26 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
-    """Increase the given variable by 1."""
+    """Increase a variable by 1.
+
+    ## Lazy Shell command
+        `Memory $70Ax += 1...`  
+        `Memory $700C += 1`  
+        `Memory $7xxx += 1...`
+
+    ## Opcode
+        `0xAA`
+        `0xAE`
+        `0xB2`
+
+    ## Size
+        1 byte if the variable is $700C 
+        2 bytes if any other variable
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to increase by 1
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if isinstance(self.address, ByteVar):
@@ -2465,7 +2621,26 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
 
 
 class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
-    """Decrease the given variable by 1."""
+    """Decrease a variable by 1.
+
+    ## Lazy Shell command
+        `Memory $70Ax -= 1...`  
+        `Memory $700C -= 1`  
+        `Memory $7xxx -= 1...`
+
+    ## Opcode
+        `0xAB`
+        `0xAF`
+        `0xB3`
+
+    ## Size
+        1 byte if the variable is $700C 
+        2 bytes if any other variable
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to decrease by 1
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if isinstance(self.address, ByteVar):
@@ -2480,7 +2655,31 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
 
 
 class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
-    """Copy the value from one variable to another variable."""
+    """Copy the value from one variable to another variable.
+
+    ## Lazy Shell command
+        `Memory $700C = memory $70Ax...`  
+        `Memory $70Ax = memory $700C...`
+        `Memory $700C = memory $7xxx...`
+        `Memory $7xxx = memory $700C...`
+        `Memory $7xxx = memory $7xxx...`
+
+    ## Opcode
+        `0xB4`
+        `0xB5`
+        `0xBA`
+        `0xBB`
+        `0xBC`
+
+    ## Size
+        3 bytes if neither variable is $700C
+        2 bytes otherwise
+
+    Args:
+        from_var (Union[ShortVar, ByteVar]): The variable you're copying the value **from**.
+        to_var (Union[ShortVar, ByteVar]): The variable you're copying the value **to**.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _from_var: Union[ShortVar, ByteVar]
     _to_var: Union[ShortVar, ByteVar]
@@ -2543,9 +2742,26 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
 class A_CompareVarToConst(
     UsableActionScriptCommand, ActionScriptCommandShortAddrAndValueOnly
 ):
-    """Compare the value stored at a given variable to a literal constant.
-    The result of this comparison can be used in JmpIfComparisonResultIs... commands
-    or JmpIfLoadedMemory... commands."""
+    """Compare a variable's value to a constant number.  
+    The result of this comparison can be used in `JmpIfComparisonResultIs...` commands or `JmpIfLoadedMemory...` commands.
+
+    ## Lazy Shell command
+        `Memory $700C compare to {xx}...`  
+        `Memory $7xxx compare to...`
+
+    ## Opcode
+        `0xC0`
+        `0xC2`
+
+    ## Size
+        3 bytes if the variable is $700C
+        4 bytes otherwise
+
+    Args:
+        address (ShortVar): The variable in question
+        value (Union[int, Type[Item]]): The constant number to compare the variable to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if self.address == PRIMARY_TEMP_700C:
@@ -2564,9 +2780,23 @@ class A_CompareVarToConst(
 
 
 class A_Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
-    """Compare the value stored at $700C to the value stored at a given variable.
-    The result of this comparison can be used in JmpIfComparisonResultIs... commands
-    or JmpIfLoadedMemory... commands."""
+    """Compare the value stored at $700C to the value stored at a given variable.  
+    The result of this comparison can be used in `JmpIfComparisonResultIs`... commands
+    or `JmpIfLoadedMemory`... commands.
+
+    ## Lazy Shell command
+        `Memory $700C compare to memory $7xxx...`  
+
+    ## Opcode
+        `0xC1`
+
+    ## Size
+        2 bytes
+
+    Args:
+        address (ShortVar): The variable to compare $700C to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xC1
     _size: int = 2
