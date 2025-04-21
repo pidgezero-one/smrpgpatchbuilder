@@ -1722,17 +1722,19 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)
 
     ## Lazy Shell command
-        `TBD, to be filled in manually by me`  
+        (not documented in Lazy Shell)
 
     ## Opcode
-        *No `_opcode` found*
+        `0x11` if `arg_1` is `0x0D`
+        `0x12` if `arg_1` is `0x0B`
+        `0x14` if `arg_1` is `0x0E`
 
     ## Size
         2 bytes
 
     Args:
-        arg_1 (int): Description here to be filled out by me
-        bits (Union[List[int], Set[int]]): Description here to be filled out by me
+        arg_1 (int): (unknown)
+        bits (Union[List[int], Set[int]]): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -1785,7 +1787,55 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown)"""
+    """(unknown - covers a wide range of known but undescribed memory operations)
+
+    ## Lazy Shell command
+        `Object memory $08 set bit 4`  
+        `Object memory $09 set bit 7`  
+        `Object memory $0E set bit 4`  
+        `Object memory $0E set bit 5`  
+        `Object memory $30 set bit 4`  
+        (Also covers other commands not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x04`  
+        `0xFD 0x06`  
+        `0xFD 0x08`  
+        `0xFD 0x0A` 
+        `0xFD 0x0D`  
+        `0xFD 0x11`  
+        `0xFD 0x14`   
+        `0xFD 0x17`  
+        `0xFD 0x18`  
+        `0xFD 0x19`  
+
+    ## Size
+        2 bytes
+
+    Args:
+        arg_1 (int): Unknown. Can be any of:
+            - 0x08
+            - 0x09
+            - 0x0B
+            - 0x0C
+            - 0x0D
+            - 0x0E
+            - 0x12
+            - 0x30
+            - 0x3C
+
+        bits (Union[List[int], Set[int]]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:  
+            - 0x08: [4]
+            - 0x09: [7]
+            - 0x0B: [3]
+            - 0x0C: [3, 4, 5]
+            - 0x0D: [6]
+            - 0x0E: [4] or [5]
+            - 0x12: [5]
+            - 0x30: [4]
+            - 0x3C: [6]
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _arg_1: int
@@ -1839,7 +1889,7 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
         elif args == (0x0C, [3, 4, 5]):
             opcode = bytearray([0xFD, 0x14])
         elif args == (0x0D, [6]):
-            opcode = bytearray([0xFD, 0x14])
+            opcode = bytearray([0xFD, 0x19])
         elif args == (0x0E, [4]):
             opcode = bytearray([0xFD, 0x04])
         elif args == (0x0E, [5]):
@@ -1858,7 +1908,49 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown)"""
+    """(unknown - covers a wide range of known but undescribed memory operations)
+
+    ## Lazy Shell command
+        `Object memory $08 clear bit 3,4`  
+        `Object memory $09 clear bit 7`  
+        `Object memory $0E clear bit 4`  
+        `Object memory $0E clear bit 5`  
+        `Object memory $30 clear bit 4`  
+        (Also covers other commands not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x05`  
+        `0xFD 0x07`  
+        `0xFD 0x09`  
+        `0xFD 0x0B`  
+        `0xFD 0x0C`  
+        `0xFD 0x10`  
+        `0xFD 0x13`  
+        `0xFD 0x16`  
+
+    ## Size
+        2 bytes
+
+    Args:
+        arg_1 (int): Unknown. Can be any of:
+            - 0x08
+            - 0x09
+            - 0x0B
+            - 0x0C
+            - 0x0E
+            - 0x12
+            - 0x30
+
+        bits (Union[List[int], Set[int]]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:  
+            - 0x08: [3, 4]
+            - 0x09: [7]
+            - 0x0B: [3]
+            - 0x0C: [3, 4, 5]
+            - 0x0E: [4] or [5]
+            - 0x12: [5]
+            - 0x30: [4]
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _arg_1: int
@@ -1925,7 +2017,33 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
 
 
 class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
-    """(unknown)"""
+    """(unknown - covers a wide range of known but undescribed memory operations)
+
+    ## Lazy Shell command
+        `Object memory $09 clear bit 4,6, set bit 5`  
+        (Also covers other commands not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x0E`  
+        `0xFD 0x15`  
+
+    ## Size
+        2 bytes
+
+    Args:
+        arg_1 (int): Unknown. Can be any of:
+            - 0x09
+            - 0x0C
+
+        set_bits (Union[List[int], Set[int]]): Bits to set. Validity depends on arg_1. These are the arrays allowed per arg_1 value:  
+            - 0x09: [5]
+            - 0x0C: [4]
+        clear_bits (Union[List[int], Set[int]]): Bits to clear. Validity depends on arg_1. These are the arrays allowed per arg_1 value:  
+            - 0x09: [4, 6]
+            - 0x0C: [3, 5]
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
 
     _size: int = 2
     _arg_1: int
