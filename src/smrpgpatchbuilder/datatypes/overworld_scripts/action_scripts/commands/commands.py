@@ -170,7 +170,7 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
         2 bytes
 
     Args:
-        count (int): Number of times to loop
+        count (int): Number of times to loop (8 bit int)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -321,6 +321,7 @@ class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     ## Size
         1 byte
 
+    Args:
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -899,7 +900,8 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
         if first_byte == 0xFD:
             opcode = contents[1]
             expected_length = _valid_unknowncmd_queue_opcodes_fd[opcode]
-            if expected_length[opcode] == 0:
+            print(f"0x{opcode:02X}")
+            if expected_length == 0:
                 raise InvalidCommandArgumentException(
                     f"do not use A_UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it"
                 )
@@ -918,10 +920,6 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
                 raise InvalidCommandArgumentException(
                     f"opcode 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead"
                 )
-        return self._contents
-
-    def set_contents(self, contents: bytearray) -> None:
-        """Set the whole contents of the command as bytes, including the opcode."""
         self._contents = contents
 
     @property
@@ -930,6 +928,7 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
 
     def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
+        print(contents)
         self.set_contents(contents)
 
     def render(self) -> bytearray:

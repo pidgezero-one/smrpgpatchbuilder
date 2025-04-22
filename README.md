@@ -71,7 +71,14 @@ This repo allows you to parse, modify, and rebuild:
 - Battle dialogs (soon)
 - Overworld sprites (soon)
 
-TODO: Command class reference
+## Developing and changing your scripts
+
+This repo's tools will output the scripts that are in your ROM. You can then browse them in an editor like VSCode. You can hover over each command to see hints about how to use it as well as what it's based on in Lazy Shell.
+![alt text](image-4.png)
+
+There are some commands included that are not in Lazy Shell yet that you can still use here.
+
+If you're looking for a certain Lazy Shell command but don't know what class it is, search the src/smrpgpatchbuilder folder for the Lazy Shell command as it appears in the script editor's command dropdown. That will bring you to the class definition for the command you're looking for.
 
 ## How to use this repo's standalone tools
 

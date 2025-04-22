@@ -91,6 +91,7 @@ class ActionScriptBank(ScriptBank):
     _pointer_table_start: int = 0x210000
     _start: int = 0x210800
     _end: int = 0x21C000
+    _count: int = 1024
 
     _addresses: Dict[str, int]
     _pointer_bytes: bytearray
@@ -103,15 +104,26 @@ class ActionScriptBank(ScriptBank):
     def set_contents(self, scripts: Optional[List[ActionScript]] = None) -> None:
         if scripts is None:
             scripts = []
-        assert len(scripts) == TOTAL_SCRIPTS
+        assert len(scripts) == self._count
         super().set_contents(scripts)
 
     def replace_script(self, index: int, script: ActionScript) -> None:
-        assert 0 <= index < TOTAL_SCRIPTS
+        assert 0 <= index < self._count
         super().replace_script(index, script)
 
-    def __init__(self, scripts: Optional[List[ActionScript]] = None) -> None:
+    def __init__(
+        self,
+        scripts: Optional[List[ActionScript]] = None,
+        start: int = 0x210800,
+        pointer_table_start: int = 0x210000,
+        end: int = 0x21C000,
+        count: int = TOTAL_SCRIPTS,
+    ) -> None:
+        self._count = count
         super().__init__(scripts)
+        self._start = start
+        self._pointer_table_start = pointer_table_start
+        self._end = end
 
     @property
     def addresses(self) -> Dict[str, int]:
@@ -135,7 +147,7 @@ class ActionScriptBank(ScriptBank):
 
         position += command.size
 
-        if position >= self.end:
+        if position > self.end:
             raise ScriptBankTooLongException(
                 f"command exceeded max bank size: {key} @ {position:06X}"
             )

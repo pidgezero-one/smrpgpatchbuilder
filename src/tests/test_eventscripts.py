@@ -73,7 +73,7 @@ test_cases = [
             Set7000ToTappedButton(identifier="jmp_fails"),
             Jmp(destinations=["jmp_here"]),
         ],
-        exception="couldn't find destination jmp_fails",
+        exception="couldn't find destination jmp_here",
         exception_type=IdentifierException,
     ),
     Case(
