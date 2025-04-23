@@ -900,7 +900,6 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
         if first_byte == 0xFD:
             opcode = contents[1]
             expected_length = _valid_unknowncmd_queue_opcodes_fd[opcode]
-            print(f"0x{opcode:02X}")
             if expected_length == 0:
                 raise InvalidCommandArgumentException(
                     f"do not use A_UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it"
@@ -1603,6 +1602,7 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
 
     def set_priority(self, priority: VRAMPriority) -> None:
         """Set the priority rule."""
+        assert 0 <= priority <= 3
         self._priority = priority
 
     def __init__(
@@ -1661,25 +1661,6 @@ class A_ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         `Shadow on/off` (`on` case only)
 
     ## Opcode
-        `0xFD 0x00`
-
-    ## Size
-        2 bytes
-
-    Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
-    """
-
-    _opcode = bytearray([0xFD, 0x00])
-
-
-class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
-    """The NPC's shadow when airborne will no longer be visible.
-
-    ## Lazy Shell command
-        `Shadow on/off` (`off` case only)
-
-    ## Opcode
         `0xFD 0x01`
 
     ## Size
@@ -1690,6 +1671,25 @@ class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x01])
+
+
+class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
+    """The NPC's shadow when airborne will no longer be visible.
+
+    ## Lazy Shell command
+        `Shadow on/off` (`off` case only)
+
+    ## Opcode
+        `0xFD 0x00`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode = bytearray([0xFD, 0x00])
 
 
 class A_FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
