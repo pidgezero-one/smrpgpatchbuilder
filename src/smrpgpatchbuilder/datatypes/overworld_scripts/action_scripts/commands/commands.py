@@ -2477,7 +2477,7 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.name}: 0x{address:04X}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 3

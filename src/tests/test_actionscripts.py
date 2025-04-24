@@ -484,6 +484,47 @@ test_cases = [
         commands_factory=lambda: [A_SetMem704XAt700CBit(), A_ClearMem704XAt700CBit()],
         expected_bytes=[0xA3, 0xA7],
     ),
+    Case(
+        "Set var to const",
+        commands_factory=lambda: [
+            A_SetVarToConst(PRIMARY_TEMP_700C, 1000),
+            A_SetVarToConst(WEDDING_GEAR_COUNTER, 200),
+            A_SetVarToConst(ROSE_WAY_7038, 3000),
+        ],
+        expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
+    ),
+    Case(
+        "Should fail if you try to use the wrong const size for a byte var",
+        commands_factory=lambda: [
+            A_SetVarToConst(WEDDING_GEAR_COUNTER, 2000, identifier="aaaa"),
+        ],
+        exception_type=InvalidCommandArgumentException,
+        exception="illegal args for aaaa: 0x70B2: 2000",
+    ),
+    Case(
+        "add const to var",
+        commands_factory=lambda: [
+            A_SetVarToConst(PRIMARY_TEMP_700C, 1000),
+            A_SetVarToConst(WEDDING_GEAR_COUNTER, 200),
+            A_SetVarToConst(ROSE_WAY_7038, 3000),
+        ],
+        expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
+    ),
+    Case(
+        "blah blah blah",
+        commands_factory=lambda: [A_SetVarToConst(PRIMARY_TEMP_700C, 100)],
+        expected_bytes=[0xAC, 0x64, 0x00],
+    ),
+    Case(
+        "Z coord +1!",
+        commands_factory=lambda: [A_Walk1StepNorthwest()],
+        expected_bytes=[0x45],
+    ),
+    Case(
+        "Walk xx steps east",
+        commands_factory=lambda: [A_WalkEastSteps(10)],
+        expected_bytes=[0x50, 0x0A],
+    ),
     #
     # Tests with defined GOTOs
     #
@@ -584,6 +625,16 @@ test_cases = [
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[0xDB, 0x08, 0x00, 0xDF, 0x08, 0x00, 0xFE],
+    ),
+    Case(
+        "If object A & B < (x,y) steps apart...",
+        commands_factory=lambda: [
+            A_JmpIfObjectWithinRange(
+                comparing_npc=NPC_1, usually=6, tiles=20, destinations=["end_here"]
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3A, 0x15, 0x06, 0x14, 0x08, 0x00, 0xFE],
     ),
     #
     # Unknown command tests
