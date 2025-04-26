@@ -233,7 +233,7 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     """Goto event script by ID.\n
 
     ## Lazy Shell command
-        `Jump to event...`
+        `Run event...`
 
     ## Opcode
         `0xD0`
@@ -686,7 +686,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
     """(unknown exactly how this differs from `RunBackgroundEvent` with `return_on_level_exit` set to true)\n
 
     ## Lazy Shell command
-        `Run background event, pause...`
+        `Run background event, pause (return on exit)...`
 
     ## Opcode
         `0x45`
@@ -1914,7 +1914,7 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
     For example, if $7000 is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is set. If $7000 is set to 12, then the jump will occur if $7041 bit 4 is set.
 
     ## Lazy Shell command
-        `If Memory $704x [x @ $7000] bit set...`
+        `If Memory $704x [x @ $7000] bit {xx} set...`
 
     ## Opcode
         `0xDB`
@@ -1939,7 +1939,7 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
     For example, if $7000 is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is clear. If $7000 is set to 12, then the jump will occur if $7041 bit 4 is clear.
 
     ## Lazy Shell command
-        `If Memory $704x [x @ $7000] bit clear...`
+        `If Memory $704x [x @ $7000] bit {xx} clear...`
 
     ## Opcode
         `0xDF`
@@ -1964,7 +1964,7 @@ class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     For example, if $7000 is set to 5, then $7040 bit 5 will be set. If $7000 is set to 12, then $7041 bit 4 will be set.
 
     ## Lazy Shell command
-        `Memory $704x [x is @ $7000] bit set`
+        `Memory $704x [x is @ $7000] bit {xx} set...`
 
     ## Opcode
         `0xA3`
@@ -1980,25 +1980,19 @@ class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Add a const number value to a longterm mem var.
+    """For the literal value currently stored at $7000, clear the bit that corresponds to this index (starting from $7040 bit 0).
+    For example, if $7000 is set to 5, then $7040 bit 5 will be clear. If $7000 is set to 12, then $7041 bit 4 will be clear.
 
     ## Lazy Shell command
-        `Memory $70Ax += ...`
-        `Memory $7000 += ...`
-        `Memory $7xxx += ...`
+        `Memory $704x [x is @ $7000] bit {xx} clear...`
 
     ## Opcode
-        `0xA9`
-        `0xAD`
-        `0xB1`
+        `0xA7`
 
     ## Size
-        3 bytes if the variable is $7000 or a single-byte var
-        4 bytes if the variable is a short var
+        1 byte
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to add to
-        value (Union[int, Type[Item]]): The const you want to add to the variable
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -3163,7 +3157,7 @@ class CompareVarToConst(
 
     ## Lazy Shell command
         `Memory $7000 compare to {xx}...`
-        `Memory $7xxx compare to...`
+        `Memory $7xxx compare to {xx}...`
 
     ## Opcode
         `0xC0`
@@ -3201,7 +3195,7 @@ class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     or `JmpIfLoadedMemory`... commands.
 
     ## Lazy Shell command
-        `Memory $7000 compare to memory $7xxx...`
+        `Memory $7000 compare to $7xxx...`
 
     ## Opcode
         `0xC1`
@@ -3275,7 +3269,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     ## Lazy Shell command
         `If memory $70Ax = ...`
-        `If memory $7000 = ...`
+        `If memory $7000 =...`
         `If memory $7xxx = ...`
 
     ## Opcode
@@ -3367,7 +3361,7 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
 
     ## Lazy Shell command
         `If memory $70Ax != ...`
-        `If memory $7000 != ...`
+        `If memory $7000 !=...`
         `If memory $7xxx != ...`
 
     ## Opcode
@@ -3519,7 +3513,7 @@ class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise OR operation between the value of $7000 and another variable, save the result to $7000.
 
     ## Lazy Shell command
-        `Memory $7000 &= memory $7xxx...`
+        `Memory $7000 |= memory $7xxx...`
 
     ## Opcode
         `0xFD 0xB4`
@@ -5773,18 +5767,20 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         `Memory $7000 = object's X coord...`
         `Memory $7000 = object's Y coord...`
         `Memory $7000 = object's Z coord...`
+        `Memory $7000 = F coord of object...`
 
     ## Opcode
         `0xC4`
         `0xC5`
         `0xC6`
+        `0xC9`
 
     ## Size
         2 bytes
 
     Args:
         target_npc (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
-        coord (Coord): Choose one of `COORD_X`, `COORD_Y`, `COORD_Z`
+        coord (Coord): Choose one of `COORD_X`, `COORD_Y`, `COORD_Z`, or `COORD_F`
         isometric (bool): If true, stores the isometric coord value (i.e. tile coord) instead of the pixel value. Exclusive with the `pixel` arg.
         pixel (bool): If true, stores the pixel coord value instead of the tile/isometric coord value. Exclusive with the `isometric` arg.
         bit_7 (bool): (unknown)
@@ -6039,7 +6035,7 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
     B = 7
 
     ## Lazy Shell command
-        `Enable buttons {xx} only...`
+        `Enable buttons {xx} only, reset @ return...`
 
     ## Opcode
         `0x34`
@@ -6255,7 +6251,7 @@ class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's frog coin count by the amount stored to $7000.
 
     ## Lazy Shell command
-        `Coins -= memory $7000`
+        `Frog coins -= memory $7000`
 
     ## Opcode
         `0xFD 0x55`
@@ -6883,7 +6879,7 @@ class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
     """Check how many of the given item are currently in the player's inventory, and store that amount to $7000.
 
     ## Lazy Shell command
-        `Memory $7000 = quantity of item @ memory $70A7`
+        `Memory $7000 = quantity of item {xx} in inventory...`
 
     ## Opcode
         `0xFD 0x58`
@@ -6943,7 +6939,7 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently airborne, go to the section of code beginning with the specified identifier.
 
     ## Lazy Shell command
-        `If in air...`
+        `If Mario is in the air...`
 
     ## Opcode
         `0x3D`
@@ -8028,7 +8024,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur
-        change (int): Set the time in frames over which the tempo change should gradually occur
+        change (int): Set the time in frames over which the tempo change should gradually occur (0 to 127)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -8081,7 +8077,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur.
-        change (int): The difference in tempo to apply as a speedup.
+        change (int): The difference in tempo to apply as a speedup (0 to 128).
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -8105,7 +8101,113 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         return self._change
 
     def set_change(self, change: int) -> None:
-        """Set he difference in tempo to apply as a speedup (0 to 127)."""
+        """Set he difference in tempo to apply as a speedup (0 to 128)."""
+        assert 0 < change <= 128
+        self._change = UInt8(change)
+
+    def __init__(
+        self, duration: int, change: int, identifier: Optional[str] = None
+    ) -> None:
+        super().__init__(identifier)
+        self.set_duration(duration)
+        self.set_change(change)
+
+    def render(self) -> bytearray:
+        return super().render(self.duration, 256 - self.change)
+
+
+class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
+    """Designate a numerical temp (0 to 127) by which to lower the pitch.
+
+    ## Lazy Shell command
+        `Adjust music pitch by {xx} amount...`
+
+    ## Opcode
+        `0x98`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The time in frames over which the tempo change should gradually occur
+        change (int): Set the time in frames over which the tempo change should gradually occur (0 to 127)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x98
+    _size: int = 3
+    _duration: UInt8
+    _change: UInt8
+
+    @property
+    def duration(self) -> UInt8:
+        """The time in frames over which the pitch change should gradually occur."""
+        return self._duration
+
+    def set_duration(self, duration: int) -> None:
+        """Set the time in frames over which the pitch change should gradually occur."""
+        self._duration = UInt8(duration)
+
+    @property
+    def change(self) -> UInt8:
+        """The difference in pitch to lower by."""
+        return self._change
+
+    def set_change(self, change: int) -> None:
+        """Set the difference in pitch to lower by (0 to 127)."""
+        assert 0 <= change <= 127
+        self._change = UInt8(change)
+
+    def __init__(
+        self, duration: int, change: int, identifier: Optional[str] = None
+    ) -> None:
+        super().__init__(identifier)
+        self.set_duration(duration)
+        self.set_change(change)
+
+    def render(self) -> bytearray:
+        return super().render(self.duration, self.change)
+
+
+class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
+    """Designate a numerical temp (0 to 127) by which to increase the pitch.
+
+    ## Lazy Shell command
+        `Adjust music pitch by {xx} amount...`
+
+    ## Opcode
+        `0x98`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The time in frames over which the tempo change should gradually occur.
+        change (int): The difference in tempo to apply as a speedup (0 to 128)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x98
+    _size: int = 3
+    _duration: UInt8
+    _change: UInt8
+
+    @property
+    def duration(self) -> UInt8:
+        """The time in frames over which the pitch change should gradually occur."""
+        return self._duration
+
+    def set_duration(self, duration: int) -> None:
+        """Set the time in frames over which the pitch change should gradually occur."""
+        self._duration = UInt8(duration)
+
+    @property
+    def change(self) -> UInt8:
+        """The difference in pitch to raise by."""
+        return self._change
+
+    def set_change(self, change: int) -> None:
+        """Set the difference in pitch to raise by (0 to 128)."""
         assert 0 < change <= 128
         self._change = UInt8(change)
 
@@ -9860,7 +9962,7 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
     It is recommended to use shop ID constant names for this.
 
     ## Lazy Shell command
-        `Run menu tutorial...`
+        Open shop menu...`
 
     ## Opcode
         `0x4C`

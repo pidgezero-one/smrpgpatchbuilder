@@ -3037,7 +3037,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
 
     ## Lazy Shell command
         `If memory $70Ax = ...`
-        `If memory $700C = ...`
+        `If memory $700C =...`
         `If memory $7xxx = ...`
 
     ## Opcode
@@ -3129,7 +3129,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
 
     ## Lazy Shell command
         `If memory $70Ax != ...`
-        `If memory $700C != ...`
+        `If memory $700C !=...`
         `If memory $7xxx != ...`
 
     ## Opcode
@@ -3529,7 +3529,7 @@ class A_Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform a bitwise OR operation between the value of $700C and another variable, save the result to $700C.
 
     ## Lazy Shell command
-        `Memory $700C &= memory $7xxx...`
+        `Memory $700C |= memory $7xxx...`
 
     ## Opcode
         `0xFD 0xB4`
@@ -5563,7 +5563,7 @@ class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         (not documented in Lazy Shell)
 
     ## Opcode
-        `0x88`
+        `0x8A`
 
     ## Size
         1 byte
@@ -5572,14 +5572,14 @@ class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x88
+    _opcode: int = 0x8A
 
 
 class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Instantly transfer this NPC to the X/Y pixel coordinates corresponding to the 16 bit values currently stored at $7016 and $7018.
 
     ## Lazy Shell command
-        `Transfer to (x,y) of Mem $7016-B`
+        `Transfer to (x,y) of Mem $7016-1B`
 
     ## Opcode
         `0x89`
@@ -5598,7 +5598,7 @@ class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoA
     """Transfer this NPC to the X/Y/Z pixel coordinates corresponding to the 16 bit values currently stored at $7016, $7018, and $701A.
 
     ## Lazy Shell command
-        `Transfer to (x,y,z) of Mem $7016-B`
+        `Transfer to (x,y,z) of Mem $7016-1B`
 
     ## Opcode
         `0x99`
@@ -5617,10 +5617,10 @@ class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y pixel coordinates corresponding to the 16 bit values currently stored at $7016 and $7018.
 
     ## Lazy Shell command
-        `Walk to (x,y) of Mem $7016-B`
+        `Walk to (x,y) of Mem $7016-1B`
 
     ## Opcode
-        `0x8A`
+        `0x88`
 
     ## Size
         1 byte
@@ -5629,14 +5629,14 @@ class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x8A
+    _opcode: int = 0x88
 
 
 class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y/Z pixel coordinates corresponding to the 16 bit values currently stored at $7016, $7018, and $701A.
 
     ## Lazy Shell command
-        `Walk to (x,y,z) of Mem $7016-B`
+        `Walk to (x,y,z) of Mem $7016-1B`
 
     ## Opcode
         `0x98`
@@ -7143,8 +7143,8 @@ class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect by ID on the specified chanel.
 
     ## Lazy Shell command
-        `Play sound {xx} (ch.6,7)...`
-        `Play sound {xx} (ch.4,5)...`
+        `Play sound: {xx} (ch.6,7)...`
+        `Play soun: {xx} (ch.4,5)...`
 
     ## Opcode
         `0x9C`
@@ -7208,7 +7208,7 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect at a set balance.
 
     ## Lazy Shell command
-        `Play sound {xx} (ch.6,7) at balance {xx}...`
+        `Play sound: {xx} (ch.6,7), speaker balance {xx}...`
 
     ## Opcode
         `0x9D`

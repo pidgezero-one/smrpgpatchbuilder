@@ -4984,12 +4984,21 @@ def convert_event_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
     elif cmd["command"] == "adjust_music_tempo":
-        if cmdargs[0] == 0x01:
+        args["duration"] = str(cmdargs[2])
+        if cmdargs[1] >= 0x80:
             cls = "SpeedUpMusicTempoBy"
+            args["change"] = str((0x100 - cmdargs[1]) & 0xFF)
         else:
             cls = "SlowDownMusicTempoBy"
+            args["change"] = str(cmdargs[1])
+    elif cmd["command"] == "adjust_music_pitch":
         args["duration"] = str(cmdargs[2])
-        args["change"] = str(cmdargs[1])
+        if cmdargs[1] >= 0x80:
+            cls = "IncreaseMusicPitchBy"
+            args["change"] = str((0x100 - cmdargs[1]) & 0xFF)
+        else:
+            cls = "ReduceMusicPitchBy"
+            args["change"] = str(cmdargs[1])
     elif cmd["command"] == "append_to_dialog_at_7000":
         cls = "AppendDialogAt7000ToCurrentDialog"
         args["closable"] = "True" if 5 in cmdargs[0] else "False"

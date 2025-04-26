@@ -4556,7 +4556,7 @@ class PauseScriptUntilSpriteSequenceDone(
     """Pause the active script until a running sprite sequence has finished.
 
     ## Lazy Shell command
-        `TBD, to be filled in manually by me`
+        `Pause script until sprite sequence don`
 
     ## Opcode
         `0x4E`
@@ -6301,7 +6301,21 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Display a screen effect by ID. It is recommended to use screen effect constants with this."""
+    """Display a screen effect by ID.
+
+    ## Lazy Shell command
+        `Screen effect...`
+
+    ## Opcode
+        `0xA3`
+
+    ## Size
+        2 bytes
+
+    Args:
+        effect (int): The ID of the effect to run
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xA3
     _size: int = 2

@@ -39,7 +39,7 @@ end = 0x21BFFF  # it would be extremely good to expand into this space
 pointers = {"start": 0x210000, "end": 0x2107FF}
 
 sequence_lens = [
-    1, #00
+    1,  # 00
     1,
     1,
     1,
@@ -55,7 +55,7 @@ sequence_lens = [
     2,
     2,
     1,
-    2, #10
+    2,  # 10
     2,
     2,
     2,
@@ -71,7 +71,7 @@ sequence_lens = [
     1,
     1,
     1,
-    2, #20
+    2,  # 20
     1,
     1,
     2,
@@ -87,7 +87,7 @@ sequence_lens = [
     3,
     3,
     7,
-    3, #30
+    3,  # 30
     3,
     3,
     3,
@@ -103,7 +103,7 @@ sequence_lens = [
     3,
     5,
     4,
-    1, #40
+    1,  # 40
     1,
     1,
     1,
@@ -119,7 +119,7 @@ sequence_lens = [
     1,
     1,
     1,
-    2, #50
+    2,  # 50
     2,
     2,
     2,
@@ -135,7 +135,7 @@ sequence_lens = [
     1,
     1,
     1,
-    2, #60
+    2,  # 60
     2,
     2,
     2,
@@ -151,7 +151,7 @@ sequence_lens = [
     1,
     1,
     1,
-    1, #70
+    1,  # 70
     1,
     1,
     1,
@@ -167,7 +167,7 @@ sequence_lens = [
     2,
     3,
     3,
-    3, #80
+    3,  # 80
     3,
     3,
     3,
@@ -183,7 +183,7 @@ sequence_lens = [
     1,
     1,
     1,
-    4, #90
+    4,  # 90
     4,
     4,
     4,
@@ -199,7 +199,7 @@ sequence_lens = [
     3,
     3,
     3,
-    2, #A0
+    2,  # A0
     2,
     2,
     1,
@@ -215,7 +215,7 @@ sequence_lens = [
     3,
     1,
     1,
-    4, #B0
+    4,  # B0
     4,
     2,
     2,
@@ -231,7 +231,7 @@ sequence_lens = [
     3,
     1,
     1,
-    3, #C0
+    3,  # C0
     2,
     4,
     1,
@@ -247,7 +247,7 @@ sequence_lens = [
     1,
     1,
     1,
-    3, #D0
+    3,  # D0
     1,
     3,
     3,
@@ -263,7 +263,7 @@ sequence_lens = [
     4,
     4,
     3,
-    5, #E0
+    5,  # E0
     5,
     5,
     5,
@@ -279,7 +279,7 @@ sequence_lens = [
     3,
     3,
     3,
-    2, #F0
+    2,  # F0
     3,
     3,
     3,
@@ -300,7 +300,7 @@ sequence_lens = [
 # replicant function - appears to mean it's the same as event function???
 # may need to import info from event disassembler
 fd_sequence_lens = [
-    2, #00
+    2,  # 00
     2,
     2,
     2,
@@ -315,7 +315,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    3, #10
+    3,  # 10
     2,
     2,
     2,
@@ -331,7 +331,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #20
+    2,  # 20
     5,
     2,
     2,
@@ -347,7 +347,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #30
+    2,  # 30
     8,
     8,
     7,
@@ -363,7 +363,7 @@ fd_sequence_lens = [
     2,
     5,
     7,
-    5, #40
+    5,  # 40
     2,
     2,
     2,
@@ -379,7 +379,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #50
+    2,  # 50
     2,
     2,
     2,
@@ -395,7 +395,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #60
+    2,  # 60
     2,
     2,
     2,
@@ -411,7 +411,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #70
+    2,  # 70
     2,
     2,
     2,
@@ -427,7 +427,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #80
+    2,  # 80
     2,
     2,
     2,
@@ -443,7 +443,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #90
+    2,  # 90
     2,
     2,
     2,
@@ -459,7 +459,7 @@ fd_sequence_lens = [
     3,
     2,
     3,
-    2, #A0
+    2,  # A0
     2,
     2,
     2,
@@ -475,7 +475,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #B0
+    2,  # B0
     4,
     4,
     4,
@@ -491,7 +491,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #C0
+    2,  # C0
     2,
     2,
     2,
@@ -507,7 +507,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #D0
+    2,  # D0
     2,
     2,
     2,
@@ -523,7 +523,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #e0
+    2,  # e0
     2,
     2,
     2,
@@ -539,7 +539,7 @@ fd_sequence_lens = [
     2,
     2,
     2,
-    2, #F0
+    2,  # F0
     2,
     2,
     2,
@@ -612,9 +612,7 @@ def set_animation_speed(args):
     speed = args[0] & 0x07
     flag_short = args[0] >> 6
     f = parse_flags(flag_short, "_0x10Flags", _0x10_flags, [0, 1])
-    return "set_animation_speed", [
-        speed, f
-    ]
+    return "set_animation_speed", [speed, f]
 
 
 def set_object_memory_bits(obj):
@@ -630,9 +628,7 @@ def transfer_to_xyzf(args):
     y = args[1]
     z = args[2] & 0x1F
     direction = args[2] >> 5
-    return "transfer_to_xyzf", [
-        x, y, z, direction
-    ]
+    return "transfer_to_xyzf", [x, y, z, direction]
 
 
 def transfer_xyzf_steps(args):
@@ -640,9 +636,7 @@ def transfer_xyzf_steps(args):
     y = args[1]
     z = args[2] & 0x1F
     direction = args[2] >> 5
-    return "transfer_xyzf_steps", [
-        x, y, z, direction
-    ]
+    return "transfer_xyzf_steps", [x, y, z, direction]
 
 
 def transfer_xyzf_pixels(args):
@@ -650,9 +644,7 @@ def transfer_xyzf_pixels(args):
     y = args[1]
     z = args[2] & 0x1F
     direction = args[2] >> 5
-    return "transfer_xyzf_pixels", [
-        x, y, z, direction
-    ]
+    return "transfer_xyzf_pixels", [x, y, z, direction]
 
 
 def fade_out_sound_to_volume(args):
@@ -693,9 +685,7 @@ def parse_object_coord(cmd):
             parse_flags(args[0], bits=[7]),
         ]
         if cmd < 0xC9:
-            func_params.append(
-                unit
-            )
+            func_params.append(unit)
         return "set_700C_to_object_coord", func_params
 
     return inner_parse_object_coord
@@ -706,7 +696,9 @@ def jmp_if_bit_clear(cmd):
         addr, bit = parse_target_bit(cmd - 0xDC, args)
         to_addr = shortify(args, 1)
         return "jmp_if_bit_clear", [
-            addr, bit, to_addr,
+            addr,
+            bit,
+            to_addr,
         ]
 
     return inner_jmp_if_bit_clear
@@ -717,7 +709,9 @@ def jmp_if_bit_set(cmd):
         addr, bit = parse_target_bit(cmd - 0xD8, args)
         to_addr = shortify(args, 1)
         return "jmp_if_bit_set", [
-            addr, bit, to_addr,
+            addr,
+            bit,
+            to_addr,
         ]
 
     return inner_jmp_if_bit_set
@@ -740,9 +734,7 @@ def set_object_presence_in_level(args):
         func = "summon_to_level"
     else:
         func = "remove_from_level"
-    return func, [
-        obj, level
-    ]
+    return func, [obj, level]
 
 
 def set_object_trigger_in_level(args):
@@ -753,9 +745,7 @@ def set_object_trigger_in_level(args):
         func = "enable_trigger_in_level"
     else:
         func = "disable_trigger_in_level"
-    return func, [
-        obj, level
-    ]
+    return func, [obj, level]
 
 
 def jmp_depending_on_object_presence(args):
@@ -767,9 +757,7 @@ def jmp_depending_on_object_presence(args):
         func = "jmp_if_object_in_level"
     else:
         func = "jmp_if_object_not_in_level"
-    return func, [
-        obj, level, addr
-    ]
+    return func, [obj, level, addr]
 
 
 def mem_700C_shift_left(args):
@@ -961,9 +949,9 @@ names[0x86] = named("maximize_sequence_speed_86")
 names[0x87] = named(
     "transfer_to_object_xy", byte(prefix="AreaObjects", table=area_object_table)
 )
-names[0x88] = named("run_away_shift")
+names[0x88] = named("walk_to_7016_7018")
 names[0x89] = named("transfer_to_7016_7018")
-names[0x8A] = named("walk_to_7016_7018")  # indistinguishable from 0x89
+names[0x8A] = named("run_away_shift")
 # 0x8B - 0x8F undocumented
 names[0x90] = named("bounce_to_xy_with_height", byte_int(), byte_int(), byte_int())
 names[0x91] = named("bounce_xy_steps_with_height", byte_int(), byte_int(), byte_int())
@@ -1261,23 +1249,23 @@ class Command(BaseCommand):
                 line, offset = script[j]
                 name, args = parse_line(line, offset)
                 identifier = "ACTION_%i_%s_%i" % (i, name, j)
-                if line[0] in jmp_cmds or line[0] in jmp_cmds_double or (line[0] == 0xFD and line[1] in jmp_cmds_fd):
+                if (
+                    line[0] in jmp_cmds
+                    or line[0] in jmp_cmds_double
+                    or (line[0] == 0xFD and line[1] in jmp_cmds_fd)
+                ):
                     arg_index = get_jump_args(line, args)
-                    jump_args = [
-                        (ja | (offset & 0xFF0000)) for ja in args[arg_index:]
-                    ]
+                    jump_args = [(ja | (offset & 0xFF0000)) for ja in args[arg_index:]]
                 else:
                     jump_args = []
                 c = {
-                        "command": name,
-                        "args": args,
-                        "original_offset": offset,
-                        "identifier": identifier,
-                        "jumps": jump_args,
-                    }
-                sd.append(
-                    c
-                )
+                    "command": name,
+                    "args": args,
+                    "original_offset": offset,
+                    "identifier": identifier,
+                    "jumps": jump_args,
+                }
+                sd.append(c)
             scripts_data.append(sd)
 
         scripts_with_named_jumps = []
