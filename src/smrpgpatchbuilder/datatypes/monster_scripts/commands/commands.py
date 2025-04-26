@@ -849,7 +849,7 @@ class DoNothing(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Don't do anything.
 
     ## Lazy Shell command
-        (unused)
+        (unused. not sure if this is really a command)
 
     ## Opcode
         `0xFB`

@@ -32,64 +32,93 @@ test_cases = [
         commands_factory=lambda: [Attack(PhysicalAttack102)],
         expected_bytes=[0x66],
     ),
-    Case(label="Attack x3", commands_factory=lambda: [Attack()], expected_bytes=[]),
-    Case(label="SetTarget", commands_factory=lambda: [SetTarget()], expected_bytes=[]),
+    Case(
+        label="Attack x3",
+        commands_factory=lambda: [Attack(AttackDoNothing, PhysicalAttack98, Fangs)],
+        expected_bytes=[0xE0, 0xFB, 0x62, 0x43],
+    ),
+    Case(
+        label="SetTarget",
+        commands_factory=lambda: [SetTarget(MONSTER_2_SET)],
+        expected_bytes=[0xE2, 0x14],
+    ),
     Case(
         label="RunBattleDialog",
-        commands_factory=lambda: [RunBattleDialog()],
-        expected_bytes=[],
+        commands_factory=lambda: [RunBattleDialog(16)],
+        expected_bytes=[0xE3, 0x10],
     ),
     Case(
         label="RunBattleEvent",
-        commands_factory=lambda: [RunBattleEvent()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RunBattleEvent(BE0021_JOHNNY_CHALLENGES_MARIO_TO_A_ONE_ON_ONE)
+        ],
+        expected_bytes=[0xE5, 0x15],
     ),
     Case(
         label="IncreaseVarBy1",
-        commands_factory=lambda: [IncreaseVarBy1()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncreaseVarBy1(0x7EE00F)],
+        expected_bytes=[0xE6, 0x00, 0x0F],
     ),
     Case(
         label="DecreaseVarBy1",
-        commands_factory=lambda: [DecreaseVarBy1()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecreaseVarBy1(0x7EE008)],
+        expected_bytes=[0xE6, 0x01, 0x08],
     ),
     Case(
-        label="SetVarBits", commands_factory=lambda: [SetVarBits()], expected_bytes=[]
+        label="SetVarBits",
+        commands_factory=lambda: [SetVarBits(0x7EE001, [1, 4, 6])],
+        expected_bytes=[0xE7, 0x00, 0x01, 0x52],
     ),
     Case(
         label="ClearVarBits",
-        commands_factory=lambda: [ClearVarBits()],
-        expected_bytes=[],
+        commands_factory=lambda: [ClearVarBits(0x7EE000, [0, 3, 7])],
+        expected_bytes=[0xE7, 0x01, 0x00, 0x89],
     ),
-    Case(label="ClearVar", commands_factory=lambda: [ClearVar()], expected_bytes=[]),
+    Case(
+        label="ClearVar",
+        commands_factory=lambda: [ClearVar(ATTACK_PHASE_COUNTER)],
+        expected_bytes=[0xE8, 0x06],
+    ),
     Case(
         label="RemoveTarget",
-        commands_factory=lambda: [RemoveTarget()],
-        expected_bytes=[],
+        commands_factory=lambda: [RemoveTarget(SELF)],
+        expected_bytes=[0xEA, 0x00, 0x00, 0x1B],
     ),
     Case(
-        label="CallTarget", commands_factory=lambda: [CallTarget()], expected_bytes=[]
+        label="CallTarget",
+        commands_factory=lambda: [CallTarget(MALLOW)],
+        expected_bytes=[0xEA, 0x01, 0x00, 0x04],
     ),
     Case(
         label="MakeInvulnerable",
-        commands_factory=lambda: [MakeInvulnerable()],
-        expected_bytes=[],
+        commands_factory=lambda: [MakeInvulnerable(BOWSER)],
+        expected_bytes=[0xEB, 0x00, 0x02],
     ),
     Case(
         label="MakeVulnerable",
-        commands_factory=lambda: [MakeVulnerable()],
-        expected_bytes=[],
+        commands_factory=lambda: [MakeVulnerable(SLOT_3)],
+        expected_bytes=[0xEB, 0x01, 0x12],
     ),
     Case(
-        label="ExitBattle", commands_factory=lambda: [ExitBattle()], expected_bytes=[]
+        label="ExitBattle",
+        commands_factory=lambda: [ExitBattle()],
+        expected_bytes=[0xEC],
     ),
     Case(
         label="Set7EE005ToRandomNumber",
-        commands_factory=lambda: [Set7EE005ToRandomNumber()],
-        expected_bytes=[],
+        commands_factory=lambda: [Set7EE005ToRandomNumber(7)],
+        expected_bytes=[0xED, 0x07],
     ),
-    Case(label="CastSpell", commands_factory=lambda: [CastSpell()], expected_bytes=[]),
+    Case(
+        label="CastSpell",
+        commands_factory=lambda: [CastSpell(BigBang)],
+        expected_bytes=[0xEF, 0x67],
+    ),
+    Case(
+        label="CastSpell x3",
+        commands_factory=lambda: [CastSpell(KnockOut, Drain, SpellDoNothing)],
+        expected_bytes=[0xF0, 0x5F, 0x40, 0xFB],
+    ),
     Case(
         label="DoMonsterBehaviour",
         commands_factory=lambda: [DoMonsterBehaviour()],
