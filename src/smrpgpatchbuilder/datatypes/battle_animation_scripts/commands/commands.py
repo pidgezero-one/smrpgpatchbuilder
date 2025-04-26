@@ -69,7 +69,33 @@ from .types import (
 
 
 class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Draws a new sprite by absolute ID at the given coords with the given properties."""
+    """Draws a new sprite by absolute ID at the given coords with the given properties.
+
+    ## Lazy Shell command
+        `New object: sprite = {xx}, coords (AMEM $32)`
+
+    ## Opcode
+        `0x00`
+
+    ## Size
+        9 bytes
+
+    Args:
+        sprite_id (int): The ID of the sprite to draw.
+        sequence (int): The sprite's specific sequence ID to run when drawn.
+        priority (int): The sprite's graphic layer priority.
+        vram_address (int): (unknown).
+        palette_row (int): The sprite's palette row ID.
+        overwrite_vram (bool): (unknown).
+        looping (bool): Decides if the sprite sequence should loop.
+        param_2_and_0x10 (bool): (unknown).
+        overwrite_palette (bool): If drawing over an exiting sprite, decide if the palette should also be overwritten.
+        mirror_sprite (bool): If true, the sprite will be drawn horizontally flipped.
+        invert_sprite (bool): If true, the sprite will be drawn vertically flipped.
+        behind_all_sprites (bool): If true, the sprite will be drawn behind all other sprites.
+        overlap_all_sprites (bool): If true, the sprite will be drawn over all other sprites.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x00
     _size: int = 9
@@ -263,13 +289,51 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
-    """Store XYZ coords of sprite to AMEM $32."""
+    """Store XYZ coords of sprite to AMEM $32.
+
+    ## Lazy Shell command
+        `AMEM $32 = coords (x,y,z)`
+
+    ## Opcode
+        `0x01`
+
+    ## Size
+        8 bytes
+
+    Args:
+        origin (Origin): The point at which the x-y-z coords are relative to.
+        x (int): Relative X coord (16 bit).
+        y (int): Relative Y coord (16 bit).
+        z (int): Relative Z coord (16 bit).
+        do_set_x (bool): X coord will only be committed to AMEM if this is set to true.
+        do_set_y (bool): Y coord will only be committed to AMEM if this is set to true.
+        do_set_z (bool): Z coord will only be committed to AMEM if this is set to true.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x01
 
 
 class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Draw sprite at XYZ coords stored at AMEM 32."""
+    """Draw sprite at XYZ coords stored at AMEM 32.
+
+    ## Lazy Shell command
+        `Sprite = {xx}, coords (AMEM $32)`
+
+    ## Opcode
+        `0x03`
+
+    ## Size
+        6 bytes
+
+    Args:
+        sprite_id (int): The ID of the sprite to draw.
+        sequence (int): The sprite's specific sequence ID to run when drawn.
+        store_to_vram (bool): (unknown).
+        looping (bool): Decides if the sprite sequence should loop.
+        store_palette (bool): (unknown).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 6
     _opcode: int = 0x03
@@ -348,7 +412,24 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
 
 
 class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Pause the active script until a certain condition is met."""
+    """Pause the active script until a certain condition is met.
+
+    ## Lazy Shell command
+        `Pause script until...`
+        `Pause script until {xx} complete...`
+
+    ## Opcode
+        `0x04`
+        `0x74`
+
+    ## Size
+        4 bytes or 3 bytes depending on the condition
+
+    Args:
+        condition (Union[int, PauseUntil, bytearray]): The condition that ends the pause.
+        frames (int): The number of frames to pause for.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _condition: Union[PauseUntil, bytearray]
     _frames: UInt16
@@ -418,19 +499,67 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Removes the sprite queue target from the scene entirely."""
+    """Removes the sprite queue target from the scene entirely.
+
+    ## Lazy Shell command
+        `Remove object`
+
+    ## Opcode
+        `0x05`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x05
 
 
 class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """End object queue script."""
+    """End object queue script.
+
+    ## Lazy Shell command
+        `Return object queue`
+
+    ## Opcode
+        `0x07`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x07
 
 
 class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
-    "Move this object along the given axes."
+    """Move this object along the given axes.
+
+    ## Lazy Shell command
+        `Move object: speed = {xx}`
+
+    ## Opcode
+        `0x08`
+
+    ## Size
+        8 bytes
+
+    Args:
+        speed (int): Movement speed.
+        start_position (int): Int value indicating start position. Applies to every selected axis.
+        end_position (int): Int value indicating end position. Applies to every selected axis.
+        apply_to_x (bool): If true, start/end values apply to X axis.
+        apply_to_y (bool): If true, start/end values apply to Y axis.
+        apply_to_z (bool): If true, start/end values apply to Z axis.
+        should_set_start_position (bool): If true, provided start position will be used.
+        should_set_end_position (bool): If true, provided end position will be used.
+        should_set_speed (bool): Movement speed.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x08
     _size: int = 8
@@ -563,7 +692,21 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """A simple goto with no conditions."""
+    """A simple goto with no conditions.
+
+    ## Lazy Shell command
+        `Jump to address $xxxx`
+
+    ## Opcode
+        `0x09`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x09
     _size: int = 3
@@ -573,19 +716,68 @@ class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
 
 
 class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Pause for exactly one frame."""
+    """Pause for exactly one frame.
+
+    ## Lazy Shell command
+        `Pause script for 1 frame`
+
+    ## Opcode
+        `0x0A`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0A
 
 
 class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
-    """Store XYZ coords of sprite to AMEM $40."""
+    """Store XYZ coords of sprite to AMEM $40.
+
+    ## Lazy Shell command
+        `AMEM $40 = coords (x,y,z)`
+
+    ## Opcode
+        `0x0B`
+
+    ## Size
+        8 bytes
+
+    Args:
+        origin (Origin): The point at which the x-y-z coords are relative to.
+        x (int): Relative X coord (16 bit).
+        y (int): Relative Y coord (16 bit).
+        z (int): Relative Z coord (16 bit).
+        do_set_x (bool): X coord will only be committed to AMEM if this is set to true.
+        do_set_y (bool): Y coord will only be committed to AMEM if this is set to true.
+        do_set_z (bool): Z coord will only be committed to AMEM if this is set to true.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0B
 
 
 class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Move sprite to coords stored at AMEM $40."""
+    """Move sprite to coords stored at AMEM $40.
+
+    ## Lazy Shell command
+        `Move sprite to coords (AMEM $40)`
+
+    ## Opcode
+        `0x0C`
+
+    ## Size
+        6 bytes
+
+    Args:
+        shift_type (ShiftType): Describes the movement type (shift, transfer, etc).
+        speed (int): Movement speed.
+        arch_height (int): Is zero if the movement has no Z axis.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0C
     _size: int = 6
@@ -642,7 +834,20 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 class ResetTargetMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """(unknown)."""
+    """(unknown).
+
+    ## Lazy Shell command
+        `Reset target mapping memory`
+
+    ## Opcode
+        `0x0E`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0E
 
@@ -650,13 +855,40 @@ class ResetTargetMappingMemory(
 class ResetObjectMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """(unknown)."""
+    """(unknown).
+
+    ## Lazy Shell command
+        `Reset object mapping memory`
+
+    ## Opcode
+        `0x0F`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x0F
 
 
 class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """Launches the section of code beginning with this goto as a subroutine."""
+    """Launches the section of code beginning with this goto as a subroutine.
+
+    ## Lazy Shell command
+        `Jump to subroutine $xxxx`
+
+    ## Opcode
+        `0x10`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command where you want the subroutine to begin.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x10
     _size: int = 3
@@ -666,25 +898,79 @@ class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 
 
 class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Ends code intended to be run as a subroutine."""
+    """Ends code intended to be run as a subroutine.
+
+    ## Lazy Shell command
+        `Return subroutine`
+
+    ## Opcode
+        `0x11`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x11
 
 
 class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Makes the object visible."""
+    """Makes the object visible.
+
+    ## Lazy Shell command
+        `Visibility on`
+
+    ## Opcode
+        `0x1A 0x01`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: bytearray = bytearray([0x1A, 0x01])
 
 
 class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Makes the object invisible."""
+    """Makes the object invisible.
+
+    ## Lazy Shell command
+        `Visibility off`
+
+    ## Opcode
+        `0x1B 0x01`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: bytearray = bytearray([0x1B, 0x01])
 
 
 class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
-    """Set 8bit AMEM $60-6F to the given const value."""
+    """Set 8bit AMEM $60-6F to the given const value.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to compare AMEM against
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -698,7 +984,22 @@ class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
 
 
 class SetAMEM16BitToConst(SetAMEM8BitToConst):
-    """Set 16bit AMEM $60-6F to the given const value."""
+    """Set 16bit AMEM $60-6F to the given const value.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to perform the AND operation against
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
@@ -708,7 +1009,23 @@ class JmpIfAMEM8BitEqualsConst(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAndConst,
 ):
-    """If 8bit AMEM $60-6F equals the given const value, go to destination indicated by name."""
+    """If 8bit AMEM $60-6F equals the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -729,55 +1046,176 @@ class JmpIfAMEM8BitEqualsConst(
 
 
 class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
-    """If 16bit AMEM $60-6F equals the given const value, go to destination indicated by name."""
+    """If 16bit AMEM $60-6F equals the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
-    """If 8bit AMEM $60-6F does not equal the given const value,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
-    """If 16bit AMEM $60-6F does not equal the given const value,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
-    """If 8bit AMEM $60-6F is less than the given const value,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
-    """If 16bit AMEM $60-6F is less than the given const value,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
-    """If 8bit AMEM $60-6F is NOT less than the given const value,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
-    """If 16bit AMEM $60-6F is NOT less than the given const value,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
-    """Increase 8bit AMEM $60-6F by given const value."""
+    """Increase 8bit AMEM $60-6F by given const value.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -791,25 +1229,85 @@ class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
 
 
 class IncAMEM16BitByConst(IncAMEM8BitByConst):
-    """Increase 16bit AMEM $60-6F by given const value."""
+    """Increase 16bit AMEM $60-6F by given const value.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitByConst(IncAMEM8BitByConst):
-    """Decrease 8bit AMEM $60-6F by given const value."""
+    """Decrease 8bit AMEM $60-6F by given const value.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitByConst(IncAMEM8BitByConst):
-    """Decrease 16bit AMEM $60-6F by given const value."""
+    """Decrease 16bit AMEM $60-6F by given const value.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
-    """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address."""
+    """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -826,13 +1324,43 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
 
 class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
-    """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address."""
+    """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
 
 class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
-    """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F."""
+    """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x22
 
@@ -843,7 +1371,22 @@ class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
 
 
 class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
-    """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F."""
+    """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x23
 
@@ -853,8 +1396,23 @@ class JmpIfAMEM8BitEquals7E1x(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAnd7E,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -876,56 +1434,176 @@ class JmpIfAMEM8BitEquals7E1x(
 
 
 class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    does not equal value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
-    """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -942,25 +1620,85 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
 
 class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
-    """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
-    """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
-    """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
-    """Set 8bit AMEM $60-6F to value stored at given $7Fxxxx memory address."""
+    """Set 8bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -977,13 +1715,43 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
 
 
 class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
-    """Set 16bit AMEM $60-6F to value stored at given $7Fxxxx memory address."""
+    """Set 16bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
 
 class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
-    """Set given $7Fxxxx memory address to value at 8bit AMEM $60-6F."""
+    """Set given $7Fxxxx memory address to value at 8bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x22
 
@@ -994,7 +1762,22 @@ class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
 
 
 class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
-    """Set given $7Fxxxx memory address to value at 16bit AMEM $60-6F."""
+    """Set given $7Fxxxx memory address to value at 16bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x23
 
@@ -1004,8 +1787,23 @@ class JmpIfAMEM8BitEquals7F(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAnd7F,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1027,56 +1825,176 @@ class JmpIfAMEM8BitEquals7F(
 
 
 class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    does not equal value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is less than value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than value stored at given $7Fxxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
-    """Increase 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address."""
+    """Increase 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -1093,26 +2011,85 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
 
 
 class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
-    """Increase 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address."""
+    """Increase 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
-    """Decrease 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address."""
+    """Decrease 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
-    """Decrease 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address."""
+    """Decrease 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
-    """Copy the value at the source_amem $60-6F address to the amem $60-6F 8bit address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """Copy the value at the source_amem $60-6F address to the amem $60-6F 8bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to copy to
+        source_amem (int): AMEM target address in range $60-$6F to copy from
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x20
@@ -1136,16 +2113,44 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
 
 
 class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
-    """Copy the value at the source_amem $60-6F address to the amem $60-6F 16bit address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """Copy the value at the source_amem $60-6F address to the amem $60-6F 16bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to copy to
+        source_amem (int): AMEM target address in range $60-$6F to copy from
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x21
 
 
 class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
-    """Copy the value of the amem $60-6F 8bit address to the dest_amem $60-6F address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """Copy the value of the amem $60-6F 8bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        dest_amem (int): AMEM target address in range $60-$6F to copy to
+        amem (int): AMEM target address in range $60-$6F to copy from
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x22
@@ -1169,8 +2174,22 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
 
 
 class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
-    """Copy the value of the amem $60-6F 16bit address to the dest_amem $60-6F address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """Copy the value of the amem $60-6F 16bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        dest_amem (int): AMEM target address in range $60-$6F to copy to
+        amem (int): AMEM target address in range $60-$6F to copy from
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x23
@@ -1181,8 +2200,24 @@ class JmpIfAMEM8BitEqualsAMEM(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAndAMEM,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1209,56 +2244,184 @@ class JmpIfAMEM8BitEqualsAMEM(
 
 
 class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is less than the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than the value stored at source AMEM $60-6F."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F controlling the goto
+        source_amem (int): AMEM target address in range $60-$6F to compare against
+        upper (int): The optional upper bits on the source amem
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
-    """Increase 8bit AMEM $60-6F by value stored at source AMEM $60-6F."""
+    """Increase 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to increase
+        source_amem (int): AMEM target address in range $60-$6F to increase it by
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -1281,19 +2444,67 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
 
 
 class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
-    """Increase 16bit AMEM $60-6F by value stored at source AMEM $60-6F."""
+    """Increase 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to increase
+        source_amem (int): AMEM target address in range $60-$6F to increase it by
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
-    """Decrease 8bit AMEM $60-6F by value stored at source AMEM $60-6F."""
+    """Decrease 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to decrease
+        source_amem (int): AMEM target address in range $60-$6F to decrease it by
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
-    """Decrease 16bit AMEM $60-6F by value stored at source AMEM $60-6F."""
+    """Decrease 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F to decrease
+        source_amem (int): AMEM target address in range $60-$6F to decrease it by
+        upper (int): The optional upper bits on the source amem
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
@@ -1301,7 +2512,22 @@ class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
 class SetAMEM8BitToOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
 ):
-    """Set 8bit AMEM $60-6F to value stored at OMEM (current)."""
+    """Set 8bit AMEM $60-6F to value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to set the value of AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -1315,13 +2541,43 @@ class SetAMEM8BitToOMEMCurrent(
 
 
 class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
-    """Set 16bit AMEM $60-6F to value stored at OMEM (current)."""
+    """Set 16bit AMEM $60-6F to value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to set the value of AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
 
 class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
-    """Set OMEM (current) to value of 8bit AMEM $60-6F."""
+    """Set OMEM (current) to value of 8bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        omem (int): The OMEM to be set to an AMEM value
+        amem (int): The AMEM to set the value of OMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x22
 
@@ -1330,7 +2586,22 @@ class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
 
 
 class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
-    """Set OMEM (current) to value of 16bit AMEM $60-6F."""
+    """Set OMEM (current) to value of 16bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        omem (int): The OMEM to be set to an AMEM value
+        amem (int): The AMEM to set the value of OMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x23
 
@@ -1340,8 +2611,23 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAndOMEM,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1364,50 +2650,155 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
 
 
 class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    does not equal the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than the value stored at OMEM (current)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
@@ -1415,7 +2806,22 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent
 class IncAMEM8BitByOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
 ):
-    """Increase 8bit AMEM $60-6F by value stored at OMEM (current)."""
+    """Increase 8bit AMEM $60-6F by value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -1429,25 +2835,85 @@ class IncAMEM8BitByOMEMCurrent(
 
 
 class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
-    """Increase 16bit AMEM $60-6F by value stored at OMEM (current)."""
+    """Increase 16bit AMEM $60-6F by value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
-    """Decrease 8bit AMEM $60-6F by value stored at OMEM (current)."""
+    """Decrease 8bit AMEM $60-6F by value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
-    """Decrease 16bit AMEM $60-6F by value stored at OMEM (current)."""
+    """Decrease 16bit AMEM $60-6F by value stored at OMEM (current).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
-    """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address."""
+    """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -1464,13 +2930,43 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
 
 class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
-    """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address."""
+    """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        address (int): The address containing the value to set AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
 
 class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
-    """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F."""
+    """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x22
 
@@ -1481,7 +2977,22 @@ class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
 
 
 class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
-    """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F."""
+    """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The address to copy the AMEM value to
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x23
 
@@ -1491,8 +3002,23 @@ class JmpIfAMEM8BitEquals7E5x(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAnd7E,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1514,56 +3040,176 @@ class JmpIfAMEM8BitEquals7E5x(
 
 
 class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    does not equal value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than value stored at given $7Exxxx memory address."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        address (int): The variable holding the value to check AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
-    """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -1580,25 +3226,85 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
 
 class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
-    """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
-    """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
-    """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address."""
+    """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
-    """Set 8bit AMEM $60-6F to value stored at OMEM (main)."""
+    """Set 8bit AMEM $60-6F to value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to set the value of AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
 
@@ -1612,13 +3318,43 @@ class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
 
 
 class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
-    """Set 16bit AMEM $60-6F to value stored at OMEM (main)."""
+    """Set 16bit AMEM $60-6F to value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to set the value of AMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
 
 class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
-    """Set OMEM (main) to value of 8bit AMEM $60-6F."""
+    """Set OMEM (main) to value of 8bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        omem (int): The OMEM to be set to an AMEM value
+        amem (int): The AMEM to set the value of OMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x22
 
@@ -1627,7 +3363,22 @@ class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
 
 
 class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
-    """Set OMEM (main) to value of 16bit AMEM $60-6F."""
+    """Set OMEM (main) to value of 16bit AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        omem (int): The OMEM to be set to an AMEM value
+        amem (int): The AMEM to set the value of OMEM to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x23
 
@@ -1637,8 +3388,23 @@ class JmpIfAMEM8BitEqualsOMEMMain(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAndOMEM,
 ):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    equals the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F equals the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1661,56 +3427,176 @@ class JmpIfAMEM8BitEqualsOMEMMain(
 
 
 class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    equals the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    does not equal the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    does not equal the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is less than the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is less than the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 8bit AMEM $60-6F
-    is not less than the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
-    """Goto destination indicated by name if 16bit AMEM $60-6F
-    is not less than the value stored at OMEM (main)."""
+    """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): The AMEM to check
+        omem (int): The OMEM to check the AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
 
 class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
-    """Increase 8bit AMEM $60-6F by value stored at OMEM (main)."""
+    """Increase 8bit AMEM $60-6F by value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
 
@@ -1724,25 +3610,86 @@ class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
 
 
 class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
-    """Increase 16bit AMEM $60-6F by value stored at OMEM (main)."""
+    """Increase 16bit AMEM $60-6F by value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
 
 
 class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
-    """Decrease 8bit AMEM $60-6F by value stored at OMEM (main)."""
+    """Decrease 8bit AMEM $60-6F by value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
 
 
 class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
-    """Decrease 16bit AMEM $60-6F by value stored at OMEM (main)."""
+    """Decrease 16bit AMEM $60-6F by value stored at OMEM (main).
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        omem (int): The OMEM to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
 
 
 class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
-    """Set 8bit AMEM $60-6F to the given value of the given type"""
+    """Set 8bit AMEM $60-6F to the given value of the given type
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x20`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x20
     _type: int
@@ -1767,7 +3714,23 @@ class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
 
 
 class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
-    """Set 16bit AMEM $60-6F to the given value of the given type"""
+    """Set 16bit AMEM $60-6F to the given value of the given type
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx = variable {xx}`
+
+    ## Opcode
+        `0x21`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x21
 
@@ -1777,7 +3740,24 @@ class JmpIfAMEM8BitEqualsUnknownShort(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAndConst,
 ):
-    """If 8bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name."""
+    """If 8bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x24`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x24
     _size: int = 6
@@ -1810,49 +3790,162 @@ class JmpIfAMEM8BitEqualsUnknownShort(
 
 
 class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 16bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name."""
+    """If 16bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx = {xx} ...`
+
+    ## Opcode
+        `0x25`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 8bit AMEM $60-6F does not equal the given value of the given type,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x26`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 16bit AMEM $60-6F does not equal the given value of the given type,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx != {xx} ...`
+
+    ## Opcode
+        `0x27`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x27
 
 
 class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 8bit AMEM $60-6F is less than the given value of the given type,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x28`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x28
 
 
 class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 16bit AMEM $60-6F is less than the given value of the given type,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx < {xx} ...`
+
+    ## Opcode
+        `0x29`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 8bit AMEM $60-6F is greater than or equal to the given value of the given type,
-    go to destination indicated by name."""
+    """If 8bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (8-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2A`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
-    """If 16bit AMEM $60-6F is greater than or equal to the given value of the given type,
-    go to destination indicated by name."""
+    """If 16bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
+
+    ## Lazy Shell command
+        `If AMEM (16-bit) $xx >= {xx} ...`
+
+    ## Opcode
+        `0x2B`
+
+    ## Size
+        6 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to compare AMEM against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2B
 
@@ -1860,7 +3953,23 @@ class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownSho
 class IncAMEM8BitByUnknownShort(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndConst
 ):
-    """Increase 8bit AMEM $60-6F by given value of the given type."""
+    """Increase 8bit AMEM $60-6F by given value of the given type.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2C
     _type: int
@@ -1885,112 +3994,211 @@ class IncAMEM8BitByUnknownShort(
 
 
 class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
-    """Increase 26bit AMEM $60-6F by given value of the given type."""
+    """Increase 26bit AMEM $60-6F by given value of the given type.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx += {xx}`
+
+    ## Opcode
+        `0x2D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to increase AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2D
     _type: int
 
 
 class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
-    """Decrease 8bit AMEM $60-6F by given value of the given type."""
+    """Decrease 8bit AMEM $60-6F by given value of the given type.
+
+    ## Lazy Shell command
+        `AMEM (8-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2E`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2E
     _type: int
 
 
 class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
-    """Decrease 16bit AMEM $60-6F by given value of the given type."""
+    """Decrease 16bit AMEM $60-6F by given value of the given type.
+
+    ## Lazy Shell command
+        `AMEM (16-bit) $xx -= {xx}`
+
+    ## Opcode
+        `0x2F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): The const value to decrease AMEM by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x2F
     _type: int
 
 
-class UnknownJmp24(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x24
-
-
-class UnknownJmp25(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x25
-
-
-class UnknownJmp26(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x26
-
-
-class UnknownJmp27(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x27
-
-
-class UnknownJmp28(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x28
-
-
-class UnknownJmp29(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x29
-
-
-class UnknownJmp2A(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x2A
-
-
-class UnknownJmp2B(UsableAnimationScriptCommand, AnimationScriptUnknownJmp2X):
-    """Goto with unknown behaviour"""
-
-    _opcode: int = 0x2B
-
-
 class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Increase 8bit AMEM $60-6F by 1."""
+    """Increase 8bit AMEM $60-6F by 1.
+
+    ## Lazy Shell command
+        `Increment AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x30`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x30
 
 
 class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Increase 16bit AMEM $60-6F by 1."""
+    """Increase 16bit AMEM $60-6F by 1.
+
+    ## Lazy Shell command
+        `Increment AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x31`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x31
 
 
 class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Decrease 8bit AMEM $60-6F by 1."""
+    """Decrease 8bit AMEM $60-6F by 1.
+
+    ## Lazy Shell command
+        `Decrement AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x32`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x32
 
 
 class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Decrease 16bit AMEM $60-6F by 1."""
+    """Decrease 16bit AMEM $60-6F by 1.
+
+    ## Lazy Shell command
+        `Decrement AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x33`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x33
 
 
 class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Set specified 8bit AMEM $60-6F to 0."""
+    """Set specified 8bit AMEM $60-6F to 0.
+
+    ## Lazy Shell command
+        `Clear AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x34`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x34
 
 
 class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
-    """Set specified 16bit AMEM $60-6F to 0."""
+    """Set specified 16bit AMEM $60-6F to 0.
+
+    ## Lazy Shell command
+        `Clear AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x35`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x35
 
 
 class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
-    """Set the specified bits to high in specified AMEM $60-6F."""
+    """Set the specified bits to high in specified AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Set AMEM $xx bits {xx}`
+
+    ## Opcode
+        `0x36`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        bits (List[int]): The bits being set on the specified AMEM.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x36
     _size: int = 3
@@ -2017,7 +4225,22 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
 
 
 class ClearAMEMBits(SetAMEMBits):
-    """Set the specified bits to low in specified AMEM $60-6F."""
+    """Set the specified bits to low in specified AMEM $60-6F.
+
+    ## Lazy Shell command
+        `Clear AMEM $xx bits {xx}`
+
+    ## Opcode
+        `0x37`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        bits (List[int]): The bits being set on the specified AMEM.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x37
 
@@ -2027,8 +4250,23 @@ class JmpIfAMEMBitsSet(
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMCommand,
 ):
-    """Goto destination indicated by name if AMEM $60-6F
-    specified bits are all set."""
+    """Goto destination indicated by name if AMEM $60-6F specified bits are all set.
+
+    ## Lazy Shell command
+        `If AMEM $xx bits {xx} set...`
+
+    ## Opcode
+        `0x38`
+
+    ## Size
+        5 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        bits (List[int]): The bits of interest for the goto to happen.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x38
     _size: int = 5
@@ -2061,14 +4299,42 @@ class JmpIfAMEMBitsSet(
 
 
 class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
-    """Goto destination indicated by name if AMEM $60-6F
-    specified bits are all clear."""
+    """Goto destination indicated by name if AMEM $60-6F specified bits are all clear.
+
+    ## Lazy Shell command
+        `If AMEM $xx bits {xx} clear...`
+
+    ## Opcode
+        `0x39`
+
+    ## Size
+        5 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        bits (List[int]): The bits of interest for the goto to happen.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x39
 
 
 class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Start the attack timer."""
+    """Start the attack timer.
+
+    ## Lazy Shell command
+        `Attack timer begins`
+
+    ## Opcode
+        `0x3A`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x3A
 
@@ -2076,7 +4342,22 @@ class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
 class PauseScriptUntilAMEMBitsSet(
     UsableAnimationScriptCommand, AnimationScriptAMEMCommand
 ):
-    """Pause the active script until specified bits in AMEM $60-6F are set."""
+    """Pause the active script until specified bits in AMEM $60-6F are set.
+
+    ## Lazy Shell command
+        `Pause script until AMEM $xx bits {xx} set`
+
+    ## Opcode
+        `0x40`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amem (int): Description here to be filled out by me
+        bits (List[int]): The bits of interest for the script to resume.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x40
     _size: int = 3
@@ -2103,13 +4384,46 @@ class PauseScriptUntilAMEMBitsSet(
 
 
 class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
-    """Pause the active script until specified bits in AMEM $60-6F are clear."""
+    """Pause the active script until specified bits in AMEM $60-6F are clear.
+
+    ## Lazy Shell command
+        `Pause script until AMEM $xx bits {xx} clear`
+
+    ## Opcode
+        `0x41`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amem (int): Description here to be filled out by me
+        bits (List[int]): The bits of interest for the script to resume.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x41
 
 
 class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Run a specific sequence for the sprite this command is applied to."""
+    """Run a specific sequence for the sprite this command is applied to.
+
+    ## Lazy Shell command
+        `Sprite sequence = {xx}`
+
+    ## Opcode
+        `0x43`
+
+    ## Size
+        2 bytes
+
+    Args:
+        sequence (int): The sequence ID being run for this sprite.
+        looping_on (bool): If true, the sequence will repeat indefinitely.
+        looping_off (bool): If true, the sequence will play only once.
+        bit_6 (bool): (unknown)
+        mirror (bool): If true, the sprite will be displayed flipped horizontally from default.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x43
     _size: int = 2
@@ -2197,7 +4511,41 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
 class SetAMEM60ToCurrentTarget(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Set AMEM $60 to the ID of the current target."""
+    """Set AMEM $60 to the ID of the current target.
+
+    ## Lazy Shell command
+        `AMEM $60 = current target`
+
+    ## Opcode
+        `0x45`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x45
+
+
+class GameOverIfNoAlliesStanding(
+    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
+):
+    """Run the Game Over sequence if all party members are downed.
+
+    ## Lazy Shell command
+        `Check ally mortal status, if all allies down set game over`
+
+    ## Opcode
+        `0x46`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x45
 
@@ -2205,13 +4553,40 @@ class SetAMEM60ToCurrentTarget(
 class PauseScriptUntilSpriteSequenceDone(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Pause the active script until a running sprite sequence has finished."""
+    """Pause the active script until a running sprite sequence has finished.
+
+    ## Lazy Shell command
+        `TBD, to be filled in manually by me`
+
+    ## Opcode
+        `0x4E`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4E
 
 
 class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """Goto destination indicated by name if target is disabled."""
+    """Goto destination indicated by name if target is disabled.
+
+    ## Lazy Shell command
+        `If target disabled, jump to address $xxxx`
+
+    ## Opcode
+        `0x50`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x50
     _size: int = 3
@@ -2221,7 +4596,21 @@ class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWi
 
 
 class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """Goto destination indicated by name if target is enabled."""
+    """Goto destination indicated by name if target is enabled.
+
+    ## Lazy Shell command
+        `If target alive, jump to address $xxxx`
+
+    ## Opcode
+        `0x51`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x51
     _size: int = 3
@@ -2231,7 +4620,30 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
 
 
 class SpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """Perform a set of script commands at the specified address on the specified field target."""
+    """Perform a set of script commands at the specified address on the specified field target.
+
+    ## Lazy Shell command
+        `Sprite queue [$offset] (sprite = {xx})`
+
+    ## Opcode
+        `0x5D`
+
+    ## Size
+        5 bytes
+
+    Args:
+        field_object (int): The ID of the object on the field to target with the script.
+        bit_0 (bool): (unknown)
+        bit_1 (bool): (unknown)
+        bit_2 (bool): (unknown)
+        character_slot (bool): (unknown)
+        bit_4 (bool): (unknown)
+        bit_5 (bool): (unknown)
+        current_target (bool): (unknown)
+        bit_7 (bool): (unknown)
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5D
     _size: int = 5
@@ -2369,14 +4781,40 @@ class SpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
 
 
 class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Terminate a series of commands intended to be run as a animation for a specific object."""
+    """Terminate a series of commands intended to be run as a animation for a specific object.
+
+    ## Lazy Shell command
+        `Return sprite queue`
+
+    ## Opcode
+        `0x5E`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5E
 
 
 class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Set the context under which to run the dialog ID
-    corresponding to the current value at AMEM $60."""
+    """Set the context under which to run the dialog ID corresponding to the current value at AMEM $60.
+
+    ## Lazy Shell command
+        `Display {xx} message @ OMEM $60`
+
+    ## Opcode
+        `0x63`
+
+    ## Size
+        2 bytes
+
+    Args:
+        message_type (MessageType): The context in which to display the dialog.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x63
     _size: int = 2
@@ -2385,11 +4823,11 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
 
     @property
     def message_type(self) -> MessageType:
-        """The context in which to diisplay the dialog."""
+        """The context in which to display the dialog."""
         return self._message_type
 
     def set_message_type(self, message_type: MessageType) -> None:
-        """Set the context in which to diisplay the dialog."""
+        """Set the context in which to display the dialog."""
         self._message_type = message_type
 
     def __init__(
@@ -2405,9 +4843,22 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
 class ObjectQueueAtOffsetAndIndexAtAMEM60(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Perform a set of script commands at the specified address, further specified by the current
-    value of AMEM $60. Usually, you will only be setting target_address, and the corresponding
-    destinations will be termined at time of assembly."""
+    """Perform a set of script commands at the specified address, further specified by the current value of AMEM $60. Usually, you will only be setting target_address, and the corresponding destinations will be termined at time of assembly.
+
+    ## Lazy Shell command
+        `Object queue [$offset] index = AMEM $60`
+
+    ## Opcode
+        `0x64`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target_address (int): The address at which the index will be applied to, which will determine the exact
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x64
     _size: int = 3
@@ -2459,9 +4910,23 @@ class ObjectQueueAtOffsetAndIndexAtAMEM60(
 class ObjectQueueAtOffsetAndIndex(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Perform a set of script commands at the specified address, further specified by an index.
-    Usually, you will only be setting target_address, and the corresponding
-    destinations will be termined at time of assembly."""
+    """Perform a set of script commands at the specified address, further specified by an index. Usually, you will only be setting target_address, and the corresponding destinations will be termined at time of assembly.
+
+    ## Lazy Shell command
+        `Object queue [$offset, AMEM $60] index = {xx}`
+
+    ## Opcode
+        `0x68`
+
+    ## Size
+        4 bytes
+
+    Args:
+        index (int): The index value to be applied on top of the target address.
+        target_address (int): The address at which the index will be applied to, which will determine the exact
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x68
     _size: int = 4
@@ -2524,14 +4989,41 @@ class ObjectQueueAtOffsetAndIndex(
 
 
 class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `OMEM $60 = memory $072C`
+
+    ## Opcode
+        `0x69`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x69
 
 
 class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
-    """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound.
-    The upper bound can be any unsigned 16 bit value."""
+    """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
+
+    ## Lazy Shell command
+        `AMEM $xx = random # between 0 and {xx}`
+
+    ## Opcode
+        `0x6A`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        upper_bound (int): The upper bound for this command's random number generator.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x6A
     _size: int = 3
@@ -2559,8 +5051,22 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
 
 
 class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
-    """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound.
-    The upper bound can be any unsigned 16 bit value."""
+    """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
+
+    ## Lazy Shell command
+        `AMEM $xx = random # between 0 and {xx}`
+
+    ## Opcode
+        `0x6B`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        upper_bound (int): The upper bound for this command's random number generator.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x6B
     _size: int = 4
@@ -2590,7 +5096,20 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
 class EnableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Subscreen sprites are enabled."""
+    """Subscreen sprites are enabled.
+
+    ## Lazy Shell command
+        `Overlap all`
+
+    ## Opcode
+        `0x70`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x70
 
@@ -2598,13 +5117,44 @@ class EnableSpritesOnSubscreen(
 class DisableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Subscreen sprites are disabled."""
+    """Subscreen sprites are disabled.
+
+    ## Lazy Shell command
+        `Overlap none`
+
+    ## Opcode
+        `0x71`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x71
 
 
 class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Draw a new effect (by ID) on screen. It is recommended to use effect constants for this."""
+    """Draw a new effect (by ID) on screen. It is recommended to use effect constants for this.
+
+    ## Lazy Shell command
+        `New object: effect = ...`
+
+    ## Opcode
+        `0x72`
+
+    ## Size
+        3 bytes
+
+    Args:
+        effect (int): The ID of the effect to draw.
+        looping_on (bool): If true, the effect's animation will loop indefinitely.
+        playback_off (bool): If true, the effect will be drawn statically with no animation playback.
+        looping_off (bool): If true, the effect's animation will play only once.
+        bit_3 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x72
     _size: int = 3
@@ -2688,13 +5238,40 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Pause the script for exactly 2 frames."""
+    """Pause the script for exactly 2 frames.
+
+    ## Lazy Shell command
+        `Pause script for 2 frames`
+
+    ## Opcode
+        `0x73`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x73
 
 
 class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Pause the active script until specified bits (belonging to unknown var) are clear."""
+    """Pause the active script until specified bits (belonging to unknown var) are clear.
+
+    ## Lazy Shell command
+        `Pause script until bits clear...`
+
+    ## Opcode
+        `0x75`
+
+    ## Size
+        3 bytes
+
+    Args:
+        bits (int): The bits of interest.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x75
     _size: int = 3
@@ -2719,13 +5296,44 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
 
 
 class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """(unknown, something regarding an active drawn effect)"""
+    """(unknown, something regarding an active drawn effect)
+
+    ## Lazy Shell command
+        `Clear effect index`
+
+    ## Opcode
+        `0x76`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x76
 
 
 class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Turn on layer 3"""
+    """Turn on layer 3
+
+    ## Lazy Shell command
+        `L3 on...`
+
+    ## Opcode
+        `0x77`
+
+    ## Size
+        2 bytes
+
+    Args:
+        property (LayerPriorityType): Description here to be filled out by me
+        bit_0 (bool): (unknown)
+        bpp4 (bool): bpp4 gfx
+        bpp2 (bool): bpp2 gfx
+        invisible (bool): Draw invisible if true
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x77
     _size: int = 2
@@ -2805,13 +5413,41 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class Layer3Off(Layer3On):
-    """Turn off layer 3"""
+    """Turn off layer 3
+
+    ## Lazy Shell command
+        `L3 off...`
+
+    ## Opcode
+        `0x78`
+
+    ## Size
+        *No `_size` found*
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x78
 
 
 class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Display a dialog in battle with a given context."""
+    """Display a dialog in battle with a given context.
+
+    ## Lazy Shell command
+        `Display message...`
+
+    ## Opcode
+        `0x7A`
+
+    ## Size
+        3 bytes
+
+    Args:
+        message_type (MessageType): The context in which to display the dialog.
+        dialog_id (int): The ID of the dialog to display.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7A
     _size: int = 3
@@ -2854,13 +5490,40 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
 class PauseScriptUntilDialogClosed(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Pause the script until a displayed dialog has closed."""
+    """Pause the script until a displayed dialog has closed.
+
+    ## Lazy Shell command
+        `Pause script until dialogue closed`
+
+    ## Opcode
+        `0x7B`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7B
 
 
 class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Fade out the object on which this queue is running."""
+    """Fade out the object on which this queue is running.
+
+    ## Lazy Shell command
+        `Fade out object, duration = ...`
+
+    ## Opcode
+        `0x7E`
+
+    ## Size
+        2 bytes
+
+    Args:
+        duration (int): The desired length of the fade animation, in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7E
     _size: int = 2
@@ -2884,26 +5547,601 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Reset the active sprite sequence for the object on which this queue is running."""
+    """Reset the active sprite sequence for the object on which this queue is running.
+
+    ## Lazy Shell command
+        `Reset sprite sequence`
+
+    ## Opcode
+        `0x7F`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7F
 
 
-class JmpIfTimedHitSuccess(
-    UsableAnimationScriptCommand,
-    AnimationScriptCommandWithJmps,
-):
-    """Goto destination indicated by name if s timed hit was successful."""
+class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Draw a shine effect on screen.
 
-    _opcode: int = 0xA7
-    _size: int = 3
+    ## Lazy Shell command
+        `Shine effect...`
+
+    ## Opcode
+        `0x80`
+
+    ## Size
+        4 bytes
+
+    Args:
+        colour_count (int): The number of colours to display during the effect.
+        starting_colour_index (int): The number ID of the colour which should start the effect.
+        glow_duration (int): The length, in frames, that the effect should last for.
+        east (bool): If true, shine direction is eastward.
+        west (bool): If true, shine direction is westward.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x80
+    _size: int = 4
+
+    _colour_count: UInt4
+    _starting_colour_index: UInt4
+    _glow_duration: UInt8
+    _east: bool
+    _west: bool
+
+    @property
+    def colour_count(self) -> UInt4:
+        """The number of colours to display during the effect."""
+        return self._colour_count
+
+    def set_colour_count(self, colour_count: int) -> None:
+        """Set the number of colours to display during the effect."""
+        self._colour_count = UInt4(colour_count)
+
+    @property
+    def starting_colour_index(self) -> UInt4:
+        """The number ID of the colour which should start the effect."""
+        return self._starting_colour_index
+
+    def set_starting_colour_index(self, starting_colour_index: int) -> None:
+        """Set the number ID of the colour which should start the effect."""
+        self._starting_colour_index = UInt4(starting_colour_index)
+
+    @property
+    def glow_duration(self) -> UInt8:
+        """The length, in frames, that the effect should last for."""
+        return self._glow_duration
+
+    def set_glow_duration(self, glow_duration: int) -> None:
+        """Set the length, in frames, that the effect should last for."""
+        self._glow_duration = UInt8(glow_duration)
+
+    @property
+    def east(self) -> bool:
+        """If true, shine direction is eastward."""
+        return self._east
+
+    def _set_east(self, east: bool) -> None:
+        self._east = east
+
+    @property
+    def west(self) -> bool:
+        """If true, shine direction is westward."""
+        return self._west
+
+    def _set_west(self, west: bool) -> None:
+        self._west = west
+
+    def set_direction(self, east: Optional[bool], west: Optional[bool]) -> None:
+        """Decide if the shine effect will shine eastward or westward.."""
+        if east is None:
+            east = self.east
+        if west is None:
+            west = self.west
+        if east == west:
+            raise InvalidCommandArgumentException(
+                "east and west cannot be the same value"
+            )
+        self._set_east(east)
+        self._set_west(west)
+
+    def __init__(
+        self,
+        colour_count: int,
+        starting_colour_index: int,
+        glow_duration: int,
+        east: bool = False,
+        west: bool = False,
+        identifier: Optional[str] = None,
+    ) -> None:
+        super().__init__(identifier)
+        self.set_colour_count(colour_count)
+        self.set_starting_colour_index(starting_colour_index)
+        self.set_glow_duration(glow_duration)
+        self.set_direction(east, west)
 
     def render(self) -> bytearray:
-        return super().render(*self.destinations)
+        return super().render(
+            self.west,
+            self.colour_count + (self.starting_colour_index << 4),
+            self.glow_duration,
+        )
+
+
+class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade out the active effect for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(0, self.duration)
+
+
+class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade out the active sprite for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(0x10, self.duration)
+
+
+class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade out the screen for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(0x20, self.duration)
+
+
+class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade in the active effect for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(2, self.duration)
+
+
+class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade in the active sprite for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(0x12, self.duration)
+
+
+class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
+    """Fade in the screen for a given duration in frames.
+
+    ## Lazy Shell command
+        `Fade object {xx}, amount = ...`
+
+    ## Opcode
+        `0x85`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): Fade duration in frames.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(0x22, self.duration)
+
+
+class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
+    """Shake the screen for a given number of times at a given speed.
+
+    ## Lazy Shell command
+        `Shake object...`
+
+    ## Opcode
+        `0x86`
+
+    ## Size
+        7 bytes
+
+    Args:
+        amount (int): Number of shakes.
+        speed (int): Shake speed.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(1)
+
+
+class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
+    """Shake the visible sprites for a given number of times at a given speed.
+
+    ## Lazy Shell command
+        `Shake object...`
+
+    ## Opcode
+        `0x86`
+
+    ## Size
+        7 bytes
+
+    Args:
+        amount (int): Number of shakes.
+        speed (int): Shake speed.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(2)
+
+
+class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
+    """Shake the screen AND visible sprites for a given number of times at a given speed.
+
+    ## Lazy Shell command
+        `Shake object...`
+
+    ## Opcode
+        `0x86`
+
+    ## Size
+        7 bytes
+
+    Args:
+        amount (int): Number of shakes.
+        speed (int): Shake speed.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    def render(self) -> bytearray:
+        return super().render(4)
+
+
+class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
+    """Halt an active shake command.
+
+    ## Lazy Shell command
+        `Stop shaking object`
+
+    ## Opcode
+        `0x87`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x87
+
+
+class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Flash a colour over the screen for a given duration.
+
+    ## Lazy Shell command
+        `Screen flash {xx} color, duration = ...`
+
+    ## Opcode
+        `0x8E`
+
+    ## Size
+        3 bytes
+
+    Args:
+        colour (FlashColour): The screen flash colour.
+        duration (int): The duration of the flash, in frames.
+        unknown_upper (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x8E
+    _size: int = 3
+
+    _colour: FlashColour
+    _unknown_upper: UInt8
+    _duration: UInt8
+
+    @property
+    def colour(self) -> FlashColour:
+        """The screen flash colour."""
+        return self._colour
+
+    def set_colour(self, colour: FlashColour) -> None:
+        """Set the screen flash colour."""
+        self._colour = colour
+
+    @property
+    def unknown_upper(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_upper
+
+    def set_unknown_upper(self, unknown_upper: int) -> None:
+        """(unknown)"""
+        assert unknown_upper & 0x07 == 0
+        self._unknown_upper = UInt8(unknown_upper)
+
+    @property
+    def duration(self) -> UInt8:
+        """The duration of the flash, in frames."""
+        return self._duration
+
+    def set_duration(self, duration: int) -> None:
+        """Set the duration of the flash, in frames."""
+        self._duration = UInt8(duration)
+
+    def __init__(
+        self,
+        colour: FlashColour,
+        duration: int,
+        unknown_upper: int = 0,
+        identifier: Optional[str] = None,
+    ) -> None:
+        super().__init__(identifier)
+        self.set_colour(colour)
+        self.set_duration(duration)
+        self.set_unknown_upper(unknown_upper)
+
+    def render(self) -> bytearray:
+        return super().render(self.unknown_upper + self.colour, self.duration)
+
+
+class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Briefly flash a colour over the screen.
+
+    ## Lazy Shell command
+        `Screen flash {xx} color`
+
+    ## Opcode
+        `0x8F`
+
+    ## Size
+        2 bytes
+
+    Args:
+        colour (FlashColour): The screen flash colour.
+        unknown_upper (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x8F
+    _size: int = 2
+
+    _colour: FlashColour
+    _unknown_upper: UInt8
+
+    @property
+    def colour(self) -> FlashColour:
+        """The screen flash colour."""
+        return self._colour
+
+    def set_colour(self, colour: FlashColour) -> None:
+        """Set the screen flash colour."""
+        self._colour = colour
+
+    @property
+    def unknown_upper(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_upper
+
+    def set_unknown_upper(self, unknown_upper: int) -> None:
+        """(unknown)"""
+        assert unknown_upper & 0x07 == 0
+        self._unknown_upper = UInt8(unknown_upper)
+
+    def __init__(
+        self,
+        colour: FlashColour,
+        unknown_upper: int = 0,
+        identifier: Optional[str] = None,
+    ) -> None:
+        super().__init__(identifier)
+        self.set_colour(colour)
+        self.set_unknown_upper(unknown_upper)
+
+    def render(self) -> bytearray:
+        return super().render(self.unknown_upper + self.colour)
+
+
+class InitializeBonusMessageSequence(
+    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
+):
+    """Initialize a bonus message sequence, usually for bonus flowers and certain items.
+
+    ## Lazy Shell command
+        `Initialize bonus message sequence`
+
+    ## Opcode
+        `0x95`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x95
+
+
+class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Display a pre-set bonus message, usually for bonus flowers and certain items.
+
+    ## Lazy Shell command
+        `Display bonus message...`
+
+    ## Opcode
+        `0x96`
+
+    ## Size
+        5 bytes
+
+    Args:
+        message (BonusMessage): The message ID to display.
+        x (int): The X coord at which to render the message.
+        y (int): The Y coord at which to render the message.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x96
+    _size: int = 5
+
+    _message: BonusMessage
+    _x: Int8
+    _y: Int8
+
+    @property
+    def message(self) -> BonusMessage:
+        """The message ID to display."""
+        return self._message
+
+    def set_message(self, message: BonusMessage) -> None:
+        """Set the message ID to display."""
+        self._message = message
+
+    @property
+    def x(self) -> Int8:
+        """The X coord at which to render the message."""
+        return self._x
+
+    def set_x(self, x: int) -> None:
+        """Set the X coord at which to render the message."""
+        self._x = Int8(x)
+
+    @property
+    def y(self) -> Int8:
+        """The Y coord at which to render the message."""
+        return self._y
+
+    def set_y(self, y: int) -> None:
+        """Set the Y coord at which to render the message."""
+        self._y = Int8(y)
+
+    def __init__(
+        self, message: BonusMessage, x: int, y: int, identifier: Optional[str] = None
+    ) -> None:
+        super().__init__(identifier)
+        self.set_message(message)
+        self.set_x(x)
+        self.set_y(y)
+
+    def render(self) -> bytearray:
+        return super().render(0, self.message, self.x, self.y)
+
+
+class PauseScriptUntilBonusMessageComplete(
+    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
+):
+    """Pause the script until an aforementioned bonus message (i.e. from a bonus flower) has cleared itself.
+
+    ## Lazy Shell command
+        `Pause script until bonus message complete`
+
+    ## Opcode
+        `0x97`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x97
 
 
 class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Wave effect animation"""
+    """Wave effect animation
+
+    ## Lazy Shell command
+        `Battlefield wavy effect...`
+
+    ## Opcode
+        `0x9C`
+
+    ## Size
+        9 bytes
+
+    Args:
+        layer (WaveEffectLayer): The layer on which the wave effect is applied.
+        direction (WaveEffectDirection): The direction of the wave effect.
+        depth (int): The depth of the wave effect.
+        intensity (int): The intensity of the wave effect.
+        speed (int): The speed of the wave effect.
+        bit_3 (bool): The third bit flag for wave effect configuration.
+        bit_4 (bool): The fourth bit flag for wave effect configuration.
+        bit_5 (bool): The fifth bit flag for wave effect configuration.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x9C
     _size: int = 9
@@ -3024,7 +6262,21 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Stop an existing wave effect"""
+    """Stop an existing wave effect
+
+    ## Lazy Shell command
+        `Stop battlefield wavy effect`
+
+    ## Opcode
+        `0x9D`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x9D
     _size: int = 2
@@ -3046,328 +6298,6 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self) -> bytearray:
         return super().render(2 + (self.bit_7 << 7))
-
-
-class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Draw a shine effect on screen."""
-
-    _opcode: int = 0x80
-    _size: int = 4
-
-    _colour_count: UInt4
-    _starting_colour_index: UInt4
-    _glow_duration: UInt8
-    _east: bool
-    _west: bool
-
-    @property
-    def colour_count(self) -> UInt4:
-        """The number of colours to display during the effect."""
-        return self._colour_count
-
-    def set_colour_count(self, colour_count: int) -> None:
-        """Set the number of colours to display during the effect."""
-        self._colour_count = UInt4(colour_count)
-
-    @property
-    def starting_colour_index(self) -> UInt4:
-        """The number ID of the colour which should start the effect."""
-        return self._starting_colour_index
-
-    def set_starting_colour_index(self, starting_colour_index: int) -> None:
-        """Set the number ID of the colour which should start the effect."""
-        self._starting_colour_index = UInt4(starting_colour_index)
-
-    @property
-    def glow_duration(self) -> UInt8:
-        """The length, in frames, that the effect should last for."""
-        return self._glow_duration
-
-    def set_glow_duration(self, glow_duration: int) -> None:
-        """Set the length, in frames, that the effect should last for."""
-        self._glow_duration = UInt8(glow_duration)
-
-    @property
-    def east(self) -> bool:
-        """If true, shine direction is eastward."""
-        return self._east
-
-    def _set_east(self, east: bool) -> None:
-        self._east = east
-
-    @property
-    def west(self) -> bool:
-        """If true, shine direction is westward."""
-        return self._west
-
-    def _set_west(self, west: bool) -> None:
-        self._west = west
-
-    def set_direction(self, east: Optional[bool], west: Optional[bool]) -> None:
-        """Decide if the shine effect will shine eastward or westward.."""
-        if east is None:
-            east = self.east
-        if west is None:
-            west = self.west
-        if east == west:
-            raise InvalidCommandArgumentException(
-                "east and west cannot be the same value"
-            )
-        self._set_east(east)
-        self._set_west(west)
-
-    def __init__(
-        self,
-        colour_count: int,
-        starting_colour_index: int,
-        glow_duration: int,
-        east: bool = False,
-        west: bool = False,
-        identifier: Optional[str] = None,
-    ) -> None:
-        super().__init__(identifier)
-        self.set_colour_count(colour_count)
-        self.set_starting_colour_index(starting_colour_index)
-        self.set_glow_duration(glow_duration)
-        self.set_direction(east, west)
-
-    def render(self) -> bytearray:
-        return super().render(
-            self.west,
-            self.colour_count + (self.starting_colour_index << 4),
-            self.glow_duration,
-        )
-
-
-class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade out the active effect for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(0, self.duration)
-
-
-class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade out the active sprite for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(0x10, self.duration)
-
-
-class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade out the screen for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(0x20, self.duration)
-
-
-class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade in the active effect for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(2, self.duration)
-
-
-class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade in the active sprite for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(0x12, self.duration)
-
-
-class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
-    """Fade in the screen for a given duration in frames."""
-
-    def render(self) -> bytearray:
-        return super().render(0x22, self.duration)
-
-
-class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
-    """Shake the screen for a given number of times at a given speed."""
-
-    def render(self) -> bytearray:
-        return super().render(1)
-
-
-class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
-    """Shake the visible sprites for a given number of times at a given speed."""
-
-    def render(self) -> bytearray:
-        return super().render(2)
-
-
-class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
-    """Shake the screen AND visible sprites for a given number of times at a given speed."""
-
-    def render(self) -> bytearray:
-        return super().render(4)
-
-
-class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Halt an active shake command."""
-
-    _opcode: int = 0x87
-
-
-class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Flash a colour over the screen for a given duration."""
-
-    _opcode: int = 0x8E
-    _size: int = 3
-
-    _colour: FlashColour
-    _unknown_upper: UInt8
-    _duration: UInt8
-
-    @property
-    def colour(self) -> FlashColour:
-        """The screen flash colour."""
-        return self._colour
-
-    def set_colour(self, colour: FlashColour) -> None:
-        """Set the screen flash colour."""
-        self._colour = colour
-
-    @property
-    def unknown_upper(self) -> UInt8:
-        """(unknown)"""
-        return self._unknown_upper
-
-    def set_unknown_upper(self, unknown_upper: int) -> None:
-        """(unknown)"""
-        assert unknown_upper & 0x07 == 0
-        self._unknown_upper = UInt8(unknown_upper)
-
-    @property
-    def duration(self) -> UInt8:
-        """The duration of the flash, in frames."""
-        return self._duration
-
-    def set_duration(self, duration: int) -> None:
-        """Set the duration of the flash, in frames."""
-        self._duration = UInt8(duration)
-
-    def __init__(
-        self,
-        colour: FlashColour,
-        duration: int,
-        unknown_upper: int = 0,
-        identifier: Optional[str] = None,
-    ) -> None:
-        super().__init__(identifier)
-        self.set_colour(colour)
-        self.set_duration(duration)
-        self.set_unknown_upper(unknown_upper)
-
-    def render(self) -> bytearray:
-        return super().render(self.unknown_upper + self.colour, self.duration)
-
-
-class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Briefly flash a colour over the screen."""
-
-    _opcode: int = 0x8F
-    _size: int = 2
-
-    _colour: FlashColour
-    _unknown_upper: UInt8
-
-    @property
-    def colour(self) -> FlashColour:
-        """The screen flash colour."""
-        return self._colour
-
-    def set_colour(self, colour: FlashColour) -> None:
-        """Set the screen flash colour."""
-        self._colour = colour
-
-    @property
-    def unknown_upper(self) -> UInt8:
-        """(unknown)"""
-        return self._unknown_upper
-
-    def set_unknown_upper(self, unknown_upper: int) -> None:
-        """(unknown)"""
-        assert unknown_upper & 0x07 == 0
-        self._unknown_upper = UInt8(unknown_upper)
-
-    def __init__(
-        self,
-        colour: FlashColour,
-        unknown_upper: int = 0,
-        identifier: Optional[str] = None,
-    ) -> None:
-        super().__init__(identifier)
-        self.set_colour(colour)
-        self.set_unknown_upper(unknown_upper)
-
-    def render(self) -> bytearray:
-        return super().render(self.unknown_upper + self.colour)
-
-
-class InitializeBonusMessageSequence(
-    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
-):
-    """Initialize a bonus message sequence, usually for bonus flowers and certain items."""
-
-    _opcode: int = 0x95
-
-
-class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Display a pre-set bonus message, usually for bonus flowers and certain items."""
-
-    _opcode: int = 0x96
-    _size: int = 5
-
-    _message: BonusMessage
-    _x: Int8
-    _y: Int8
-
-    @property
-    def message(self) -> BonusMessage:
-        """The message ID to display."""
-        return self._message
-
-    def set_message(self, message: BonusMessage) -> None:
-        """Set the message ID to display."""
-        self._message = message
-
-    @property
-    def x(self) -> Int8:
-        """The X coord at which to render the message."""
-        return self._x
-
-    def set_x(self, x: int) -> None:
-        """Set the X coord at which to render the message."""
-        self._x = Int8(x)
-
-    @property
-    def y(self) -> Int8:
-        """The Y coord at which to render the message."""
-        return self._y
-
-    def set_y(self, y: int) -> None:
-        """Set the Y coord at which to render the message."""
-        self._y = Int8(y)
-
-    def __init__(
-        self, message: BonusMessage, x: int, y: int, identifier: Optional[str] = None
-    ) -> None:
-        super().__init__(identifier)
-        self.set_message(message)
-        self.set_x(x)
-        self.set_y(y)
-
-    def render(self) -> bytearray:
-        return super().render(0, self.message, self.x, self.y)
-
-
-class PauseScriptUntilBonusMessageComplete(
-    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
-):
-    """Pause the script until an aforementioned bonus message (i.e. from a bonus flower)
-    has cleared itself."""
-
-    _opcode: int = 0x97
 
 
 class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -3396,9 +6326,52 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         return super().render(self.effect)
 
 
+class JmpIfTimedHitSuccess(
+    UsableAnimationScriptCommand,
+    AnimationScriptCommandWithJmps,
+):
+    """Goto destination indicated by name if s timed hit was successful.
+
+    ## Lazy Shell command
+        `On Successfully Timed-Hit, jump to address $xxxx`
+
+    ## Opcode
+        `0xA7`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0xA7
+    _size: int = 3
+
+    def render(self) -> bytearray:
+        return super().render(*self.destinations)
+
+
 class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Play a sound by ID. It is recommended to use sound effect ID constants in this command.
-    Valid channel IDs are 4, or 6 (default)."""
+    """Play a sound by ID.
+
+    ## Lazy Shell command
+        `Play sound (ch.6,7)...`
+        `Play sound (ch.4,5)...`
+
+    ## Opcode
+        `0xAB`
+        `0xAE`
+
+    ## Size
+        2 bytes
+
+    Args:
+        sound (int): The sound ID to play.
+        channel (int): The channel on which to play the sound. Needs to be 4 or 6
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
 
@@ -3442,7 +6415,20 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID without changing volume.
-    It is recommended to use music ID constants in this command."""
+
+    ## Lazy Shell command
+        `Play music {xx} (current volume)`
+
+    ## Opcode
+        `0xB0`
+
+    ## Size
+        2 bytes
+
+    Args:
+        music (int): ID of the music to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB0
     _size: int = 2
@@ -3469,7 +6455,21 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
 
 class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID at specified volume.
-    It is recommended to use music ID constants in this command."""
+
+    ## Lazy Shell command
+        `Play music {xx} (volume = {xx})`
+
+    ## Opcode
+        `0xB1`
+
+    ## Size
+        4 bytes
+
+    Args:
+        music (int): ID of the music to play.
+        volume (int): Volume of the music to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB1
     _size: int = 4
@@ -3509,14 +6509,41 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
 class StopCurrentSoundEffect(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """If a sound effect is currently playing, cancel it."""
+    """If a sound effect is currently playing, cancel it.
+
+    ## Lazy Shell command
+        `Stop current sound effect`
+
+    ## Opcode
+        `0xB2`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB2
 
 
 class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Gradually modify the volume of the current music from the current volume
-    to the specified bolume."""
+    """Gradually modify the volume of the current music from the current volume to the specified volume.
+
+    ## Lazy Shell command
+        `Fade out current music to {xx} volume...`
+
+    ## Opcode
+        `0xB6`
+
+    ## Size
+        3 bytes
+
+    Args:
+        speed (int): The speed at which the volume adjustment should complete.
+        volume (int): Volume for the music to reach.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB6
     _size: int = 3
@@ -3554,7 +6581,21 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
 
 
 class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Set battle target so a specific object."""
+    """Set battle target so a specific object.
+
+    ## Lazy Shell command
+        `Set target...`
+
+    ## Opcode
+        `0xBB`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (BattleTarget): The object ID to target.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBB
     _size: int = 2
@@ -3581,8 +6622,21 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
 class AddItemToStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
-    """Add an item by ID to your basic item inventory
-    (inventory denoted by the name "Items")."""
+    """Add an item by ID to your basic item inventory (inventory denoted by the name "Items").
+
+    ## Lazy Shell command
+        `Modify item inventory...`
+
+    ## Opcode
+        `0xBC`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBC
 
@@ -3593,8 +6647,21 @@ class AddItemToStandardInventory(
 class RemoveItemFromStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
-    """Remove an item by ID from your basic item inventory
-    (inventory denoted by the name "Items")."""
+    """Remove an item by ID from your basic item inventory (inventory denoted by the name "Items").
+
+    ## Lazy Shell command
+        `Modify item inventory...`
+
+    ## Opcode
+        `0xBC`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBC
 
@@ -3605,8 +6672,21 @@ class RemoveItemFromStandardInventory(
 class AddItemToKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
-    """Add an item by ID to your basic item inventory
-    (inventory denoted by the name "Special Items")."""
+    """Add an item by ID to your basic item inventory (inventory denoted by the name "Special Items").
+
+    ## Lazy Shell command
+        `Modify special item inventory...`
+
+    ## Opcode
+        `0xBD`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBD
 
@@ -3617,8 +6697,21 @@ class AddItemToKeyItemInventory(
 class RemoveItemFromKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
-    """Remove an item by ID from your basic item inventory
-    (inventory denoted by the name "Special Items")."""
+    """Remove an item by ID from your basic item inventory (inventory denoted by the name "Special Items").
+
+    ## Lazy Shell command
+        `Modify special item inventory...`
+
+    ## Opcode
+        `0xBD`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBD
 
@@ -3627,7 +6720,21 @@ class RemoveItemFromKeyItemInventory(
 
 
 class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Gain coins according to the specified amount."""
+    """Gain coins according to the specified amount.
+
+    ## Lazy Shell command
+        `Coins += ...`
+
+    ## Opcode
+        `0xBE`
+
+    ## Size
+        3 bytes
+
+    Args:
+        amount (int): The amount of coins to add.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 3
     _opcode: int = 0xBE
@@ -3652,7 +6759,21 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Add Yoshi Cookies to your inventory according to the specified amount."""
+    """Add Yoshi Cookies to your inventory according to the specified amount.
+
+    ## Lazy Shell command
+        `Store to item inventory {xx}'s Yoshi Cookie`
+
+    ## Opcode
+        `0xBF`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amount (int): The amount of Yoshi Cookies to add.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _opcode: int = 0xBF
@@ -3677,7 +6798,22 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
 
 
 class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Draw a specific screen mask effect by ID."""
+    """Draw a specific screen mask effect by ID.
+
+    ## Lazy Shell command
+        `Mask effect...`
+
+    ## Opcode
+        `0xC3`
+
+    ## Size
+        2 bytes
+
+    Args:
+        effect (MaskEffect): The effect to draw.
+        unknown_upper (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _opcode: int = 0xC3
@@ -3719,8 +6855,22 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Set the coords at which to draw a four-pointed mask effect.
-    Not sure if anyone really knows how this works."""
+    """Set the coords at which to draw a four-pointed mask effect. Not sure if anyone really knows how this works.
+
+    ## Lazy Shell command
+        `Mask coords = ...`
+
+    ## Opcode
+        `0xC6`
+
+    ## Size
+        (varies depending on the number of points)
+
+    Args:
+        points (List[Tuple[int, int]]): The x,y coords for the 1st point.
+        extra_byte (Optional[int]): Description here to be filled out by me
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _count: int = 0
     _opcode: int = 0xC6
@@ -3772,7 +6922,21 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Set the speed at which the sprite animation should run."""
+    """Set the speed at which the sprite animation should run.
+
+    ## Lazy Shell command
+        `Sprite sequence speed = ..`
+
+    ## Opcode
+        `0xCB`
+
+    ## Size
+        2 bytes
+
+    Args:
+        speed (int): The speed a numerical value.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _opcode: int = 0xCB
@@ -3799,7 +6963,20 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
 class StartTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """Begin the frame window for tracking button inputs for a timed hit."""
+    """Begin the frame window for tracking button inputs for a timed hit.
+
+    ## Lazy Shell command
+        `Start tracking for Ally Button Timing`
+
+    ## Opcode
+        `0xCC`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCC
 
@@ -3807,7 +6984,20 @@ class StartTrackingAllyButtonInputs(
 class EndTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """End the frame window for tracking button inputs for a timed hit."""
+    """End the frame window for tracking button inputs for a timed hit.
+
+    ## Lazy Shell command
+        `End tracking for Ally Button Timing`
+
+    ## Opcode
+        `0xCD`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCD
 
@@ -3815,8 +7005,26 @@ class EndTrackingAllyButtonInputs(
 class TimingForOneTieredButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Determine the frame windows for a single timed hit that has partial timing windows.
-    Goto the given destination if timed hit fails."""
+    """Determine the frame windows for a single timed hit that has partial timing windows. Goto the given destination if timed hit fails.
+
+    ## Lazy Shell command
+        `Timing for One Button Press: Just-OK/Perfect range`
+
+    ## Opcode
+        `0xCE`
+
+    ## Size
+        8 bytes
+
+    Args:
+        start_accepting_input (int): The number of frames after initiation at which to begin accepting a timed hit.
+        end_accepting_input (int): The number of frames after initiation at which to stop accepting a timed hit.
+        partial_start (int): The number of frames after initiation at which to start considering the hit
+        perfect_start (int): The number of frames after initiation at which to start considering the hit
+        perfect_end (int): The number of frames after initiation at which to no longer consider the hit
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCE
     _size: int = 8
@@ -3945,8 +7153,24 @@ class TimingForOneTieredButtonPress(
 class TimingForOneBinaryButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Determine the frame windows for a single timed hit that is either hit or not hit,
-    no partial windows. Goto the given destination if timed hit fails."""
+    """Determine the frame windows for a single timed hit that is either hit or not hit, no partial windows. Goto the given destination if timed hit fails.
+
+    ## Lazy Shell command
+        `Timing for One Button Press: Any timing range`
+
+    ## Opcode
+        `0xCF`
+
+    ## Size
+        6 bytes
+
+    Args:
+        start_accepting_input (int): The number of frames after initiation at which to begin accepting a timed hit.
+        end_accepting_input (int): The number of frames after initiation at which to stop accepting a timed hit.
+        timed_hit_ends (int): The number of frames after initiation at which the input no longer registers as
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCF
     _size: int = 6
@@ -4027,8 +7251,22 @@ class TimingForOneBinaryButtonPress(
 class TimingForMultipleButtonPresses(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Determine the frame windows for a timed hit that considers multiple
-    A/B/X/Y inputs starting from a certain frame."""
+    """Determine the frame windows for a timed hit that considers multiple A/B/X/Y inputs starting from a certain frame.
+
+    ## Lazy Shell command
+        `Timing for Multiple Button Presses: Wait # frames, then jump`
+
+    ## Opcode
+        `0xD0`
+
+    ## Size
+        4 bytes
+
+    Args:
+        start_accepting_input (int): The number of frames after initiation at which to begin accepting input.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD0
     _size: int = 4
@@ -4060,14 +7298,40 @@ class TimingForMultipleButtonPresses(
 class TimingForButtonMashUnknown(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `Timing for Button Mash: ???`
+
+    ## Opcode
+        `0xD1`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD1
 
 
 class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Determine the cap for a timed hit that counts up to a certain number of
-    A/B/X/Y inputs of an indiscriminate window."""
+    """Determine the cap for a timed hit that counts up to a certain number of A/B/X/Y inputs of an indiscriminate window.
+
+    ## Lazy Shell command
+        `Timing for Button Mash: Possible Power-ups range`
+
+    ## Opcode
+        `0xD2`
+
+    ## Size
+        2 bytes
+
+    Args:
+        max_presses (int): The number of button presses at which the timed hit is capped.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD2
     _size: int = 2
@@ -4092,8 +7356,23 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
 
 
 class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Define a timed hit that counts up to a certain number of
-    D-pad inputs within a specified frame window."""
+    """Define a timed hit that counts up to a certain number of D-pad inputs within a specified frame window.
+
+    ## Lazy Shell command
+        `Timing for Rotation: Frame range, Possible Power-ups range`
+
+    ## Opcode
+        `0xD3`
+
+    ## Size
+        4 bytes
+
+    Args:
+        start_accepting_input (int): The number of frames after initiation at which inputs can begin
+        end_accepting_input (int): The number of frames after initiation at which to no longer accept inputs.
+        max_presses (int): The number of button presses at which the timed hit is capped.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD3
     _size: int = 4
@@ -4163,10 +7442,27 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
 
 
 class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Define a timed hit that requires you to hold down one of A/B/X/Y
-    for a continuous interval, with results differing based on how long it is held."""
+    """Define a timed hit that requires you to hold down one of A/B/X/Y for a continuous interval, with results differing based on how long it is held.
 
-    _opcode: int = 0xCE
+    ## Lazy Shell command
+        `Timing for Held Button: Hold for frame range`
+
+    ## Opcode
+        `0xD4`
+
+    ## Size
+        6 bytes
+
+    Args:
+        charge_level_1_end (int): The number of frames after initiation at which the button can be released
+        charge_level_2_end (int): The number of frames after initiation at which the button can be released
+        charge_level_3_end (int): The number of frames after initiation at which the button can be released
+        charge_level_4_end (int): The number of frames after initiation at which the button can be released
+        overcharge_end (int): The number of frames after initiation at which the button can be released, having
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0xD4
     _size: int = 6
 
     _charge_level_1_end: UInt8
@@ -4292,7 +7588,30 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
 
 
 class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Summon a monster of a specified enemy class."""
+    """Summon a monster of a specified enemy class.
+
+    ## Lazy Shell command
+        `Summon monster...`
+
+    ## Opcode
+        `0x5D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        monster (Type['Enemy']): The class of the monster type to summon.
+        position (int): The formation position to summon the monster to.
+        bit_0 (bool): (unknown)
+        bit_1 (bool): (unknown)
+        bit_2 (bool): (unknown)
+        bit_3 (bool): (unknown)
+        bit_4 (bool): (unknown)
+        bit_5 (bool): (unknown)
+        bit_6 (bool): (unknown)
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5D
     _size: int = 4
@@ -4442,7 +7761,21 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
 
 
 class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """(unknown, related somehow to Mute attack timing)"""
+    """(unknown, related somehow to Mute attack timing)
+
+    ## Lazy Shell command
+        `Timing for Mute: ??? then jump`
+
+    ## Opcode
+        `0xD8`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD8
     _size: int = 3
@@ -4452,7 +7785,20 @@ class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 
 
 class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
-    """Display the "Can't Run" dialog"""
+    """Display the "Can't Run" dialog
+
+    ## Lazy Shell command
+        `Display "Can't run" dialogue`
+
+    ## Opcode
+        `0xD9`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD9
 
@@ -4460,14 +7806,41 @@ class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandN
 class StoreOMEM60ToItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
-    """An item with its ID matching the value at OMEM $60 is added to inventoy."""
+    """An item with its ID matching the value at OMEM $60 is added to inventoy.
+
+    ## Lazy Shell command
+        `Store OMEM $60 to item inventory`
+
+    ## Opcode
+        `0xE0`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE0
 
 
 class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Run a battle event (battle animation script type) by ID.
-    It is recommended to use battle event ID constants for this."""
+
+    ## Lazy Shell command
+        `Run battle event...`
+
+    ## Opcode
+        `0xE1`
+
+    ## Size
+        4 bytes
+
+    Args:
+        script_id (int): The ID of the battle event to run.
+        offset (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE1
     _size: int = 4
@@ -4505,11 +7878,23 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
         return super().render(self.script_id, self.offset)
 
 
-class Db(UsableAnimationScriptCommand, AnimationScriptCommand):
-    """Catch-all command class representing any command not represented by other
-    AnimationScriptCommand subclasses.
-    Use this sparingly as there are no safety checks to make sure that
-    the number of arguments in the command are correct."""
+class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Catch-all command class representing any command not represented by other AnimationScriptCommand subclasses.
+    Use this sparingly as there are no safety checks to make sure that the number of arguments in the command are correct.
+
+    ## Lazy Shell command
+        Any that don't have a name
+
+    ## Opcode
+        Any that aren't used by other classes
+
+    ## Size
+        Variable
+
+    Args:
+        contents (bytearray): The whole contents of the command as bytes, including the opcode.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _contents: bytearray
 
@@ -4676,14 +8061,6 @@ commands = [
     IncAMEM16BitByUnknownShort,
     DecAMEM8BitByUnknownShort,
     DecAMEM16BitByUnknownShort,
-    UnknownJmp24,
-    UnknownJmp25,
-    UnknownJmp26,
-    UnknownJmp27,
-    UnknownJmp28,
-    UnknownJmp29,
-    UnknownJmp2A,
-    UnknownJmp2B,
     IncAMEM8Bit,
     IncAMEM16Bit,
     DecAMEM8Bit,
@@ -4767,5 +8144,8 @@ commands = [
     DisplayCantRunDialog,
     StoreOMEM60ToItemInventory,
     RunBattleEvent,
-    Db,
+    WaveEffect,
+    StopWaveEffect,
+    JmpIfTimedHitSuccess,
+    UnknownCommand,
 ]

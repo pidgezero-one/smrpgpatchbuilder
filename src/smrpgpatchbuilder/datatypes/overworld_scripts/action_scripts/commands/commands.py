@@ -6930,21 +6930,32 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         2 bytes otherwise
 
     Args:
-        rows (int): The row offset to increase by, relative to the current palette. (8 bit int)
+        rows (int): The row offset to increase by, relative to the current palette. (4 bit int)
+        upper (int): Optional upper 4 bits when increasing palette row by >1 (4 bit int)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _rows: UInt8
+    _rows = UInt4(0)
+    _upper = UInt4(0)
 
     @property
-    def rows(self) -> UInt8:
+    def upper(self) -> UInt4:
+        """(unknown)"""
+        return self._upper
+
+    def set_upper(self, upper: int) -> None:
+        """(unknown)"""
+        self._upper = UInt4(upper)
+
+    @property
+    def rows(self) -> UInt4:
         """The row offset to increase by, relative to the current palette."""
         return self._rows
 
     def set_rows(self, rows: int) -> None:
         """Designate the row offset to increase by, relative to the current palette,
         for this command."""
-        self._rows = UInt8(rows)
+        self._rows = UInt4(rows)
         if self.rows == 1:
             self._size: int = 1
             self._opcode = 0x0F
@@ -6952,14 +6963,17 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
             self._size: int = 2
             self._opcode = 0x0E
 
-    def __init__(self, rows: int, identifier: Optional[str] = None) -> None:
+    def __init__(
+        self, rows: int, upper: int = 0, identifier: Optional[str] = None
+    ) -> None:
         super().__init__(identifier)
         self.set_rows(rows)
+        self.set_upper(upper)
 
     def render(self) -> bytearray:
-        if self.rows == 1:
+        if self.rows == 1 and self.upper == 0:
             return super().render()
-        return super().render(UInt8(0xF0 + self.rows))
+        return super().render(UInt8((self.upper << 4) + self.rows))
 
 
 # branching / jumps

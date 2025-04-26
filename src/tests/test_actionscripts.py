@@ -511,11 +511,6 @@ test_cases = [
         expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
     ),
     Case(
-        "blah blah blah",
-        commands_factory=lambda: [A_SetVarToConst(PRIMARY_TEMP_700C, 100)],
-        expected_bytes=[0xAC, 0x64, 0x00],
-    ),
-    Case(
         "Z coord +1!",
         commands_factory=lambda: [A_Walk1StepNorthwest()],
         expected_bytes=[0x45],
@@ -524,6 +519,298 @@ test_cases = [
         "Walk xx steps east",
         commands_factory=lambda: [A_WalkEastSteps(10)],
         expected_bytes=[0x50, 0x0A],
+    ),
+    Case(
+        "A_SequencePlaybackOn",
+        commands_factory=lambda: [A_SequencePlaybackOn()],
+        expected_bytes=[0x02],
+    ),
+    Case(
+        "A_SequencePlaybackOff",
+        commands_factory=lambda: [A_SequencePlaybackOff()],
+        expected_bytes=[0x03],
+    ),
+    Case(
+        "A_SequenceLoopingOn",
+        commands_factory=lambda: [A_SequenceLoopingOn()],
+        expected_bytes=[0x04],
+    ),
+    Case(
+        "A_SequenceLoopingOff",
+        commands_factory=lambda: [A_SequenceLoopingOff()],
+        expected_bytes=[0x05],
+    ),
+    Case(
+        "A_FixedFCoordOn",
+        commands_factory=lambda: [A_FixedFCoordOn()],
+        expected_bytes=[0x06],
+    ),
+    Case(
+        "A_FixedFCoordOff",
+        commands_factory=lambda: [A_FixedFCoordOff()],
+        expected_bytes=[0x07],
+    ),
+    Case(
+        "A_ResetProperties",
+        commands_factory=lambda: [A_ResetProperties()],
+        expected_bytes=[0x09],
+    ),
+    Case(
+        "A_ShadowOn-On",
+        commands_factory=lambda: [A_ShadowOn()],
+        expected_bytes=[0xFD, 0x01],
+    ),
+    Case(
+        "A_ShadowOn-Off",
+        commands_factory=lambda: [A_ShadowOff()],
+        expected_bytes=[0xFD, 0x00],
+    ),
+    Case(
+        "A_FloatingOn",
+        commands_factory=lambda: [A_FloatingOn()],
+        expected_bytes=[0xFD, 0x02],
+    ),
+    Case(
+        "A_FloatingOff",
+        commands_factory=lambda: [A_FloatingOff()],
+        expected_bytes=[0xFD, 0x03],
+    ),
+    Case(
+        "A_IncPaletteRowBy",
+        commands_factory=lambda: [A_IncPaletteRowBy(14)],
+        expected_bytes=[0x0E, 0x0E],
+    ),
+    Case(
+        "A_IncPaletteRowBy_upper",
+        commands_factory=lambda: [A_IncPaletteRowBy(14, upper=2)],
+        expected_bytes=[0x0E, 0x2E],
+    ),
+    Case(
+        "A_IncPaletteRowBy (1)",
+        commands_factory=lambda: [A_IncPaletteRowBy(1)],
+        expected_bytes=[0x0F],
+    ),
+    Case(
+        "A_EmbeddedAnimationRoutine-26",
+        commands_factory=lambda: [
+            A_EmbeddedAnimationRoutine(
+                bytearray(
+                    b"&\x00\x00\x00\x00\x00\xc0\x00\x7f\x00\x01\x00\x00\x00\xfe\x80"
+                )
+            ),
+        ],
+        expected_bytes=[
+            0x26,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0xC0,
+            0x00,
+            0x7F,
+            0x00,
+            0x01,
+            0x00,
+            0x00,
+            0x00,
+            0xFE,
+            0x80,
+        ],
+    ),
+    Case(
+        "A_EmbeddedAnimationRoutine-27",
+        commands_factory=lambda: [
+            A_EmbeddedAnimationRoutine(
+                bytearray(b"'\x00\x00\x00\x00\x00\xd0\x00_\x00\x01\x00\x00\x00\xfe\x80")
+            ),
+        ],
+        expected_bytes=[
+            0x27,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0xD0,
+            0x00,
+            0x5F,
+            0x00,
+            0x01,
+            0x00,
+            0x00,
+            0x00,
+            0xFE,
+            0x80,
+        ],
+    ),
+    Case(
+        "A_EmbeddedAnimationRoutine-28",
+        commands_factory=lambda: [
+            A_EmbeddedAnimationRoutine(
+                bytearray(
+                    b"(\x00\x00\x00\x00\x00\x00\x00\x04\x00\x01\x00\x00\x00\x04\x80"
+                )
+            )
+        ],
+        expected_bytes=[
+            0x28,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x04,
+            0x00,
+            0x01,
+            0x00,
+            0x00,
+            0x00,
+            0x04,
+            0x80,
+        ],
+    ),
+    Case(
+        "A_Walk1StepEast",
+        commands_factory=lambda: [A_Walk1StepEast()],
+        expected_bytes=[0x40],
+    ),
+    Case(
+        "A_Walk1StepSoutheast",
+        commands_factory=lambda: [A_Walk1StepSoutheast()],
+        expected_bytes=[0x41],
+    ),
+    Case(
+        "A_Walk1StepSouth",
+        commands_factory=lambda: [A_Walk1StepSouth()],
+        expected_bytes=[0x42],
+    ),
+    Case(
+        "A_Walk1StepSouthwest",
+        commands_factory=lambda: [A_Walk1StepSouthwest()],
+        expected_bytes=[0x43],
+    ),
+    Case(
+        "A_Walk1StepWest",
+        commands_factory=lambda: [A_Walk1StepWest()],
+        expected_bytes=[0x44],
+    ),
+    Case(
+        "A_Walk1StepNorthwest",
+        commands_factory=lambda: [A_Walk1StepNorthwest()],
+        expected_bytes=[0x45],
+    ),
+    Case(
+        "A_Walk1StepNorth",
+        commands_factory=lambda: [A_Walk1StepNorth()],
+        expected_bytes=[0x46],
+    ),
+    Case(
+        "A_Walk1StepNortheast",
+        commands_factory=lambda: [A_Walk1StepNortheast()],
+        expected_bytes=[0x47],
+    ),
+    Case(
+        "A_Walk1StepFDirection",
+        commands_factory=lambda: [A_Walk1StepFDirection()],
+        expected_bytes=[0x48],
+    ),
+    Case(
+        "A_AddZCoord1Step",
+        commands_factory=lambda: [A_AddZCoord1Step()],
+        expected_bytes=[0x4A],
+    ),
+    Case(
+        "A_DecZCoord1Step",
+        commands_factory=lambda: [A_DecZCoord1Step()],
+        expected_bytes=[0x4B],
+    ),
+    Case(
+        "A_WalkF20Steps",
+        commands_factory=lambda: [A_WalkF20Steps()],
+        expected_bytes=[0x59],
+    ),
+    Case(
+        "A_ShiftZUp20Steps",
+        commands_factory=lambda: [A_ShiftZUp20Steps()],
+        expected_bytes=[0x5C],
+    ),
+    Case(
+        "A_ShiftZDown20Steps",
+        commands_factory=lambda: [A_ShiftZDown20Steps()],
+        expected_bytes=[0x5D],
+    ),
+    Case(
+        "A_WalkFDirection16Pixels",
+        commands_factory=lambda: [A_WalkFDirection16Pixels()],
+        expected_bytes=[0x69],
+    ),
+    Case(
+        "A_FaceEast",
+        commands_factory=lambda: [A_FaceEast()],
+        expected_bytes=[0x70],
+    ),
+    Case(
+        "A_FaceEast7C",
+        commands_factory=lambda: [A_FaceEast7C()],
+        expected_bytes=[0x7C],
+    ),
+    Case(
+        "A_FaceSoutheast",
+        commands_factory=lambda: [A_FaceSoutheast()],
+        expected_bytes=[0x71],
+    ),
+    Case(
+        "A_FaceSouth",
+        commands_factory=lambda: [A_FaceSouth()],
+        expected_bytes=[0x72],
+    ),
+    Case(
+        "A_FaceSouthwest",
+        commands_factory=lambda: [A_FaceSouthwest()],
+        expected_bytes=[0x73],
+    ),
+    Case(
+        "A_FaceSouthwest7D",
+        commands_factory=lambda: [A_FaceSouthwest7D(1)],
+        expected_bytes=[0x7D, 0x01],
+    ),
+    Case(
+        "A_FaceWest",
+        commands_factory=lambda: [A_FaceWest()],
+        expected_bytes=[0x74],
+    ),
+    Case(
+        "A_FaceNorthwest",
+        commands_factory=lambda: [A_FaceNorthwest()],
+        expected_bytes=[0x75],
+    ),
+    Case(
+        "A_FaceNorth",
+        commands_factory=lambda: [A_FaceNorth()],
+        expected_bytes=[0x76],
+    ),
+    Case(
+        "A_FaceNortheast",
+        commands_factory=lambda: [A_FaceNortheast()],
+        expected_bytes=[0x77],
+    ),
+    Case(
+        "A_FaceMario",
+        commands_factory=lambda: [A_FaceMario()],
+        expected_bytes=[0x78],
+    ),
+    Case(
+        "A_TurnClockwise45Degrees",
+        commands_factory=lambda: [A_TurnClockwise45Degrees()],
+        expected_bytes=[0x79],
+    ),
+    Case(
+        "A_TurnRandomDirection",
+        commands_factory=lambda: [A_TurnRandomDirection()],
+        expected_bytes=[0x7A],
     ),
     #
     # Tests with defined GOTOs

@@ -4166,6 +4166,8 @@ def convert_event_script_command(command, valid_identifiers):
             args["mirror"] = "True"
     elif opcode == 0x45:
         cls = "SetAMEM60ToCurrentTarget"
+    elif opcode == 0x46:
+        cls = "GameOverIfNoAlliesStanding"
     elif opcode == 0x4E:
         cls = "PauseScriptUntilSpriteSequenceDone"
     elif opcode == 0x50:

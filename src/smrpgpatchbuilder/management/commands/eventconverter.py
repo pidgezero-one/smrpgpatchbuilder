@@ -5985,6 +5985,9 @@ def convert_action_script_command(cmd, valid_identifiers):
         cls = "A_IncPaletteRowBy"
         include_argnames = False
         args["rows"] = str(cmdargs[0] & 0x0F)
+        upper = cmdargs[0] & 0xF0 >> 4
+        if upper != 0:
+            args["upper"] = str(upper)
     elif cmd["command"] == "set_animation_speed":
         include_argnames = False
         speed = cmdargs[0]
