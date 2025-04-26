@@ -118,8 +118,8 @@ class BattleAnimationScript(AnimationScript):
     @property
     def length(self) -> int:
         """The expected length of this script in bytes."""
-        return sum(cast(List[int], [c.size for c in self.contents])) + 2 * len(
-            self._header
+        return sum(cast(List[int], [c.size for c in self.contents])) + 2 * (
+            len(self._header) + 1
         )
 
     def render(self, position: Optional[int] = None) -> bytearray:
@@ -313,6 +313,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
             if isinstance(script, BattleAnimationScript):
                 length_without_header = sum([c.size for c in script.contents])
                 command_offset = script.length - length_without_header
+                print(command_offset)
                 position += command_offset
             for command in script.contents:
                 position = self.associate_address(command, position)

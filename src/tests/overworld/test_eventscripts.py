@@ -143,12 +143,13 @@ test_cases = [
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
-    if case.exception is not None and case.exception_type is not None:
+    if case.exception or case.exception_type:
         with pytest.raises(case.exception_type) as exc_info:
             commands = case.commands_factory()
             script = EventScript(commands)
             bank = EventScriptBank(0x1E0000, 0x1E0002, 0x1EFFFF, [script])
             bank.render()
+        if case.exception:
             assert case.exception in str(exc_info.value)
     elif case.expected_bytes is not None:
         commands = case.commands_factory()
