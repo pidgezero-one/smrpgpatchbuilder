@@ -7,9 +7,7 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ShortVar,
     ByteVar,
 )
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import (
-    Flag
-)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
 from .legacy.eventdisassembler import Command as EventDisassemblerCommand
 from .legacy.objectsequencedisassembler import Command as AnimationDisassemblerCommand
 
@@ -4206,263 +4204,265 @@ EQSLOTS = [
     "Armor",
     "Accessory",
 ]
-ITEMS = ["DummyWeapon",
-"DummyArmor",
-"DummyAccessory",
-"Empty3",
-"Empty4",
-"Hammer",
-"FroggieStick",
-"NokNokShell",
-"PunchGlove",
-"FingerShot",
-"Cymbals",
-"Chomp",
-"Masher",
-"ChompShell",
-"SuperHammer",
-"HandGun",
-"WhompGlove",
-"SlapGlove",
-"TroopaShell",
-"Parasol",
-"HurlyGloves",
-"DoublePunch",
-"RibbitStick",
-"SpikedLink",
-"MegaGlove",
-"WarFan",
-"HandCannon",
-"StickyGlove",
-"UltraHammer",
-"SuperSlap",
-"DrillClaw",
-"StarGun",
-"SonicCymbal",
-"LazyShellWeapon",
-"FryingPan",
-"LuckyHammer",
-"Spare36",
-"Shirt",
-"Pants",
-"ThickShirt",
-"ThickPants",
-"MegaShirt",
-"MegaPants",
-"WorkPants",
-"MegaCape",
-"HappyShirt",
-"HappyPants",
-"HappyCape",
-"HappyShell",
-"PolkaDress",
-"SailorShirt",
-"SailorPants",
-"SailorCape",
-"NauticaDress",
-"CourageShell",
-"FuzzyShirt",
-"FuzzyPants",
-"FuzzyCape",
-"FuzzyDress",
-"FireShirt",
-"FirePants",
-"FireCape",
-"FireShell",
-"FireDress",
-"HeroShirt",
-"PrincePants",
-"StarCape",
-"HealShell",
-"RoyalDress",
-"SuperSuit",
-"LazyShellArmor",
-"Spare71",
-"Spare72",
-"Spare73",
-"ZoomShoes",
-"SafetyBadge",
-"JumpShoes",
-"SafetyRing",
-"Amulet",
-"ScroogeRing",
-"ExpBooster",
-"AttackScarf",
-"RareScarf",
-"BtubRing",
-"AntidotePin",
-"WakeUpPin",
-"FearlessPin",
-"TrueformPin",
-"CoinTrick",
-"GhostMedal",
-"JinxBelt",
-"Feather",
-"TroopaPin",
-"SignalRing",
-"QuartzCharm",
-"Spare95",
-"Mushroom",
-"MidMushroom",
-"MaxMushroom",
-"HoneySyrup",
-"MapleSyrup",
-"RoyalSyrup",
-"PickMeUp",
-"AbleJuice",
-"Bracer",
-"Energizer",
-"YoshiAde",
-"RedEssence",
-"KerokeroCola",
-"YoshiCookie",
-"PureWater",
-"SleepyBomb",
-"BadMushroom",
-"FireBomb",
-"IceBomb",
-"FlowerTab",
-"FlowerJar",
-"FlowerBox",
-"YoshiCandy",
-"FroggieDrink",
-"MukuCookie",
-"Elixir",
-"Megalixir",
-"SeeYa",
-"TempleKey",
-"GoodieBag",
-"EarlierTimes",
-"FreshenUp",
-"RareFrogCoin",
-"Wallet",
-"CricketPie",
-"RockCandy",
-"CastleKey1",
-"DebugBomb",
-"CastleKey2",
-"BambinoBomb",
-"SheepAttack",
-"CarboCookie",
-"ShinyStone",
-"Dummy139",
-"RoomKey",
-"ElderKey",
-"ShedKey",
-"LambsLure",
-"FrightBomb",
-"MysteryEgg",
-"BeetleBox",
-"BeetleBox2",
-"LuckyJewel",
-"Dummy149",
-"SopranoCard",
-"AltoCard",
-"TenorCard",
-"Crystalline",
-"PowerBlast",
-"WiltShroom",
-"RottenMush",
-"MoldyMush",
-"Seed",
-"Fertilizer",
-"WasteBasket",
-"BigBooFlag",
-"DryBonesFlag",
-"GreaperFlag",
-"SecretGame",
-"SCrowBomb",
-"CricketJam",
-"BaneBomb",
-"DoomBomb",
-"FearBomb",
-"SleepBomb",
-"MuteBomb",
-"Fireworks",
-"Bomb",
-"BrightCard",
-"Mushroom2",
-"StarEgg",
-"Dummy177",
-"Dummy178",
-"Dummy179",
-"Dummy180",
-"Dummy181",
-"Dummy182",
-"Dummy183",
-"Dummy184",
-"Dummy185",
-"Dummy186",
-"Dummy187",
-"Dummy188",
-"Dummy189",
-"Dummy190",
-"Dummy191",
-"Dummy192",
-"Dummy193",
-"Dummy194",
-"Dummy195",
-"Dummy196",
-"Dummy197",
-"Dummy198",
-"Dummy199",
-"Dummy200",
-"Dummy201",
-"Dummy202",
-"Dummy203",
-"Dummy204",
-"Dummy205",
-"Dummy206",
-"Dummy207",
-"Dummy208",
-"Dummy209",
-"Dummy210",
-"Dummy211",
-"Dummy212",
-"Dummy213",
-"Dummy214",
-"Dummy215",
-"Dummy216",
-"Dummy217",
-"Dummy218",
-"Dummy219",
-"Dummy220",
-"Dummy221",
-"Dummy222",
-"Dummy223",
-"Dummy224",
-"Dummy225",
-"Dummy226",
-"Dummy227",
-"Dummy228",
-"Dummy229",
-"Dummy230",
-"Dummy231",
-"Dummy232",
-"Dummy233",
-"Dummy234",
-"Dummy235",
-"Dummy236",
-"Dummy237",
-"Dummy238",
-"Dummy239",
-"Dummy240",
-"Dummy241",
-"Dummy242",
-"Dummy243",
-"Dummy244",
-"Dummy245",
-"Dummy246",
-"Dummy247",
-"Dummy248",
-"Dummy249",
-"Dummy250",
-"Dummy251",
-"Dummy252",
-"Dummy253",
-"Dummy254",
-"Dummy255",
+ITEMS = [
+    "DummyWeapon",
+    "DummyArmor",
+    "DummyAccessory",
+    "Empty3",
+    "Empty4",
+    "Hammer",
+    "FroggieStick",
+    "NokNokShell",
+    "PunchGlove",
+    "FingerShot",
+    "Cymbals",
+    "Chomp",
+    "Masher",
+    "ChompShell",
+    "SuperHammer",
+    "HandGun",
+    "WhompGlove",
+    "SlapGlove",
+    "TroopaShell",
+    "Parasol",
+    "HurlyGloves",
+    "DoublePunch",
+    "RibbitStick",
+    "SpikedLink",
+    "MegaGlove",
+    "WarFan",
+    "HandCannon",
+    "StickyGlove",
+    "UltraHammer",
+    "SuperSlap",
+    "DrillClaw",
+    "StarGun",
+    "SonicCymbal",
+    "LazyShellWeapon",
+    "FryingPan",
+    "LuckyHammer",
+    "Spare36",
+    "Shirt",
+    "Pants",
+    "ThickShirt",
+    "ThickPants",
+    "MegaShirt",
+    "MegaPants",
+    "WorkPants",
+    "MegaCape",
+    "HappyShirt",
+    "HappyPants",
+    "HappyCape",
+    "HappyShell",
+    "PolkaDress",
+    "SailorShirt",
+    "SailorPants",
+    "SailorCape",
+    "NauticaDress",
+    "CourageShell",
+    "FuzzyShirt",
+    "FuzzyPants",
+    "FuzzyCape",
+    "FuzzyDress",
+    "FireShirt",
+    "FirePants",
+    "FireCape",
+    "FireShell",
+    "FireDress",
+    "HeroShirt",
+    "PrincePants",
+    "StarCape",
+    "HealShell",
+    "RoyalDress",
+    "SuperSuit",
+    "LazyShellArmor",
+    "Spare71",
+    "Spare72",
+    "Spare73",
+    "ZoomShoes",
+    "SafetyBadge",
+    "JumpShoes",
+    "SafetyRing",
+    "Amulet",
+    "ScroogeRing",
+    "ExpBooster",
+    "AttackScarf",
+    "RareScarf",
+    "BtubRing",
+    "AntidotePin",
+    "WakeUpPin",
+    "FearlessPin",
+    "TrueformPin",
+    "CoinTrick",
+    "GhostMedal",
+    "JinxBelt",
+    "Feather",
+    "TroopaPin",
+    "SignalRing",
+    "QuartzCharm",
+    "Spare95",
+    "Mushroom",
+    "MidMushroom",
+    "MaxMushroom",
+    "HoneySyrup",
+    "MapleSyrup",
+    "RoyalSyrup",
+    "PickMeUp",
+    "AbleJuice",
+    "Bracer",
+    "Energizer",
+    "YoshiAde",
+    "RedEssence",
+    "KerokeroCola",
+    "YoshiCookie",
+    "PureWater",
+    "SleepyBomb",
+    "BadMushroom",
+    "FireBomb",
+    "IceBomb",
+    "FlowerTab",
+    "FlowerJar",
+    "FlowerBox",
+    "YoshiCandy",
+    "FroggieDrink",
+    "MukuCookie",
+    "Elixir",
+    "Megalixir",
+    "SeeYa",
+    "TempleKey",
+    "GoodieBag",
+    "EarlierTimes",
+    "FreshenUp",
+    "RareFrogCoin",
+    "Wallet",
+    "CricketPie",
+    "RockCandy",
+    "CastleKey1",
+    "DebugBomb",
+    "CastleKey2",
+    "BambinoBomb",
+    "SheepAttack",
+    "CarboCookie",
+    "ShinyStone",
+    "Dummy139",
+    "RoomKey",
+    "ElderKey",
+    "ShedKey",
+    "LambsLure",
+    "FrightBomb",
+    "MysteryEgg",
+    "BeetleBox",
+    "BeetleBox2",
+    "LuckyJewel",
+    "Dummy149",
+    "SopranoCard",
+    "AltoCard",
+    "TenorCard",
+    "Crystalline",
+    "PowerBlast",
+    "WiltShroom",
+    "RottenMush",
+    "MoldyMush",
+    "Seed",
+    "Fertilizer",
+    "WasteBasket",
+    "BigBooFlag",
+    "DryBonesFlag",
+    "GreaperFlag",
+    "SecretGame",
+    "SCrowBomb",
+    "CricketJam",
+    "BaneBomb",
+    "DoomBomb",
+    "FearBomb",
+    "SleepBomb",
+    "MuteBomb",
+    "Fireworks",
+    "Bomb",
+    "BrightCard",
+    "Mushroom2",
+    "StarEgg",
+    "Dummy177",
+    "Dummy178",
+    "Dummy179",
+    "Dummy180",
+    "Dummy181",
+    "Dummy182",
+    "Dummy183",
+    "Dummy184",
+    "Dummy185",
+    "Dummy186",
+    "Dummy187",
+    "Dummy188",
+    "Dummy189",
+    "Dummy190",
+    "Dummy191",
+    "Dummy192",
+    "Dummy193",
+    "Dummy194",
+    "Dummy195",
+    "Dummy196",
+    "Dummy197",
+    "Dummy198",
+    "Dummy199",
+    "Dummy200",
+    "Dummy201",
+    "Dummy202",
+    "Dummy203",
+    "Dummy204",
+    "Dummy205",
+    "Dummy206",
+    "Dummy207",
+    "Dummy208",
+    "Dummy209",
+    "Dummy210",
+    "Dummy211",
+    "Dummy212",
+    "Dummy213",
+    "Dummy214",
+    "Dummy215",
+    "Dummy216",
+    "Dummy217",
+    "Dummy218",
+    "Dummy219",
+    "Dummy220",
+    "Dummy221",
+    "Dummy222",
+    "Dummy223",
+    "Dummy224",
+    "Dummy225",
+    "Dummy226",
+    "Dummy227",
+    "Dummy228",
+    "Dummy229",
+    "Dummy230",
+    "Dummy231",
+    "Dummy232",
+    "Dummy233",
+    "Dummy234",
+    "Dummy235",
+    "Dummy236",
+    "Dummy237",
+    "Dummy238",
+    "Dummy239",
+    "Dummy240",
+    "Dummy241",
+    "Dummy242",
+    "Dummy243",
+    "Dummy244",
+    "Dummy245",
+    "Dummy246",
+    "Dummy247",
+    "Dummy248",
+    "Dummy249",
+    "Dummy250",
+    "Dummy251",
+    "Dummy252",
+    "Dummy253",
+    "Dummy254",
+    "Dummy255",
 ]
+
 
 def get_item_class(input):
     if isinstance(input, int):
@@ -5374,7 +5374,10 @@ def convert_event_script_command(cmd, valid_identifiers):
         else:
             args["value"] = str(cmdargs[1])
         args["destinations"] = '["%s"]' % cmdargs[2]
-    elif cmd["command"] == "jmp_if_var_not_equals_const" or cmd["command"] == "jmp_if_var_not_equals_short":
+    elif (
+        cmd["command"] == "jmp_if_var_not_equals_const"
+        or cmd["command"] == "jmp_if_var_not_equals_short"
+    ):
         cls = "JmpIfVarNotEqualsConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
@@ -5699,7 +5702,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["flag"] = get_flag(cmdargs[0], cmdargs[1])
     elif cmd["command"] == "set_bit_3":
-        cls = "Set01D8Bit3"
+        cls = "MarioStopsGlowing"
     elif cmd["command"] == "set_bit_3_offset":
         cls = "Set0158Bit3Offset"
         include_argnames = False
@@ -6352,7 +6355,9 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
         args["value"] = str(cmdargs[1])
-    elif cmd["command"] == "add_var_to_700C" or cmd["command"] == "add_short_mem_to_700C":
+    elif (
+        cmd["command"] == "add_var_to_700C" or cmd["command"] == "add_short_mem_to_700C"
+    ):
         cls = "A_AddVarTo700C"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
@@ -6372,7 +6377,11 @@ def convert_action_script_command(cmd, valid_identifiers):
         cls = "A_Move70107015To7016701B"
     elif cmd["command"] == "move_7016_701B_to_7010_7015":
         cls = "A_Move7016701BTo70107015"
-    elif cmd["command"] == "compare_var_to_const" or cmd["command"] == "mem_compare" or cmd["command"] == "mem_compare_val":
+    elif (
+        cmd["command"] == "compare_var_to_const"
+        or cmd["command"] == "mem_compare"
+        or cmd["command"] == "mem_compare_val"
+    ):
         cls = "A_CompareVarToConst"
         include_argnames = False
         args["address"] = get_var(cmdargs[0])
@@ -6656,7 +6665,9 @@ def convert_script(script, valid_identifiers, converter):
                     arg_strings.append("%s=%s" % (key, args[key]))
                 else:
                     arg_strings.append(args[key])
-            arg_string = ", ".join([f"{w}" if not isinstance(w, str) else w for w in arg_strings ])
+            arg_string = ", ".join(
+                [f"{w}" if not isinstance(w, str) else w for w in arg_strings]
+            )
 
             if use_identifier:
                 if len(arg_string) > 0:
@@ -6671,18 +6682,26 @@ def convert_script(script, valid_identifiers, converter):
 
 def produce_action_script(index, script, valid_identifiers):
     output = "#%s" % get_action_name(index)
-    output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    output += (
+        "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *"
@@ -6699,19 +6718,29 @@ def produce_action_script(index, script, valid_identifiers):
 
 def produce_event_script(index, script, valid_identifiers):
     output = "# %s" % get_event_name(index)
-    output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    output += (
+        "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts import *"
+    )
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
-    output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    output += (
+        "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
+    )
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *"
@@ -6811,7 +6840,7 @@ class Command(BaseCommand):
         for i in range(3072, 4096):
             output += f"\t\tscript_{i},\n"
         output += "\t])\n"
-        
+
         output += "])"
         writeline(file, output)
         file.close()

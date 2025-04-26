@@ -800,7 +800,7 @@ ENEMIES = [
     "Chomp",
     "Pandorite",
     "ShyRanger",
-    #"BobombHenchman", # TODO rando shold reaplce all of these Bobombs
+    # "BobombHenchman", # TODO rando shold reaplce all of these Bobombs
     "Bobomb",
     "Spookum",
     "HammerBro",
@@ -824,7 +824,7 @@ ENEMIES = [
     "Shadow",
     "Cluster",
     # "BahamuttMagikoopa",
-    "Bahamutt", # same as bobombhenchman
+    "Bahamutt",  # same as bobombhenchman
     "Octolot",
     "Frogog",
     "Clerk",
@@ -1588,7 +1588,7 @@ banks = {
     "battle_events": {
         "pointers": {"start": 0x3A6004, "end": 0x3A60CF},
         "start": 0x3A60D0,
-        "end": 0x3A705C
+        "end": 0x3A705C,
         # "end": 0x3A7036,  # changed this cause i inserted a party size subroutine
     },
     "behaviour_0_0x3505C6": {"start": 0x3505C6, "end": 0x3505D9},
@@ -2535,9 +2535,9 @@ def tok(rom, start, end, bank):
         cmd = rom[dex]
         l = command_lens[cmd]
         if cmd == 0xC6 and l == 0:
-            l = 2 + rom[dex+1]
+            l = 2 + rom[dex + 1]
         elif cmd == 0xBA and l == 0:
-            l = 2 + rom[dex+1] * 2
+            l = 2 + rom[dex + 1] * 2
         bytestring = [("0x%02x" % i) for i in rom[dex : dex + l]]
         # print('0x%06x' % dex, bytestring)
         script.append((rom[dex : dex + l], dex))
@@ -2563,6 +2563,7 @@ jmp_cmds = [
     0x5D,
     0x64,
     0x68,
+    0xA7,
     0xCE,
     0xCF,
     0xD0,
@@ -2591,7 +2592,6 @@ class Command(BaseCommand):
 
         os.makedirs(output_path, exist_ok=True)
         open(f"{output_path}/__init__.py", "w")
-        
 
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
@@ -2672,9 +2672,11 @@ class Command(BaseCommand):
                             "%s %s"
                             % (
                                 hint,
-                                str(ind)
-                                if ind >= len(SCRIPT_NAMES[key])
-                                else SCRIPT_NAMES[key][ind],
+                                (
+                                    str(ind)
+                                    if ind >= len(SCRIPT_NAMES[key])
+                                    else SCRIPT_NAMES[key][ind]
+                                ),
                             ),
                             [],
                         )
@@ -2740,9 +2742,9 @@ class Command(BaseCommand):
                     opcode = rom[current_addr]
                     length = command_lens[opcode]
                     if opcode == 0xC6:
-                        length = rom[current_addr+1] + 2
+                        length = rom[current_addr + 1] + 2
                     elif opcode == 0xBA:
-                        length = rom[current_addr+1] * 2 + 2
+                        length = rom[current_addr + 1] * 2 + 2
                     command = rom[current_addr : current_addr + length]
                     # print(f"0x{current_addr:06x}",f"0x{opcode:02x}", [f"0x{b:02x}" for b in command])
                     cvr_range = current_addr & 0xFFFF
@@ -3002,7 +3004,7 @@ class Command(BaseCommand):
             )
 
         if False:  # print ranges
-            # I don't remember what this was for. 
+            # I don't remember what this was for.
             # But I think from its print statements, this might be code you could use if you wanted to
             # print the ranges of the subroutines for your ROM if they differ from the original game's.
             for key in known_addresses_covered:
@@ -3043,8 +3045,6 @@ class Command(BaseCommand):
         output_3Acollection_import = ""
         output_3Acollection_export = ""
 
-        
-
         for key, bank in banks.items():
 
             coverage = "35"
@@ -3070,25 +3070,25 @@ class Command(BaseCommand):
                                 scripts_with_headers["22"]
                             ):
                                 if search_command["addr"] == header_addr:
-                                    scripts_with_headers["22"][
-                                        header_addr_index
-                                    ] = search_command["id"]
+                                    scripts_with_headers["22"][header_addr_index] = (
+                                        search_command["id"]
+                                    )
                                     relevant_pointers.append(search_command["id"])
                             for header_addr_index, header_addr in enumerate(
                                 scripts_with_headers["70"]
                             ):
                                 if search_command["addr"] == header_addr:
-                                    scripts_with_headers["70"][
-                                        header_addr_index
-                                    ] = search_command["id"]
+                                    scripts_with_headers["70"][header_addr_index] = (
+                                        search_command["id"]
+                                    )
                                     relevant_pointers.append(search_command["id"])
                             for header_addr_index, header_addr in enumerate(
                                 scripts_with_headers["85"]
                             ):
                                 if search_command["addr"] == header_addr:
-                                    scripts_with_headers["85"][
-                                        header_addr_index
-                                    ] = search_command["id"]
+                                    scripts_with_headers["85"][header_addr_index] = (
+                                        search_command["id"]
+                                    )
                                     relevant_pointers.append(search_command["id"])
 
                 for cmd_index, command in enumerate(script):
@@ -3125,9 +3125,8 @@ class Command(BaseCommand):
                                 del command["data"][-2:]
                                 command["data"].append(found)
                             relevant_pointers.append(found)
-                        
-                        separated_data[key][index][cmd_index]["data"] = command["data"]
 
+                        separated_data[key][index][cmd_index]["data"] = command["data"]
 
         for key, bank in banks.items():
 
@@ -3168,8 +3167,7 @@ class Command(BaseCommand):
                 os.makedirs(f"{output_path}/monster_behaviours", exist_ok=True)
                 open(f"{output_path}/monster_behaviours/__init__.py", "w")
                 export_file = open(
-                    f"{output_path}/monster_behaviours/export_%s.py"
-                    % (spl[1]),
+                    f"{output_path}/monster_behaviours/export_%s.py" % (spl[1]),
                     "w",
                 )
                 output_35collection_import += (
@@ -3226,7 +3224,7 @@ class Command(BaseCommand):
 
                 if "subroutine" in key:
                     hv = key[-6:]
-                    dest = f'{output_path}/subroutines/contents'
+                    dest = f"{output_path}/subroutines/contents"
                     os.makedirs(dest, exist_ok=True)
 
                     open(f"{dest}/__init__.py", "w")
@@ -3238,7 +3236,9 @@ class Command(BaseCommand):
                     )
                 elif "behaviour" in key:
                     spl = key.split("_")
-                    os.makedirs(f"{output_path}/monster_behaviours/contents/", exist_ok=True)
+                    os.makedirs(
+                        f"{output_path}/monster_behaviours/contents/", exist_ok=True
+                    )
                     open(f"{output_path}/monster_behaviours/contents/__init__.py", "w")
                     file = open(
                         f"{output_path}/monster_behaviours/contents/script_{spl[1]}.py",
@@ -3250,7 +3250,7 @@ class Command(BaseCommand):
                         script_alias,
                     )
                 else:
-                    dest = f'{output_path}/{key}'
+                    dest = f"{output_path}/{key}"
                     os.makedirs(f"{dest}/contents", exist_ok=True)
                     open(f"{dest}/__init__.py", "w")
                     open(f"{dest}/contents/__init__.py", "w")
@@ -3285,11 +3285,11 @@ class Command(BaseCommand):
                             references_by_bank[hv]
                         )
 
-                output += (
-                    "\n\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
-                )
+                output += "\n\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
                 output += "\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
-                output += "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+                output += (
+                    "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+                )
 
                 if key == "battle_events":
                     if index == 22:
@@ -4212,18 +4212,18 @@ def convert_event_script_command(command, valid_identifiers):
         if isinstance(cmd[len(cmd) - 1], str):
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         else:
-            args[
-                "target_address"
-            ] = f"0x{hex(command['addr'])[2:4].upper()}{shortify(cmd, 1):04X}"
+            args["target_address"] = (
+                f"0x{hex(command['addr'])[2:4].upper()}{shortify(cmd, 1):04X}"
+            )
     elif opcode == 0x68:
         cls = "ObjectQueueAtOffsetAndIndex"
         args["index"] = str(cmd[3])
         if isinstance(cmd[len(cmd) - 1], str):
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         else:
-            args[
-                "target_address"
-            ] = f"0x{hex(command['addr'])[2:4].upper()}{shortify(cmd, 1):04X}"
+            args["target_address"] = (
+                f"0x{hex(command['addr'])[2:4].upper()}{shortify(cmd, 1):04X}"
+            )
     elif opcode == 0x69:
         cls = "SetOMEM60To072C"
     elif opcode == 0x6A:
@@ -4351,6 +4351,35 @@ def convert_event_script_command(command, valid_identifiers):
         args["speed"] = str(shortify(cmd, 5))
     elif opcode == 0x87:
         cls = "StopShakingObject"
+    elif opcode == 0x9C:
+        cls = "WaveEffect"
+        arg_1 == cmd[2]
+        if arg_1 & 0x01 == 0x01:
+            args["layer"] = "WAVE_LAYER_BATTLEFIELD"
+        elif arg_1 & 0x02 == 0x02:
+            args["layer"] = "WAVE_LAYER_4BPP"
+        elif arg_1 & 0x04 == 0x04:
+            args["layer"] = "WAVE_LAYER_2BPP"
+        if arg_1 & 0x40 == 0x40:
+            args["direction"] = "WAVE_LAYER_HORIZONTAL"
+        elif arg_1 & 0x80 == 0x80:
+            args["direction"] = "WAVE_LAYER_VERTICAL"
+        args["depth"] = str(shortify(cmd, 3))
+        args["intensity"] = str(shortify(cmd, 5))
+        args["speed"] = str(shortify(cmd, 7))
+        if arg_1 & 0x08 == 0x08:
+            args["bit_3"] = "True"
+        if arg_1 & 0x10 == 0x10:
+            args["bit_4"] = "True"
+        if arg_1 & 0x20 == 0x20:
+            args["bit_5"] = "True"
+    elif opcode == 0x9D:
+        cls = "StopWaveEffect"
+        if cmd[1] & 0x80 == 0x80:
+            args["bit_7"] = "True"
+    elif opcode == 0xA7:
+        cls = "JmpIfTimedHitSuccess"
+        args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
     elif opcode == 0x8E:
         cls = "ScreenFlashWithDuration"
         args["colour"] = FLASH_COLOURS[cmd[1] & 0x07]
@@ -4439,10 +4468,10 @@ def convert_event_script_command(command, valid_identifiers):
         point_bytes = byte_signed(cmd[1])
         points = []
         for i in range(2, (point_bytes // 2) * 2 + 2, 2):
-            points.append("(%s, %s)" % (byte_signed(cmd[i]), byte_signed(cmd[i+1])))
+            points.append("(%s, %s)" % (byte_signed(cmd[i]), byte_signed(cmd[i + 1])))
         args["points"] = f'[{",".join(points)}]'
         if point_bytes % 2 != 0:
-            args["extra_byte"] = f'0x{cmd[2 + point_bytes - 1]:02x}'
+            args["extra_byte"] = f"0x{cmd[2 + point_bytes - 1]:02x}"
     elif opcode == 0xCB:
         cls = "SetSequenceSpeed"
         args["speed"] = str(cmd[1])

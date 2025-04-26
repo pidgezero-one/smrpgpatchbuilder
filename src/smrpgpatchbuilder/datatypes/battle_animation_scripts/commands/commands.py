@@ -4,7 +4,13 @@ These are the building blocks of battle animation scripts."""
 from typing import List, Optional, Set, Tuple, Type, Union
 
 from smrpgpatchbuilder.datatypes.enemies.classes import Enemy
-from smrpgpatchbuilder.datatypes.numbers.classes import Int16, Int8, UInt16, UInt8, UInt4
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    Int16,
+    Int8,
+    UInt16,
+    UInt8,
+    UInt4,
+)
 from smrpgpatchbuilder.datatypes.sprites.ids.misc import TOTAL_SPRITES
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     InvalidCommandArgumentException,
@@ -25,7 +31,9 @@ from smrpgpatchbuilder.datatypes.battle_animation_scripts.arguments import (
     UNKNOWN_PAUSE_1,
     UNKNOWN_PAUSE_2,
     UNKNOWN_PAUSE_4,
-    UNKNOWN_PAUSE_7
+    UNKNOWN_PAUSE_7,
+    WAVE_LAYER_BATTLEFIELD,
+    WAVE_LAYER_HORIZONTAL,
 )
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.arguments.types import (
     BattleTarget,
@@ -37,6 +45,8 @@ from smrpgpatchbuilder.datatypes.battle_animation_scripts.arguments.types import
     ShiftType,
     MessageType,
     LayerPriorityType,
+    WaveEffectDirection,
+    WaveEffectLayer,
 )
 from .types import (
     AnimationScriptAMEM6XSoloCommand,
@@ -351,13 +361,13 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
     def set_condition(self, condition: Union[int, PauseUntil, bytearray]) -> None:
         """Set the condition that ends the pause."""
         if condition in [
-            SPRITE_SHIFT_COMPLETE, 
-            BUTTON_PRESSED, 
-            FRAMES_ELAPSED, 
-            UNKNOWN_PAUSE_7, 
-            UNKNOWN_PAUSE_1, 
-            UNKNOWN_PAUSE_2, 
-            UNKNOWN_PAUSE_4
+            SPRITE_SHIFT_COMPLETE,
+            BUTTON_PRESSED,
+            FRAMES_ELAPSED,
+            UNKNOWN_PAUSE_7,
+            UNKNOWN_PAUSE_1,
+            UNKNOWN_PAUSE_2,
+            UNKNOWN_PAUSE_4,
         ]:
             self._size = 4
             self._opcode = 0x04
@@ -373,7 +383,7 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
             self._opcode = 0x74
             self._condition = condition
         else:
-            print(self,  self.frames)
+            print(self, self.frames)
             raise InvalidCommandArgumentException(
                 f"invalid pause condition: {condition}"
             )
@@ -421,6 +431,7 @@ class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
 
 class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     "Move this object along the given axes."
+
     _opcode: int = 0x08
     _size: int = 8
 
@@ -684,7 +695,6 @@ class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
 
     def render(self) -> bytearray:
         return super().render(self._amem_bits(), self.value)
-    
 
 
 class SetAMEM16BitToConst(SetAMEM8BitToConst):
@@ -1102,12 +1112,17 @@ class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
 
 class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 8bit address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does."""
+    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """
 
     _opcode: int = 0x20
 
     def __init__(
-        self, amem: int, source_amem: int, upper: int = 0, identifier: Optional[str] = None
+        self,
+        amem: int,
+        source_amem: int,
+        upper: int = 0,
+        identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -1115,37 +1130,48 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         self.set_upper(upper)
 
     def render(self) -> bytearray:
-        return super().render(0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper))
+        return super().render(
+            0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
+        )
 
 
 class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 16bit address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does."""
+    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """
 
     _opcode: int = 0x21
 
 
 class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value of the amem $60-6F 8bit address to the dest_amem $60-6F address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does."""
+    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """
 
     _opcode: int = 0x22
 
     def __init__(
-        self, dest_amem: int, amem: int, upper: int = 0, identifier: Optional[str] = None
+        self,
+        dest_amem: int,
+        amem: int,
+        upper: int = 0,
+        identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
-        self.set_source_amem(dest_amem) # i don't like this naming
+        self.set_source_amem(dest_amem)  # i don't like this naming
         self.set_upper(upper)
 
     def render(self) -> bytearray:
-        return super().render(0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper))
+        return super().render(
+            0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
+        )
 
 
 class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
     """Copy the value of the amem $60-6F 16bit address to the dest_amem $60-6F address.
-    Occasionally the amem can be outside of that range, but I have no idea why or what it does."""
+    Occasionally the amem can be outside of that range, but I have no idea why or what it does.
+    """
 
     _opcode: int = 0x23
 
@@ -1237,7 +1263,11 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
     _opcode: int = 0x2C
 
     def __init__(
-        self, amem: int, source_amem: int, upper: int = 0, identifier: Optional[str] = None
+        self,
+        amem: int,
+        source_amem: int,
+        upper: int = 0,
+        identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -1245,7 +1275,9 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         self.set_upper(upper)
 
     def render(self) -> bytearray:
-        return super().render(0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper))
+        return super().render(
+            0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
+        )
 
 
 class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
@@ -1718,11 +1750,13 @@ class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
     @property
     def type(self) -> int:
         return self._type
-    
+
     def set_type(self, type: int) -> None:
         self._type = type
 
-    def __init__(self, amem: int, type: int, value: int, identifier: Optional[str] = None) -> None:
+    def __init__(
+        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+    ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_value(value)
@@ -1730,7 +1764,7 @@ class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
 
     def render(self) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
-    
+
 
 class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
     """Set 16bit AMEM $60-6F to the given value of the given type"""
@@ -1752,7 +1786,7 @@ class JmpIfAMEM8BitEqualsUnknownShort(
     @property
     def type(self) -> int:
         return self._type
-    
+
     def set_type(self, type: int) -> None:
         self._type = type
 
@@ -1770,13 +1804,16 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         self.set_type(type)
 
     def render(self) -> bytearray:
-        return super().render(self._amem_bits() + (self.type << 4), self.value, *self.destinations)
+        return super().render(
+            self._amem_bits() + (self.type << 4), self.value, *self.destinations
+        )
 
 
 class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name."""
-    
+
     _opcode: int = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F does not equal the given value of the given type,
@@ -1784,11 +1821,13 @@ class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
 
     _opcode: int = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F does not equal the given value of the given type,
     go to destination indicated by name."""
 
     _opcode: int = 0x27
+
 
 class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is less than the given value of the given type,
@@ -1796,17 +1835,20 @@ class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
 
     _opcode: int = 0x28
 
+
 class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is less than the given value of the given type,
     go to destination indicated by name."""
 
     _opcode: int = 0x29
 
+
 class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is greater than or equal to the given value of the given type,
     go to destination indicated by name."""
 
     _opcode: int = 0x2A
+
 
 class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is greater than or equal to the given value of the given type,
@@ -1815,7 +1857,9 @@ class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownSho
     _opcode: int = 0x2B
 
 
-class IncAMEM8BitByUnknownShort(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
+class IncAMEM8BitByUnknownShort(
+    UsableAnimationScriptCommand, AnimationScriptAMEMAndConst
+):
     """Increase 8bit AMEM $60-6F by given value of the given type."""
 
     _opcode: int = 0x2C
@@ -1824,11 +1868,13 @@ class IncAMEM8BitByUnknownShort(UsableAnimationScriptCommand, AnimationScriptAME
     @property
     def type(self) -> int:
         return self._type
-    
+
     def set_type(self, type: int) -> None:
         self._type = type
 
-    def __init__(self, amem: int, type: int, value: int, identifier: Optional[str] = None) -> None:
+    def __init__(
+        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+    ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_type(type)
@@ -1850,6 +1896,7 @@ class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
 
     _opcode: int = 0x2E
     _type: int
+
 
 class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Decrease 16bit AMEM $60-6F by given value of the given type."""
@@ -2509,7 +2556,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
 
     def render(self) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
-    
+
 
 class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound.
@@ -2840,6 +2887,163 @@ class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNo
     """Reset the active sprite sequence for the object on which this queue is running."""
 
     _opcode: int = 0x7F
+
+
+class JmpIfTimedHitSuccess(
+    UsableAnimationScriptCommand,
+    AnimationScriptCommandWithJmps,
+):
+    """Goto destination indicated by name if s timed hit was successful."""
+
+    _opcode: int = 0xA7
+    _size: int = 3
+
+    def render(self) -> bytearray:
+        return super().render(*self.destinations)
+
+
+class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Wave effect animation"""
+
+    _opcode: int = 0x9C
+    _layer: WaveEffectLayer = WAVE_LAYER_BATTLEFIELD
+    _direction: WaveEffectDirection = WAVE_LAYER_HORIZONTAL
+    _depth: UInt16 = UInt16(0)
+    _intensity: UInt16 = UInt16(0)
+    _speed: UInt16 = UInt16(0)
+    _bit_3: bool = False
+    _bit_4: bool = False
+    _bit_5: bool = False
+
+    @property
+    def layer(self) -> WaveEffectLayer:
+        """The layer on which the wave effect is applied."""
+        return self._layer
+
+    def set_layer(self, layer: WaveEffectLayer) -> None:
+        """Set the layer on which the wave effect is applied."""
+        self._layer = layer
+
+    @property
+    def direction(self) -> WaveEffectDirection:
+        """The direction of the wave effect."""
+        return self._direction
+
+    def set_direction(self, direction: WaveEffectDirection) -> None:
+        """Set the direction of the wave effect."""
+        self._direction = direction
+
+    @property
+    def depth(self) -> UInt16:
+        """The depth of the wave effect."""
+        return self._depth
+
+    def set_depth(self, depth: int) -> None:
+        """Set the depth of the wave effect."""
+        self._depth = UInt16(depth)
+
+    @property
+    def intensity(self) -> UInt16:
+        """The intensity of the wave effect."""
+        return self._intensity
+
+    def set_intensity(self, intensity: int) -> None:
+        """Set the intensity of the wave effect."""
+        self._intensity = UInt16(intensity)
+
+    @property
+    def speed(self) -> UInt16:
+        """The speed of the wave effect."""
+        return self._speed
+
+    def set_speed(self, speed: int) -> None:
+        """Set the speed of the wave effect."""
+        self._speed = UInt16(speed)
+
+    @property
+    def bit_3(self) -> bool:
+        """The third bit flag for wave effect configuration."""
+        return self._bit_3
+
+    def set_bit_3(self, bit_3: bool) -> None:
+        """Set the third bit flag for wave effect configuration."""
+        self._bit_3 = bit_3
+
+    @property
+    def bit_4(self) -> bool:
+        """The fourth bit flag for wave effect configuration."""
+        return self._bit_4
+
+    def set_bit_4(self, bit_4: bool) -> None:
+        """Set the fourth bit flag for wave effect configuration."""
+        self._bit_4 = bit_4
+
+    @property
+    def bit_5(self) -> bool:
+        """The fifth bit flag for wave effect configuration."""
+        return self._bit_5
+
+    def set_bit_5(self, bit_5: bool) -> None:
+        """Set the fifth bit flag for wave effect configuration."""
+        self._bit_5 = bit_5
+
+    def __init__(
+        self,
+        layer: WaveEffectLayer,
+        direction: WaveEffectDirection,
+        depth: int,
+        intensity: int,
+        speed: int,
+        bit_3: bool = False,
+        bit_4: bool = False,
+        bit_5: bool = False,
+        identifier: Optional[str] = None,
+    ):
+        super().__init__(identifier)
+        self.set_layer(layer)
+        self.set_direction(direction)
+        self.set_depth(depth)
+        self.set_intensity(intensity)
+        self.set_speed(speed)
+        self.set_bit_3(bit_3)
+        self.set_bit_4(bit_4)
+        self.set_bit_5(bit_5)
+
+    def render(self) -> bytearray:
+        arg_1 = (
+            bits_to_int([self.layer])
+            + bits_to_int([self.layer + 6])
+            + (self.bit_3 << 3)
+            + (self.bit_4 << 4)
+            + (self.bit_5 << 5)
+        )
+
+        return super().render(0, UInt8(arg_1), self.depth, self.intensity, self.speed)
+
+
+class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
+    """Stop an existing wave effect"""
+
+    _opcode: int = 0x9D
+    _size: int = 2
+
+    _bit_7: bool = False
+
+    @property
+    def bit_7(self) -> bool:
+        """(unknown)"""
+        return self._bit_7
+
+    def set_bit_7(self, bit_7: bool) -> None:
+        """(unknown)"""
+        self._bit_7 = bit_7
+
+    def __init__(self, bit_7: bool = False, identifier: Optional[str] = None):
+        super().__init__(identifier)
+        self.set_bit_7(bit_7)
+
+    def render(self) -> bytearray:
+        return super().render(2 + (self.bit_7 << 7))
 
 
 class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -3538,7 +3742,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     @property
     def extra_byte(self) -> Optional[UInt8]:
         return self._extra_byte
-    
+
     def set_extra_byte(self, extra_byte: int) -> None:
         self._extra_byte = UInt8(extra_byte)
 
@@ -3551,7 +3755,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_points(points)
         if extra_byte is not None:
-            self.set_extra_byte(extra_byte) 
+            self.set_extra_byte(extra_byte)
 
     def render(self) -> bytearray:
         points = [num for tup in self.points for num in tup]

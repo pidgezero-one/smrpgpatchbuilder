@@ -97,3 +97,21 @@ class MaskPoint(Tuple[Int8, Int8]):
 
     def __reduce__(self):
         return (self.__class__, (self[0], self[1]))
+
+
+class WaveEffectLayer(int):
+    """Int subclass describing screen mask effects in battle animations."""
+
+    def __new__(cls, *args: int):
+        num = args[0]
+        assert 0 <= num <= 2
+        return super(WaveEffectLayer, cls).__new__(cls, num)
+
+
+class WaveEffectDirection(int):
+    """Int subclass describing screen mask effects in battle animations."""
+
+    def __new__(cls, *args: int):
+        num = args[0]
+        assert 0 <= num <= 1
+        return super(WaveEffectDirection, cls).__new__(cls, num)

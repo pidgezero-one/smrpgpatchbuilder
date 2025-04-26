@@ -1,6 +1,5 @@
 """Class instances for battle animation script arguments that need special restrictions."""
 
-
 from .battle_targets import (
     MARIO,
     TOADSTOOL,
@@ -95,10 +94,10 @@ from .origins import (
     CASTER_CURRENT_POSITION,
 )
 from .pause_until import (
-	UNKNOWN_PAUSE_1,
+    UNKNOWN_PAUSE_1,
     UNKNOWN_PAUSE_2,
-	UNKNOWN_PAUSE_4,
-	UNKNOWN_PAUSE_7,
+    UNKNOWN_PAUSE_4,
+    UNKNOWN_PAUSE_7,
     SPRITE_SHIFT_COMPLETE,
     BUTTON_PRESSED,
     FRAMES_ELAPSED,
@@ -114,4 +113,11 @@ from .shift_type import (
     SHIFT_TYPE_TRANSFER,
     SHIFT_TYPE_0X04,
     SHIFT_TYPE_0X08,
+)
+from .wave_effect import (
+    WAVE_LAYER_BATTLEFIELD,
+    WAVE_LAYER_4BPP,
+    WAVE_LAYER_2BPP,
+    WAVE_LAYER_HORIZONTAL,
+    WAVE_LAYER_VERTICAL,
 )

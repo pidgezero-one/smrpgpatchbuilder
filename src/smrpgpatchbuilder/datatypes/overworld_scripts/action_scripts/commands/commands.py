@@ -2874,7 +2874,8 @@ class A_SetVarToRandom(
     """Set the given variable to a random number between 0 and the given upper bound.
 
     ## Lazy Shell command
-        `TBD, to be filled in manually by me`
+        `Memory $700C = random # between 0 and {xx}...`
+        `Memory $7xxx = random # between 0 and {xx}...`
 
     ## Opcode
         `0xB6`

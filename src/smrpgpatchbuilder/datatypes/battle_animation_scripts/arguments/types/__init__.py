@@ -11,4 +11,6 @@ from .classes import (
     BattleTarget,
     MaskEffect,
     MaskPoint,
+    WaveEffectDirection,
+    WaveEffectLayer,
 )

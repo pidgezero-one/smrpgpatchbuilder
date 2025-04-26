@@ -46,18 +46,34 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.misc impor
     TOTAL_SCRIPTS as TOTAL_ACTION_SCRIPTS,
 )
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object import AreaObject
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import  PartyCharacter
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import  Battlefield
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.colour import  Colour
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.coord import  Coord
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.controller_input import  ControllerInput
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.direction import Direction
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.intro_title_text import IntroTitleText
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.palette_type import PaletteType
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object import (
+    AreaObject,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import (
+    PartyCharacter,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import (
+    Battlefield,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.colour import Colour
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.coord import Coord
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.controller_input import (
+    ControllerInput,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.direction import (
+    Direction,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.intro_title_text import (
+    IntroTitleText,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.palette_type import (
+    PaletteType,
+)
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.layer import Layer
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.scene import Scene
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.tutorial import Tutorial
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.tutorial import (
+    Tutorial,
+)
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.packet import Packet
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids.misc import (
@@ -69,32 +85,46 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.ids.misc import (
     TOTAL_DIALOGS,
 )
 
-from smrpgpatchbuilder.datatypes.items.classes import Equipment, Item, Weapon, Armor, Accessory
+from smrpgpatchbuilder.datatypes.items.classes import (
+    Equipment,
+    Item,
+    Weapon,
+    Armor,
+    Accessory,
+)
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar, TimerVar
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import  Flag
-from smrpgpatchbuilder.datatypes.scripts_common.classes import InvalidCommandArgumentException
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import (
+    ByteVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import (
+    ShortVar,
+    TimerVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
+from smrpgpatchbuilder.datatypes.scripts_common.classes import (
+    InvalidCommandArgumentException,
+)
 from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
 
 # script operations
 
 
 class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
-    """Loop all commands over N frames that are between this command and the next `EndLoop` command.\n
-    
-    **Lazy Shell command**  
-    `Loop start, timer = ...`
-    
-    **Opcode**  
-    `0xD5`
-    
-    **Size**  
-    3 bytes
+    """Loop all commands (over a number of frames) between this command and the next `EndLoop` command.\n
+
+    ## Lazy Shell command
+        `Loop start, timer = ...`
+
+    ## Opcode
+        `0xD5`
+
+    ## Size
+        3 bytes
 
     Args:
         length (int): Duration (in frames) to loop over.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xD5
@@ -119,19 +149,20 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
-    """Loop all commands over N loop iterations that are between this command and the next `EndLoop` command.\n
-    
-    **Lazy Shell command**  
-    `Loop start, count = ...`
-    
-    **Opcode**  
-    `0xD4`
-    
-    **Size**  
-    3 bytes
+    """Loop all commands (over a number of iterations) that are between this command and the next `EndLoop` command.\n
+
+    ## Lazy Shell command
+        `Loop start, count = ...`
+
+    ## Opcode
+        `0xD4`
+
+    ## Size
+        3 bytes
 
     Args:
         length (int): Number/count of times to loop.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xD4
@@ -157,15 +188,18 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
 
 class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """If previous commands were part of a loop, this is where the loop ends.\n
-    
-    **Lazy Shell command**  
-    `Loop end`
-    
-    **Opcode**  
-    `0xD7`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Loop end`
+
+    ## Opcode
+        `0xD7`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xD7
@@ -173,17 +207,18 @@ class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a specific command. This uses another event's label instead of its address, which is calculated at build time.\n
-    
-    **Lazy Shell command**  
-    `Jump to address...`
-    
-    **Opcode**  
-    `0xD2`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Jump to address...`
+
+    ## Opcode
+        `0xD2`
+
+    ## Size
+        3 bytes
 
     Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
         destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of whatever command you want to jump to.
     """
 
@@ -196,18 +231,19 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     """Goto event script by ID.\n
-    
-    **Lazy Shell command**  
-    `Jump to event...`
-    
-    **Opcode**  
-    `0xD0`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Jump to event...`
+
+    ## Opcode
+        `0xD0`
+
+    ## Size
+        3 bytes
 
     Args:
         destination (int): The ID of the event you want to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xD0
@@ -235,34 +271,40 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
 
 
 class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Return to the beginning of the script containing this command.  
+    """Return to the beginning of the script containing this command.
     (Unknown how this differs from `JmpToStartOfThisScriptFA`.)
-    
-    **Lazy Shell command**  
-    `Jump to start of script`
-    
-    **Opcode**  
-    `0xF9`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Jump to start of script`
+
+    ## Opcode
+        `0xF9`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xF9
 
 
 class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Return to the beginning of the script containing this command.  
+    """Return to the beginning of the script containing this command.
     (Unknown how this differs from `JmpToStartOfThisScript`.)
-    
-    **Lazy Shell command**  
-    `Jump to start of script`
-    
-    **Opcode**  
-    `0xFA`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Jump to start of script`
+
+    ## Opcode
+        `0xFA`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xFA
@@ -270,18 +312,19 @@ class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArg
 
 class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Run a chunk of event script code as a subroutine starting at a specified command. This uses another event's label instead of its address, which is calculated at build time.\n
-    
-    **Lazy Shell command**  
-    `Jump to subroutine...`
-    
-    **Opcode**  
-    `0xD3`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Jump to subroutine...`
+
+    ## Opcode
+        `0xD3`
+
+    ## Size
+        3 bytes
 
     Args:
         destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xD3
@@ -293,15 +336,18 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script from being a background process to being the main process.\n
-    
-    **Lazy Shell command**  
-    `Move script to main thread`
-    
-    **Opcode**  
-    `0xFD 0x40`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Move script to main thread`
+
+    ## Opcode
+        `0xFD 0x40`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x40])
@@ -309,15 +355,18 @@ class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs)
 
 class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the first of two background processes.\n
-    
-    **Lazy Shell command**  
-    `Move script to background thread 1`
-    
-    **Opcode**  
-    `0xFD 0x41`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Move script to background thread 1`
+
+    ## Opcode
+        `0xFD 0x41`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x41])
@@ -325,15 +374,18 @@ class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommand
 
 class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the second of two background processes.\n
-    
-    **Lazy Shell command**  
-    `Move script to background thread 2`
-    
-    **Opcode**  
-    `0xFD 0x42`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Move script to background thread 2`
+
+    ## Opcode
+        `0xFD 0x42`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x42])
@@ -341,22 +393,23 @@ class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommand
 
 class Pause(UsableEventScriptCommand, EventScriptCommand):
     """Pause the active script for a number of frames.\n
-    
-    **Lazy Shell command**  
-    `Pause script for {xx} frames...`  
-    `Pause script for {xxxx} frames...`
-    
-    **Opcode**  
-    `0xF0`  
-    `0xF1`
-    
-    **Size**  
-    2 bytes  
-    3 bytes
+
+    ## Lazy Shell command
+        `Pause script for {xx} frames...`
+        `Pause script for {xxxx} frames...`
+
+    ## Opcode
+        `0xF0`
+        `0xF1`
+
+    ## Size
+        2 bytes
+        3 bytes
 
 
     Args:
         length (int): Length of time (in frames) to pause. If this number is 256 or lower (you read that correctly, 256 or lower, not 255 or lower) this command will use the {xx} version (`0xF0`, 2 bytes). If larger, it will use the {xxxx} version (`0xF1`, 3 bytes).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _length: Union[UInt8, UInt16]
@@ -365,7 +418,7 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
     def length(self) -> int:
         """The length of the pause, in frames"""
         return self._length + 1
-    
+
     @property
     def size(self) -> int:
         if isinstance(self._length, UInt8):
@@ -376,9 +429,9 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
     def set_length(self, length: int) -> None:
         """Set the length of the pause, in frames, from 1 to 0x10000"""
         if 1 <= length <= 0x100:
-            self._length = UInt8(length-1)
+            self._length = UInt8(length - 1)
         elif 1 <= length <= 0x10000:
-            self._length = UInt16(length-1)
+            self._length = UInt16(length - 1)
         else:
             raise InvalidCommandArgumentException(
                 f"illegal pause duration in {self.identifier}: {length}"
@@ -397,15 +450,18 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
 
 class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)\n
-    
-    **Lazy Shell command**  
-    `Remember last object`
-    
-    **Opcode**  
-    `0xFD 0x32`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Remember last object`
+
+    ## Opcode
+        `0xFD 0x32`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x32])
@@ -413,18 +469,19 @@ class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """If a background event is paused, resume it.\n
-    
-    **Lazy Shell command**  
-    `Resume background event...`
-    
-    **Opcode**  
-    `0x47`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Resume background event...`
+
+    ## Opcode
+        `0x47`
+
+    ## Size
+        2 bytes
 
     Args:
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x47
@@ -450,21 +507,22 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Run an event (by ID) as a background event.\n
-    
-    **Lazy Shell command**  
-    `Run background event...`
-    
-    **Opcode**  
-    `0x40`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Run background event...`
+
+    ## Opcode
+        `0x40`
+
+    ## Size
+        3 bytes
 
     Args:
         event_id (int): The ID of the event you want to run in the background.
         return_on_level_exit (bool): If true, the background event will stop when the current level is unloaded.
         bit_6 (bool): (unknown)
         run_as_second_script (bool): If true, the event will run in background thread 2 instead of background thread 1.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x40
@@ -527,7 +585,9 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         self.set_run_as_second_script(run_as_second_script)
 
     def render(self) -> bytearray:
-        flags: int = bools_to_int(self._return_on_level_exit, self.bit_6, self.run_as_second_script)
+        flags: int = bools_to_int(
+            self._return_on_level_exit, self.bit_6, self.run_as_second_script
+        )
         flags = flags << 13
         arg_byte = UInt16(self.event_id + flags)
         return super().render(arg_byte)
@@ -535,21 +595,22 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
     """(unknown exactly how this differs from `RunBackgroundEvent`)\n
-    
-    **Lazy Shell command**  
-    `Run background event, pause...`
-    
-    **Opcode**  
-    `0x44`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Run background event, pause...`
+
+    ## Opcode
+        `0x44`
+
+    ## Size
+        3 bytes
 
     Args:
         event_id (int): The ID of the event you want to run in the background.
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
         bit_4 (bool): (unknown)
         bit_5 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x44
@@ -623,23 +684,23 @@ class RunBackgroundEventWithPauseReturnOnExit(
     UsableEventScriptCommand, EventScriptCommand
 ):
     """(unknown exactly how this differs from `RunBackgroundEvent` with `return_on_level_exit` set to true)\n
-    
-    **Lazy Shell command**  
-    `Run background event, pause...`
-    
-    **Opcode**  
-    `0x45`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Run background event, pause...`
+
+    ## Opcode
+        `0x45`
+
+    ## Size
+        3 bytes
 
     Args:
         event_id (int): The ID of the event you want to run in the background.
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
         bit_4 (bool): (unknown)
         bit_5 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
-
 
     _opcode: int = 0x45
     _size: int = 3
@@ -710,20 +771,20 @@ class RunBackgroundEventWithPauseReturnOnExit(
 
 class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
     """When the current script ends, start running the script denoted by ID.\n
-    
-    **Lazy Shell command**  
-    `Run event at return...`
-    
-    **Opcode**  
-    `0xFD 0x46`
-    
-    **Size**  
-    4 bytes
+
+    ## Lazy Shell command
+        `Run event at return...`
+
+    ## Opcode
+        `0xFD 0x46`
+
+    ## Size
+        4 bytes
 
     Args:
         event_id (int): The ID of the event you want to run on return.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
-
 
     _opcode = bytearray([0xFD, 0x46])
     _size: int = 4
@@ -752,20 +813,20 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
     """Run another event by ID as a subroutine (function).\n
     The game will crash if you call this method from code that is
     already itself being run as a subroutine, so be careful using it.\n
-    
-    **Lazy Shell command**  
-    `Run event as subroutine...`
-    
-    **Opcode**  
-    `0xD1`
-    
-    **Size**  
-    3 bytes
+
+    ## Lazy Shell command
+        `Run event as subroutine...`
+
+    ## Opcode
+        `0xD1`
+
+    ## Size
+        3 bytes
 
     Args:
         event_id (int): The ID of the event you want to run as a subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
-
 
     _opcode: int = 0xD1
     _size: int = 3
@@ -792,15 +853,18 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
 
 class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt all background events on all threads.\n
-    
-    **Lazy Shell command**  
-    `Stop all background events`
-    
-    **Opcode**  
-    `0xFD 0x43`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Stop all background events`
+
+    ## Opcode
+        `0xFD 0x43`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x43])
@@ -808,18 +872,19 @@ class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs
 
 class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Stop a background event."\n
-    
-    **Lazy Shell command**  
-    `Stop background event...`
-    
-    **Opcode**  
-    `0x46`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        `Stop background event...`
+
+    ## Opcode
+        `0x46`
+
+    ## Size
+        2 bytes
 
     Args:
         timer_var (ShortVar): The timer memory variable associated to the event you're stopping, probably set by `ResumeBackgroundEvent`, `RunBackgroundEventWithPause`, or `RunBackgroundEventWithPauseReturnOnExit`. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x46
@@ -844,35 +909,41 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Ends the script or subroutine.  
+    """Ends the script or subroutine.
     Every event needs to include this or `ReturnAll` because it indicates where the next script starts.\n
-    
-    **Lazy Shell command**  
-    `Return`
-    
-    **Opcode**  
-    `0xFE`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Return`
+
+    ## Opcode
+        `0xFE`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xFE
 
 
 class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.  
-    Every event needs to include this or `Return` because it indicates where the next script starts.  
+    """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.
+    Every event needs to include this or `Return` because it indicates where the next script starts.
     If your scripts do not add up to exactly the size of your bank, any remaining bytes are automatically filled with `ReturnAll` (you don't have to do this manually).\n
-    
-    **Lazy Shell command**  
-    `Return all`
-    
-    **Opcode**  
-    `0xFF`
-    
-    **Size**  
-    1 byte
+
+    ## Lazy Shell command
+        `Return all`
+
+    ## Opcode
+        `0xFF`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xFF
@@ -880,22 +951,25 @@ class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown, some kind of unused return command, unsure how it differs from others)\n
-    
-    **Lazy Shell command**  
-    N/A
-    
-    **Opcode**  
-    `0xFD 0xFE`
-    
-    **Size**  
-    2 bytes
+
+    ## Lazy Shell command
+        N/A
+
+    ## Opcode
+        `0xFD 0xFE`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFE])
 
 
 _valid_unknowncmd_opcodes: List[int] = [
-    0, #00
+    0,  # 00
     0,
     0,
     0,
@@ -911,7 +985,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #10
+    0,  # 10
     0,
     0,
     0,
@@ -927,7 +1001,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #20
+    0,  # 20
     0,
     0,
     0,
@@ -943,7 +1017,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #30
+    0,  # 30
     0,
     0,
     4,
@@ -959,7 +1033,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    3, #40
+    3,  # 40
     0,
     0,
     0,
@@ -975,7 +1049,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     3,
     0,
-    0, #50
+    0,  # 50
     0,
     0,
     0,
@@ -991,7 +1065,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     1,
     1,
-    0, #60
+    0,  # 60
     0,
     0,
     0,
@@ -1007,7 +1081,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     1,
     1,
     1,
-    0, #70
+    0,  # 70
     0,
     0,
     0,
@@ -1023,7 +1097,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #80
+    0,  # 80
     0,
     0,
     0,
@@ -1039,7 +1113,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     1,
     1,
     0,
-    0, #90
+    0,  # 90
     0,
     0,
     0,
@@ -1055,7 +1129,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     3,
-    0, #A0
+    0,  # A0
     0,
     0,
     0,
@@ -1071,7 +1145,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #B0
+    0,  # B0
     0,
     0,
     0,
@@ -1087,7 +1161,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #C0
+    0,  # C0
     0,
     0,
     0,
@@ -1103,7 +1177,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     1,
     1,
     1,
-    0, #D0
+    0,  # D0
     0,
     0,
     0,
@@ -1119,7 +1193,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #E0
+    0,  # E0
     0,
     0,
     0,
@@ -1135,7 +1209,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
     0,
-    0, #F0
+    0,  # F0
     0,
     0,
     0,
@@ -1153,7 +1227,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
 ]
 _valid_unknowncmd_opcodes_fd: List[int] = [
-    0, #00
+    0,  # 00
     0,
     0,
     0,
@@ -1169,7 +1243,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     0,
-    0, #10
+    0,  # 10
     0,
     0,
     0,
@@ -1185,7 +1259,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     0,
-    0, #20
+    0,  # 20
     0,
     0,
     0,
@@ -1201,7 +1275,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     0,
-    0, #30
+    0,  # 30
     0,
     0,
     0,
@@ -1217,7 +1291,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     4,
-    0, #40
+    0,  # 40
     0,
     0,
     0,
@@ -1233,7 +1307,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     0,
-    0, #50
+    0,  # 50
     0,
     0,
     0,
@@ -1249,7 +1323,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     2,
-    0, #60
+    0,  # 60
     0,
     0,
     2,
@@ -1265,7 +1339,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    2, #70
+    2,  # 70
     2,
     2,
     2,
@@ -1281,7 +1355,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    2, #80
+    2,  # 80
     2,
     2,
     2,
@@ -1297,7 +1371,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     5,
     3,
-    0, #90
+    0,  # 90
     0,
     0,
     0,
@@ -1313,7 +1387,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
     0,
     0,
-    0, #A0
+    0,  # A0
     0,
     0,
     0,
@@ -1329,7 +1403,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    0, #B0
+    0,  # B0
     0,
     0,
     0,
@@ -1345,7 +1419,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    2, #C0
+    2,  # C0
     2,
     2,
     2,
@@ -1361,7 +1435,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    2, #D0
+    2,  # D0
     2,
     2,
     2,
@@ -1377,7 +1451,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    2, #E0
+    2,  # E0
     2,
     2,
     2,
@@ -1393,7 +1467,7 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     2,
     2,
     2,
-    0, #F0
+    0,  # F0
     2,
     2,
     2,
@@ -1411,19 +1485,24 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
 ]
 
+
 class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
-    """Catch-all class for most undocumented commands that don't act as GOTOs.  
-    Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.  
+    """Catch-all class for most undocumented commands that don't act as GOTOs.
+    Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.
     You can't use this if your bytearray starts with an opcode that already has a class. For example `UnknownCommand(bytearray([0xA4, 0x24]))` will fail because `ClearBit` already uses opcode `0xA4`.
-    
-    **Lazy Shell command**  
-    Almost any lazy shell command represented solely as bytes, i.e. `{FD-45}` in the original game's event #478
-    
-    **Opcode**  
-    Any that don't already belong to another class
-    
-    **Size**  
-    Determined by the first byte (or two bytes if first byte is `0xFD`). Same as the length of `contents` if you did it right.
+
+    ## Lazy Shell command
+        Almost any lazy shell command represented solely as bytes, i.e. `{FD-45}` in the original game's event #478
+
+    ## Opcode
+        Any that don't already belong to another class
+
+    ## Size
+        Determined by the first byte (or two bytes if first byte is `0xFD`). Same as the length of `contents` if you did it right.
+
+    Args:
+        contents (bytearray): The entire byte string that this command consists of.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _contents: bytearray
@@ -1440,16 +1519,24 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
             opcode = contents[1]
             expected_length = _valid_unknowncmd_opcodes_fd[opcode]
             if expected_length[opcode] == 0:
-                raise InvalidCommandArgumentException(f"do not use UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it")
+                raise InvalidCommandArgumentException(
+                    f"do not use UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it"
+                )
             if len(contents) != expected_length:
-                raise InvalidCommandArgumentException(f"opcode 0xFD 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
+                raise InvalidCommandArgumentException(
+                    f"opcode 0xFD 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead"
+                )
         else:
             opcode = first_byte
             expected_length = _valid_unknowncmd_opcodes[opcode]
             if expected_length == 0:
-                raise InvalidCommandArgumentException(f"do not use UnknownCommand for opcode 0x{opcode:02X}, there is already a class for it")
+                raise InvalidCommandArgumentException(
+                    f"do not use UnknownCommand for opcode 0x{opcode:02X}, there is already a class for it"
+                )
             if len(contents) != expected_length:
-                raise InvalidCommandArgumentException(f"opcode 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead")
+                raise InvalidCommandArgumentException(
+                    f"opcode 0x{opcode:02X} expects {expected_length} total bytes (inclusive), got {len(contents)} bytes instead"
+                )
         self._contents = contents
 
     @property
@@ -1468,7 +1555,21 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
 
 
 class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `(not available in Lazy Shell)`
+
+    ## Opcode
+        `0xFD 0x62`
+
+    ## Size
+        4 bytes
+
+    Args:
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x62])
     _size: int = 4
@@ -1478,7 +1579,21 @@ class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWi
 
 
 class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `(not available in Lazy Shell)`
+
+    ## Opcode
+        `41`
+
+    ## Size
+        4 bytes
+
+    Args:
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x41
     _size: int = 3
@@ -1488,8 +1603,22 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If all of the stated bits are clear on $7000, jump to the script command
-    indicated by the given identifier."""
+    """If all of the stated bits are clear on $7000, jump to the script command indicated by the given identifier.
+
+    ## Lazy Shell command
+        `If memory $7000 all bits {xx} clear...`
+
+    ## Opcode
+        `0xE6`
+
+    ## Size
+        5 bytes
+
+    Args:
+        bits (List[int]): The list of bits (0 to 7) all of which should be clear in order to GOTO.
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE6
     _size: int = 5
@@ -1522,8 +1651,22 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
 
 
 class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If any of the stated bits are set on $7000, go to to the script command
-    indicated by the given identifier."""
+    """If any of the stated bits are set on $7000, go to to the script command indicated by the given identifier.
+
+    ## Lazy Shell command
+        `If memory $7000 any bits {xx} set...`
+
+    ## Opcode
+        `0xE7`
+
+    ## Size
+        5 bytes
+
+    Args:
+        bits (List[int]): The list of bits (0 to 7) any of which should be clear in order to GOTO.
+        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE7
     _size: int = 5
@@ -1556,10 +1699,24 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the given long-term memory bit is set.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Goto a command indicated by its label, but only if the memory bit is set.
+
+    ## Lazy Shell command
+        `If memory $704x bit {xx} set...`
+
+    ## Opcode
+        `0xD8`
+        `0xD9`
+        `0xDA`
+
+    ## Size
+        4 bytes
+
+    Args:
+        bit (Flag): The byte bit that needs to be set for the goto to happen.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 4
     _bit: Flag
@@ -1596,10 +1753,24 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the given long-term memory bit is clear.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Goto a command indicated by its label, but only if the memory bit is clear.
+
+    ## Lazy Shell command
+        `If memory $704x bit {xx} clear...`
+
+    ## Opcode
+        `0xDC`
+        `0xDD`
+        `0xDE`
+
+    ## Size
+        4 bytes
+
+    Args:
+        bit (Flag): The byte bit that needs to be clear for the goto to happen.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 4
     _bit: Flag
@@ -1641,9 +1812,21 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """'Loaded Memory' in most cases refers to the result of a comparison command.
-    Jump to the code indicated by the given identifier if the comparison result was zero
-    (both values were equal)."""
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was zero (both values were equal).
+
+    ## Lazy Shell command
+        `If loaded memory = 0...`
+
+    ## Opcode
+        `0xEA`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xEA
     _size: int = 3
@@ -1655,9 +1838,21 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
 class JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """'Loaded Memory' in most cases refers to the result of a comparison command.
-    Jump to the code indicated by the given identifier if the comparison result indicated
-    that the first value was less than or equal the second value."""
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result indicated that the first value was less than or equal the second value.
+
+    ## Lazy Shell command
+        `If loaded memory >= 0...`
+
+    ## Opcode
+        `0xEF`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xEF
     _size: int = 3
@@ -1667,9 +1862,21 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
 
 
 class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """'Loaded Memory' in most cases refers to the result of a comparison command.
-    Jump to the code indicated by the given identifier if the comparison result indicated
-    that the first value was greater than the second value."""
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to another command (by label) if the comparison result indicated that the first value was greater than the second value.
+
+    ## Lazy Shell command
+        `If loaded memory < 0...`
+
+    ## Opcode
+        `0xEE`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xEE
     _size: int = 3
@@ -1679,9 +1886,21 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
 
 
 class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """'Loaded Memory' in most cases refers to the result of a comparison command.
-    Jump to the code indicated by the given identifier if the comparison result was not zero
-    (values were not equal, irrespective of which was larger or smaller)."""
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
+
+    ## Lazy Shell command
+        `If loaded memory != 0...`
+
+    ## Opcode
+        `0xEB`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xEB
     _size: int = 3
@@ -1691,12 +1910,22 @@ class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJm
 
 
 class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the bit corresponding to the index indicated by the value
-    of $7000 is set.\n
-    For example, if $7000 is set to 5, then this command will jump to the code
-    beginning at the given identifier if $7040 bit 5 is set. If $7000 is set
-    to 12, then the jump will occur if $7041 bit 4 is set."""
+    """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is set.
+    For example, if $7000 is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is set. If $7000 is set to 12, then the jump will occur if $7041 bit 4 is set.
+
+    ## Lazy Shell command
+        `If Memory $704x [x @ $7000] bit set...`
+
+    ## Opcode
+        `0xDB`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xDB
     _size: int = 3
@@ -1706,12 +1935,22 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
 
 
 class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Jump to a point in script bank indicated by the provided identifier,
-    but only if the bit corresponding to the index indicated by the value
-    of $7000 is clear.\n
-    For example, if $7000 is set to 5, then this command will jump to the code
-    beginning at the given identifier if $7040 bit 5 is clear. If $7000 is set
-    to 12, then the jump will occur if $7041 bit 4 is clear."""
+    """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is clear.
+    For example, if $7000 is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is clear. If $7000 is set to 12, then the jump will occur if $7041 bit 4 is clear.
+
+    ## Lazy Shell command
+        `If Memory $704x [x @ $7000] bit clear...`
+
+    ## Opcode
+        `0xDF`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 3
     _opcode: int = 0xDF
@@ -1721,43 +1960,111 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
 
 
 class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """For the literal value currently stored at $7000, set the bit that
-    corresponds to this index (starting from $7040 bit 0).\n
-    For example, if $7000 is set to 5, then $7040 bit 5 will be set. If
-    $700C is set to 12, then $7041 bit 4 will be set."""
+    """For the literal value currently stored at $7000, set the bit that corresponds to this index (starting from $7040 bit 0).
+    For example, if $7000 is set to 5, then $7040 bit 5 will be set. If $7000 is set to 12, then $7041 bit 4 will be set.
+
+    ## Lazy Shell command
+        `Memory $704x [x is @ $7000] bit set`
+
+    ## Opcode
+        `0xA3`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xA3
 
 
 class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """For the literal value currently stored at $7000, clear the bit that
-    corresponds to this index (starting from $7040 bit 0).\n
-    For example, if $7000 is set to 5, then $7040 bit 5 will be cleared. If
-    $700C is set to 12, then $7041 bit 4 will be cleared."""
+    """Add a const number value to a longterm mem var.
+
+    ## Lazy Shell command
+        `Memory $70Ax += ...`
+        `Memory $7000 += ...`
+        `Memory $7xxx += ...`
+
+    ## Opcode
+        `0xA9`
+        `0xAD`
+        `0xB1`
+
+    ## Size
+        3 bytes if the variable is $7000 or a single-byte var
+        4 bytes if the variable is a short var
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to add to
+        value (Union[int, Type[Item]]): The const you want to add to the variable
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xA7
 
 
 class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Copy the 16 bit values stored at $7010, $7012, and $7014
-    to replace the 16 bit values stored at $7016, $7018, and $701A."""
+    """Copy the 16 bit values stored at $7010, $7012, and $7014 to replace the 16 bit values stored at $7016, $7018, and $701A.
+
+    ## Lazy Shell command
+        (not documented in Lazy Shell)
+
+    ## Opcode
+        `0xBE`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBE
 
 
 class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Copy the 16 bit values stored at $7016, $7018, and $701A
-    to replace the 16 bit values stored at $7010, $7012, and $7014."""
+    """Copy the 16 bit values stored at $7016, $7018, and $701A to replace the 16 bit values stored at $7010, $7012, and $7014.
+
+    ## Lazy Shell command
+        (not documented in Lazy Shell)
+
+    ## Opcode
+        `0xBF`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBF
 
 
 class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
-    """Set the given long-term memory variable to the given numerical literal.\n
-    It is recommended to use contextual const names for these variables."""
+    """Set the longterm mem var to a constant number value.
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    ## Lazy Shell command
+        `Memory $70Ax = ...`
+        `Memory $7000 = ...`
+        `Memory $7xxx = ...`
+
+    ## Opcode
+        `0xA8`
+        `0xAC`
+        `0xB0`
+
+    ## Size
+        3 bytes if the variable is $7000 or a single-byte var
+        4 bytes if the variable is a short var
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to set
+        value (Union[int, Type[Item]]): The const you want to set the variable to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def set_value_and_address(
         self,
@@ -1822,7 +2129,21 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `(Don't think this one is available in Lazy Shell)`
+
+    ## Opcode
+        `0x5C`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (int): The address to read from. I don't know what this command does, so this can be any short uint.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5C
     _size: int = 3
@@ -1846,8 +2167,21 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
-    """Set the value of $7000 to the value of any address between
-    $7FF800 and $7FFFFF."""
+    """Set the value of $7000 to the value of any address between $7FF800 and $7FFFFF. This includes long term battle memory like Super Jump PBs.
+
+    ## Lazy Shell command
+        `Memory $7000 = memory $7Fxxxx...`
+
+    ## Opcode
+        `0xFD 0xAC`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (int): The last four hex digits of the var you want to read
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xAC])
     _size: int = 4
@@ -1873,10 +2207,23 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SetBit(UsableEventScriptCommand, EventScriptCommand):
-    """Set a bit in the range of long-term memory bits dedicated for use in
-    event and action scripts.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Set a bit in the range of long-term memory bits dedicated for use in event and action scripts.
+
+    ## Lazy Shell command
+        `Memory $704x bit {xx} set...`
+
+    ## Opcode
+        `0xA0`
+        `0xA1`
+        `0xA2`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit (Flag): The byte bit you wish to set.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _bit: Flag
@@ -1909,10 +2256,23 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ClearBit(UsableEventScriptCommand, EventScriptCommand):
-    """Clear a bit in the range of long-term memory bits dedicated for use in
-    event and action scripts.\n
-    It is recommended to specify the bit using the const names defined for
-    these particular bits."""
+    """Clear a bit in the range of long-term memory bits dedicated for use in event and action scripts.
+
+    ## Lazy Shell command
+        `Memory $704x bit {xx} clear...`
+
+    ## Opcode
+        `0xA4`
+        `0xA5`
+        `0xA6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        bit (Flag): The byte bit you wish to clear.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _size: int = 2
@@ -1949,14 +2309,22 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
         return super().render(opcode, arg)
 
 
-class Set01D8Bit3(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
-
-    _opcode = bytearray([0xFD, 0xFA])
-
-
 class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x8B`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (int): Any 16 bit addr above 0x0158 (?)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x8B])
     _size: int = 3
@@ -1983,7 +2351,22 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x88`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (int): Any 16 bit addr above 0x0158 (?)
+        bit_7 (bool): unknown
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x88])
     _size: int = 3
@@ -2024,7 +2407,22 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x89`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (int): Any 16 bit addr above 0x0158 (?)
+        bit_7 (bool): unknown
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x89])
     _size: int = 3
@@ -2067,13 +2465,51 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
 class Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xC6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xC6])
+    _size: int = 2
 
 
 class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
-    """Copy the value from one variable to another variable."""
+    """Copy the value from one variable to another variable.
+
+    ## Lazy Shell command
+        `Memory $7000 = memory $70Ax...`
+        `Memory $70Ax = memory $7000...`
+        `Memory $7000 = memory $7xxx...`
+        `Memory $7xxx = memory $7000...`
+        `Memory $7xxx = memory $7xxx...`
+
+    ## Opcode
+        `0xB4`
+        `0xB5`
+        `0xBA`
+        `0xBB`
+        `0xBC`
+
+    ## Size
+        3 bytes if neither variable is $7000
+        2 bytes otherwise
+
+    Args:
+        from_var (Union[ShortVar, ByteVar]): The variable you're copying the value **from**.
+        to_var (Union[ShortVar, ByteVar]): The variable you're copying the value **to**.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _from_var: Union[ShortVar, ByteVar]
     _to_var: Union[ShortVar, ByteVar]
@@ -2137,7 +2573,22 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x90`
+
+    ## Size
+        4 bytes
+
+    Args:
+        value_1 (int): Unknown 8 bit int
+        value_2 (int): Unknown 8 bit int
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x90])
     _size: int = 4
@@ -2174,49 +2625,157 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Store00To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xFC`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xFC])
 
 
 class Store00To0334(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x93`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x93])
 
 
 class Store01To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xFB`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xFB])
 
 
 class Store01To0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0x92`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x92])
 
 
 class Store02To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xFD`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xFD])
 
 
 class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        0xFD 0x91``
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x91])
 
 
 class Set7000ToMinecartTimer(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Set the value of $7000 to the latest value of the minecraft timer."""
+    """Set the value of $7000 to the latest value of the minecraft timer.
+
+    ## Lazy Shell command
+        `Memory $7000 = Moleville Mountain timer`
+
+    ## Opcode
+        `0xFD 0xB8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB8])
 
 
 class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        Registers as `Memory $704x bit {xx} set`, but this might be erroneous because that command's opcode is 0xA0 (no FD).
+        Might not truly have a representative Lazy Shell command.
+
+    ## Opcode
+        `0xFD 0xA8`
+        `0xFD 0xA9`
+        `0xFD 0xAA`
+
+    ## Size
+        3 bytes
+
+    Args:
+        bit (Flag): Description here to be filled out by me
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 3
     _bit: Flag
@@ -2249,7 +2808,22 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SwapVars(UsableEventScriptCommand, EventScriptCommand):
-    """Switch the values stored at two variables between each other."""
+    """Swap the two variables' vales.
+
+    ## Lazy Shell command
+        `Memory $7xxx <=> memory $7xxx...`
+
+    ## Opcode
+        `0xBD`
+
+    ## Size
+        3 bytes
+
+    Args:
+        from_var (ShortVar): The first of the two variables you want to swap.
+        to_var (ShortVar): The second of the two variables you want to swap.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xBD
     _size: int = 3
@@ -2292,8 +2866,27 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
 
 
 class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
-    """Add the given numerical literal to the given long-term memory variable.\n
-    It is recommended to use contextual const names for these variables."""
+    """Add a const number value to a longterm mem var.
+
+    ## Lazy Shell command
+        `Memory $70Ax += ...`
+        `Memory $7000 += ...`
+        `Memory $7xxx += ...`
+
+    ## Opcode
+        `0xA9`
+        `0xAD`
+        `0xB1`
+
+    ## Size
+        3 bytes if the variable is $7000 or a single-byte var
+        4 bytes if the variable is a short var
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to add to
+        value (Union[int, Type[Item]]): The const you want to add to the variable
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _value: Union[UInt8, UInt16]
     _address: Union[ShortVar, ByteVar]
@@ -2355,7 +2948,26 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
-    """Increase the given variable by 1."""
+    """Increase a variable by 1.
+
+    ## Lazy Shell command
+        `Memory $70Ax += 1...`
+        `Memory $7000 += 1`
+        `Memory $7xxx += 1...`
+
+    ## Opcode
+        `0xAA`
+        `0xAE`
+        `0xB2`
+
+    ## Size
+        1 byte if the variable is $7000
+        2 bytes if any other variable
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to increase by 1
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if isinstance(self.address, ByteVar):
@@ -2370,7 +2982,26 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
 
 
 class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
-    """Decrease the given variable by 1."""
+    """Decrease a variable by 1.
+
+    ## Lazy Shell command
+        `Memory $70Ax -= 1...`
+        `Memory $7000 -= 1`
+        `Memory $7xxx -= 1...`
+
+    ## Opcode
+        `0xAB`
+        `0xAF`
+        `0xB3`
+
+    ## Size
+        1 byte if the variable is $7000
+        2 bytes if any other variable
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to decrease by 1
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if isinstance(self.address, ByteVar):
@@ -2385,14 +3016,42 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
 
 
 class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """Add the value stored at the given variable to $7000."""
+    """Add the value stored at the given variable to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 += memory $7xxx...`
+
+    ## Opcode
+        `0xB8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to add to $7000
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB8
     _size: int = 2
 
 
 class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """Subtract the value stored at the given variable to $7000."""
+    """Subtract the value stored at the given variable from $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 -= memory $7xxx...`
+
+    ## Opcode
+        `0xB9`
+
+    ## Size
+        2 bytes
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to subtract from $7000
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xB9
     _size: int = 2
@@ -2402,15 +3061,41 @@ class GenerateRandomNumFromRangeVar(
     UsableEventScriptCommand, EventScriptCommandShortMem
 ):
     """Use the value of the given variable as an upper range
-    to generate a random number with between 0 and that value."""
+    to generate a random number with between 0 and that value.
+
+        ## Lazy Shell command
+            `Generate random # between 0 and memory $7xxx...`
+
+        ## Opcode
+            `0xFD 0xB7`
+
+        ## Size
+            3 bytes
+
+        Args:
+            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB7])
     _size: int = 3
 
 
 class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """There is a 2/3 chance that, when this command is executed, a goto will be performed
-    to the command indicated by the given identifier."""
+    """There is a 2/3 chance that, when this command is executed, the script will jump to one of the two commands indicated by label.
+
+    ## Lazy Shell command
+        `If random # between 0 and 255 > 66...`
+
+    ## Opcode
+        `0xE9`
+
+    ## Size
+        5 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of the two commands that there should be a 33% chance to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE9
     _size: int = 5
@@ -2420,8 +3105,21 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """There is a 50/50 chance that, when this command is executed, a goto will be performed
-    to the command indicated by the given identifier."""
+    """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given identifier.
+
+    ## Lazy Shell command
+        `If random # between 0 and 255 > 128...`
+
+    ## Opcode
+        `0xE8`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command that there should be a 50% chance to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xE8
     _size: int = 3
@@ -2431,8 +3129,25 @@ class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly):
-    """Set the given variable to a random number between 0 and the
-    given upper bound."""
+    """Set the given variable to a random number between 0 and the given upper bound.
+
+    ## Lazy Shell command
+        `Memory $7000 = random # between 0 and {xx}...`
+        `Memory $7xxx = random # between 0 and {xx}...`
+
+    ## Opcode
+        `0xB6`
+        `0xB7`
+
+    ## Size
+        3 bytes if the variable is $7000
+        4 bytes otherwise
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to set
+        value (int): The upper bound of possible random values (lower bound is always 0). 16 bit int.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if self.address == PRIMARY_TEMP_7000:
@@ -2443,9 +3158,26 @@ class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndVal
 class CompareVarToConst(
     UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly
 ):
-    """Compare the value stored at a given variable to a literal constant.
-    The result of this comparison can be used in JmpIfComparisonResultIs... commands
-    or JmpIfLoadedMemory... commands."""
+    """Compare a variable's value to a constant number.
+    The result of this comparison can be used in `JmpIfComparisonResultIs...` commands or `JmpIfLoadedMemory...` commands.
+
+    ## Lazy Shell command
+        `Memory $7000 compare to {xx}...`
+        `Memory $7xxx compare to...`
+
+    ## Opcode
+        `0xC0`
+        `0xC2`
+
+    ## Size
+        3 bytes if the variable is $7000
+        4 bytes otherwise
+
+    Args:
+        address (ShortVar): The variable in question
+        value (Union[int, Type[Item]]): The constant number to compare the variable to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def render(self) -> bytearray:
         if self.address == PRIMARY_TEMP_7000:
@@ -2465,8 +3197,22 @@ class CompareVarToConst(
 
 class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Compare the value stored at $7000 to the value stored at a given variable.
-    The result of this comparison can be used in JmpIfComparisonResultIs... commands
-    or JmpIfLoadedMemory... commands."""
+    The result of this comparison can be used in `JmpIfComparisonResultIs`... commands
+    or `JmpIfLoadedMemory`... commands.
+
+    ## Lazy Shell command
+        `Memory $7000 compare to memory $7xxx...`
+
+    ## Opcode
+        `0xC1`
+
+    ## Size
+        2 bytes
+
+    Args:
+        address (ShortVar): The variable to compare $7000 against
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xC1
     _size: int = 2
@@ -2475,9 +3221,21 @@ class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
 class JmpIfComparisonResultIsGreaterOrEqual(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """Depending on the result of an earlier CompareVarToConst or Compare7000ToVar,
-    jump to the code indicated by the given identifier if the comparison result
-    returned greater or equal."""
+    """Depending on the result of an earlier `CompareVarToConst` or `Compare7000ToVar`, jump to another command (by label) if the comparison result returned greater or equal.
+
+    ## Lazy Shell command
+        `If comparison result is: >=...`
+
+    ## Opcode
+        `0xEC`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xEC
     _size = 3
@@ -2489,9 +3247,21 @@ class JmpIfComparisonResultIsGreaterOrEqual(
 class JmpIfComparisonResultIsLesser(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """Depending on the result of an earlier CompareVarToConst or Compare7000ToVar,
-    jump to the code indicated by the given identifier if the comparison result
-    returned lesser."""
+    """Depending on the result of an earlier `CompareVarToConst` or `Compare7000ToVar`, jump to another command (by label) if the comparison result returned lesser.
+
+    ## Lazy Shell command
+        `If comparison result is: <...`
+
+    ## Opcode
+        `0xED`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xED
     _size = 3
@@ -2501,8 +3271,28 @@ class JmpIfComparisonResultIsLesser(
 
 
 class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the given variable matches the given value, jump to the section of code
-    beginning with the given identifier."""
+    """If the given variable matches the given value, jump to the section of code beginning with the given identifier.
+
+    ## Lazy Shell command
+        `If memory $70Ax = ...`
+        `If memory $7000 = ...`
+        `If memory $7xxx = ...`
+
+    ## Opcode
+        `0xE0`
+        `0xE2`
+        `0xE4`
+
+    ## Size
+        5 bytes if `address` is $7000
+        6 bytes otherwise
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to check
+        value (Union[int, Type[Item]]): The value to check the variable against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable equals the value.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _value: Union[UInt8, UInt16]
     _address: Union[ShortVar, ByteVar]
@@ -2573,8 +3363,28 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the given variable does not match the given value, jump to the section of code
-    beginning with the given identifier."""
+    """If the given variable does not match the given value, jump to the section of code beginning with the given identifier.
+
+    ## Lazy Shell command
+        `If memory $70Ax != ...`
+        `If memory $7000 != ...`
+        `If memory $7xxx != ...`
+
+    ## Opcode
+        `0xE1`
+        `0xE3`
+        `0xE5`
+
+    ## Size
+        5 bytes if `address` is $7000
+        6 bytes otherwise
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to check
+        value (Union[int, Type[Item]]): The value to check the variable against
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable doesn't equal the value.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _value: Union[UInt8, UInt16]
     _address: Union[ShortVar, ByteVar]
@@ -2645,52 +3455,145 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
 
 
 class Mem7000AndConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
-    """Perform an AND operation between the value of $7000 and a given literal number,
-    save the result to $7000."""
+    """Perform a bitwise AND operation between the value of $7000 and a given literal number, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 &= {xx}...`
+
+    ## Opcode
+        `0xFD 0xB0`
+
+    ## Size
+        4 bytes
+
+    Args:
+        value (int): A number (up to 16 bits) to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB0])
 
 
 class Mem7000AndVar(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """Perform an AND operation between the value of $7000 and a given variable,
-    save the result to $7000."""
+    """Perform a bitwise AND operation between the value of $7000 and another variable, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 &= memory $7xxx...`
+
+    ## Opcode
+        `0xFD 0xB3`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB3])
     _size: int = 3
 
 
 class Mem7000OrConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
-    """Perform an OR operation between the value of $7000 and a given literal number,
-    save the result to $7000."""
+    """Perform a bitwise OR operation between the value of $7000 and a given literal number, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 |= {xx}...`
+
+    ## Opcode
+        `0xFD 0xB1`
+
+    ## Size
+        4 bytes
+
+    Args:
+        value (int): A number (up to 16 bits) to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB1])
 
 
 class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """Perform an OR operation between the value of $7000 and a given variable,
-    save the result to $7000."""
+    """Perform a bitwise OR operation between the value of $7000 and another variable, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 &= memory $7xxx...`
+
+    ## Opcode
+        `0xFD 0xB4`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB4])
     _size: int = 3
 
 
 class Mem7000XorConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
-    """Perform a XOR operation between the value of $7000 and a given literal number,
-    save the result to $7000."""
+    """Perform a bitwise XOR operation between the value of $7000 and a given literal number, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 ^= {xx}...`
+
+    ## Opcode
+        `0xFD 0xB2`
+
+    ## Size
+        4 bytes
+
+    Args:
+        value (int): A number (up to 16 bits) to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB2])
 
 
 class Mem7000XorVar(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """Perform a XOR operation between the value of $7000 and a given variable,
-    save the result to $7000."""
+    """Perform a bitwise XOR operation between the value of $7000 and another variable, save the result to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 ^= memory $7xxx...`
+
+    ## Opcode
+        `0xFD 0xB5`
+
+    ## Size
+        3 bytes
+
+    Args:
+        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB5])
     _size: int = 3
 
 
 class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
-    """Shift the specified variable to the left by the given amount of bits."""
+    """Shift the specified variable to the left by the given amount of bits.
+
+    ## Lazy Shell command
+        `Memory $7xxx shift left {xx} times...`
+
+    ## Opcode
+        `0xFD 0xB6`
+
+    ## Size
+        4 bytes
+
+    Args:
+        address (ShortVar): The variable to have its value shifted.
+        shift (int): The amount of bits to shift the value left by.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xB6])
     _size: int = 4
@@ -2730,7 +3633,22 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
 class MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2(
     UsableEventScriptCommand, EventScriptCommand
 ):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xC8`
+
+    ## Size
+        4 bytes
+
+    Args:
+        adding (int): Description here to be filled out by me
+        multiplying (int): Description here to be filled out by me
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xC8])
     _size: int = 4
@@ -2767,7 +3685,20 @@ class MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2(
 
 
 class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        (not available in Lazy Shell)
+
+    ## Opcode
+        `0xFD 0xFE`
+
+    ## Size
+        ? bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xFE])
 
@@ -2777,10 +3708,25 @@ class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
-    The included action script must complete before the parent event script
-    is allowed to continue.\n
-    Unlike `StartAcyncEmbeddedActionScript`, this cannot be forcibly stopped
-    with `StopEmbeddedActionScript`."""
+    The included action script must complete before the parent event script is allowed to continue.
+
+    Unlike `StartAcyncEmbeddedActionScript`, this cannot be forcibly stopped with `StopEmbeddedActionScript`.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, action queue option, asynchronous case)
+
+    ## Opcode
+        The object ID and then the length of the subscript in bytes
+
+    ## Size
+        The subscript size in bytes plus 2
+
+    Args:
+        target (AreaObject): The actor that this action queue should apply to
+        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def __init__(
         self,
@@ -2797,10 +3743,25 @@ class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
 
 class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
-    The included action script does not need to achieve completion in order
-    for the parent event script to continue.\n
-    Unlike `StartSyncEmbeddedActionScript`, this cannot be forcibly stopped
-    with `StopEmbeddedActionScript`."""
+    The included action script does not need to achieve completion in order for the parent event script to continue.
+
+    Unlike `StartSyncEmbeddedActionScript`, this cannot be forcibly stopped with `StopEmbeddedActionScript`.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, action queue option, synchronous case)
+
+    ## Opcode
+        The object ID and then the length of the subscript in bytes
+
+    ## Size
+        The subscript size in bytes plus 2
+
+    Args:
+        target (AreaObject): The actor that this action queue should apply to
+        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def __init__(
         self,
@@ -2817,9 +3778,24 @@ class StartAsyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
 ):
     """The specified NPC performs the given set of action script commands.
-    The included action script must complete before the parent event script
-    is allowed to continue.\n
-    Unlike `ActionQueueAsync`, this can be forcibly stopped with `StopEmbeddedActionScript`.
+    The included action script must complete before the parent event script is allowed to continue.
+
+    Unlike `ActionQueueAsync`, this **can** be forcibly stopped with `StopEmbeddedActionScript`.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, action queue option, asynchronous case)
+
+    ## Opcode
+        The object ID, the prefix (0xF0 0r 0xF1), and then the length of the subscript in bytes
+
+    ## Size
+        The subscript size in bytes plus 3
+
+    Args:
+        target (AreaObject): The actor that this action queue should apply to
+        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
@@ -2838,9 +3814,24 @@ class StartSyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
 ):
     """The specified NPC performs the given set of action script commands.
-    The included action script does not need to achieve completion in order
-    for the parent event script to continue.\n
+    The included action script does not need to achieve completion in order for the parent event script to continue.
+
     Unlike `ActionQueueSync`, this can be forcibly stopped with `StopEmbeddedActionScript`.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, action queue option, synchronous case)
+
+    ## Opcode
+        The object ID, the prefix (0xF0 0r 0xF1), and then the length of the subscript in bytes
+
+    ## Size
+        The subscript size in bytes plus 3
+
+    Args:
+        target (AreaObject): The actor that this action queue should apply to
+        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
@@ -2860,9 +3851,21 @@ class NonEmbeddedActionQueue(UsableEventScriptCommand, NonEmbeddedActionQueuePro
     When assembled, these queues contain no header to indicate where they begin.
     The game understands  where these scripts are intended to begin via ASM that
     exists outside of the scope of the script bank.\n
-    Do not change the relative starting index of non-embedded action queues.
+    Do not allow the non-embedded action queue's starting address to exceed where it was in the original game.
     If there were 100 bytes in the event before a non-embedded action queue begins,
-    there must always be 100 bytes in the event before the non-embedded action queue begins.
+    there must always be 100 bytes in the event before the non-embedded action queue begins. If your code has less than 100 bytes before the NEAQ begins, the bank rendering method will fill enough space to put the NEAQ where it belongs.
+
+    ## Lazy Shell command
+        None, this is hardcoded in the game
+
+    ## Opcode
+        None, this begins at an arbitrary address set by the game
+
+    ## Size
+        The size of the subscript in bytes. No header.
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
 
@@ -2928,9 +3931,23 @@ class SetAsyncActionScript(
     _SetActionScript,
     UsableEventScriptCommand,
 ):
-    """Force a given NPC to run an action script by ID.\n
-    It is recommended to use contextual action script ID constant names for this.
+    """Force an actor to run an action script by ID.
     The action script must complete before further commands in the event script can run.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, set action script (sync))
+
+    ## Opcode
+        The object ID followed by `0xF3`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The actor that this action script should apply to
+        action_script_id (int): The ID of the action script for the target to be animated by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
@@ -2943,10 +3960,24 @@ class SetAsyncActionScript(
 
 
 class SetSyncActionScript(_SetActionScript, UsableEventScriptCommand):
-    """Force a given NPC to run an action script by ID.\n
-    It is recommended to use contextual action script ID constant names for this.
-    The action script does not need to complete before
-    further commands in the event script can run."""
+    """Force an actor to run an action script by ID.
+    The action script does not need to complete before further commands in the event script can run.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, set action script (async))
+
+    ## Opcode
+        The object ID followed by `0xF2`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The actor that this action script should apply to
+        action_script_id (int): The ID of the action script for the target to be animated by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def __init__(
         self,
@@ -3017,10 +4048,25 @@ class _SetTempActionScript(EventScriptCommand):
 
 
 class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
-    """The specified NPC performs the given set of action script commands.
-    The NPC will resume their original assigned action script upon completion
-    The included action script must complete before the parent event script
-    is allowed to continue."""
+    """The specified actor acts out an action script by ID.
+    The actor will resume their original assigned action script upon completion.
+    This temporary action script must complete before the parent event script is allowed to continue.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, set temp action script (async))
+
+    ## Opcode
+        The object ID followed by `0xF5`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The actor that this action script should apply to
+        action_script_id (int): The ID of the action script for the target to be animated by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def __init__(
         self,
@@ -3032,10 +4078,25 @@ class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
 
 
 class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
-    """The specified NPC performs the given set of action script commands.
-    The NPC will resume their original assigned action script upon completion
-    The action script does not need to complete before
-    further commands in the event script can run."""
+    """The specified actor acts out an action script by ID.
+    The actor will resume their original assigned action script upon completion.
+    The action script does not need to complete before further commands in the event script can run.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, set temp action script (sync))
+
+    ## Opcode
+        The object ID followed by `0xF4`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The actor that this action script should apply to
+        action_script_id (int): The ID of the action script for the target to be animated by
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     def __init__(
         self,
@@ -3048,7 +4109,22 @@ class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
 
 class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Changes an async script (blocks the progression of the main thread until completion) to
-    a sync script (runs simultaneously with other event script commands)."""
+    a sync script (runs simultaneously with other event script commands).
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, un-sync action script)
+
+    ## Opcode
+        The object ID followed by `0xF6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor that this action script should apply to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3071,10 +4147,23 @@ class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
-    """Summon the specified NPC to the given level.\n
-    This will not really do anything if the NPC has not already been
-    removed from the given level.\n
-    It is recommended to use contextual room constant names for this."""
+    """Summon a NPC to the given level by its NPC ID within the level.
+    This will not really do anything if the NPC has not already been removed from the given level.
+
+    ## Lazy Shell command
+        `"Object {xx}'s presence in level {xx} is...` (present case only)
+
+    ## Opcode
+        `0xF2`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target_npc (AreaObject): The field object to make present in the level. Use the pre-defined ones in area_objects.py.
+        level_id (int): The level to make the object present in.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF2
     _size: int = 3
@@ -3114,7 +4203,23 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
-    """The specified NPC will become present in the level (`visible` set to true)."""
+    """
+    The target actor will become present in the level (`visible` set to true).
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, summon to current level)
+
+    ## Opcode
+        The object ID followed by `0xF8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to make visible
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3139,8 +4244,23 @@ class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
 class SummonObjectToCurrentLevelAtMariosCoords(
     UsableEventScriptCommand, EventScriptCommand
 ):
-    """The specified NPC will become present in the level (`visible` set to true)
-    and teleported to the player's current coordinates."""
+    """The specified actor will become present in the level (`visible` set to true)
+    and teleported to the player's current coordinates.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, summon to current level @ Mario's coords)
+
+    ## Opcode
+        The object ID followed by `0xF7`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to make visible and teleport
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3165,17 +4285,43 @@ class SummonObjectToCurrentLevelAtMariosCoords(
 class SummonObjectAt70A8ToCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
-    interacted with) will be summoned to the current level.\n
-    This provides no effect if the NPC in question has not already been removed from the level.
+    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player interacted with) will be summoned to the current level.
+    This has no effect if the NPC has not already been removed from the level.
+
+    ## Lazy Shell command
+        `Summon object @ $70A8 to current level`
+
+    ## Opcode
+        `0xF4`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xF4
 
 
 class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
-    """The specified NPC will be removed from the given level
-    (`visible` set to false)."""
+    """Remove a NPC from the given level by its NPC ID within the level.
+    This will not really do anything if the NPC has already been removed from the given level.
+
+    ## Lazy Shell command
+        `"Object {xx}'s presence in level {xx} is...` (absent case only)
+
+    ## Opcode
+        `0xF2`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target_npc (AreaObject): The field object to remove in the level. Use the pre-defined ones in area_objects.py.
+        level_id (int): The level to remove the object from.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF2
     _size: int = 3
@@ -3217,7 +4363,22 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
 
 
 class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
-    """The specified NPC will no longer be present in the level (`visible` set to false)."""
+    """The specified NPC will no longer be present in the level (`visible` set to false).
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, remove from current level)
+
+    ## Opcode
+        The object ID followed by `0xF9`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to make invisible
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3242,17 +4403,43 @@ class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand)
 class RemoveObjectAt70A8FromCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
-    interacted with) will be removed from the current level.\n
-    This provides no effect if the NPC in question has already been removed from the level.
+    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player interacted with) will be removed from the current level.
+    This has no effect if the NPC has already been removed from the level.
+
+    ## Lazy Shell command
+        `Remove object @ $70A8 in current level`
+
+    ## Opcode
+        `0xF5`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xF5
 
 
 class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
-    """The given NPC's action script will pause until a `ResumeActionScript`
-    command runs with the same NPC as the target."""
+    """The actor's action script will pause until a `ResumeActionScript`
+    command runs for the same actor target.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, pause action script)
+
+    ## Opcode
+        The object ID followed by `0xFA`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor whose animation to pause
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3275,7 +4462,23 @@ class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
-    """Resumes a paused action script for the target NPC."""
+    """Resumes a paused action script for the target actor.
+    This probably won't do anything if there was no `PauseActionScript` before this.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, resume action script)
+
+    ## Opcode
+        The object ID followed by `0xFB`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor whose paused animation to resume
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3298,7 +4501,22 @@ class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
 
 
 class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
-    """The specified NPC will become interact-able."""
+    """The specified actor can now be interacted with.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, enable trigger)
+
+    ## Opcode
+        The object ID followed by `0xFC`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor whose trigger to enable
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3321,7 +4539,22 @@ class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
 
 
 class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
-    """The specified NPC will enter a state in which it cannot be interacted with."""
+    """The actor will enter a state in which it cannot be interacted with.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, disable trigger)
+
+    ## Opcode
+        The object ID followed by `0xFD`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to disable interactions for
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3344,10 +4577,23 @@ class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
 
 
 class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
-    """Enable the object trigger of the NPC to the given level.\n
-    This will not really do anything if the NPC's object trigger has not already been
-    removed from the given level.\n
-    It is recommended to use contextual room constant names for this."""
+    """Enable the object trigger of the NPC to the given level.
+    This will not really do anything if the NPC's object trigger has not already been disabled in the given level.
+
+    ## Lazy Shell command
+        `Object {xx}'s event trigger is...` (activated case only)
+
+    ## Opcode
+        `0xF3`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC whose object trigger to enable. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room in which the NPC whose object trigger is being enabled lives
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF3
     _size: int = 3
@@ -3390,10 +4636,23 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
 
 
 class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
-    """Disable the object trigger of the NPC to the given level.\n
-    This will not really do anything if the NPC's object trigger has already been
-    removed from the given level.\n
-    It is recommended to use contextual room constant names for this."""
+    """Disable the object trigger of the NPC to the given level.
+    This will not really do anything if the NPC's object trigger has not already been enabled in the given level.
+
+    ## Lazy Shell command
+        `Object {xx}'s event trigger is...` (deactivated case only)
+
+    ## Opcode
+        `0xF3`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC whose object trigger to disable. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room in which the NPC whose object trigger is being disabled lives
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF3
     _size: int = 3
@@ -3439,14 +4698,22 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
 class EnableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
-    interacted with) will have its object trigger enabled.\n
-    Because you can't interact with a disabled NPC in order to automatically write it to
-    $70A8 in the first place, this would require manually writing a value to $70A8 in order
-    to use this command, and thus you won't see it very often as other similar commands
-    are more useful.\n
-    This provides no effect if the NPC in question has not already
-    had its object trigger disabled."""
+    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player interacted with) will have its object trigger enabled.
+    Because you can't interact with a disabled NPC in order to automatically write it to $70A8 in the first place, this would require manually writing a value to $70A8 in order to use this command, and thus you won't see it very often as other similar commands are more useful.
+    This provides no effect if the NPC in question has not already had its object trigger disabled.
+
+    ## Lazy Shell command
+        `Enable event trigger for object @ 70A8`
+
+    ## Opcode
+        `0xF6`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF6
 
@@ -3454,10 +4721,21 @@ class EnableTriggerOfObjectAt70A8InCurrentLevel(
 class DisableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
-    interacted with) will have its object trigger disabled.\n
-    This provides no effect if the NPC in question has already
-    had its object trigger disabled."""
+    """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player interacted with) will have its object trigger disabled.
+    This provides no effect if the NPC in question has already had its object trigger disabled.
+
+    ## Lazy Shell command
+        `Disable event trigger for object @ 70A8`
+
+    ## Opcode
+        `0xF7`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF7
 
@@ -3465,7 +4743,22 @@ class DisableTriggerOfObjectAt70A8InCurrentLevel(
 class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
     """If the NPC is running an action script that was applied to it
     via an `EmbeddedActionScript` (not an `ActionQueue`), this command
-    will stop it regardless of how far along in its execution it is."""
+    will stop it regardless of how far along in its execution it is.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, stop embedded action script)
+
+    ## Opcode
+        The object ID followed by `0xFE`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to disable an animation for
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3488,7 +4781,22 @@ class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
-    """The given NPC will return to the coordinates as set in the room definition."""
+    """The given NPC will return to the coordinates as set in the room definition.
+
+    ## Lazy Shell command
+        `Objects (allies, NPCs, screens)...`
+        (any object, reset coords)
+
+    ## Opcode
+        The object ID followed by `0xFF`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The actor to reset the position for
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _target: AreaObject
@@ -3513,8 +4821,23 @@ class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
 
 
 class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Create a packet spawning at any NPC's current coordinates.\n
-    It is recommended to use contextual packet name constants for this."""
+    """Create a packet spawning at any NPC's current coordinates.
+
+    ## Lazy Shell command
+        `Create NPC @ object {xx}'s (x,y,z)...`
+
+    ## Opcode
+        `0x3E`
+
+    ## Size
+        5 bytes
+
+    Args:
+        packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
+        target_npc (AreaObject): The field object whose coordinates to spawn the packet at. Use the pre-defined ones in area_objects.py.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x3E
     _size: int = 5
@@ -3556,9 +4879,22 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
 
 
 class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Create a packet at pixel coordinates determined by the current values of
-    $7010, $7012, and $7014.\n
-    It is recommended to use contextual packet name constants for this."""
+    """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014.
+
+    ## Lazy Shell command
+        `Create NPC @ (x,y,z) of $7010-15...`
+
+    ## Opcode
+        `0x3F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x3F
     _size: int = 4
@@ -3588,11 +4924,23 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Create a packet at pixel coordinates determined by the current values of
-    $7010, $7012, and $7014. When touched, the packet will run the event
-    specified by the given ID.\n
-    It is recommended to use contextual packet name constants and
-    contextual event name contants for this."""
+    """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014. When touched, the packet will run the event specified by the given ID.\n
+
+    ## Lazy Shell command
+        `Create NPC + event {xx} @ (x,y,z) of $7010-15...`
+
+    ## Opcode
+        `0xFD 0x3E`
+
+    ## Size
+        7 bytes
+
+    Args:
+        packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
+        event_id (int): The ID of the event that should run when the spawned packet is touched.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x3E])
     _size: int = 7
@@ -3637,32 +4985,99 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
 
 class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """All NPCs in the room will have their current actions frozen until the next
-    `Return` command is run."""
+    `Return` command is run.
+
+    ## Lazy Shell command
+        `Freeze all NPCs until return`
+
+    ## Opcode
+        `0x30`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x30
 
 
 class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Cancels any commands that have frozen NPCs in the room."""
+    """Cancels any commands that have frozen NPCs in the room.
+
+    ## Lazy Shell command
+        `Unfreeze all NPCs`
+
+    ## Opcode
+        `0x31`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x31
 
 
 class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The camera will no longer adjust to the player's position."""
+    """The camera will no longer adjust to the player's position.
+
+    ## Lazy Shell command
+        `Freeze screen`
+
+    ## Opcode
+        `0x31`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x31])
 
 
 class UnfreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The camera will resume following the player's position."""
+    """The camera will resume following the player's position.
+
+    ## Lazy Shell command
+        `Unfreeze screen`
+
+    ## Opcode
+        `0x30`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x30])
 
 
 class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently on top of the specific NPC,
-    go to the section of code beginning with the specified identifier."""
+    go to the command matching the destination label.
+
+        ## Lazy Shell command
+            `If Mario on top of object {xx}...`
+
+        ## Opcode
+            `0x39`
+
+        ## Size
+            4 bytes
+
+        Args:
+            target (AreaObject): The NPC to check if a player is on
+            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if Mario is on the NPC.
+            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x39
     _size: int = 4
@@ -3692,8 +5107,22 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Accepts two identifiers for commands to go to:\n
-    One in the case where Mario is on top of any object, and
-    one in the case where Mario is not on top of any object."""
+    One in the case where the player is on top of any object, and
+    one in the case where the player is not on top of any object.
+
+    ## Lazy Shell command
+        `If Mario is on top of an object...`
+
+    ## Opcode
+        `0x42`
+
+    ## Size
+        5 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly two `str`s. The first one should be the label of a command to jump to if the player **is** on another NPC and the second should be the label of the command to jump to if the player **is not** on an NPC.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x42
     _size: int = 5
@@ -3703,8 +5132,22 @@ class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWith
 
 
 class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the specified NPC is currently airborne,
-    jump to the code section beginning with the specified identifier."""
+    """If the specified NPC is currently airborne, jump to the command matching the label.
+
+    ## Lazy Shell command
+        `If object {xx} is in the air...`
+
+    ## Opcode
+        `0xFD 0x3D`
+
+    ## Size
+        5 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is airborne.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x3D])
     _size: int = 5
@@ -3733,9 +5176,23 @@ class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the specified NPC is not present in the specified level,
-    jump to the code section beginning with the specified identifier.\n
-    It is recommended to use contextual room constant names for this."""
+    """If the specified NPC is present in the specified level, jump to the command matching the specified label.
+
+    ## Lazy Shell command
+        `If object {xx} is present in level {xx}...` (present case only)
+
+    ## Opcode
+        `0xF8`
+
+    ## Size
+        5 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room to check for the NPC
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF8
     _size: int = 5
@@ -3779,8 +5236,22 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
 
 
 class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the specified NPC is not present in the current level,
-    jump to the code section beginning with the specified identifier."""
+    """If the specified NPC is present in the current level, jump to the code section beginning with the specified identifier.
+
+    ## Lazy Shell command
+        `If object {xx} present in current level...`
+
+    ## Opcode
+        `0x32`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x32
     _size: int = 4
@@ -3811,8 +5282,23 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
 class JmpIfObjectNotInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """If the specified NPC is not present in the specified level,
-    jump to the code section beginning with the specified identifier."""
+    """If the specified NPC is not present in the specified level, jump to the command matching the specified label.
+
+    ## Lazy Shell command
+        `If object {xx} is present in level {xx}...` (absent case only)
+
+    ## Opcode
+        `0xF8`
+
+    ## Size
+        5 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room to check for the NPC
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is absent from the level.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xF8
     _size: int = 5
@@ -3859,9 +5345,23 @@ class JmpIfObjectNotInSpecificLevel(
 class JmpIfObjectTriggerEnabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """If the specified NPC is currently interact-able in the specified level,
-    jump to the code section beginning with the specified identifier.\n
-    It is recommended to use contextual room constant names for this."""
+    """If the NPC is interactable in the specified level, jump to the command matching the specified label.
+
+    ## Lazy Shell command
+        `If object {xx}'s event trigger in level {xx} is...` (enabled case only)
+
+    ## Opcode
+        `0xFD 0xF0`
+
+    ## Size
+        6 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room to check for the NPC's object trigger
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is enabled.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xF0])
     _size: int = 6
@@ -3907,9 +5407,23 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
 class JmpIfObjectTriggerDisabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """If the specified NPC is not currently interact-able in the specified level,
-    jump to the code section beginning with the specified identifier.\n
-    It is recommended to use contextual room constant names for this."""
+    """If the NPC is disabled/non-interactable in the specified level, jump to the command matching the specified label.
+
+    ## Lazy Shell command
+        `If object {xx}'s event trigger in level {xx} is...` (disabled case only)
+
+    ## Opcode
+        `0xFD 0xF0`
+
+    ## Size
+        6 bytes
+
+    Args:
+        target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
+        level_id (int): The ID of the room to check for the NPC's object trigger
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xF0])
     _size: int = 6
@@ -3955,7 +5469,22 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
 
 class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is underwater in the current level,
-    jump to the code section beginning with the specified identifier."""
+    jump to the code section beginning with the specified identifier.
+
+        ## Lazy Shell command
+            `If object {xx} is underwater...`
+
+        ## Opcode
+            `0xFD 0x34`
+
+        ## Size
+            5 bytes
+
+        Args:
+            target (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
+            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x34])
     _size: int = 5
@@ -3986,8 +5515,23 @@ class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJm
 class JmpIfObjectActionScriptIsRunning(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """If the specified NPC's action script is not paused or stopped',
-    jump to the code section beginning with the specified identifier."""
+    """If the NPC's action script is not paused or stopped,
+    jump to the command with the specified label.
+
+        ## Lazy Shell command
+            `If object {xx}'s action script running...`
+
+        ## Opcode
+            `0xFD 0x33`
+
+        ## Size
+            5 bytes
+
+        Args:
+            target (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
+            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x33])
     _size: int = 5
@@ -4019,7 +5563,25 @@ class JmpIfObjectsAreLessThanXYStepsApart(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
     """If the two given NPCs are less than the given number of steps
-    apart (ignoring Z axis), go to the section of code indicated by the identifier."""
+    apart (ignoring Z axis), go to the section of code indicated by the identifier.
+
+    ## Lazy Shell command
+        `If object A & B < (x,y) steps and infinite Z coords apart...`
+
+    ## Opcode
+        `0x3A`
+
+    ## Size
+        7 bytes
+
+    Args:
+        object_1 (AreaObject): The first NPC to compare. Use the pre-defined ones in area_objects.py.
+        object_2 (AreaObject): The second NPC to compare. Use the pre-defined ones in area_objects.py.
+        x (int): The x component of the step threshold that the NPCs can be separated by.
+        y (int): The y component of the step threshold that the NPCs can be separated by.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x3A
     _size: int = 7
@@ -4084,14 +5646,32 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         self.set_y(y)
 
     def render(self) -> bytearray:
-        return super().render(self.object_1, self.object_2, self.x, self.y, *self.destinations)
+        return super().render(
+            self.object_1, self.object_2, self.x, self.y, *self.destinations
+        )
 
 
 class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """If the two given NPCs are less than the given number of steps
-    apart (when on the same Z coord), go to the section of code indicated by the identifier.
+    """If the two given NPCs are less than the given number of steps apart (when on the same Z coord), go to the section of code indicated by the identifier.
+
+    ## Lazy Shell command
+        `If object A & B < (x,y,z) steps apart...`
+
+    ## Opcode
+        `0x3B`
+
+    ## Size
+        7 bytes
+
+    Args:
+        object_1 (AreaObject): The first NPC to compare. Use the pre-defined ones in area_objects.py.
+        object_2 (AreaObject): The second NPC to compare. Use the pre-defined ones in area_objects.py.
+        x (int): The x component of the step threshold that the NPCs can be separated by.
+        y (int): The y component of the step threshold that the NPCs can be separated by.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance on the same z coord.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x3B
@@ -4157,7 +5737,9 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         self.set_y(y)
 
     def render(self) -> bytearray:
-        return super().render(self.object_1, self.object_2, self.x, self.y, *self.destinations)
+        return super().render(
+            self.object_1, self.object_2, self.x, self.y, *self.destinations
+        )
 
 
 class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
@@ -4165,14 +5747,49 @@ class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
 ):
     """The NPC whose relative ID is stored at $70A8 (usually the most recent NPC the player
     interacted with) will re-enter a state of interactability, but only if
-    the player is currently on top of it."""
+    the player is currently on top of it.
+
+        ## Lazy Shell command
+            `Reactivate trigger if Mario on top of object`
+            (unselectable)
+
+        ## Opcode
+            `0x5D`
+
+        ## Size
+            1 byte
+
+        Args:
+            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5D
 
 
 class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
-    """Sets $7000 to the pixel or isometric coordinate value of one dimension
-    from any NPC's current coordinates."""
+    """Sets $7000 to the pixel or isometric coordinate value of one dimension from any NPC's current coordinates.
+
+    ## Lazy Shell command
+        `Memory $7000 = object's X coord...`
+        `Memory $7000 = object's Y coord...`
+        `Memory $7000 = object's Z coord...`
+
+    ## Opcode
+        `0xC4`
+        `0xC5`
+        `0xC6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target_npc (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
+        coord (Coord): Choose one of `COORD_X`, `COORD_Y`, `COORD_Z`
+        isometric (bool): If true, stores the isometric coord value (i.e. tile coord) instead of the pixel value. Exclusive with the `pixel` arg.
+        pixel (bool): If true, stores the pixel coord value instead of the tile/isometric coord value. Exclusive with the `isometric` arg.
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _size: int = 2
@@ -4244,7 +5861,21 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
-    """Copy the X, Y, and Z pixel coordinates of the NPC to $7010, $7012, and $7014."""
+    """Copy the X, Y, and Z pixel coordinates of the NPC to $7010, $7012, and $7014.
+
+    ## Lazy Shell command
+        `Memory $7010-15 = (x,y,z) of object...`
+
+    ## Opcode
+        `0xC7`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xC7
     _size: int = 2
@@ -4272,7 +5903,21 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
-    """Copy the X, Y, and Z pixel coordinates of the NPC to $7016, $7018, and $701A."""
+    """Copy the X, Y, and Z pixel coordinates of the NPC to $7016, $7018, and $701A.
+
+    ## Lazy Shell command
+        `Memory $7016-1B = (x,y,z) of object...`
+
+    ## Opcode
+        `0xC8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        target (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xC8
     _size: int = 2
@@ -4300,7 +5945,21 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `Object memory = memory $7xxx...`
+
+    ## Opcode
+        `0xD6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        address (ShortVar): Any short var to read from
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xD6
     _size: int = 2
@@ -4310,15 +5969,30 @@ class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem)
 
 
 class EnableControls(UsableEventScriptCommand, EventScriptCommand):
-    """Buttons included in this command will be enabled, and buttons excluded will be disabled.\n
-    Dpad Left = 0\n
-    Dpad Right = 1\n
-    Dpad Down = 2\n
-    Dpad Up = 3\n
-    X = 4\n
-    A = 5\n
-    Y = 6\n
-    B = 7"""
+    """Buttons included in this command will be enabled, and buttons excluded will be disabled.
+
+    Dpad Left = 0
+    Dpad Right = 1
+    Dpad Down = 2
+    Dpad Up = 3
+    X = 4
+    A = 5
+    Y = 6
+    B = 7
+
+    ## Lazy Shell command
+        `Enable buttons {xx} only...`
+
+    ## Opcode
+        `0x35`
+
+    ## Size
+        2 bytes
+
+    Args:
+        enabled_buttons (Union[List[ControllerInput], Set[ControllerInput]]): All of the buttons that should be enabled to the exclusion of all others
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x35
     _size: int = 2
@@ -4353,15 +6027,30 @@ class EnableControls(UsableEventScriptCommand, EventScriptCommand):
 
 class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
     """Buttons included in this command will be enabled, and buttons excluded will be disabled.\n
-    When the next `Return` command is run, all controls will be re-enabled.\n
-    Dpad Left = 0\n
-    Dpad Right = 1\n
-    Dpad Down = 2\n
-    Dpad Up = 3\n
-    X = 4\n
-    A = 5\n
-    Y = 6\n
-    B = 7"""
+    When the next `Return` command is run, all controls will be re-enabled.
+
+    Dpad Left = 0
+    Dpad Right = 1
+    Dpad Down = 2
+    Dpad Up = 3
+    X = 4
+    A = 5
+    Y = 6
+    B = 7
+
+    ## Lazy Shell command
+        `Enable buttons {xx} only...`
+
+    ## Opcode
+        `0x34`
+
+    ## Size
+        2 bytes
+
+    Args:
+        enabled_buttons (Union[List[ControllerInput], Set[ControllerInput]]): All of the buttons that should be enabled to the exclusion of all others
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x34
     _size: int = 2
@@ -4397,29 +6086,55 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Set the bits of $7000 to correspond to all currently pressed buttons.\n
-    Dpad Left = 0\n
-    Dpad Right = 1\n
-    Dpad Down = 2\n
-    Dpad Up = 3\n
-    X = 4\n
-    A = 5\n
-    Y = 6\n
-    B = 7"""
+    """Set the bits of $7000 to correspond to all currently pressed buttons.
+    Dpad Left = 0
+    Dpad Right = 1
+    Dpad Down = 2
+    Dpad Up = 3
+    X = 4
+    A = 5
+    Y = 6
+    B = 7
+
+    ## Lazy Shell command
+        `Memory $7000 = pressed button`
+
+    ## Opcode
+        `0xCA`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCA
 
 
 class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Set the bits of $7000 to correspond to an individual tapped button.\n
-    Dpad Left = 0\n
-    Dpad Right = 1\n
-    Dpad Down = 2\n
-    Dpad Up = 3\n
-    X = 4\n
-    A = 5\n
-    Y = 6\n
-    B = 7"""
+    """Set the bits of $7000 to correspond to an individual tapped button.
+    Dpad Left = 0
+    Dpad Right = 1
+    Dpad Down = 2
+    Dpad Up = 3
+    X = 4
+    A = 5
+    Y = 6
+    B = 7
+
+    ## Lazy Shell command
+        `Memory $7000 = tapped button`
+
+    ## Opcode
+        `0xCB`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xCB
 
@@ -4428,7 +6143,23 @@ class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class AddCoins(UsableEventScriptCommand, EventScriptCommand):
-    """The given number will be added to the player's coin count."""
+    """Add this many coins to the player's coin count.
+
+    ## Lazy Shell command
+        `Coins += ...`
+        `Coins += memory $7000`
+
+    ## Opcode
+        `0x52`
+        `0xFD 0x52`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amount (Union[int, ShortVar]): The number of coins to add (8 bit int), or variable $7000 (cannot be any other var).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _amount: Union[ShortVar, UInt8]
@@ -4457,13 +6188,42 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Dec7000FromCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Decrease the player's coin count by the amount stored to $7000."""
+    """Decrease the player's coin count by the amount stored to $7000.
+
+    ## Lazy Shell command
+        `Coins -= memory $7000`
+
+    ## Opcode
+        `0xFD 0x53`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x53])
 
 
 class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
-    """The given number will be added to the player's Frog Coin count."""
+    """Add this many coins to the player's frog coin count.
+
+    ## Lazy Shell command
+        `Frog coins += ...`
+        `Frog coins += memory $7000`
+
+    ## Opcode
+        `0x53`
+        `0xFD 0x54`
+
+    ## Size
+        2 bytes
+
+    Args:
+        amount (Union[int, ShortVar]): The number of frog coins to add (8 bit int), or variable $7000 (cannot be any other var).
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _amount: Union[ShortVar, UInt8]
@@ -4492,33 +6252,99 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Decrease the player's Frog Coin count by the amount stored to $7000."""
+    """Decrease the player's frog coin count by the amount stored to $7000.
+
+    ## Lazy Shell command
+        `Coins -= memory $7000`
+
+    ## Opcode
+        `0xFD 0x55`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x55])
 
 
 class Add7000ToCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Add the amount stored to $7000 to the player's current FP fill."""
+    """Add the amount stored to $7000 to the player's current FP fill.
+
+    ## Lazy Shell command
+        `Current FP += memory $7000`
+
+    ## Opcode
+        `0xFD 0x56`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x56])
 
 
 class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Decrease the player's current FP fill by the amount stored to $7000."""
+    """Decrease the player's current FP fill by the amount stored to $7000.
+
+    ## Lazy Shell command
+        `TFP -= memory $7000`
+
+    ## Opcode
+        `0x57`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x57
 
 
 class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Add the amount stored to $7000 to the player's current max FP threshold."""
+    """Add the amount stored to $7000 to the player's current max FP threshold.
+
+    ## Lazy Shell command
+        `Maximum FP += memory $7000`
+
+    ## Opcode
+        `0xFD 0x57`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x57])
 
 
 class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
-    """Decrease the given character's current HP fill by the amount stored to $7000."""
+    """Decrease the given character's current HP fill by the amount stored to $7000.
 
-    _opcode: int = 0x57
+    ## Lazy Shell command
+        `Character {xx}'s HP -= memory $7000`
+
+    ## Opcode
+        `0x56`
+
+    ## Size
+        2 bytes
+
+    Args:
+        character (PartyCharacter): The character who will be damaged
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x56
     _size: int = 2
     _character: PartyCharacter
 
@@ -4542,8 +6368,22 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
 
 
 class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
-    """Arbitrarily equip an item to a specified character.\n
-    The item does not need to exist in the player's inventory."""
+    """Arbitrarily equip an item to a specified character. The item does not need to exist in the player's inventory.
+
+    ## Lazy Shell command
+        `Equip item {xx} to character {xx}...`
+
+    ## Opcode
+        `0x54`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Equipment]): The item to equip (use an item class name from datatypes/items/implementations.py)
+        character (PartyCharacter): The character to equip the item to
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x54
     _size: int = 3
@@ -4583,14 +6423,41 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
 
 
 class IncEXPByPacket(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The amount of EXP belonging to the packet index designated by
-    `SetEXPPacketTo7000` will be added to the EXP of all recruited characters."""
+    """The amount of EXP belonging to the packet index designated by `SetEXPPacketTo7000` will be added to the EXP of all recruited characters.
 
-    _opcode = bytearray([0xFD, 0x48])
+    ## Lazy Shell command
+        `Experience += experience packet`
+
+    ## Opcode
+        `0xFD 0x4B`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode = bytearray([0xFD, 0x4B])
 
 
 class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
-    """The specified character is recruited."""
+    """The specified character is recruited.
+
+    ## Lazy Shell command
+        `Add or remove character {xx} in party...`
+        (add case only)
+
+    ## Opcode
+        `0x36`
+
+    ## Size
+        2 bytes
+
+    Args:
+        character (PartyCharacter): The character who joins the party
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x36
     _size: int = 2
@@ -4616,7 +6483,22 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
 
 
 class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
-    """The specified character is dismissed from the party."""
+    """The specified character is dismissed from the party.
+
+    ## Lazy Shell command
+        `Add or remove character {xx} in party...`
+        (remove case only)
+
+    ## Opcode
+        `0x36`
+
+    ## Size
+        2 bytes
+
+    Args:
+        character (PartyCharacter): The character who leaves the party
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x36
     _size: int = 2
@@ -4642,15 +6524,42 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Store70A7ToEquipsInventory(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The item whose ID matches the current value of $70A7 is
-    added to the equips inventory pocket."""
+    """The item whose ID matches the current value of $70A7 is added to the equips inventory pocket.
+
+    ## Lazy Shell command
+        `Store memory $70A7 to equipment inventory`
+
+    ## Opcode
+        `0xFD 0x51`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x51])
 
 
 class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
-    """The item matching the given ID, or the ID stored at $70A7,
-    will be added to the appropriate inventory pocket."""
+    """The item matching the given ID, or the ID stored at $70A7, will be added to the appropriate inventory pocket.
+
+    ## Lazy Shell command
+        `Store 1 of item {xx} to inventory...`
+        `Store memory $70A7 to item inventory`
+
+    ## Opcode
+        `0x50`
+        `0xFD 0x50`
+
+    ## Size
+        2 bytes
+
+    Args:
+        item (Union[Type[Item], ByteVar]): Either the item to equip (use an item class name from datatypes/items/implementations.py), OR the `ITEM_ID` ByteVar to store whatever item ID is in $70A7.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 2
     _item: Union[Type[Item], ByteVar]
@@ -4683,7 +6592,21 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand):
-    """One item matching the given ID will be removed from inventory."""
+    """One item matching the given ID will be removed from inventory.
+
+    ## Lazy Shell command
+        `Remove 1 of item {xx} from inventory...`
+
+    ## Opcode
+        `0x51`
+
+    ## Size
+        2 bytes
+
+    Args:
+        item (Type[Item]): The item to equip (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x51
     _size: int = 2
@@ -4707,28 +6630,79 @@ class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand)
 
 
 class RestoreAllFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The player's FP will be filled to its current maximum."""
+    """The player's FP will be filled to its current maximum.
+
+    ## Lazy Shell command
+        `Restore all FP`
+
+    ## Opcode
+        `0xFD 0x5C`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x5C])
 
 
 class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """All recruited characters' HP will be filled to their current maximum."""
+    """All recruited characters' HP will be filled to their current maximum.
+
+    ## Lazy Shell command
+        `Restore all HP`
+
+    ## Opcode
+        `0xFD 0x5B`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x58])
 
 
 class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Set the active EXP packet to the ID corresponding to the current value
-    of $7000.\n
-    This will be used by `IncEXPByPacket`."""
+    """Set the active EXP packet to the ID corresponding to the current value of $7000.
+    This will be used by `IncEXPByPacket`.
+
+    ## Lazy Shell command
+        `Experience packet = memory $7000`
+
+    ## Opcode
+        `0xFD 0x64`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x64])
 
 
 class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
-    """The value of $7000 will be set to the character ID who currently
-    occupies the given slot by party index (0 to 4)."""
+    """The value of $7000 will be set to the character ID who currently occupies the given slot by party index (0 to 4).
+
+    ## Lazy Shell command
+        `Memory $7000 = character in {xx} slot...`
+
+    ## Opcode
+        `0x38`
+
+    ## Size
+        2 bytes
+
+    Args:
+        slot (int): The slot to look at (0 to 4)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x38
     _size: int = 2
@@ -4753,22 +6727,60 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Store the total party size to $7000."""
+    """Store the total party size to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = party capacity`
+
+    ## Opcode
+        `0x37`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x37
 
 
 class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """For the item whose ID matches the current value of $70A7,
-    check how many of that item are currently in the player inventory,
-    and store that amount to $7000."""
+    """For the item whose ID matches the current value of $70A7, check how many of that item are currently in the player inventory, and store that amount to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = quantity of item @ memory $70A7`
+
+    ## Opcode
+        `0xFD 0x5E`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x5E])
 
 
 class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand):
-    """For the given equipment type on the given character,
-    store the ID of the currently equipped item to $7000"""
+    """For the given equipment type on the given character, store the ID of the currently equipped item to $7000
+
+    ## Lazy Shell command
+        `Memory $7000 = equipment {xx} of {xx} character...`
+
+    ## Opcode
+        `0xFD 0x5D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        character (PartyCharacter): The character whose equipment to look at.
+        equip_slot (Type[Equipment]): The equip slot to read (`Weapon`, `Armor`, or `Accessory`)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x5D])
     _size: int = 4
@@ -4809,7 +6821,20 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
 
 
 class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The current FP fill amount is stored to $7000."""
+    """The current FP fill amount is stored to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = current FP`
+
+    ## Opcode
+        `0x58`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x58
 
@@ -4817,21 +6842,59 @@ class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
 class StoreEmptyItemInventorySlotCountTo7000(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The number of available spaces in the player's main inventory pocket
-    is stored to $7000."""
+    """The number of available spaces in the player's main inventory pocket is stored to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = # of open item slots`
+
+    ## Opcode
+        `0x55`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x55
 
 
 class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The player's current coin count is stored to $7000."""
+    """The player's current coin count is stored to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = coins`
+
+    ## Opcode
+        `0xFD 0x59`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x59])
 
 
 class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
-    """Check how many of the given item are currently in the player's inventory,
-    and store that amount to $7000."""
+    """Check how many of the given item are currently in the player's inventory, and store that amount to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = quantity of item @ memory $70A7`
+
+    ## Opcode
+        `0xFD 0x58`
+
+    ## Size
+        3 bytes
+
+    Args:
+        item (Type[Item]): The item to count (use an item class name from datatypes/items/implementations.py)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x58])
     _size: int = 3
@@ -4855,7 +6918,20 @@ class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The player's current Frog Coin count is stored to $7000."""
+    """The player's current Frog Coin count is stored to $7000.
+
+    ## Lazy Shell command
+        `Memory $7000 = frog coins`
+
+    ## Opcode
+        `0xFD 0x5A`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x5A])
 
@@ -4864,8 +6940,21 @@ class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArg
 
 
 class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the player is currently airborne, go to the section of code
-    beginning with the specified identifier."""
+    """If the player is currently airborne, go to the section of code beginning with the specified identifier.
+
+    ## Lazy Shell command
+        `If in air...`
+
+    ## Opcode
+        `0x3D`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the player is airborne.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x3D
     _size: int = 3
@@ -4875,18 +6964,69 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class MarioGlows(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The player will glow as they normally do during an EXP star animation."""
+    """The player will glow as they normally do during an EXP star animation.
+
+    ## Lazy Shell command
+        `Mario glowing begins`
+
+    ## Opcode
+        `0xFD 0xF9`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xF9])
+
+
+class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
+    """The effect of a prior `MarioGlows` command is canceled.
+
+    ## Lazy Shell command
+        `Mario glowing stops`
+
+    ## Opcode
+        `0xFD 0xFA`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode = bytearray([0xFD, 0xFA])
 
 
 # palettes & screen effects
 
 
 class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
-    """(The inner workings of this command are unknown.)"""
+    """(The inner workings of this command are unknown.)
 
-    _opcode: int = 0xBA
+    ## Lazy Shell command
+        `Palette set = ...`
+
+    ## Opcode
+        `0x8A`
+
+    ## Size
+        3 bytes
+
+    Args:
+        palette_set (int): The palette set to apply to the NPCs in the current level (8 bit)
+        row (int): The row offset relative to the palette (8 bit)
+        bit_4 (bool): (unknown)
+        bit_5 (bool): (unknown)
+        bit_6 (bool): (unknown)
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x8A
     _size: int = 3
     _palette_set: UInt8
     _row: UInt8
@@ -4976,9 +7116,26 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
-    """(The inner workings of this command are unknown.)"""
+    """(The inner workings of this command are unknown.)
 
-    _opcode: int = 0xB9
+    ## Lazy Shell command
+        `Palette set morphs to {xx} set...`
+
+    ## Opcode
+        `0x89`
+
+    ## Size
+        4 bytes
+
+    Args:
+        palette_type (PaletteType): The effect to use in applying this palette
+        palette_set (int): The palette set to apply to the NPCs in the current level
+        duration (int): The number of frames over which this palette morph should occur
+        row (int): The row offset relative to the palette
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x89
     _size: int = 4
     _palette_type: PaletteType
     _palette_set: UInt8
@@ -5043,13 +7200,44 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The script will not continue until an active graphical effect has finished."""
+    """The script will not continue until an active graphical effect has finished.
+
+    ## Lazy Shell command
+        `Pause script until screen effect done`
+
+    ## Opcode
+        `0x7F`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7F
 
 
 class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
-    """Pixelate the given layers according to the given stylistic rules."""
+    """Pixelate the given layers according to the given stylistic rules.
+
+    ## Lazy Shell command
+        `Pixellate layers {xx} by {xx} amount...`
+
+    ## Opcode
+        `0x84`
+
+    ## Size
+        3 bytes
+
+    Args:
+        layers (Union[List[Layer], Set[Layer]]): The list of layers to be pixelated
+        pixel_size (int): The size of the rendered pixels
+        duration (int): The number of frames over which to complete the pixel effect
+        bit_6 (bool): (unknown)
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x84
     _size: int = 3
@@ -5127,11 +7315,29 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
     def render(self) -> bytearray:
         layers: int = bits_to_int(cast(List[int], self.layers))
         arg_1 = UInt8(layers + (self.pixel_size << 4))
-        return super().render(arg_1, self.duration + (self.bit_6 << 6) + (self.bit_7 << 7))
+        return super().render(
+            arg_1, self.duration + (self.bit_6 << 6) + (self.bit_7 << 7)
+        )
 
 
 class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `Priority set = ...`
+
+    ## Opcode
+        `0x81`
+
+    ## Size
+        4 bytes
+
+    Args:
+        mainscreen (Union[List[Layer], Set[Layer]]): (unknown)
+        subscreen (Union[List[Layer], Set[Layer]]): (unknown)
+        colour_math (Union[List[Layer], Set[Layer]]): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x81
     _size: int = 4
@@ -5192,13 +7398,40 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `Reset priority set`
+
+    ## Opcode
+        `0x82`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x82
 
 
 class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
-    """Briefly flash a colour over the whole screen."""
+    """Briefly flash a colour over the whole screen.
+
+    ## Lazy Shell command
+        `Screen flashes with {xx} color...`
+
+    ## Opcode
+        `0x83`
+
+    ## Size
+        2 bytes
+
+    Args:
+        colour (Colour): The colour to flash
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x83
     _size: int = 2
@@ -5226,8 +7459,27 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
 
 
 class TintLayers(UsableEventScriptCommand, EventScriptCommand):
-    """Tint the selected layers with an RGB value.\n
-    RGB values must be divisible by 8."""
+    """Tint the selected layers with an RGB value.
+    RGB values must be divisible by 8.
+
+    ## Lazy Shell command
+        `Tint layers {xx} with {xx} color...`
+
+    ## Opcode
+        `0x80`
+
+    ## Size
+        5 bytes
+
+    Args:
+        layers (List[Layer]): The list of layers to be tinted
+        red (int): The red value of the RGB colour. Must be divisible by 8
+        green (int): The green value of the RGB colour. Must be divisible by 8
+        blue (int): The blue value of the RGB colour. Must be divisible by 8
+        speed (int): The speed at which to perform the tint
+        bit_15 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x80
     _size: int = 5
@@ -5332,21 +7584,66 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
 class CircleMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """A circle mask expands from the center to reveal the whole level."""
+    """A circle mask expands from the center to reveal the whole level.
 
-    _opcode: int = 0x82
+    ## Lazy Shell command
+        `Circle mask, expand from screen center`
+
+    ## Opcode
+        `0x7C`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x7C
 
 
 class CircleMaskShrinkToScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """A circle mask shrinks to the screen center to black out most of the level."""
+    """A circle mask shrinks to the screen center to black out most of the level.
+
+    ## Lazy Shell command
+        `Circle mask, shrink to screen center`
+
+    ## Opcode
+        `0x7D`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7D
 
 
 class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
-    """A circle mask shrinks to surround a given object, blacking out most of the level."""
+    """A circle mask shrinks to surround a given object, blacking out most of the level.
+
+    ## Lazy Shell command
+        `Circle mask, shrink to object {xx} (non-static)...`
+        `Circle mask, shrink to object {xx} (static)...`
+
+    ## Opcode
+        `0x87`
+        `0x8F`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (AreaObject): The field object to follow. Use the pre-defined ones in area_objects.py.
+        width (int): The diameter of the circle mask in pixels
+        speed (int): The speed at which the mask effect should complete
+        static (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _size: int = 4
     _static: bool
@@ -5412,19 +7709,67 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
 class StarMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """A star mask expands from the center to reveal the whole level."""
+    """A star mask expands from the center to reveal the whole level.
+
+    ## Lazy Shell command
+        `Star mask, expand from screen center`
+
+    ## Opcode
+        `0x7A`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7A
 
 
 class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """A star mask shrinks to the screen center to black out most of the level."""
+    """A star mask shrinks to the screen center to black out most of the level.
+
+    ## Lazy Shell command
+        `Star mask, shrink to screen center`
+
+    ## Opcode
+        `0x7B`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7B
 
 
 class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
-    """Fade the screen in from being unloaded."""
+    """Fade the screen in from being unloaded.
+
+    ## Lazy Shell command
+        `Fade in from black (sync)`
+        `Fade in from black (async)`
+        `Fade in from black (sync) for {xx} duration...`
+        `Fade in from black (async) for {xx} duration...`
+
+    ## Opcode
+        `0x70`
+        `0x71`
+        `0x72`
+        `0x73`
+
+    ## Size
+        1 byte with no duration
+        2 bytes with a duration
+
+    Args:
+        sync (bool): If false, the fade must finish before the script can continue
+        duration (Optional[int]): The length of time in frames that the fade should take
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _sync: bool = False
     _duration: Optional[UInt8] = None
@@ -5473,7 +7818,22 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
-    """Draw an opaque colour over the screen, and then fade the screen in"""
+    """Draw an opaque colour over the screen, and then fade the screen in.
+
+    ## Lazy Shell command
+        `Fade in from {xx} color...`
+
+    ## Opcode
+        `0x78`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The length of time in frames that the fade should take
+        colour (Colour): The initial colour to draw over the screen
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x78
     _size: int = 3
@@ -5510,7 +7870,29 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
-    """Fade the screen out to solid black."""
+    """Fade the screen out to solid black.
+
+    ## Lazy Shell command
+        `Fade out to black (sync)`
+        `Fade out to black (async)`
+        `Fade out to black (sync) for {xx} duration...`
+        `Fade out to black (async) for {xx} duration...`
+
+    ## Opcode
+        `0x74`
+        `0x75`
+        `0x76`
+        `0x77`
+
+    ## Size
+        1 byte with no duration
+        2 bytes with a duration
+
+    Args:
+        sync (bool): If false, the fade must finish before the script can continue
+        duration (Optional[int]): The length of time in frames that the fade should take
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _sync: bool = False
     _duration: Optional[UInt8] = None
@@ -5559,7 +7941,22 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
-    """Fade the screen out to any solid colour."""
+    """Fade the screen out to any solid colour.
+
+    ## Lazy Shell command
+        `Fade out to {xx} color...`
+
+    ## Opcode
+        `0x79`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The length of time in frames that the fade should take
+        colour (Colour): The final colour to draw over the screen
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x79
     _size: int = 3
@@ -5596,7 +7993,20 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
 
 
 class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Perform the screen effect that precedes a battle."""
+    """Perform the screen effect that precedes a battle.
+
+    ## Lazy Shell command
+        `Initiate battle mask`
+
+    ## Opcode
+        `0x7E`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x7E
 
@@ -5605,7 +8015,22 @@ class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
-    """Designate a numerical temp (0 to 127) by which to slow down the music."""
+    """Designate a numerical temp (0 to 127) by which to slow down the music.
+
+    ## Lazy Shell command
+        `Adjust music tempo by {xx} amount...`
+
+    ## Opcode
+        `0x97`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The time in frames over which the tempo change should gradually occur
+        change (int): Set the time in frames over which the tempo change should gradually occur
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x97
     _size: int = 3
@@ -7025,9 +9450,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
 
     def set_battlefield(self, battlefield: Battlefield) -> None:
         """The battlefield on which the battle should take place."""
-        assert (
-            0 <= battlefield <= 25 or 28 <= battlefield <= 51
-        )
+        assert 0 <= battlefield <= 25 or 28 <= battlefield <= 51
         self._battlefield = battlefield
 
     def __init__(
