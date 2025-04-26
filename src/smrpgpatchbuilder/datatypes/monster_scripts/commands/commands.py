@@ -1,7 +1,6 @@
 """Individual monster battle script command classes.
 These are the building blocks of monster battle scripts."""
 
-
 from copy import deepcopy
 from typing import List, Optional, Set, Type
 
@@ -13,7 +12,10 @@ from smrpgpatchbuilder.datatypes.spells.classes import Spell
 
 from smrpgpatchbuilder.utils.number import bits_to_int
 
-from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import CommandType, Target
+from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import (
+    CommandType,
+    Target,
+)
 from smrpgpatchbuilder.datatypes.monster_scripts.ids.misc import TOTAL_ATTACKS
 from .types.classes import (
     MonsterScriptCommand,
@@ -26,8 +28,26 @@ from .types.classes import (
 
 
 class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Issue an attack, or one of three attacks at random.
-    Each of the three attacks do not have to be unique from each other."""
+    """Issue an attack, or one of three attacks at random. Each of the three attacks do not have to be unique from each other.
+
+    ## Lazy Shell command
+        `Do 1 of 3 attacks`
+        `Do 1 attack`
+
+    ## Opcode
+        `0xE0` if 3 attacks
+        If only 1 attack, the opcode is the attack ID (0 to 128)
+
+    ## Size
+        4 bytes if 3 attacks
+        1 byte otherwise
+
+    Args:
+        attack_1 (Type[EnemyAttack]): The first (or only) attack that can be issued by this command.
+        attack_2 (Optional[Type[EnemyAttack]]): The optional second attack that can be issued by this command.
+        attack_3 (Optional[Type[EnemyAttack]]): The optional third attack that can be issued by this command.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _attack_1: Type[EnemyAttack]
     _attack_2: Optional[Type[EnemyAttack]]
@@ -35,7 +55,7 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
 
     _opcode: int
 
-    @property 
+    @property
     def size(self) -> int:
         if self.attack_2 is None and self.attack_3 is None:
             return 1
@@ -118,7 +138,20 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class SetTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """Choose the target for the actions following this command."""
+    """Choose the target for the actions following this command.
+
+    ## Lazy Shell command
+        `Target set`
+
+    ## Opcode
+        `0xE2`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xE2
     _size: int = 2
@@ -128,7 +161,21 @@ class SetTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class RunBattleDialog(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Run a battle dialog (by ID)."""
+    """Run a battle dialog (by ID).
+
+    ## Lazy Shell command
+        `Run battle dialogue`
+
+    ## Opcode
+        `0xE3`
+
+    ## Size
+        2 bytes
+
+    Args:
+        dialog_id (int): The ID of the dialog to run.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xE3
     _size: int = 2
@@ -153,7 +200,21 @@ class RunBattleDialog(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class RunBattleEvent(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Run a battle event by ID. It is encouraged to use battle ID constants for this."""
+    """Run a battle event by ID. It is encouraged to use battle ID constants for this.
+
+    ## Lazy Shell command
+        `Run battle event`
+
+    ## Opcode
+        `0xE5`
+
+    ## Size
+        2 bytes
+
+    Args:
+        event_id (int): The ID of the battle event to run
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xE5
     _size: int = 2
@@ -180,7 +241,20 @@ class RunBattleEvent(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IncreaseVarBy1(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
-    """Increase the given 0x7EE00X variable by 1."""
+    """Increase the given 0x7EE00# variable by 1.
+
+    ## Lazy Shell command
+        `Memory increment`
+
+    ## Opcode
+        `0xE6 0x00`
+
+    ## Size
+        3 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xE6, 0x00])
     _size: int = 3
@@ -190,13 +264,41 @@ class IncreaseVarBy1(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
 
 
 class DecreaseVarBy1(IncreaseVarBy1):
-    """Decrease the given 0x7EE00X variable by 1."""
+    """Decrease the given 0x7EE00X variable by 1.
+
+    ## Lazy Shell command
+        `Memory decrement`
+
+    ## Opcode
+        `0xE6 0x01`
+
+    ## Size
+        *No `_size` found*
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xE6, 0x01])
 
 
 class SetVarBits(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
-    """For the given 0x7EE00X variable, set bits denoted by an ordinality array."""
+    """For the given 0x7EE00# variable, set bits denoted by an ordinality array.
+
+    ## Lazy Shell command
+        `Memory set bits`
+
+    ## Opcode
+        `0xE7 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        bits (List[int]): The ordinality array of bits to be set on the given variable.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xE7, 0x00])
     _size: int = 4
@@ -225,7 +327,22 @@ class SetVarBits(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
 
 
 class ClearVarBits(SetVarBits):
-    """For the given 0x7EE00X variable, clear bits denoted by an ordinality array."""
+    """For the given 0x7EE00# variable, clear bits denoted by an ordinality array.
+
+    ## Lazy Shell command
+        `Memory clear bits`
+
+    ## Opcode
+        `0xE7 0x01`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        bits (List[int]): The ordinality array of bits to be cleared on the given variable.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xE7, 0x01])
     _size: int = 4
@@ -246,7 +363,20 @@ class ClearVarBits(SetVarBits):
 
 
 class ClearVar(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
-    """Set the given 0x7EE00X variable to 0."""
+    """Set the given 0x7EE00# variable to 0.
+
+    ## Lazy Shell command
+        `Memory clear`
+
+    ## Opcode
+        `0xE8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xE8
     _size: int = 2
@@ -256,7 +386,21 @@ class ClearVar(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
 
 
 class RemoveTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """The given target will no longer be active or targetable."""
+    """The given target will no longer be active or targetable.
+
+    ## Lazy Shell command
+        `Target remove`
+
+    ## Opcode
+        `0xEA 0x00 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xEA, 0x00, 0x00])
     _size: int = 4
@@ -266,7 +410,21 @@ class RemoveTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """The given target will become active and targetable."""
+    """The given target will become active and targetable.
+
+    ## Lazy Shell command
+        `Target call`
+
+    ## Opcode
+        `0xEA 0x01 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xEA, 0x01, 0x00])
     _size: int = 4
@@ -276,7 +434,21 @@ class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class MakeInvulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """The given target will not take damage from any source."""
+    """The given target will not take damage from any source.
+
+    ## Lazy Shell command
+        `Target set invincibility`
+
+    ## Opcode
+        `0xEB 0x00`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xEB, 0x00])
     _size: int = 3
@@ -286,8 +458,20 @@ class MakeInvulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand
 
 
 class MakeVulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """The given target will be susceptible to damage.
-    This reverses the effects of any previous MakeInvulnerable commands applied to this target.
+    """The given target will be susceptible to damage. This reverses the effects of any previous `MakeInvulnerable` commands applied to this target.
+
+    ## Lazy Shell command
+        `Target null invincibility`
+
+    ## Opcode
+        `0xEB 0x01`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
     """
 
     _opcode = bytearray([0xEB, 0x01])
@@ -298,14 +482,40 @@ class MakeVulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class ExitBattle(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Abort the battle and return to the level."""
+    """Abort the battle and return to the level.
+
+    ## Lazy Shell command
+        `Exit battle`
+
+    ## Opcode
+        `0xEC`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xEC
 
 
 class Set7EE005ToRandomNumber(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Set a designated random number storage variable
-    to a random number in a given range."""
+    """Set a designated random number storage variable to a random number in a given range.
+
+    ## Lazy Shell command
+        `Memory = random # <`
+
+    ## Opcode
+        `0xED`
+
+    ## Size
+        2 bytes
+
+    Args:
+        upper_bound (int): The upper bound allowed on the random number range (lower bound 0).
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xED
     _size: int = 2
@@ -332,14 +542,32 @@ class Set7EE005ToRandomNumber(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Cast an spell, or one of three spells at random.
-    Each of the three spells do not have to be unique from each other."""
+    """Cast an spell, or one of three spells at random. Each of the three spells do not have to be unique from each other.
+
+    ## Lazy Shell command
+        `Do 1 of 3 spells`
+        `Do 1 spell`
+
+    ## Opcode
+        `0xF0`
+        `0xEF`
+
+    ## Size
+        4 bytes if 3 spells
+        2 bytes otherwise
+
+    Args:
+        spell_1 (Type[Spell]): The first (or only) spell that can be cast by this command.
+        spell_2 (Optional[Type[Spell]]): The optional second spell that can be cast by this command.
+        spell_3 (Optional[Type[Spell]]): The optional third spell that can be cast by this command.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _spell_1: Type[Spell]
     _spell_2: Optional[Type[Spell]]
     _spell_3: Optional[Type[Spell]]
 
-    @property 
+    @property
     def size(self) -> int:
         if self.spell_2 is None and self.spell_3 is None:
             return 2
@@ -422,8 +650,21 @@ class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class DoMonsterBehaviour(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Run a pre-set monster behaviour script by ID.
-    It is recommended to use monster behaviour constants for this."""
+    """Run a pre-set monster behaviour script by ID. It is recommended to use monster behaviour constants for this.
+
+    ## Lazy Shell command
+        `Run object sequence`
+
+    ## Opcode
+        `0xF1`
+
+    ## Size
+        2 bytes
+
+    Args:
+        animation_id (int): The ID of the monster behaviour to be run.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xF1
     _size: int = 2
@@ -449,15 +690,41 @@ class DoMonsterBehaviour(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class SetUntargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCommand):
-    """The target will not be targetable by any following commands."""
+    """The target will not be targetable by any subsequent commands.
+
+    ## Lazy Shell command
+        `Target disable`
+
+    ## Opcode
+        `0xF2 0x00`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command (must be a monster ID or `SELF`)
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xF2, 0x00])
     _size: int = 3
 
 
 class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCommand):
-    """The target will become targetable by following commands.
-    This reverses the effects of any previous SetUntargetable commands applied to this target.
+    """The target will become targetable by subsequent commands. This reverses the effects of any previous SetUntargetable commands applied to this target.
+
+    ## Lazy Shell command
+        `Target enable`
+
+    ## Opcode
+        `0xF2 0x01`
+
+    ## Size
+        3 bytes
+
+    Args:
+        target (Target): The target to be.... targeted.... by this command (must be a monster ID or `SELF`)
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
     """
 
     _opcode = bytearray([0xF2, 0x01])
@@ -465,7 +732,21 @@ class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCom
 
 
 class EnableCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Enable the given party command types (Attack, Spell, Item)."""
+    """Enable the given party command types (Attack, Spell, Item).
+
+    ## Lazy Shell command
+        `Command enable`
+
+    ## Opcode
+        `0xF3 0x00`
+
+    ## Size
+        3 bytes
+
+    Args:
+        commands (List[CommandType]): The list of command types to be enabled by this command.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xF3, 0x00])
     _size: int = 3
@@ -496,7 +777,21 @@ class EnableCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class DisableCommand(EnableCommand):
-    """Disable the given party command types (Attack, Spell, Item)."""
+    """Disable the given party command types (Attack, Spell, Item).
+
+    ## Lazy Shell command
+        `Command disable`
+
+    ## Opcode
+        `0xF3 0x01`
+
+    ## Size
+        3 bytes
+
+    Args:
+        commands (List[CommandType]): The list of command types to be disabled by this command.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xF3, 0x01])
     _size: int = 3
@@ -513,28 +808,78 @@ class DisableCommand(EnableCommand):
 
 
 class RemoveAllInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Temporarily remove all items from party inventory."""
+    """Temporarily remove all items from party inventory.
+
+    ## Lazy Shell command
+        `Set items` (remove case)
+
+    ## Opcode
+        `0xF4 0x00 0x00 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xF4, 0x00, 0x00, 0x00])
 
 
 class RestoreInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Restore all temporarily-removed items from party inventory,
-    reversing the effects of RemoveAllInventory."""
+    """Restore all temporarily-removed items from party inventory, reversing the effects of RemoveAllInventory.
+
+    ## Lazy Shell command
+        `Set items` (restore case)
+
+    ## Opcode
+        `0xF4 0x00 0x01 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xF4, 0x00, 0x01, 0x00])
 
 
 class DoNothing(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Don't do anything."""
+    """Don't do anything.
+
+    ## Lazy Shell command
+        (unused)
+
+    ## Opcode
+        `0xFB`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xFB
 
 
 class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by being targf0xeted by any command in a list of command types.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by being targeted by any command in a list of command types. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attacked by command`
+
+    ## Opcode
+        `0xFC 0x01`
+
+    ## Size
+        4 bytes
+
+    Args:
+        commands (List[CommandType]): The list of commands which trigger the if-block. Can only be 1 or 2 commands.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x01])
     _size: int = 4
@@ -568,9 +913,21 @@ class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by being targeted by any spell in a list of spells.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by being targeted by any spell in a list of spells. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attacked by spell`
+
+    ## Opcode
+        `0xFC 0x02`
+
+    ## Size
+        4 bytes
+
+    Args:
+        spells (List[Type[Spell]]): The list of spells which trigger the if-block. Can only be 1 or 2 spells.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x02])
     _size: int = 4
@@ -604,9 +961,21 @@ class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by being targeted by an item in a list of items.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by being targeted by an item in a list of items. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attacked by item`
+
+    ## Opcode
+        `0xFC 0x03`
+
+    ## Size
+        4 bytes
+
+    Args:
+        items (List[Type[Item]]): The list of items which trigger the if-block. Can only be 1 or 2 items.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x03])
     _size: int = 4
@@ -642,9 +1011,21 @@ class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by being targeted by an item in a list of items.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by being targeted by an item in a list of items. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attacked by element`
+
+    ## Opcode
+        `0xFC 0x04`
+
+    ## Size
+        4 bytes
+
+    Args:
+        elements (List[Element]): The list of elements which trigger the if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x04])
     _size: int = 4
@@ -675,17 +1056,41 @@ class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfTargetedByRegularAttack(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by being targeted by an A-attack.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by being targeted by an A-attack. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attacked`
+
+    ## Opcode
+        `0xFC 0x05 0x00 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x05, 0x00, 0x00])
 
 
 class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by the target's HP falling below a certain threshold.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the target's HP falling below a certain threshold. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If target HP is below`
+
+    ## Opcode
+        `0xFC 0x06`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target whose HP to check
+        threshold (int): The HP value to fall below in order to trigger this if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x06])
     _size: int = 4
@@ -701,7 +1106,9 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
         """Set the HP value to fall below in order to trigger this if-block."""
         self._threshold = UInt8(threshold)
 
-    def __init__(self, target: Target, threshold: int, identifier: Optional[str] = None) -> None:
+    def __init__(
+        self, target: Target, threshold: int, identifier: Optional[str] = None
+    ) -> None:
         super().__init__(target, identifier)
         self.set_threshold(threshold)
 
@@ -710,9 +1117,21 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
 
 
 class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by the monster's HP falling below a certain threshold.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the monster's HP falling below a certain threshold. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If HP is below`
+
+    ## Opcode
+        `0xFC 0x07`
+
+    ## Size
+        4 bytes
+
+    Args:
+        threshold (int): The HP value to fall below in order to trigger this if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _size: int = 4
     _opcode = bytearray([0xFC, 0x07])
@@ -737,10 +1156,22 @@ class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfTargetAfflictedBy(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by the monster being afflicted by a status
-    in a list of statuses.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the monster being afflicted by a status in a list of statuses. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If target affected by`
+
+    ## Opcode
+        `0xFC 0x08`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target whose afflictions to check
+        statuses (List[Status]): The list of statuses which trigger the if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x08])
     _size: int = 4
@@ -774,10 +1205,22 @@ class IfTargetAfflictedBy(MonsterScriptCommandOneTarget, UsableMonsterScriptComm
 
 
 class IfTargetNotAfflictedBy(IfTargetAfflictedBy):
-    """Begin an if-block triggered by the monster not being afflicted by a status
-    in a list of statuses.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the monster not being afflicted by a status in a list of statuses. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If target not affected by`
+
+    ## Opcode
+        `0xFC 0x09`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target whose afflictions to check
+        statuses (List[Status]): The list of statuses which trigger the if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x09])
 
@@ -795,9 +1238,21 @@ class IfTargetNotAfflictedBy(IfTargetAfflictedBy):
 
 
 class IfTurnCounterEquals(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block triggered by the turn counter reaching a given amount.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the turn counter reaching a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If attack phase =`
+
+    ## Opcode
+        `0xFC 0x0A`
+
+    ## Size
+        4 bytes
+
+    Args:
+        phase (int): The number of turns which, when passed, trigger this if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x0A])
     _size: int = 4
@@ -822,9 +1277,22 @@ class IfTurnCounterEquals(UsableMonsterScriptCommand, MonsterScriptCommand):
 
 
 class IfVarLessThan(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by a certain variable value being below a given amount.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by a certain variable value being below a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If memory less than`
+
+    ## Opcode
+        `0xFC 0x0C`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        threshold (int): The value which, if the given variable is below it, will trigger this if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x0C])
     _size: int = 4
@@ -854,9 +1322,22 @@ class IfVarLessThan(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
 
 
 class IfVarEqualOrGreaterThan(IfVarLessThan):
-    """Begin an if-block triggered by a certain variable value not being below a given amount.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by a certain variable value not being below a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If memory greater than`
+
+    ## Opcode
+        `0xFC 0x0D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        threshold (int): The value which, if the given variable is above or equal to it, will trigger this if-block.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x0D])
 
@@ -872,9 +1353,21 @@ class IfVarEqualOrGreaterThan(IfVarLessThan):
 
 
 class IfTargetAlive(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by a certain target still being present in the battle.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by a certain target still being present in the battle. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If target alive`
+
+    ## Opcode
+        `0xFC 0x10 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target whose afflictions to check
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x10, 0x00])
     _size = 4
@@ -884,9 +1377,21 @@ class IfTargetAlive(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by a certain target no longer being present in the battle.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by a certain target no longer being present in the battle. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If target dead`
+
+    ## Opcode
+        `0xFC 0x10 0x01`
+
+    ## Size
+        4 bytes
+
+    Args:
+        target (Target): The target whose afflictions to check
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x10, 0x01])
     _size = 4
@@ -896,9 +1401,22 @@ class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
 
 class IfVarBitsSet(SetVarBits):
-    """Begin an if-block triggered by the given bits being set on the given variable.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the given bits being set on the given variable. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If memory bits set`
+
+    ## Opcode
+        `0xFC 0x11`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        bits (List[int]): The ordinality array of bits to check on the given variable.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x11])
     _size: int = 4
@@ -915,9 +1433,22 @@ class IfVarBitsSet(SetVarBits):
 
 
 class IfVarBitsClear(ClearVarBits):
-    """Begin an if-block triggered by the given bits being cleared on the given variable.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the given bits being cleared on the given variable. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If memory bits clear`
+
+    ## Opcode
+        `0xFC 0x12`
+
+    ## Size
+        4 bytes
+
+    Args:
+        variable (int): The battle variable to check, 0x7EE000 to 0x7EE00F
+        bits (List[int]): The ordinality array of bits to check on the given variable.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x12])
     _size: int = 4
@@ -938,11 +1469,21 @@ class IfVarBitsClear(ClearVarBits):
 
 
 class IfCurrentlyInFormationID(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Begin an if-block which this monster will only run if the player is currently in battle
-    against the formation indicated by this command's ID.
-    It is highly encouraged to use formation constants for this.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block which this monster will only run if the player is currently in battle against the formation indicated by this command's ID. It is highly encouraged to use formation constants for this. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If in formation`
+
+    ## Opcode
+        `0xFC 0x13`
+
+    ## Size
+        4 bytes
+
+    Args:
+        formation_id (int): The formation ID which the player needs to be in battle against in order for
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x13])
     _size: int = 4
@@ -970,37 +1511,98 @@ class IfCurrentlyInFormationID(UsableMonsterScriptCommand, MonsterScriptCommand)
 
 
 class IfLastMonsterStanding(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Begin an if-block triggered by the monster's turn arriving when no other monsters remain.
-    Any following commands between this one and the next Return command will only be executed
-    if the condition of this command is met."""
+    """Begin an if-block triggered by the monster's turn arriving when no other monsters remain. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
+
+    ## Lazy Shell command
+        `If only one alive"`
+
+    ## Opcode
+        `0xFC 0x14 0x00 0x00`
+
+    ## Size
+        4 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode = bytearray([0xFC, 0x14, 0x00, 0x00])
 
 
 class Wait1Turn(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """The monster's turn ends here, and will resume on the next line after this one on
-    its next turn."""
+    """The monster's turn ends here, and will resume on the next line after this one on its next turn.
+
+    ## Lazy Shell command
+        `Wait 1 turn"`
+
+    ## Opcode
+        `0xFD`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xFD
 
 
 class Wait1TurnandRestartScript(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """The monster's turn ends here, and will resume at the beginning of its script on
-    its next turn."""
+    """The monster's turn ends here, and will resume at the beginning of its script on its next turn.
+
+    ## Lazy Shell command
+        `Wait 1 turn, return all`
+
+    ## Opcode
+        `0xFE`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xFE
 
 
 class StartCounterCommands(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Begins the block of code indicating what the monster does in response to a player action
-    that targeted it."""
+    """Begins the block of code indicating what the monster does in response to a player action that targeted it.
+
+    ## Lazy Shell command
+        (None, every monster has this by default)
+
+    ## Opcode
+        `0xFF`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
 
     _opcode: int = 0xFF
 
 
-class Db(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
-    """Catch-all for any unknown commands."""
-    
+class UnknownCommand(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
+    """Catch-all for any unknown commands. Unlike in action/event scripts, there are no safeguards on this command.
+
+    ## Lazy Shell command
+        (This would likely register as "Do 1 attack" with an illegal value)
+
+    ## Opcode
+        (any)
+
+    ## Size
+        Usually 1 byte
+
+    Args:
+        contents (bytearray): The entire byte string that this command consists of.
+        identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
+    """
+
     _opcode: bytearray = []
 
     @property
@@ -1010,4 +1612,3 @@ class Db(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self._opcode = contents
-
