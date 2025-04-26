@@ -91,12 +91,11 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
     rather two separate ranges that share a pointer table."""
 
     _scripts: List[MonsterScript]
-    _rom_ranges: List[List[int]] = []
-    _pointer_table_start: int = POINTER_TABLE_START
     _range_1_start: int = BANK_RANGE_1_START
     _range_1_end: int = BANK_RANGE_1_END
     _range_2_start: int = BANK_RANGE_2_START
     _range_2_end: int = BANK_RANGE_2_END
+    _pointer_table_start: int = POINTER_TABLE_START
 
     @property
     def range_1_start(self) -> int:
@@ -140,8 +139,19 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
     def __init__(
         self,
         scripts: Optional[List[MonsterScript]] = None,
+        range_1_start: int = BANK_RANGE_1_START,
+        range_1_end: int = BANK_RANGE_1_END,
+        range_2_start: int = BANK_RANGE_2_START,
+        range_2_end: int = BANK_RANGE_2_END,
+        pointer_table_start: int = POINTER_TABLE_START,
     ) -> None:
+        self._range_1_start = range_1_start
+        self._range_1_end = range_1_end
+        self._range_2_start = range_2_start
+        self._range_2_end = range_2_end
+        self._pointer_table_start = pointer_table_start
         super().__init__(scripts)
+        print(len(scripts), self.script_count)
 
     def render(self) -> Tuple[bytearray, bytearray]:
         """Return this script as two bytearrays
@@ -181,12 +191,12 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
                         raise ScriptBankTooLongException(
                             f"no room for monster script {script_index}"
                         )
-                    position_2 += script_size
                     ptr = UInt16(position_2 & 0xFFFF).little_endian()
+                    position_2 += script_size
                     bank_2 += rendered_script
                 else:
-                    position_1 += script_size
                     ptr = UInt16(position_1 & 0xFFFF).little_endian()
+                    position_1 += script_size
                     bank_1 += rendered_script
                 already_rendered = rendered_script
                 already_rendered_ptrs[script_index] = ptr

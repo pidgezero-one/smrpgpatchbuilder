@@ -511,11 +511,6 @@ test_cases = [
         expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
     ),
     Case(
-        "Z coord +1!",
-        commands_factory=lambda: [A_Walk1StepNorthwest()],
-        expected_bytes=[0x45],
-    ),
-    Case(
         "Walk xx steps east",
         commands_factory=lambda: [A_WalkEastSteps(10)],
         expected_bytes=[0x50, 0x0A],
@@ -673,6 +668,24 @@ test_cases = [
         ],
     ),
     Case(
+        "A_EmbeddedAnimationRoutine invalid header",
+        commands_factory=lambda: [
+            A_EmbeddedAnimationRoutine(
+                bytearray(
+                    b"\x01\x00\x00\x00\x00\x00\x00\x00\x04\x00\x01\x00\x00\x00\x04\x80"
+                )
+            )
+        ],
+        exception_type=AssertionError,
+    ),
+    Case(
+        "A_EmbeddedAnimationRoutine invalid length",
+        commands_factory=lambda: [
+            A_EmbeddedAnimationRoutine(bytearray(b"(\x00\x00\x00\x00\x00\x00"))
+        ],
+        exception_type=AssertionError,
+    ),
+    Case(
         "A_Walk1StepEast",
         commands_factory=lambda: [A_Walk1StepEast()],
         expected_bytes=[0x40],
@@ -812,73 +825,27 @@ test_cases = [
         commands_factory=lambda: [A_TurnRandomDirection()],
         expected_bytes=[0x7A],
     ),
-    #
-    # Tests with defined GOTOs
-    #
     Case(
-        "Basic GOTO",
-        commands_factory=lambda: [
-            A_StopSound(),
-            A_Set700CToTappedButton(identifier="jmp_here"),
-            A_Jmp(destinations=["jmp_here"]),
-        ],
-        expected_bytes=[0x9B, 0xCB, 0xD2, 0x03, 0x00],
+        label="A_AddConstToVar",
+        commands_factory=lambda: [A_AddConstToVar()],
+        expected_bytes=[],
+    ),
+    Case(label="A_Inc", commands_factory=lambda: [A_Inc()], expected_bytes=[]),
+    Case(label="A_Dec", commands_factory=lambda: [A_Dec()], expected_bytes=[]),
+    Case(
+        label="A_CopyVarToVar",
+        commands_factory=lambda: [A_CopyVarToVar()],
+        expected_bytes=[],
     ),
     Case(
-        "Should fail if GOTO destination doesn't match anything",
-        commands_factory=lambda: [
-            A_StopSound(),
-            A_Set700CToTappedButton(identifier="jmp_fails"),
-            A_Jmp(destinations=["jmp_here"]),
-        ],
-        exception="couldn't find destination jmp_here",
-        exception_type=IdentifierException,
+        label="A_CompareVarToConst",
+        commands_factory=lambda: [A_CompareVarToConst()],
+        expected_bytes=[],
     ),
     Case(
-        "Should fail if GOTO finds multiple matches",
-        commands_factory=lambda: [
-            A_StopSound(),
-            A_Set700CToTappedButton(identifier="jmp_here"),
-            A_Jmp(destinations=["jmp_here"]),
-            A_ReturnQueue(identifier="jmp_here"),
-        ],
-        exception="duplicate command identifier found: jmp_here",
-        exception_type=IdentifierException,
-    ),
-    Case(
-        "Jump to subroutine",
-        commands_factory=lambda: [
-            A_StopSound(),
-            A_JmpToSubroutine(destinations=["jmp_here"]),
-            A_ReturnQueue(),
-            A_Set700CToTappedButton(identifier="jmp_here"),
-            A_ReturnAll(),
-        ],
-        expected_bytes=[0x9B, 0xD3, 0x07, 0x00, 0xFE, 0xCB, 0xFF],
-    ),
-    Case(
-        "Jump if bit set",
-        commands_factory=lambda: [
-            A_JmpIfBitSet(TEMP_7043_5, ["end_here"]),
-            A_JmpIfBitSet(MAP_MENU_UNLOCKED, ["end_here"]),
-            A_JmpIfBitSet(SEASIDE_SHED_EMPTIED, ["end_here"]),
-            A_ReturnQueue(identifier="end_here"),
-        ],
-        expected_bytes=[
-            0xD8,
-            0x1D,
-            0x0E,
-            0x00,
-            0xD9,
-            0x10,
-            0x0E,
-            0x00,
-            0xDA,
-            0x36,
-            0x0E,
-            0x00,
-            0xFE,
-        ],
+        label="A_Compare700CToVar",
+        commands_factory=lambda: [A_Compare700CToVar()],
+        expected_bytes=[],
     ),
     Case(
         "A_StopSound",
@@ -996,6 +963,462 @@ test_cases = [
         expected_bytes=[0x0E, 0x02],
     ),
     Case(
+        label="A_SetVarToRandom",
+        commands_factory=lambda: [A_SetVarToRandom()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_AddVarTo700C",
+        commands_factory=lambda: [A_AddVarTo700C()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_DecVarFrom700C",
+        commands_factory=lambda: [A_DecVarFrom700C()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SwapVars", commands_factory=lambda: [A_SwapVars()], expected_bytes=[]
+    ),
+    Case(
+        label="A_Move70107015To7016701B",
+        commands_factory=lambda: [A_Move70107015To7016701B()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Move7016701BTo70107015",
+        commands_factory=lambda: [A_Move7016701BTo70107015()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700CAndConst",
+        commands_factory=lambda: [A_Mem700CAndConst()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700CAndVar",
+        commands_factory=lambda: [A_Mem700CAndVar()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700COrConst",
+        commands_factory=lambda: [A_Mem700COrConst()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700COrVar",
+        commands_factory=lambda: [A_Mem700COrVar()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700CXorConst",
+        commands_factory=lambda: [A_Mem700CXorConst()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Mem700CXorVar",
+        commands_factory=lambda: [A_Mem700CXorVar()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_VarShiftLeft",
+        commands_factory=lambda: [A_VarShiftLeft()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_LoadMemory",
+        commands_factory=lambda: [A_LoadMemory()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SetSpriteSequence",
+        commands_factory=lambda: [A_SetSpriteSequence()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SetSequenceSpeed",
+        commands_factory=lambda: [A_SetSequenceSpeed()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SetWalkingSpeed",
+        commands_factory=lambda: [A_SetWalkingSpeed()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SetAllSpeeds",
+        commands_factory=lambda: [A_SetAllSpeeds()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_MaximizeSequenceSpeed",
+        commands_factory=lambda: [A_MaximizeSequenceSpeed()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_MaximizeSequenceSpeed86",
+        commands_factory=lambda: [A_MaximizeSequenceSpeed86()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Set700CToCurrentLevel",
+        commands_factory=lambda: [A_Set700CToCurrentLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Set700CToPressedButton",
+        commands_factory=lambda: [A_Set700CToPressedButton()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_BPL262728", commands_factory=lambda: [A_BPL262728()], expected_bytes=[]
+    ),
+    Case(
+        label="A_BMI262728", commands_factory=lambda: [A_BMI262728()], expected_bytes=[]
+    ),
+    Case(label="A_BPL2627", commands_factory=lambda: [A_BPL2627()], expected_bytes=[]),
+    Case(
+        label="A_SummonObjectToSpecificLevel",
+        commands_factory=lambda: [A_SummonObjectToSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_SummonObjectAt70A8ToCurrentLevel",
+        commands_factory=lambda: [A_SummonObjectAt70A8ToCurrentLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_RemoveObjectFromSpecificLevel",
+        commands_factory=lambda: [A_RemoveObjectFromSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_RemoveObjectAt70A8FromCurrentLevel",
+        commands_factory=lambda: [A_RemoveObjectAt70A8FromCurrentLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_EnableObjectTriggerInSpecificLevel",
+        commands_factory=lambda: [A_EnableObjectTriggerInSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_EnableTriggerOfObjectAt70A8InCurrentLevel",
+        commands_factory=lambda: [A_EnableTriggerOfObjectAt70A8InCurrentLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_DisableObjectTriggerInSpecificLevel",
+        commands_factory=lambda: [A_DisableObjectTriggerInSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_DisableTriggerOfObjectAt70A8InCurrentLevel",
+        commands_factory=lambda: [A_DisableTriggerOfObjectAt70A8InCurrentLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSoutheastSteps",
+        commands_factory=lambda: [A_WalkSoutheastSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSouthSteps",
+        commands_factory=lambda: [A_WalkSouthSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSouthwestSteps",
+        commands_factory=lambda: [A_WalkSouthwestSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkWestSteps",
+        commands_factory=lambda: [A_WalkWestSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNorthwestSteps",
+        commands_factory=lambda: [A_WalkNorthwestSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNorthSteps",
+        commands_factory=lambda: [A_WalkNorthSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNortheastSteps",
+        commands_factory=lambda: [A_WalkNortheastSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkFDirectionSteps",
+        commands_factory=lambda: [A_WalkFDirectionSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftZUpSteps",
+        commands_factory=lambda: [A_ShiftZUpSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftZDownSteps",
+        commands_factory=lambda: [A_ShiftZDownSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkEastPixels",
+        commands_factory=lambda: [A_WalkEastPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSoutheastPixels",
+        commands_factory=lambda: [A_WalkSoutheastPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSouthPixels",
+        commands_factory=lambda: [A_WalkSouthPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkSouthwestPixels",
+        commands_factory=lambda: [A_WalkSouthwestPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkWestPixels",
+        commands_factory=lambda: [A_WalkWestPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNorthwestPixels",
+        commands_factory=lambda: [A_WalkNorthwestPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNorthPixels",
+        commands_factory=lambda: [A_WalkNorthPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkNortheastPixels",
+        commands_factory=lambda: [A_WalkNortheastPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkFDirectionPixels",
+        commands_factory=lambda: [A_WalkFDirectionPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkFDirection16Pixels",
+        commands_factory=lambda: [A_WalkFDirection16Pixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftZUpPixels",
+        commands_factory=lambda: [A_ShiftZUpPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftZDownPixels",
+        commands_factory=lambda: [A_ShiftZDownPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TurnClockwise45DegreesNTimes",
+        commands_factory=lambda: [A_TurnClockwise45DegreesNTimes()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JumpToHeight",
+        commands_factory=lambda: [A_JumpToHeight()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkToXYCoords",
+        commands_factory=lambda: [A_WalkToXYCoords()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkXYSteps",
+        commands_factory=lambda: [A_WalkXYSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftToXYCoords",
+        commands_factory=lambda: [A_ShiftToXYCoords()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftXYSteps",
+        commands_factory=lambda: [A_ShiftXYSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_ShiftXYPixels",
+        commands_factory=lambda: [A_ShiftXYPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferToObjectXY",
+        commands_factory=lambda: [A_TransferToObjectXY()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferToObjectXYZ",
+        commands_factory=lambda: [A_TransferToObjectXYZ()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_RunAwayShift",
+        commands_factory=lambda: [A_RunAwayShift()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferTo70167018",
+        commands_factory=lambda: [A_TransferTo70167018()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferTo70167018701A",
+        commands_factory=lambda: [A_TransferTo70167018701A()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkTo70167018",
+        commands_factory=lambda: [A_WalkTo70167018()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_WalkTo70167018701A",
+        commands_factory=lambda: [A_WalkTo70167018701A()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_BounceToXYWithHeight",
+        commands_factory=lambda: [A_BounceToXYWithHeight()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_BounceXYStepsWithHeight",
+        commands_factory=lambda: [A_BounceXYStepsWithHeight()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferToXYZF",
+        commands_factory=lambda: [A_TransferToXYZF()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferXYZFSteps",
+        commands_factory=lambda: [A_TransferXYZFSteps()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_TransferXYZFPixels",
+        commands_factory=lambda: [A_TransferXYZFPixels()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_Set700CToObjectCoord",
+        commands_factory=lambda: [A_Set700CToObjectCoord()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_PlaySound", commands_factory=lambda: [A_PlaySound()], expected_bytes=[]
+    ),
+    Case(
+        label="A_PlaySoundBalance",
+        commands_factory=lambda: [A_PlaySoundBalance()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_FadeOutSoundToVolume",
+        commands_factory=lambda: [A_FadeOutSoundToVolume()],
+        expected_bytes=[],
+    ),
+    #
+    # Tests with defined GOTOs
+    #
+    Case(
+        "Basic GOTO",
+        commands_factory=lambda: [
+            A_StopSound(),
+            A_Set700CToTappedButton(identifier="jmp_here"),
+            A_Jmp(destinations=["jmp_here"]),
+        ],
+        expected_bytes=[0x9B, 0xCB, 0xD2, 0x03, 0x00],
+    ),
+    Case(
+        "Should fail if GOTO destination doesn't match anything",
+        commands_factory=lambda: [
+            A_StopSound(),
+            A_Set700CToTappedButton(identifier="jmp_fails"),
+            A_Jmp(destinations=["jmp_here"]),
+        ],
+        exception="couldn't find destination jmp_here",
+        exception_type=IdentifierException,
+    ),
+    Case(
+        "Should fail if GOTO finds multiple matches",
+        commands_factory=lambda: [
+            A_StopSound(),
+            A_Set700CToTappedButton(identifier="jmp_here"),
+            A_Jmp(destinations=["jmp_here"]),
+            A_ReturnQueue(identifier="jmp_here"),
+        ],
+        exception="duplicate command identifier found: jmp_here",
+        exception_type=IdentifierException,
+    ),
+    Case(
+        "Jump to subroutine",
+        commands_factory=lambda: [
+            A_StopSound(),
+            A_JmpToSubroutine(destinations=["jmp_here"]),
+            A_ReturnQueue(),
+            A_Set700CToTappedButton(identifier="jmp_here"),
+            A_ReturnAll(),
+        ],
+        expected_bytes=[0x9B, 0xD3, 0x07, 0x00, 0xFE, 0xCB, 0xFF],
+    ),
+    Case(
+        "Jump if bit set",
+        commands_factory=lambda: [
+            A_JmpIfBitSet(TEMP_7043_5, ["end_here"]),
+            A_JmpIfBitSet(MAP_MENU_UNLOCKED, ["end_here"]),
+            A_JmpIfBitSet(SEASIDE_SHED_EMPTIED, ["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[
+            0xD8,
+            0x1D,
+            0x0E,
+            0x00,
+            0xD9,
+            0x10,
+            0x0E,
+            0x00,
+            0xDA,
+            0x36,
+            0x0E,
+            0x00,
+            0xFE,
+        ],
+    ),
+    Case(
+        label="A_JmpIfComparisonResultIsGreaterOrEqual",
+        commands_factory=lambda: [A_JmpIfComparisonResultIsGreaterOrEqual()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfComparisonResultIsLesser",
+        commands_factory=lambda: [A_JmpIfComparisonResultIsLesser()],
+        expected_bytes=[],
+    ),
+    Case(
         "Jump if bit clear",
         commands_factory=lambda: [
             A_JmpIfBitClear(TEMP_7043_5, ["end_here"]),
@@ -1037,6 +1460,106 @@ test_cases = [
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[0x3A, 0x15, 0x06, 0x14, 0x08, 0x00, 0xFE],
+    ),
+    Case(
+        label="A_JmpIfVarEqualsConst",
+        commands_factory=lambda: [A_JmpIfVarEqualsConst()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfVarNotEqualsConst",
+        commands_factory=lambda: [A_JmpIfVarNotEqualsConst()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIf700CAllBitsClear",
+        commands_factory=lambda: [A_JmpIf700CAllBitsClear()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIf700CAnyBitsSet",
+        commands_factory=lambda: [A_JmpIf700CAnyBitsSet()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfRandom2of3",
+        commands_factory=lambda: [A_JmpIfRandom2of3()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfRandom1of2",
+        commands_factory=lambda: [A_JmpIfRandom1of2()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfLoadedMemoryIs0",
+        commands_factory=lambda: [A_JmpIfLoadedMemoryIs0()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfLoadedMemoryIsAboveOrEqual0",
+        commands_factory=lambda: [A_JmpIfLoadedMemoryIsAboveOrEqual0()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfLoadedMemoryIsBelow0",
+        commands_factory=lambda: [A_JmpIfLoadedMemoryIsBelow0()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfLoadedMemoryIsNot0",
+        commands_factory=lambda: [A_JmpIfLoadedMemoryIsNot0()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfObjectWithinRange",
+        commands_factory=lambda: [A_JmpIfObjectWithinRange()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfObjectWithinRangeSameZ",
+        commands_factory=lambda: [A_JmpIfObjectWithinRangeSameZ()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_CreatePacketAtObjectCoords",
+        commands_factory=lambda: [A_CreatePacketAtObjectCoords()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_CreatePacketAt7010",
+        commands_factory=lambda: [A_CreatePacketAt7010()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_CreatePacketAt7010WithEvent",
+        commands_factory=lambda: [A_CreatePacketAt7010WithEvent()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfObjectInSpecificLevel",
+        commands_factory=lambda: [A_JmpIfObjectInSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfObjectNotInSpecificLevel",
+        commands_factory=lambda: [A_JmpIfObjectNotInSpecificLevel()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfObjectInAir",
+        commands_factory=lambda: [A_JmpIfObjectInAir()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_UnknownJmp3C",
+        commands_factory=lambda: [A_UnknownJmp3C()],
+        expected_bytes=[],
+    ),
+    Case(
+        label="A_JmpIfMarioInAir",
+        commands_factory=lambda: [A_JmpIfMarioInAir()],
+        expected_bytes=[],
     ),
     #
     # Unknown command tests
@@ -1084,6 +1607,8 @@ test_cases = [
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
+    if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+        return
     if case.exception or case.exception_type:
         with pytest.raises(case.exception_type) as exc_info:
             commands = case.commands_factory()
