@@ -246,4 +246,6 @@ from .commands import (
     RunStarPieceSequence,
     StartBattleAtBattlefield,
     StartBattleWithPackAt700E,
+    ReduceMusicPitchBy,
+    IncreaseMusicPitchBy,
 )

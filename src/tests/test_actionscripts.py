@@ -881,6 +881,121 @@ test_cases = [
         ],
     ),
     Case(
+        "A_StopSound",
+        commands_factory=lambda: [A_StopSound()],
+        expected_bytes=[0x9B],
+    ),
+    Case(
+        "A_EndLoop",
+        commands_factory=lambda: [A_EndLoop()],
+        expected_bytes=[0xD7],
+    ),
+    Case(
+        "A_ReturnQueue",
+        commands_factory=lambda: [A_ReturnQueue()],
+        expected_bytes=[0xFE],
+    ),
+    Case(
+        "A_ReturnAll",
+        commands_factory=lambda: [A_ReturnAll()],
+        expected_bytes=[0xFF],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(0)],
+        expected_bytes=[0x0D, 0x00],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(1)],
+        expected_bytes=[0x0D, 0x01],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(2)],
+        expected_bytes=[0x0D, 0x02],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(3)],
+        expected_bytes=[0x0D, 0x03],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(4)],
+        expected_bytes=[0x0D, 0x04],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(5)],
+        expected_bytes=[0x0D, 0x05],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(6)],
+        expected_bytes=[0x0D, 0x06],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(7)],
+        expected_bytes=[0x0D, 0x07],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(8)],
+        expected_bytes=[0x0D, 0x08],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(9)],
+        expected_bytes=[0x0D, 0x09],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(10)],
+        expected_bytes=[0x0D, 0x0A],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(11)],
+        expected_bytes=[0x0D, 0x0B],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(12)],
+        expected_bytes=[0x0D, 0x0C],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(13)],
+        expected_bytes=[0x0D, 0x0D],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(14)],
+        expected_bytes=[0x0D, 0x0E],
+    ),
+    Case(
+        "A_SetPaletteRow",
+        commands_factory=lambda: [A_SetPaletteRow(15)],
+        expected_bytes=[0x0D, 0x0F],
+    ),
+    Case(
+        "A_IncPaletteRowBy0",
+        commands_factory=lambda: [A_IncPaletteRowBy(0)],
+        expected_bytes=[0x0E, 0x00],
+    ),
+    Case(
+        "A_IncPaletteRowBy1",
+        commands_factory=lambda: [A_IncPaletteRowBy(1)],
+        expected_bytes=[0x0F],
+    ),
+    Case(
+        "A_IncPaletteRowBy2",
+        commands_factory=lambda: [A_IncPaletteRowBy(rows=2)],
+        expected_bytes=[0x0E, 0x02],
+    ),
+    Case(
         "Jump if bit clear",
         commands_factory=lambda: [
             A_JmpIfBitClear(TEMP_7043_5, ["end_here"]),
