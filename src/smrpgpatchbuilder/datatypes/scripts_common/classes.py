@@ -16,9 +16,20 @@ from copy import deepcopy
 
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar, TimerVar
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
-from smrpgpatchbuilder.datatypes.numbers.classes import Int8, Int16, UInt16, UInt8, UInt4
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import (
+    ShortVar,
+    TimerVar,
+)
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import (
+    ByteVar,
+)
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    Int8,
+    Int16,
+    UInt16,
+    UInt8,
+    UInt4,
+)
 
 
 class IdentifierException(Exception):
@@ -52,17 +63,17 @@ class TransformableIdentifier:
     by identifier will have their actual goto address value reflect whatever
     address the destination identifier ends up being located at."""
 
-    _name: str
+    _label: str = ""
     _address: int
 
-    def __init__(self, name: str) -> None:
-        assert name is not None and len(name) > 0
-        self._name = name
+    def __init__(self, identifier: str) -> None:
+        assert identifier is not None and len(identifier) > 0
+        self._label = identifier
 
     @property
-    def name(self) -> str:
+    def label(self) -> str:
         """The name string used to identify a command."""
-        return self._name
+        return self._label
 
     @property
     def address(self) -> int:
@@ -84,7 +95,7 @@ class TransformableIdentifier:
         self._address = address
 
     def __str__(self):
-        return self._name
+        return self._label
 
 
 class ScriptCommand:
@@ -358,7 +369,7 @@ class Script(Generic[ScriptCommandT]):
             (
                 i
                 for i, cmd in enumerate(self._contents)
-                if cmd.identifier.name == identifier
+                if cmd.identifier.label == identifier
             ),
             -1,
         )
@@ -445,7 +456,7 @@ class Script(Generic[ScriptCommandT]):
             (
                 i
                 for i, command in enumerate(self._contents)
-                if command.identifier.name == identifier
+                if command.identifier.label == identifier
             ),
             -1,
         )
@@ -541,10 +552,10 @@ class ScriptBank(Generic[ScriptT]):
     ) -> None:
         destination: TransformableIdentifier
         for destination in identifiers:
-            key: str = destination.name
+            key: str = destination.label
             if key not in self.addresses:
                 if "ILLEGAL_JUMP_" in key:
-                    destination.set_address((int(key[-4:], 16) &0xFFFF))
+                    destination.set_address((int(key[-4:], 16) & 0xFFFF))
                     return
                 else:
                     raise IdentifierException(f"couldn't find destination {key}")

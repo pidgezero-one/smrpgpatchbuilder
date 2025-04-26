@@ -1187,7 +1187,7 @@ VARIABLES = [
 
 
 battle_lengths = [
-    1, #00
+    1,  # 00
     1,
     1,
     1,
@@ -1203,7 +1203,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #10
+    1,  # 10
     1,
     1,
     1,
@@ -1219,7 +1219,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #20
+    1,  # 20
     1,
     1,
     1,
@@ -1235,7 +1235,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #30
+    1,  # 30
     1,
     1,
     1,
@@ -1251,7 +1251,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #40
+    1,  # 40
     1,
     1,
     1,
@@ -1267,7 +1267,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #50
+    1,  # 50
     1,
     1,
     1,
@@ -1283,7 +1283,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #60
+    1,  # 60
     1,
     1,
     1,
@@ -1299,7 +1299,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #70
+    1,  # 70
     1,
     1,
     1,
@@ -1315,7 +1315,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #80
+    1,  # 80
     1,
     1,
     1,
@@ -1331,7 +1331,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #90
+    1,  # 90
     1,
     1,
     1,
@@ -1347,7 +1347,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #A0
+    1,  # A0
     1,
     1,
     1,
@@ -1363,7 +1363,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #B0
+    1,  # B0
     1,
     1,
     1,
@@ -1379,7 +1379,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1, #C0
+    1,  # C0
     1,
     1,
     1,
@@ -1394,9 +1394,8 @@ battle_lengths = [
     1,
     1,
     1,
-    1, 
-    1, #D0
     1,
+    1,  # D0
     1,
     1,
     1,
@@ -1410,8 +1409,9 @@ battle_lengths = [
     1,
     1,
     1,
-    1, 
-    4, #E0
+    1,
+    1,
+    4,  # E0
     0,
     2,
     2,
@@ -1426,8 +1426,8 @@ battle_lengths = [
     1,
     2,
     0,
-    2, 
-    4, #F0
+    2,
+    4,  # F0
     2,
     3,
     3,
@@ -1445,6 +1445,7 @@ battle_lengths = [
     1,
 ]
 
+
 def tokenize(rom, start):
     dex = start
     ff_seen = False
@@ -1460,12 +1461,13 @@ def tokenize(rom, start):
         dex += l
     return acc
 
+
 def pythonize(command):
     opcode = command[0]
     args = {}
     cls = None
     include_argnames = True
-    
+
     match opcode:
         case 0xE0:
             cls = "Attack"
@@ -1615,7 +1617,9 @@ def pythonize(command):
                     if nums[0] == nums[1]:
                         args["spells"] = "[%s]" % SPELLS[nums[0]]
                     else:
-                        args["spells"] = "[%s]" % ", ".join(SPELLS[nums[0]], SPELLS[nums[1]])
+                        args["spells"] = "[%s]" % ", ".join(
+                            SPELLS[nums[0]], SPELLS[nums[1]]
+                        )
                 case 0x03:
                     cls = "IfTargetedByItem"
                     include_argnames = False
@@ -1625,7 +1629,9 @@ def pythonize(command):
                     if nums[0] == nums[1]:
                         args["items"] = "[%s]" % ITEMS[nums[0]]
                     else:
-                        args["items"] = "[%s]" % ", ".join(ITEMS[nums[0]], ITEMS[nums[1]])
+                        args["items"] = "[%s]" % ", ".join(
+                            ITEMS[nums[0]], ITEMS[nums[1]]
+                        )
                 case 0x04:
                     cls = "IfTargetedByElement"
                     include_argnames = False
@@ -1756,7 +1762,7 @@ def pythonize(command):
                 args["attack_1"] = ATTACKS[opcode]
                 include_argnames = False
             else:
-                cls = "Db"
+                cls = "UnknownCommand"
                 args["bytes"] = "%r" % command
                 include_argnames = False
     arg_strings = []
@@ -1768,7 +1774,7 @@ def pythonize(command):
     arg_string = ", ".join(arg_strings)
     output = "%s(%s%s)" % (cls, arg_string, "")
     return output
-    
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -1790,10 +1796,14 @@ class Command(BaseCommand):
             ptr = shortify(rom, ptr_location)
             script_location = start + ptr
             script = tokenize(rom, script_location)
-            
+
             output = "# %i - %s" % (monster_id, ENEMIES[monster_id])
-            output += "\n\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
-            output += "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+            output += (
+                "\n\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
+            )
+            output += (
+                "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+            )
             output += "\nfrom smrpgpatchbuilder.datatypes.monster_scripts import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts.ids.battle_events import *"
             output += "\n\nscript = MonsterScript([\n\t"
@@ -1807,12 +1817,17 @@ class Command(BaseCommand):
         open(f"{output_path}/scripts/__init__.py", "w")
         open(f"{output_path}/__init__.py", "w")
         module = open(f"{output_path}/monster_scripts.py", "w")
-        writeline(module, f"from smrpgpatchbuilder.datatypes.monster_scripts.types import MonsterScriptBank")
+        writeline(
+            module,
+            f"from smrpgpatchbuilder.datatypes.monster_scripts.types import MonsterScriptBank",
+        )
         for monster_id in range(256):
-            writeline(module, f"from .scripts.script_{monster_id} import script as script_{monster_id}")
+            writeline(
+                module,
+                f"from .scripts.script_{monster_id} import script as script_{monster_id}",
+            )
         writeline(module, "monster_scripts = MonsterScriptBank([")
         for monster_id in range(256):
             writeline(module, f"\tscript_{monster_id},")
         writeline(module, "])")
         module.close()
-            

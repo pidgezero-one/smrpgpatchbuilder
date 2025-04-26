@@ -231,4 +231,5 @@ from .commands import (
     StopWaveEffect,
     JmpIfTimedHitSuccess,
     UnknownCommand,
+    GameOverIfNoAlliesStanding,
 )

@@ -4547,7 +4547,7 @@ class GameOverIfNoAlliesStanding(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x45
+    _opcode: int = 0x46
 
 
 class PauseScriptUntilSpriteSequenceDone(
@@ -4885,7 +4885,7 @@ class ObjectQueueAtOffsetAndIndexAtAMEM60(
 
     def set_target_address(self, target_address: int) -> None:
         """Update the base address."""
-        self.set_targets(target_address, [ident.name for ident in self.destinations])
+        self.set_targets(target_address, [ident.label for ident in self.destinations])
 
     def set_destinations(self, destinations: List[str]) -> None:
         """Set the identifier of a specific command to start running at."""
@@ -4954,7 +4954,7 @@ class ObjectQueueAtOffsetAndIndex(
 
     def set_target_address(self, target_address: int) -> None:
         """Update the base address."""
-        self.set_targets(target_address, [ident.name for ident in self.destinations])
+        self.set_targets(target_address, [ident.label for ident in self.destinations])
 
     def set_destinations(self, destinations: List[str]) -> None:
         """Set the identifier of a specific command to start running at."""

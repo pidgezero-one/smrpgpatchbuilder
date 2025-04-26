@@ -16,14 +16,14 @@ class AnimationScriptCommand(ScriptCommand):
 
     def verify_position(self, position: int) -> None:
         """Issues a warning if commands labeled as queuestart are not at their intended address."""
-        if "queuestart_" in self.identifier.name:
-            chunks = "_".split(self.identifier.name)
+        if "queuestart_" in self.identifier.label:
+            chunks = "_".split(self.identifier.label)
             if len(chunks) == 2:
                 try:
                     expected_addr: int = int(chunks[1], 16)
                     if expected_addr != position:
                         print(
-                            f"warning: {self.identifier.name} has moved to 0x{position:06X}"
+                            f"warning: {self.identifier.label} has moved to 0x{position:06X}"
                         )
                 except ValueError:
                     pass
@@ -187,7 +187,7 @@ class AnimationScriptUnknownJmp2X(AnimationScriptCommandWithJmps):
     def param_2(self) -> UInt16:
         """Unknown argument"""
         return self._param_2
-    
+
     def set_param_2(self, param_2: int) -> None:
         self._param_2 = UInt16(param_2)
 

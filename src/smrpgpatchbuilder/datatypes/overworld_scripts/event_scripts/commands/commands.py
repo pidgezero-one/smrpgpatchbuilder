@@ -2081,7 +2081,7 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
             self._size = 3
@@ -2118,7 +2118,7 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB0, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -2518,7 +2518,7 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
             to_var = self.to_var
         if isinstance(from_var, ByteVar) and isinstance(to_var, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{from_var:04x} 0x{to_var:04x}"
+                f"illegal args for {self.identifier.label}: 0x{from_var:04x} 0x{to_var:04x}"
             )
 
     @property
@@ -2561,7 +2561,7 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(self.from_var, ShortVar) and isinstance(self.to_var, ShortVar):
             return super().render(0xBC, self.from_var, self.to_var)
         raise InvalidCommandArgumentException(
-            f"""illegal args for {self.identifier.name}: 
+            f"""illegal args for {self.identifier.label}: 
             0x{self.from_var:04x} 0x{self.to_var:04x}"""
         )
 
@@ -2900,7 +2900,7 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
             self._size = 3
@@ -2937,7 +2937,7 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB1, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -2971,7 +2971,7 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB2, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
 
 
@@ -3005,7 +3005,7 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB3, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
 
 
@@ -3312,7 +3312,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
             self._size = 5
@@ -3352,7 +3352,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
                 0xE4, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -3404,7 +3404,7 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
             self._size = 5
@@ -3444,7 +3444,7 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
                 0xE5, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 

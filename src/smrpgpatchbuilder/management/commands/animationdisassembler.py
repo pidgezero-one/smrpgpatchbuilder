@@ -4551,7 +4551,7 @@ def convert_event_script_command(command, valid_identifiers):
         if cmd[3] != 0:
             args["offset"] = str(cmd[3])
     else:
-        cls = "Db"
+        cls = "UnknownCommand"
         include_argnames = False
         args["args"] = "%r" % bytearray(cmd)
 

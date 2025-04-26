@@ -140,7 +140,7 @@ class ActionScriptBank(ScriptBank):
     def _associate_address(
         self, command: UsableActionScriptCommand, position: int
     ) -> int:
-        key: str = command.identifier.name
+        key: str = command.identifier.label
         if key in self.addresses:
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position

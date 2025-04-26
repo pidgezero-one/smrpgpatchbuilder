@@ -8,10 +8,10 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
     EventScriptCommandActionScriptContainer,
     UsableEventScriptCommand,
-    NonEmbeddedActionQueuePrototype
+    NonEmbeddedActionQueuePrototype,
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.commands import (
-    StopSound
+    StopSound,
 )
 
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
@@ -167,7 +167,7 @@ class EventScriptBank(ScriptBank[EventScript]):
         command: Union[UsableEventScriptCommand, UsableActionScriptCommand],
         position: int,
     ) -> int:
-        key: str = command.identifier.name
+        key: str = command.identifier.label
         if key in self.addresses:
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position
@@ -207,8 +207,10 @@ class EventScriptBank(ScriptBank[EventScript]):
                             c.insert(index, StopSound())
                             position += 1
                     else:
-                        raise ScriptBankTooLongException(f"too many commands in script {script_id} before non-embedded action queue")
-                
+                        raise ScriptBankTooLongException(
+                            f"too many commands in script {script_id} before non-embedded action queue"
+                        )
+
                 position = self._associate_address(command, position)
             script.set_contents(c)
 

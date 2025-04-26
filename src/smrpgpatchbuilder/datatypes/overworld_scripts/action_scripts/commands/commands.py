@@ -1797,7 +1797,7 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
         if self.arg_1 == 0x0E:
             return super().render(0x14, flags)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: {flags}"
+            f"illegal args for {self.identifier.label}: {flags}"
         )
 
 
@@ -1917,7 +1917,7 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
             opcode = bytearray([0xFD, 0x18])
         else:
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: {args}"
+                f"illegal args for {self.identifier.label}: {args}"
             )
         return super().render(opcode)
 
@@ -2026,7 +2026,7 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
             opcode = bytearray([0xFD, 0x0C])
         else:
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: {args}"
+                f"illegal args for {self.identifier.label}: {args}"
             )
         return super().render(opcode)
 
@@ -2116,7 +2116,7 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
         if args == (0x0C, [4], [3, 5]):
             return super().render(0xFD, 0x15)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: {args}"
+            f"illegal args for {self.identifier.label}: {args}"
         )
 
 
@@ -2477,7 +2477,7 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04X}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 3
@@ -2514,7 +2514,7 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB0, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -2559,7 +2559,7 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 3
@@ -2596,7 +2596,7 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB1, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -2630,7 +2630,7 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB2, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
 
 
@@ -2664,7 +2664,7 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB3, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
 
 
@@ -2708,7 +2708,7 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             to_var = self.to_var
         if isinstance(from_var, ByteVar) and isinstance(to_var, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{from_var:04x} 0x{to_var:04x}"
+                f"illegal args for {self.identifier.label}: 0x{from_var:04x} 0x{to_var:04x}"
             )
         if PRIMARY_TEMP_700C not in (self.from_var, self.to_var):
             self._size: int = 3
@@ -2748,7 +2748,7 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(self.from_var, ShortVar) and isinstance(self.to_var, ShortVar):
             return super().render(0xBC, self.from_var, self.to_var)
         raise InvalidCommandArgumentException(
-            f"""illegal args for {self.identifier.name}: 
+            f"""illegal args for {self.identifier.label}: 
             0x{self.from_var:04x} 0x{self.to_var:04x}"""
         )
 
@@ -3080,7 +3080,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 5
@@ -3120,7 +3120,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
                 0xE4, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 
@@ -3172,7 +3172,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.name}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 5
@@ -3212,7 +3212,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
                 0xE5, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.name}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
 

@@ -1,6 +1,6 @@
 """Base classes supporting battle animation script assembly."""
 
-from typing import List, Optional, Dict, Type, Union
+from typing import List, Optional, Dict, Type, Union, cast
 
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     IdentifierException,
@@ -115,11 +115,18 @@ class BattleAnimationScript(AnimationScript):
         self._header = [TransformableIdentifier(identifier) for identifier in header]
         super().__init__(script)
 
+    @property
+    def length(self) -> int:
+        """The expected length of this script in bytes."""
+        return sum(cast(List[int], [c.size for c in self.contents])) + 2 * len(
+            self._header
+        )
+
     def render(self, position: Optional[int] = None) -> bytearray:
         if position is None:
             raise ValueError
         true_address: bytearray = UInt16(
-            (position & 0xFFFF) + 2 + len(self._header)
+            (position & 0xFFFF) + 2 * (len(self._header) + 1)
         ).little_endian()
         header: bytearray = bytearray()
         for dest in self.header:
@@ -231,7 +238,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         """Return a single command whose unique identifier matches the name provided."""
         for script in self._scripts:
             for command in script.contents:
-                if command.identifier.name == identifier:
+                if command.identifier.label == identifier:
                     return command
         raise IdentifierException(f"{identifier} not found")
 
@@ -241,7 +248,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         """Overwrite a single command whose unique identifier matches the name provided."""
         for script_id, script in enumerate(self._scripts):
             for index, command in enumerate(script.contents):
-                if command.identifier.name == identifier:
+                if command.identifier.label == identifier:
                     self._scripts[script_id].contents[index] = contents
                     return
         raise IdentifierException(f"{identifier} not found")
@@ -269,24 +276,24 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         self, command: UsableAnimationScriptCommand, position: int
     ) -> int:
         """Associates an identifier and an address as a key-value pair in the addresses dict."""
-        key: str = command.identifier.name
+        key: str = command.identifier.label
         if key in self.addresses:
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position
         # verify that this command isn't trying to go after the end of the bank
         # print(command.size, f'{position:06x}', command)
         if position >= self.end:
-            print(f'{self.start:06x} {position:06x} {self.end:06x}')
+            print(f"{self.start:06x} {position:06x} {self.end:06x}")
             raise IdentifierException(
                 f"can't add command at bank end: {key} @ {position:06x}"
             )
 
         position += command.size
 
-        #print("+", command.size, "=", f'{position:06x}')
+        # print("+", command.size, "=", f'{position:06x}')
         # verify that adding this command won't make the bank exceed its size
         if position > self.end:
-            print(f'{self.start:06x} {position:06x} {self.end:06x}')
+            print(f"{self.start:06x} {position:06x} {self.end:06x}")
             raise IdentifierException(
                 f"command exceeded max bank size: {key} @ {position:06x}"
             )
@@ -299,16 +306,33 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         script: Union[AnimationScript, BattleAnimationScript]
 
-        # replace jump placeholders with addresses
+        # validate bytes and set addresses
         for script in self.scripts:
+            script.contents[0].verify_position(position)
+            command_offset = 0
+            if isinstance(script, BattleAnimationScript):
+                length_without_header = sum([c.size for c in script.contents])
+                command_offset = script.length - length_without_header
+                position += command_offset
+            for command in script.contents:
+                position = self.associate_address(command, position)
+
+        # match identifiers
+        for script in self.scripts:
+            command_offset = 0
+            if isinstance(script, BattleAnimationScript):
+                length_without_header = sum([c.size for c in script.contents])
+                command_offset = script.length - length_without_header
+                position += command_offset
             self._populate_jumps(script)
             if isinstance(script, BattleAnimationScript):
                 self._set_identifier_addresses([h for h in script.header])
 
+        position: int = self._start
+
         # finalize bytes
-        for script in self.scripts:
-            if len(script.contents) > 0:
-                script.contents[0].verify_position(position)
+        for script_id, script in enumerate(self.scripts):
+            self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
             if isinstance(script, BattleAnimationScript):
                 rendered_script = script.render(position)
                 position += len(rendered_script)
@@ -323,12 +347,12 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         final_length: int = len(self.script_bytes)
         if final_length > expected_length:
             raise ScriptBankTooLongException(
-                f"action script output too long: got {final_length} expected {expected_length}"
+                f"animation script output too long: got {final_length} expected {expected_length}"
             )
         buffer: List[int] = [0xFF] * (expected_length - final_length)
         self.script_bytes.extend(buffer)
 
-        if self.pointer_table_start != 0:
+        if self.pointer_table_start != 0 and self.start - self.pointer_table_start >= 2:
             return self.pointer_bytes + self.script_bytes
         return self.script_bytes
 
@@ -361,7 +385,6 @@ class AnimationScriptBankCollection:
 
             script: Union[AnimationScript, BattleAnimationScript]
             command: UsableAnimationScriptCommand
-
 
             # build command name : address table for ENTIRE bank
             for i, script in enumerate(script_bank.scripts):

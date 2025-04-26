@@ -39,7 +39,7 @@ from dataclasses import dataclass
 @dataclass
 class Case:
     label: str
-    commands: List[UsableEventScriptCommand]
+    commands_factory: callable
     expected_bytes: Optional[List[int]] = None
     exception: Optional[str] = None
     exception_type: Optional[Type] = None
@@ -51,7 +51,7 @@ test_cases = [
     #
     Case(
         "Loop 10 frames",
-        commands=[StartLoopNFrames(10)],
+        commands_factory=lambda: [StartLoopNFrames(10)],
         expected_bytes=[0xD5, 0x0A, 0x00],
     ),
     #
@@ -59,7 +59,7 @@ test_cases = [
     #
     Case(
         "Basic GOTO",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             Set7000ToTappedButton(identifier="jmp_here"),
             Jmp(destinations=["jmp_here"]),
@@ -68,7 +68,7 @@ test_cases = [
     ),
     Case(
         "Should fail if GOTO destination doesn't match anything",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             Set7000ToTappedButton(identifier="jmp_fails"),
             Jmp(destinations=["jmp_here"]),
@@ -78,7 +78,7 @@ test_cases = [
     ),
     Case(
         "Should fail if GOTO finds multiple matches",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             Set7000ToTappedButton(identifier="jmp_here"),
             Jmp(destinations=["jmp_here"]),
@@ -89,7 +89,7 @@ test_cases = [
     ),
     Case(
         "Should not fail if GOTO destination uses illegal override format",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             Set7000ToTappedButton(),
             Jmp(destinations=["ILLEGAL_JUMP_0001"]),
@@ -101,7 +101,7 @@ test_cases = [
     #
     Case(
         "NEAQ already in desired position",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             StopSound(),
             StopSound(),
@@ -113,7 +113,7 @@ test_cases = [
     ),
     Case(
         "NEAQ is too early, inserts dummy commands to make up the difference",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             NonEmbeddedActionQueue(
                 required_offset=0x05, subscript=[A_AddConstToVar(PRIMARY_TEMP_700C, 10)]
@@ -123,7 +123,7 @@ test_cases = [
     ),
     Case(
         "NEAQ should fail if it would be rendered after required offset",
-        commands=[
+        commands_factory=lambda: [
             StopSound(),
             StopSound(),
             NonEmbeddedActionQueue(
@@ -133,6 +133,11 @@ test_cases = [
         exception="too many commands in script 0 before non-embedded action queue",
         exception_type=ScriptBankTooLongException,
     ),
+    Case(
+        "background thread",
+        commands_factory=lambda: [MoveScriptToBackgroundThread1()],
+        expected_bytes=[0xFD, 0x41],
+    ),
 ]
 
 
@@ -140,12 +145,14 @@ test_cases = [
 def test_add(case: Case):
     if case.exception is not None and case.exception_type is not None:
         with pytest.raises(case.exception_type) as exc_info:
-            script = EventScript(case.commands)
+            commands = case.commands_factory()
+            script = EventScript(commands)
             bank = EventScriptBank(0x1E0000, 0x1E0002, 0x1EFFFF, [script])
             bank.render()
             assert case.exception in str(exc_info.value)
     elif case.expected_bytes is not None:
-        script = EventScript(case.commands)
+        commands = case.commands_factory()
+        script = EventScript(commands)
         expected_bytes = bytearray(case.expected_bytes)
         bank = EventScriptBank(
             0x1E0000, 0x1E0002, 0x1E0002 + len(expected_bytes), [script]
