@@ -235,5 +235,8 @@ from .commands import (
     DisplayCantRunDialog,
     StoreOMEM60ToItemInventory,
     RunBattleEvent,
+    WaveEffect,
+    StopWaveEffect,
+    JmpIfTimedHitSuccess,
     Db,
 )

@@ -2906,6 +2906,8 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Wave effect animation"""
 
     _opcode: int = 0x9C
+    _size: int = 9
+
     _layer: WaveEffectLayer = WAVE_LAYER_BATTLEFIELD
     _direction: WaveEffectDirection = WAVE_LAYER_HORIZONTAL
     _depth: UInt16 = UInt16(0)
@@ -3012,7 +3014,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self) -> bytearray:
         arg_1 = (
             bits_to_int([self.layer])
-            + bits_to_int([self.layer + 6])
+            + bits_to_int([self.direction + 6])
             + (self.bit_3 << 3)
             + (self.bit_4 << 4)
             + (self.bit_5 << 5)

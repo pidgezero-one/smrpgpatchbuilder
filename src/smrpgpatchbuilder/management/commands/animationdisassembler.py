@@ -4353,25 +4353,25 @@ def convert_event_script_command(command, valid_identifiers):
         cls = "StopShakingObject"
     elif opcode == 0x9C:
         cls = "WaveEffect"
-        arg_1 == cmd[2]
-        if arg_1 & 0x01 == 0x01:
+        param1 = cmd[2]
+        if param1 & 0x01 == 0x01:
             args["layer"] = "WAVE_LAYER_BATTLEFIELD"
-        elif arg_1 & 0x02 == 0x02:
+        elif param1 & 0x02 == 0x02:
             args["layer"] = "WAVE_LAYER_4BPP"
-        elif arg_1 & 0x04 == 0x04:
+        elif param1 & 0x04 == 0x04:
             args["layer"] = "WAVE_LAYER_2BPP"
-        if arg_1 & 0x40 == 0x40:
+        if param1 & 0x40 == 0x40:
             args["direction"] = "WAVE_LAYER_HORIZONTAL"
-        elif arg_1 & 0x80 == 0x80:
+        elif param1 & 0x80 == 0x80:
             args["direction"] = "WAVE_LAYER_VERTICAL"
         args["depth"] = str(shortify(cmd, 3))
         args["intensity"] = str(shortify(cmd, 5))
         args["speed"] = str(shortify(cmd, 7))
-        if arg_1 & 0x08 == 0x08:
+        if param1 & 0x08 == 0x08:
             args["bit_3"] = "True"
-        if arg_1 & 0x10 == 0x10:
+        if param1 & 0x10 == 0x10:
             args["bit_4"] = "True"
-        if arg_1 & 0x20 == 0x20:
+        if param1 & 0x20 == 0x20:
             args["bit_5"] = "True"
     elif opcode == 0x9D:
         cls = "StopWaveEffect"

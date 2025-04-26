@@ -1603,7 +1603,7 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If all of the stated bits are clear on $7000, jump to the script command indicated by the given identifier.
+    """If all of the stated bits are clear on $7000, jump to the script command indicated by the given label.
 
     ## Lazy Shell command
         `If memory $7000 all bits {xx} clear...`
@@ -1651,7 +1651,7 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
 
 
 class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If any of the stated bits are set on $7000, go to to the script command indicated by the given identifier.
+    """If any of the stated bits are set on $7000, go to to the script command indicated by the given label.
 
     ## Lazy Shell command
         `If memory $7000 any bits {xx} set...`
@@ -1812,7 +1812,7 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was zero (both values were equal).
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was zero (both values were equal).
 
     ## Lazy Shell command
         `If loaded memory = 0...`
@@ -1838,7 +1838,7 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
 class JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result indicated that the first value was less than or equal the second value.
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result indicated that the first value was less than or equal the second value.
 
     ## Lazy Shell command
         `If loaded memory >= 0...`
@@ -1886,7 +1886,7 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
 
 
 class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
+    """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
 
     ## Lazy Shell command
         `If loaded memory != 0...`
@@ -3105,7 +3105,7 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given identifier.
+    """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given label.
 
     ## Lazy Shell command
         `If random # between 0 and 255 > 128...`
@@ -3271,7 +3271,7 @@ class JmpIfComparisonResultIsLesser(
 
 
 class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the given variable matches the given value, jump to the section of code beginning with the given identifier.
+    """If the given variable matches the given value, jump to the section of code beginning with the given label.
 
     ## Lazy Shell command
         `If memory $70Ax = ...`
@@ -3363,7 +3363,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
 
 class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """If the given variable does not match the given value, jump to the section of code beginning with the given identifier.
+    """If the given variable does not match the given value, jump to the section of code beginning with the given label.
 
     ## Lazy Shell command
         `If memory $70Ax != ...`
@@ -8068,7 +8068,22 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
-    """Designate a numerical temp (0 to 127) by which to speed up the music."""
+    """Designate a numerical temp (0 to 127) by which to speed up the music.
+
+    ## Lazy Shell command
+        `Adjust music tempo by {xx} amount...`
+
+    ## Opcode
+        `0x97`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The time in frames over which the tempo change should gradually occur.
+        change (int): The difference in tempo to apply as a speedup.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x97
     _size: int = 3
@@ -8106,7 +8121,21 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
 
 class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
-    """Sound channels identified by the given bits (0-7) will be silenced."""
+    """Sound channels identified by the given bits (0-7) will be silenced.
+
+    ## Lazy Shell command
+        `Deactivate {xx} sound channels...`
+
+    ## Opcode
+        `0xFD 0x94`
+
+    ## Size
+        3 bytes
+
+    Args:
+        bits (Set[int]): i.e. include bit 4 to silence channel 4
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x94])
     _size: int = 3
@@ -8137,8 +8166,22 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
-    """Fade music in from a silent state.\n
-    It is recommended to use music ID constant names for this."""
+    """Fade music in from a silent state.
+    It is recommended to use music ID constant names for this.
+
+    ## Lazy Shell command
+        `Fade in music {xx} ...`
+
+    ## Opcode
+        `0x92`
+
+    ## Size
+        2 bytes
+
+    Args:
+        music (int): The ID of the music to fade in.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x92
     _size: int = 2
@@ -8164,21 +8207,62 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The current background music fades out to silence."""
+    """The current background music fades out to silence.
+
+    ## Lazy Shell command
+        `Fade out current music`
+
+    ## Opcode
+        `0x93`
+
+    ## Size
+        1 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x93
 
 
 class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """The current background music fades out to silence.\n
-    Unknown how this differs from `FadeOutMusic`."""
+    """The current background music fades out to silence.
+    Unknown how this differs from `FadeOutMusic`.
+
+    ## Lazy Shell command
+        Renders in scripts as `Fade out current music` but is unselectable
+
+    ## Opcode
+        `0xFD 0xA3`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA3])
+    _size: int = 2
 
 
 class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
-    """Fade out the currently playing background music to a specified volume over a specified
-    time period (in frames)."""
+    """Fade out the currently playing background music to a specified volume over a specified time period (in frames).
+
+    ## Lazy Shell command
+        `Fade out current music to {xx} volume...`
+
+    ## Opcode
+        `0x95`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The duration, in frames, over which to perform the fade.
+        volume (int): The final volume of the background music.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x95
     _size: int = 3
@@ -8215,8 +8299,22 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
 
 
 class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
-    """Fade out the currently playing sound to a specified volume over a specified
-    time period (in frames)."""
+    """Fade out the currently playing sound to a specified volume over a specified time period (in frames).
+
+    ## Lazy Shell command
+        `Fade out current sound to {xx} volume...`
+
+    ## Opcode
+        `0x9E`
+
+    ## Size
+        3 bytes
+
+    Args:
+        duration (int): The duration, in frames, over which to perform the fade.
+        volume (int): The desired ending volume for the sound effect.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x9E
     _size: int = 3
@@ -8253,7 +8351,22 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
 
 
 class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `If audio memory $69 >= ...`
+
+    ## Opcode
+        `0xFD 0x96`
+
+    ## Size
+        5 bytes
+
+    Args:
+        threshold (int): (unknown)
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x96])
     _size: int = 5
@@ -8282,7 +8395,22 @@ class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWith
 
 
 class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """(unknown)"""
+    """(unknown)
+
+    ## Lazy Shell command
+        `If audio memory $69 = ...`
+
+    ## Opcode
+        `0xFD 0x97`
+
+    ## Size
+        5 bytes
+
+    Args:
+        value (int): (unknown)
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x97])
     _size: int = 5
@@ -8311,8 +8439,21 @@ class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmp
 
 
 class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
-    """Begin playing a specific background music track.\n
-    It is recommended to use music ID constant names for this."""
+    """Begin playing a specific background music track.
+
+    ## Lazy Shell command
+        (doesn't seem to be used)
+
+    ## Opcode
+        `0xFD 0x9E`
+
+    ## Size
+        3 bytes
+
+    Args:
+        music (int): The ID of the music to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x9E])
     _size: int = 3
@@ -8338,8 +8479,21 @@ class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
-    """Begin playing a specific background music track, at the same volume as the current track.\n
-    It is recommended to use music ID constant names for this."""
+    """Begin playing a specific background music track, at the same volume as the current track.
+
+    ## Lazy Shell command
+        `Play music {xx} at current volume...`
+
+    ## Opcode
+        `0x90`
+
+    ## Size
+        2 bytes
+
+    Args:
+        music (int): The ID of the music to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x90
     _size: int = 2
@@ -8365,8 +8519,21 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
-    """Begin playing a specific background music track (at default volume).\n
-    It is recommended to use music ID constant names for this."""
+    """Begin playing a specific background music track (at default volume).
+
+    ## Lazy Shell command
+        `Play music {xx} at default volume...`
+
+    ## Opcode
+        `0x91`
+
+    ## Size
+        2 bytes
+
+    Args:
+        music (int): The ID of the music to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x91
     _size: int = 2
@@ -8392,8 +8559,25 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PlaySound(UsableEventScriptCommand, EventScriptCommand):
-    """Play a sound effect by ID on the specified chanel.\n
-    It is recommended to use contextual const names for sound effect IDs."""
+    """Play a sound effect by ID on the specified channel.
+
+    ## Lazy Shell command
+        `Play {xx} sound (ch.6,7)...`
+        `Play {xx} sound (ch.4,5)...`
+
+    ## Opcode
+        `0x9C`
+        `0xFD 0x9C`
+
+    ## Size
+        2 bytes on channel 6
+        3 bytes on channel 4
+
+    Args:
+        sound (int): The ID of the sound to play.
+        channel (int): The channel on which to play the sound. Needs to be 4 or 6.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _sound: UInt8
     _channel: UInt8
@@ -8438,8 +8622,22 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
-    """Play a sound effect at a given balance.\n
-    It is recommended to use contextual const names for sound effect IDs."""
+    """Play a sound effect at a given balance.
+
+    ## Lazy Shell command
+        `Play {xx} sound (ch.6,7) with {xx} speaker balance...`
+
+    ## Opcode
+        `0x9D`
+
+    ## Size
+        3 bytes
+
+    Args:
+        sound (int): The ID of the sound to play.
+        balance (int): The balance level to play the sound at.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x9D
     _size: int = 3
@@ -8478,9 +8676,23 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
-    """Play a sound effect at a given balance.\n
-    Unknown how this differs from `PlaySoundBalance`.\n
-    It is recommended to use contextual const names for sound effect IDs."""
+    """Play a sound effect at a given balance.
+    Unknown how this differs from `PlaySoundBalance`.
+
+    ## Lazy Shell command
+        Renders as "Play {xx} sound (ch.6,7) with {xx} speaker balance" but is not selectable
+
+    ## Opcode
+        `0xFD 0x9D`
+
+    ## Size
+        4 bytes
+
+    Args:
+        sound (int): The ID of the sound to play.
+        balance (int): The balance level to play the sound at.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x9D])
     _size: int = 4
@@ -8519,60 +8731,177 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
 
 
 class SlowDownMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Show down the current music to an unspecified tempo, over a constant duration."""
+    """Show down the current music to an unspecified tempo, over a constant duration.
+
+    ## Lazy Shell command
+        `Lower current music tempo`
+
+    ## Opcode
+        `0xFD 0xA4`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA4])
 
 
 class SpeedUpMusicToDefault(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Return the current music tempo to default, over a constant duration."""
+    """Return the current music tempo to default, over a constant duration.
+
+    ## Lazy Shell command
+        `Slide current music tempo to default`
+
+    ## Opcode
+        `0xFD 0xA5`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA5])
 
 
 class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely."""
+    """Stop playing the background music entirely.
+
+    ## Lazy Shell command
+        `Stop current music`
+
+    ## Opcode
+        `0x94`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x94
 
 
 class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely.\n
-    It is unknown how this differs from `StopMusic`."""
+    """Stop playing the background music entirely.
+    It is unknown how this differs from `StopMusic`.
+
+    ## Lazy Shell command
+        Renders as `Stop current music` but is not selectable
+
+    ## Opcode
+        `0xFD 0x9F`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x9F])
 
 
 class StopMusicFDA0(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely.\n
-    It is unknown how this differs from `StopMusic`."""
+    """Stop playing the background music entirely.
+    It is unknown how this differs from `StopMusic`.
+
+    ## Lazy Shell command
+        Renders as `Stop current music` but is not selectable
+
+    ## Opcode
+        `0xFD 0xA0`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA0])
 
 
 class StopMusicFDA1(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely.\n
-    It is unknown how this differs from `StopMusic`."""
+    """Stop playing the background music entirely.
+    It is unknown how this differs from `StopMusic`.
+
+    ## Lazy Shell command
+        Renders as `Stop current music` but is not selectable
+
+    ## Opcode
+        `0xFD 0xA1`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA1])
 
 
 class StopMusicFDA2(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely.\n
-    It is unknown how this differs from `StopMusic`."""
+    """Stop playing the background music entirely.
+    It is unknown how this differs from `StopMusic`.
+
+    ## Lazy Shell command
+        Renders as `Stop current music` but is not selectable
+
+    ## Opcode
+        `0xFD 0xA2`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA2])
 
 
 class StopMusicFDA6(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Stop playing the background music entirely.\n
-    It is unknown how this differs from `StopMusic`."""
+    """Stop playing the background music entirely.
+    It is unknown how this differs from `StopMusic`.
+
+    ## Lazy Shell command
+        Renders as `Stop current music` but is not selectable
+
+    ## Opcode
+        `0xFD 0xA6`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xA6])
 
 
 class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Halt the playback of any sound effect that is currently playing."""
+    """Halt the playback of any sound effect that is currently playing.
+
+    ## Lazy Shell command
+        `Stop current sound`
+
+    ## Opcode
+        `0x9B`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x9B
 
@@ -8581,8 +8910,22 @@ class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCommand):
-    """The dialog whose ID corresponds to the current value of $7000
-    will be appended to the end of a dialog that is already being displayed."""
+    """The dialog whose ID corresponds to the current value of $7000 will be appended to the end of a dialog that is already being displayed.
+
+    ## Lazy Shell command
+        `Append to dialogue @ memory $7000...`
+
+    ## Opcode
+        `0x63`
+
+    ## Size
+        2 bytes
+
+    Args:
+        closable (bool): If false, the dialog will remain on screen instead of being clearable
+        sync (bool): If false, events will continue to run and the player can continue to move.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x63
     _size: int = 2
@@ -8622,15 +8965,40 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
 
 
 class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """If there is an open dialog, it will be forcibly closed."""
+    """If there is an open dialog, it will be forcibly closed.
+
+    ## Lazy Shell command
+        `Close dialogue`
+
+    ## Opcode
+        `0x64`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x64
 
 
 class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWithJmps):
-    """Depends on the results of a previously displayed dialog which
-    had only 2 options. If the second option was selected, go to the
-    section of code beginning with the command matching the given identifier."""
+    """Depends on the results of a previously displayed dialog which had only 2 options. If the second option was selected, go to the section of code beginning with the command matching the given label.
+
+    ## Lazy Shell command
+        `If dialogue option B selected...`
+
+    ## Opcode
+        `0x66`
+
+    ## Size
+        3 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x66
     _size: int = 3
@@ -8642,10 +9010,21 @@ class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWit
 class JmpIfDialogOptionBOrCSelected(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
-    """Depends on the results of a previously displayed dialog which
-    had 3 options. If the second or third option was selected, go to the
-    section of code beginning with the command matching the
-    first or second identifier, respectively."""
+    """Depends on the results of a previously displayed dialog which had 3 options. If the second or third option was selected, go to the section of code beginning with the command matching the first or second identifier, respectively.
+
+    ## Lazy Shell command
+        `If dialogue option B / C selected...`
+
+    ## Opcode
+        `0x67`
+
+    ## Size
+        5 bytes
+
+    Args:
+        destinations (List[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of commands to jump to.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x67
     _size: int = 5
@@ -8657,8 +9036,21 @@ class JmpIfDialogOptionBOrCSelected(
 class PauseScriptResumeOnNextDialogPageA(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The active script will be paused until the next dialog page is loaded.\n
-    Unknown how this differs from `PauseScriptResumeOnNextDialogPageB`."""
+    """The active script will be paused until the next dialog page is loaded.
+    Unknown how this differs from `PauseScriptResumeOnNextDialogPageB`.
+
+    ## Lazy Shell command
+        `Pause script, resume on next dialogue page A`
+
+    ## Opcode
+        `0xFD 0x60`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x60])
 
@@ -8666,16 +9058,51 @@ class PauseScriptResumeOnNextDialogPageA(
 class PauseScriptResumeOnNextDialogPageB(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """The active script will be paused until the next dialog page is loaded.\n
-    Unknown how this differs from `PauseScriptResumeOnNextDialogPageA`."""
+    """The active script will be paused until the next dialog page is loaded.
+    Unknown how this differs from `PauseScriptResumeOnNextDialogPageA`.
+
+    ## Lazy Shell command
+        `Pause script, resume on next dialogue page B`
+
+    ## Opcode
+        `0xFD 0x61`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x61])
 
 
 class RunDialog(UsableEventScriptCommand, EventScriptCommand):
-    """Display a dialog by ID, or whose ID matches the current value of $7000.\n
-    If not displaying the dialog whose ID matches the value currently stored to $7000,
-    it is recommended to use dialog ID constant names for this."""
+    """Display a dialog by ID, or whose ID matches the current value of $7000.
+    If not displaying the dialog whose ID matches the value currently stored to $7000, it is recommended to use dialog ID constant names for this.
+
+    ## Lazy Shell command
+        `Run dialogue...`
+        `Run dialogue @ memory $7000...`
+
+    ## Opcode
+        `0x60`
+        `0x61`
+
+    ## Size
+        3 bytes if dialogue is at $7000
+        4 bytes otherwise
+
+    Args:
+        dialog_id (Union[int, ShortVar]): The ID of the dialog to display, or the var containing an ID to display.
+        above_object (AreaObject): The field object to anchor the dialog on. Use the pre-defined ones in area_objects.py.
+        closable (bool): If false, the dialog will remain on screen instead of being clearable
+        sync (bool): If false, events will continue to run and the player can continue to move.
+        multiline (bool): If true, the dialog will display up to 3 lines.
+        use_background (bool): If true, the dialog will be displayed over the parchment asset.
+        bit_6 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _dialog_id: Union[UInt16, ShortVar]
     _above_object: AreaObject
@@ -8687,7 +9114,7 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
 
     @property
     def dialog_id(self) -> Union[UInt16, ShortVar]:
-        """The ID of the dialog to display, or the var containing an ID to display."""
+        """The ID of the dialog to display, or the var containing an ID to display. If using a var, it has to be `PRIMARY_TEMP_7000`."""
         return self._dialog_id
 
     def set_dialog_id(self, dialog_id: Union[int, ShortVar]) -> None:
@@ -8804,8 +9231,23 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
-    """Display a dialog by ID for a given duration in frames.\n
-    It is recommended to use dialog ID constant names for this."""
+    """Display a dialog by ID for a given duration in frames.
+
+    ## Lazy Shell command
+        `Run dialogue for {xx} duration...`
+
+    ## Opcode
+        `0x62`
+
+    ## Size
+        3 bytes
+
+    Args:
+        dialog_id (int): The ID of the dialog to display.
+        duration (int): The duration, in frames, for which the dialog should be active.
+        sync (bool): If false, events will continue to run and the player can continue to move.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x62
     _size: int = 3
@@ -8861,7 +9303,20 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
 
 
 class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Event scripts and player movements will resume without waiting for the dialog to close."""
+    """Event scripts and player movements will resume without waiting for the dialog to close.
+
+    ## Lazy Shell command
+        `Un-sync dialogue`
+
+    ## Opcode
+        `0x65`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x65
 
@@ -8870,8 +9325,28 @@ class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class EnterArea(UsableEventScriptCommand, EventScriptCommand):
-    """Immediately teleport to a specified level.\n
-    It is recommended to use room ID constant names for this."""
+    """Immediately teleport to a specified level.
+
+    ## Lazy Shell command
+        `Open level...`
+
+    ## Opcode
+        `0x68`
+
+    ## Size
+        6 bytes
+
+    Args:
+        room_id (int): The ID of the level to open.
+        face_direction (Direction): The direction that the player will face when the room loads.
+        x (int): The X coordinate at which the player will be standing when the room loads.
+        y (int): The Y coordinate at which the player will be standing when the room loads.
+        z (int): The Z coordinate at which the player will be standing when the room loads.
+        z_add_half_unit (bool): If true, adds half a unit to the player's starting Z coordinate.
+        show_banner (bool): If the room has an associated message, the message will be temporarily
+        run_entrance_event (bool): If true, the entrance event associated to the room will run on load.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x68
     _size: int = 6
@@ -8995,9 +9470,23 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
-    """If the specified room has tile modifications available, this command
-    can apply one.\n
-    It is recommended to use room ID constant names for this."""
+    """If the specified room has tile modifications available, this command can apply one.
+
+    ## Lazy Shell command
+        `Apply tile mod to level...`
+
+    ## Opcode
+        `0x6A`
+
+    ## Size
+        3 bytes
+
+    Args:
+        room_id (int): The ID of the room applying a tile mod.
+        mod_id (int): The ID of the mod to apply.
+        use_alternate (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x6A
     _size: int = 3
@@ -9056,9 +9545,24 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
-    """If the specified room has collision modifications available, this command
-    can apply one.\n
-    It is recommended to use room ID constant names for this."""
+    """If the specified room has collision modifications available, this command can apply one.
+    It is recommended to use room ID constant names for this.
+
+    ## Lazy Shell command
+        `Apply solid mod to level...`
+
+    ## Opcode
+        `0x6B`
+
+    ## Size
+        3 bytes
+
+    Args:
+        room_id (int): The ID of the room applying a collision mod.
+        mod_id (int): The ID of the mod to apply.
+        permanent (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x6B
     _size: int = 3
@@ -9115,8 +9619,25 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
-    """Leaves the given level forcibly, and returns to the world map.\n
-    It is recommended to use overworld location ID constant names for this."""
+    """Leaves the given level forcibly, and returns to the world map.
+    It is recommended to use overworld location ID constant names for this.
+
+    ## Lazy Shell command
+        `Open location...`
+
+    ## Opcode
+        `0x4B`
+
+    ## Size
+        3 bytes
+
+    Args:
+        area (int): The world map dot to return to.
+        bit_5 (bool): (unknown)
+        bit_6 (bool): (unknown)
+        bit_7 (bool): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4B
     _size: int = 3
@@ -9184,7 +9705,20 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
 
 
 class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Set the value of $7000 to the ID of the currently loaded level."""
+    """Set the value of $7000 to the ID of the currently loaded level.
+
+    ## Lazy Shell command
+        `Memory $7000 = current level`
+
+    ## Opcode
+        `0xC3`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xC3
 
@@ -9193,7 +9727,22 @@ class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
-    """Text that normally appears in the game intro. Unused in rando."""
+    """Text that normally appears in the game intro. Unused in rando.
+
+    ## Lazy Shell command
+        `Display pre-game intro title...`
+
+    ## Opcode
+        `0xFD 0x66`
+
+    ## Size
+        4 bytes
+
+    Args:
+        text (IntroTitleText): The predefined text to display.
+        y (int): The Y coord at which to display the text.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x66])
     _size: int = 4
@@ -9230,14 +9779,41 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
 
 
 class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Run the cutscene where Exor shatters the star road.\n
-    Unused in rando."""
+    """Run the cutscene where Exor shatters the star road.
+    Unused in rando.
+
+    ## Lazy Shell command
+        `Exor crashes into keep`
+
+    ## Opcode
+        `0xFD 0xF8`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0xF8])
 
 
 class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
-    """Runs one of a various selection of menus or automatic cutscenes."""
+    """Runs one of a various selection of menus or automatic cutscenes.
+
+    ## Lazy Shell command
+        `Open menu/run event sequence...`
+
+    ## Opcode
+        `0x4F`
+
+    ## Size
+        2 bytes
+
+    Args:
+        scene (Scene): The menu or cutscene to play.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4F
     _size: int = 2
@@ -9261,14 +9837,41 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
 
 
 class OpenSaveMenu(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Open the save menu."""
+    """Open the save menu.
+
+    ## Lazy Shell command
+        `Open save game menu`
+
+    ## Opcode
+        `0xFD 0x4A`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x4A])
 
 
 class OpenShop(UsableEventScriptCommand, EventScriptCommand):
-    """Open a shop by ID.\n
-    It is recommended to use shop ID constant names for this."""
+    """Open a shop by ID.
+    It is recommended to use shop ID constant names for this.
+
+    ## Lazy Shell command
+        `Run menu tutorial...`
+
+    ## Opcode
+        `0x4C`
+
+    ## Size
+        2 bytes
+
+    Args:
+        shop_id (int): The ID of the shop to open.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4C
     _size: int = 2
@@ -9294,31 +9897,98 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
 
 
 class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Pauses the running script if a menu is opened."""
+    """Pauses the running script if a menu is opened.
+
+    ## Lazy Shell command
+        `Pause script if menu open`
+
+    ## Opcode
+        `0x5B`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x5B
 
 
 class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Reloads your last save. Character EXP is not reset."""
+    """Reloads your last save. Character EXP is not reset.
+
+    ## Lazy Shell command
+        `Reset game, choose game`
+
+    ## Opcode
+        `0xFB`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xFB
 
 
 class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Reset to the file select screen (presumably?)."""
+    """Reset to the file select screen (presumably?).
+
+    ## Lazy Shell command
+        `Reset game`
+
+    ## Opcode
+        `0xFC`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0xFC
 
 
 class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Begin the ending credits sequence."""
+    """Begin the ending credits sequence.
+
+    ## Lazy Shell command
+        `Run ending credit sequence`
+
+    ## Opcode
+        `0xFD 0x67`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x67])
 
 
 class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
-    """Run a special cutscene. Normally used for star pieces in the ending credits."""
+    """Run a special cutscene. Normally used for star pieces in the ending credits.
+
+    ## Lazy Shell command
+        `Run event sequence...`
+
+    ## Opcode
+        `0x4E`
+
+    ## Size
+        3 bytes
+
+    Args:
+        scene (Scene): The specific cutscene to run.
+        value (int): A value needed by the chosen cutscene.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4E
     _size: int = 3
@@ -9355,13 +10025,40 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
 
 
 class RunLevelupBonusSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Launch the levelup screen."""
+    """Launch the levelup screen.
+
+    ## Lazy Shell command
+        `Run level-up bonus sequence`
+
+    ## Opcode
+        `0xFD 0x65`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x65])
 
 
 class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
-    """Run a specific menu tutorial."""
+    """Run a specific menu tutorial.
+
+    ## Lazy Shell command
+        `Run menu tutorial...`
+
+    ## Opcode
+        `0xFD 0x4C`
+
+    ## Size
+        3 bytes
+
+    Args:
+        tutorial (Tutorial): The specific tutorial to run.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x4C])
     _size: int = 3
@@ -9387,20 +10084,59 @@ class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
 class RunMolevilleMountainIntroSequence(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
-    """Runs the Moleville Mountain sequence found in the original game's attract mode.
-    Unused in rando."""
+    """Runs the Moleville Mountain sequence found in the original game's attract mode. Unused in rando.
+
+    ## Lazy Shell command
+        `Run moleville mountain intro sequence`
+
+    ## Opcode
+        `0xFD 0x4F`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x4F])
 
 
 class RunMolevilleMountainSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Enter the Moleville Mountain minigame."""
+    """Enter the Moleville Mountain minigame.
+
+    ## Lazy Shell command
+        `Run moleville mountain sequence`
+
+    ## Opcode
+        `0xFD 0x4E`
+
+    ## Size
+        2 bytes
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x4E])
 
 
 class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
-    """Run a star piece collection cutscene."""
+    """Run a star piece collection cutscene.
+
+    ## Lazy Shell command
+        `Run star piece sequence...`
+
+    ## Opcode
+        `0xFD 0x4D`
+
+    ## Size
+        3 bytes
+
+    Args:
+        star (int): The specific star piece to collect.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode = bytearray([0xFD, 0x4D])
     _size: int = 3
@@ -9425,8 +10161,23 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
-    """Enter into a battle with a given pack ID and battlefield.\n
-    It is recommended to use pack ID constant names for this."""
+    """Enter into a battle with a given pack ID and battlefield.
+    It is recommended to use pack ID constant names for this.
+
+    ## Lazy Shell command
+        `Engage in battle with pack {xx}...`
+
+    ## Opcode
+        `0x4A`
+
+    ## Size
+        4 bytes
+
+    Args:
+        pack_id (int): The ID of the pack to fight.
+        battlefield (Battlefield): The battlefield on which the battle should take place.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x4A
     _pack_id: UInt8
@@ -9465,7 +10216,19 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
 
 
 class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoArgs):
-    """Initiates a battle on the default battlefield associated to the current level
-    against the pack ID matching the current value of $700E."""
+    """Initiates a battle on the default battlefield associated to the current level against the pack ID matching the current value of $700E.
+
+    ## Lazy Shell command
+        `Engage in battle with pack @ $700E`
+
+    ## Opcode
+        `0x49`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
 
     _opcode: int = 0x49
