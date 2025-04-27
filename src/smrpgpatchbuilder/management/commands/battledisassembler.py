@@ -1651,7 +1651,7 @@ def pythonize(command):
                     cls = "IfTargetHPBelow"
                     include_argnames = False
                     args["target"] = TARGETS[command[2]]
-                    args["threshold"] = str(command[3])
+                    args["threshold"] = str(command[3] * 16)
                 case 0x07:
                     cls = "IfHPBelow"
                     include_argnames = False
