@@ -36,8 +36,19 @@ test_cases = [
     ),
     Case(
         label="NewSpriteAtCoords",
-        commands_factory=lambda: [NewSpriteAtCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            NewSpriteAtCoords(
+                sprite_id=SPR0519_DRAIN_EXPLOSION,
+                sequence=0,
+                priority=3,
+                vram_address=0x6200,
+                palette_row=8,
+                overwrite_vram=True,
+                overwrite_palette=True,
+                overlap_all_sprites=True,
+            ),
+        ],
+        expected_bytes=[0x00, 0x81, 0x20, 0x07, 0x02, 0x00, 0x38, 0x00, 0x62],
     ),
     Case(
         label="SetAMEM32ToXYZCoords",
