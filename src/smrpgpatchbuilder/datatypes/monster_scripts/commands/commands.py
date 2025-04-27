@@ -906,10 +906,11 @@ class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
 
     def render(self) -> bytearray:
         effective_commands = deepcopy(self.commands)
-        if len(effective_commands) == 1:
-            effective_commands.append(effective_commands[0])
+        byte_2 = 0
+        if len(effective_commands) > 1:
+            byte_2 = effective_commands[1]
 
-        return super().render(effective_commands[0] + 2, effective_commands[1] + 2)
+        return super().render(effective_commands[0] + 2, byte_2 + 2)
 
 
 class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
@@ -954,10 +955,11 @@ class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
 
     def render(self) -> bytearray:
         effective_spells = deepcopy(self.spells)
-        if len(effective_spells) == 1:
-            effective_spells.append(effective_spells[0])
+        byte_2 = 0
+        if len(effective_spells) > 1:
+            byte_2 = effective_spells[1]().index
 
-        return super().render(effective_spells[0]().index, effective_spells[1]().index)
+        return super().render(effective_spells[0]().index, byte_2)
 
 
 class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
@@ -1002,12 +1004,11 @@ class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
 
     def render(self) -> bytearray:
         effective_items = deepcopy(self.items)
-        if len(effective_items) == 1:
-            effective_items.append(effective_items[0])
+        byte_2 = 0
+        if len(effective_items) > 1:
+            byte_2 = effective_items[1]().item_id
 
-        return super().render(
-            effective_items[0]().item_id, effective_items[1]().item_id
-        )
+        return super().render(effective_items[0]().item_id, byte_2)
 
 
 class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
@@ -1088,7 +1089,7 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
 
     Args:
         target (Target): The target whose HP to check
-        threshold (int): The HP value to fall below in order to trigger this if-block.
+        threshold (int): The HP value to fall below in order to trigger this if-block. Must be a multiple of 16.
         identifier (Optional[str]): Give this command a label if you want it to be easy to find it in a script and manipulate its args, insert other commands after it, etc.
     """
 
@@ -1103,7 +1104,8 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
         return self._threshold
 
     def set_threshold(self, threshold: int) -> None:
-        """Set the HP value to fall below in order to trigger this if-block."""
+        """Set the HP value to fall below in order to trigger this if-block. Must be a multiple of 16."""
+        assert threshold % 16 == 0
         self._threshold = UInt8(threshold)
 
     def __init__(
@@ -1113,7 +1115,7 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
         self.set_threshold(threshold)
 
     def render(self) -> bytearray:
-        return super().render(self.target, self.threshold)
+        return super().render(self.target, self.threshold // 16)
 
 
 class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):

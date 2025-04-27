@@ -121,141 +121,205 @@ test_cases = [
     ),
     Case(
         label="DoMonsterBehaviour",
-        commands_factory=lambda: [DoMonsterBehaviour()],
-        expected_bytes=[],
+        commands_factory=lambda: [DoMonsterBehaviour(3)],
+        expected_bytes=[0xF1, 0x03],
     ),
     Case(
         label="SetUntargetable",
-        commands_factory=lambda: [SetUntargetable()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetUntargetable(MONSTER_6_SET)],
+        expected_bytes=[0xF2, 0x00, 0x06],
     ),
     Case(
         label="SetTargetable",
-        commands_factory=lambda: [SetTargetable()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetTargetable(MONSTER_1_SET)],
+        expected_bytes=[0xF2, 0x01, 0x01],
     ),
     Case(
         label="EnableCommand",
-        commands_factory=lambda: [EnableCommand()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            EnableCommand(commands=[COMMAND_ATTACK, COMMAND_SPECIAL])
+        ],
+        expected_bytes=[0xF3, 0x00, 0x03],
     ),
     Case(
         label="DisableCommand",
-        commands_factory=lambda: [DisableCommand()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DisableCommand(commands=[COMMAND_SPECIAL, COMMAND_ITEM])
+        ],
+        expected_bytes=[0xF3, 0x01, 0x06],
     ),
     Case(
         label="RemoveAllInventory",
         commands_factory=lambda: [RemoveAllInventory()],
-        expected_bytes=[],
+        expected_bytes=[0xF4, 0x00, 0x00, 0x00],
     ),
     Case(
         label="RestoreInventory",
         commands_factory=lambda: [RestoreInventory()],
-        expected_bytes=[],
+        expected_bytes=[0xF4, 0x00, 0x01, 0x00],
     ),
-    Case(label="DoNothing", commands_factory=lambda: [DoNothing()], expected_bytes=[]),
     Case(
         label="IfTargetedByCommand",
-        commands_factory=lambda: [IfTargetedByCommand()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IfTargetedByCommand(commands=[COMMAND_ATTACK, COMMAND_SPECIAL])
+        ],
+        expected_bytes=[0xFC, 0x01, 0x02, 0x03],
+    ),
+    Case(
+        label="IfTargetedByCommand should fail if too many commands",
+        commands_factory=lambda: [
+            IfTargetedByCommand(
+                commands=[COMMAND_ATTACK, COMMAND_SPECIAL, COMMAND_ITEM]
+            )
+        ],
+        exception_type=AssertionError,
     ),
     Case(
         label="IfTargetedBySpell",
-        commands_factory=lambda: [IfTargetedBySpell()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetedBySpell([SuperJump, Thunderbolt])],
+        expected_bytes=[0xFC, 0x02, 0x02, 0x15],
+    ),
+    Case(
+        label="IfTargetedBySpell should fail if too many commands",
+        commands_factory=lambda: [
+            IfTargetedBySpell([SuperJump, Thunderbolt, GenoBeam])
+        ],
+        exception_type=AssertionError,
     ),
     Case(
         label="IfTargetedByItem",
-        commands_factory=lambda: [IfTargetedByItem()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetedByItem([StarEgg])],
+        expected_bytes=[0xFC, 0x03, 0xB0, 0x00],
+    ),
+    Case(
+        label="IfTargetedByItem should fail if too many items",
+        commands_factory=lambda: [IfTargetedByItem([StarEgg, RockCandy, FireBomb])],
+        exception_type=AssertionError,
     ),
     Case(
         label="IfTargetedByElement",
-        commands_factory=lambda: [IfTargetedByElement()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetedByElement([Element.FIRE, Element.THUNDER])],
+        expected_bytes=[0xFC, 0x04, 0x60, 0x00],
+    ),
+    Case(
+        label="IfTargetedByElement",
+        commands_factory=lambda: [
+            IfTargetedByElement(
+                [Element.FIRE, Element.THUNDER, Element.JUMP, Element.ICE]
+            )
+        ],
+        expected_bytes=[0xFC, 0x04, 0xF0, 0x00],
     ),
     Case(
         label="IfTargetedByRegularAttack",
         commands_factory=lambda: [IfTargetedByRegularAttack()],
-        expected_bytes=[],
+        expected_bytes=[0xFC, 0x05, 0x00, 0x00],
     ),
     Case(
         label="IfTargetHPBelow",
-        commands_factory=lambda: [IfTargetHPBelow()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetHPBelow(SLOT_1, 64)],
+        expected_bytes=[0xFC, 0x06, 0x10, 0x04],
     ),
-    Case(label="IfHPBelow", commands_factory=lambda: [IfHPBelow()], expected_bytes=[]),
+    Case(
+        label="IfTargetHPBelow should fail if not a multiple of 16",
+        commands_factory=lambda: [IfTargetHPBelow(SLOT_1, 20)],
+        exception_type=AssertionError,
+    ),
+    Case(
+        label="IfHPBelow",
+        commands_factory=lambda: [IfHPBelow(999)],
+        expected_bytes=[0xFC, 0x07, 0xE7, 0x03],
+    ),
     Case(
         label="IfTargetAfflictedBy",
-        commands_factory=lambda: [IfTargetAfflictedBy()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IfTargetAfflictedBy(SELF, [Status.MUTE, Status.POISON])
+        ],
+        expected_bytes=[0xFC, 0x08, 0x1B, 0x05],
     ),
     Case(
         label="IfTargetNotAfflictedBy",
-        commands_factory=lambda: [IfTargetNotAfflictedBy()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IfTargetNotAfflictedBy(AT_LEAST_ONE_OPPONENT, [Status.INVINCIBLE])
+        ],
+        expected_bytes=[0xFC, 0x09, 0x24, 0x80],
     ),
     Case(
         label="IfTurnCounterEquals",
-        commands_factory=lambda: [IfTurnCounterEquals()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTurnCounterEquals(5)],
+        expected_bytes=[0xFC, 0x0A, 0x05, 0x00],
     ),
     Case(
         label="IfVarLessThan",
-        commands_factory=lambda: [IfVarLessThan()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfVarLessThan(ATTACK_PHASE_COUNTER, 6)],
+        expected_bytes=[0xFC, 0x0C, 0x06, 0x06],
     ),
     Case(
         label="IfVarEqualOrGreaterThan",
-        commands_factory=lambda: [IfVarEqualOrGreaterThan()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IfVarEqualOrGreaterThan(DESIGNATED_RANDOM_NUM_VAR, 10)
+        ],
+        expected_bytes=[0xFC, 0x0D, 0x05, 0x0A],
     ),
     Case(
         label="IfTargetAlive",
-        commands_factory=lambda: [IfTargetAlive()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetAlive(TOADSTOOL)],
+        expected_bytes=[0xFC, 0x10, 0x00, 0x01],
     ),
     Case(
         label="IfTargetKOed",
-        commands_factory=lambda: [IfTargetKOed()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfTargetKOed(ALL_ALLIES_EXCLUDING_SELF)],
+        expected_bytes=[0xFC, 0x10, 0x01, 0x1C],
     ),
     Case(
         label="IfVarBitsSet",
-        commands_factory=lambda: [IfVarBitsSet()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfVarBitsSet(0x7EE001, [5, 7])],
+        expected_bytes=[0xFC, 0x11, 0x01, 0xA0],
+    ),
+    Case(
+        label="IfVarBitsSet should fail with invalid bits",
+        commands_factory=lambda: [IfVarBitsSet(0x7EE001, [9])],
+        exception_type=AssertionError,
     ),
     Case(
         label="IfVarBitsClear",
-        commands_factory=lambda: [IfVarBitsClear()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfVarBitsClear(0x7EE002, [1, 3])],
+        expected_bytes=[0xFC, 0x12, 0x02, 0x0A],
+    ),
+    Case(
+        label="IfVarBitsClear should fail with invalid var",
+        commands_factory=lambda: [IfVarBitsClear(0x7EE010, [1, 3])],
+        exception_type=AssertionError,
     ),
     Case(
         label="IfCurrentlyInFormationID",
-        commands_factory=lambda: [IfCurrentlyInFormationID()],
-        expected_bytes=[],
+        commands_factory=lambda: [IfCurrentlyInFormationID(511)],
+        expected_bytes=[0xFC, 0x13, 0xFF, 0x01],
     ),
     Case(
         label="IfLastMonsterStanding",
         commands_factory=lambda: [IfLastMonsterStanding()],
-        expected_bytes=[],
+        expected_bytes=[0xFC, 0x14, 0x00, 0x00],
     ),
-    Case(label="Wait1Turn", commands_factory=lambda: [Wait1Turn()], expected_bytes=[]),
+    Case(
+        label="Wait1Turn",
+        commands_factory=lambda: [Wait1Turn()],
+        expected_bytes=[0xFD],
+    ),
     Case(
         label="Wait1TurnandRestartScript",
         commands_factory=lambda: [Wait1TurnandRestartScript()],
-        expected_bytes=[],
+        expected_bytes=[0xFE],
     ),
     Case(
         label="StartCounterCommands",
         commands_factory=lambda: [StartCounterCommands()],
-        expected_bytes=[],
+        expected_bytes=[0xFF],
     ),
     Case(
         label="UnknownCommand",
-        commands_factory=lambda: [UnknownCommand()],
-        expected_bytes=[],
+        commands_factory=lambda: [UnknownCommand(bytearray([0x82]))],
+        expected_bytes=[0x82],
     ),
 ]
 
