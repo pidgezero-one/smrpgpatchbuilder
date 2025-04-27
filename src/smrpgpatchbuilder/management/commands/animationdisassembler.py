@@ -1259,44 +1259,44 @@ SCRIPT_NAMES = {
         "Mushroom2",
         "StarEgg",
     ],
-    "misses": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
+    # "misses": [
+    #     "Weapon",
+    #     "Armor",
+    #     "Accessory",
+    #     "Space",
+    #     "Space",
+    #     "Hammer",
+    #     "FroggieStick",
+    #     "NokNokShell",
+    #     "PunchGlove",
+    #     "FingerShot",
+    #     "Cymbals",
+    #     "Chomp",
+    #     "Masher",
+    #     "ChompShell",
+    #     "SuperHammer",
+    #     "HandGun",
+    #     "WhompGlove",
+    #     "SlapGlove",
+    #     "TroopaShell",
+    #     "Parasol",
+    #     "HurlyGloves",
+    #     "DoublePunch",
+    #     "RibbitStick",
+    #     "SpikedLink",
+    #     "MegaGlove",
+    #     "WarFan",
+    #     "HandCannon",
+    #     "StickyGlove",
+    #     "UltraHammer",
+    #     "SuperSlap",
+    #     "DrillClaw",
+    #     "StarGun",
+    #     "SonicCymbal",
+    #     "LazyShellWeapon",
+    #     "FryingPan",
+    #     "LuckyHammer",
+    # ],
     "weapons": [
         "Weapon",
         "Armor",
@@ -1562,11 +1562,11 @@ banks = {
         "start": 0x352148,
         "end": 0x3523C3,
     },
-    "misses": {
-        "pointers": {"start": 0x35816D, "end": 0x3581B6},
-        "start": 0x3581B7,
-        "end": 0x35826E,
-    },
+    # "misses": {
+    #     "pointers": {"start": 0x35816D, "end": 0x3581B6},
+    #     "start": 0x3581B7,
+    #     "end": 0x35826E,
+    # },
     "items": {
         "pointers": {"start": 0x35C761, "end": 0x35C802},
         "start": 0x35C803,
@@ -1591,6 +1591,8 @@ banks = {
         "end": 0x3A705C,
         # "end": 0x3A7036,  # changed this cause i inserted a party size subroutine
     },
+    # "allybehaviour_0_0x350468": {"start": 0x350468, "end": 0x350483},
+    # "allybehaviour_1_0x350502": {"start": 0x350502, "end": 0x35054D},
     "behaviour_0_0x3505C6": {"start": 0x3505C6, "end": 0x3505D9},
     "behaviour_1_0x3505DA": {"start": 0x3505DA, "end": 0x3505FD},
     "behaviour_2_0x350635": {"start": 0x350635, "end": 0x350668},
@@ -1647,6 +1649,8 @@ banks = {
     "behaviour_53_0x350F7A": {"start": 0x350F7A, "end": 0x351025},
     # flower subroutines
     "subroutines_0x02f50e": {"start": 0x02F50E, "end": 0x02F51D},  # size:
+    # ally behaviour subroutines
+    # "subroutines_0x350463": {"start": 0x350463, "end": 0x350467},
     # battle behaviour subroutines
     "subroutines_0x350463": {
         "start": 0x350463,
@@ -3271,7 +3275,7 @@ class Command(BaseCommand):
                     "monster_spells",
                     "monster_attacks",
                     "monster_entrances",
-                    "misses",
+                    # "misses",
                     "items",
                     "ally_spells",
                     "weapons",
@@ -3477,6 +3481,10 @@ def convert_event_script_command(command, valid_identifiers):
             args["looping"] = "True"
         if (cmd[2] & 0x20) == 0x20:
             args["store_palette"] = "True"
+        if (cmd[1] & 0x40) == 0x40:
+            args["behind_all_sprites"] = "True"
+        if (cmd[1] & 0x80) == 0x80:
+            args["overlap_all_sprites"] = "True"
     elif opcode == 0x04:
         cls = "PauseScriptUntil"
         if cmd[1] == 6:

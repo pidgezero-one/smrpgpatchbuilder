@@ -52,18 +52,39 @@ test_cases = [
     ),
     Case(
         label="SetAMEM32ToXYZCoords",
-        commands_factory=lambda: [SetAMEM32ToXYZCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM32ToXYZCoords(
+                origin=ABSOLUTE_POSITION,
+                x=183,
+                y=175,
+                z=-48,
+                set_x=True,
+                set_y=True,
+                set_z=True,
+            ),
+        ],
+        expected_bytes=[0x01, 0x07, 0xB7, 0x00, 0xAF, 0x00, 0xD0, 0xFF],
     ),
     Case(
         label="DrawSpriteAtAMEM32Coords",
-        commands_factory=lambda: [DrawSpriteAtAMEM32Coords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DrawSpriteAtAMEM32Coords(
+                sprite_id=SPR0491_SHYPER,
+                sequence=3,
+                store_to_vram=True,
+                store_palette=True,
+                overlap_all_sprites=True,
+            )
+        ],
+        expected_bytes=[0x03, 0x81, 0x20, 0xEB, 0x01, 0x03],
     ),
     Case(
         label="PauseScriptUntil",
-        commands_factory=lambda: [PauseScriptUntil()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            PauseScriptUntil(condition=FRAMES_ELAPSED, frames=60),
+            PauseScriptUntil(condition=FADE_4BPP_COMPLETE),
+        ],
+        expected_bytes=[0x04, 0x10, 0x3C, 0x00, 0x74, 0x00, 0x04],
     ),
     Case(
         label="RemoveObject",

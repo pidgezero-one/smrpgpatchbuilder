@@ -343,6 +343,8 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
     _store_to_vram: bool
     _looping: bool
     _store_palette: bool
+    _behind_all_sprites: bool
+    _overlap_all_sprites: bool
 
     @property
     def sprite_id(self) -> UInt16:
@@ -382,6 +384,24 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         self._looping = looping
 
     @property
+    def behind_all_sprites(self) -> bool:
+        """Decides if the sprite sequence should loop."""
+        return self._behind_all_sprites
+
+    def set_behind_all_sprites(self, behind_all_sprites: bool) -> None:
+        """Decide if the sprite sequence should loop."""
+        self._behind_all_sprites = behind_all_sprites
+
+    @property
+    def overlap_all_sprites(self) -> bool:
+        """Decides if the sprite sequence should loop."""
+        return self._overlap_all_sprites
+
+    def set_overlap_all_sprites(self, overlap_all_sprites: bool) -> None:
+        """Decide if the sprite sequence should loop."""
+        self._overlap_all_sprites = overlap_all_sprites
+
+    @property
     def store_palette(self) -> bool:
         """(unknown)."""
         return self._store_palette
@@ -397,6 +417,8 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         store_to_vram: bool = False,
         looping: bool = False,
         store_palette: bool = False,
+        behind_all_sprites: bool = False,
+        overlap_all_sprites: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
@@ -405,10 +427,17 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         self.set_store_to_vram(store_to_vram)
         self.set_looping(looping)
         self.set_store_palette(store_palette)
+        self.set_behind_all_sprites(behind_all_sprites)
+        self.set_overlap_all_sprites(overlap_all_sprites)
 
     def render(self) -> bytearray:
+        byte1 = (
+            self.store_to_vram * 0x01
+            + self.behind_all_sprites * 0x40
+            + self.overlap_all_sprites * 0x80
+        )
         byte2 = (self.looping * 0x08) + (self.store_palette * 0x20)
-        return super().render(self.store_to_vram, byte2, self.sprite_id, self.sequence)
+        return super().render(byte1, byte2, self.sprite_id, self.sequence)
 
 
 class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
