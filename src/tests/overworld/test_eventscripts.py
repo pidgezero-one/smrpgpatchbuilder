@@ -174,7 +174,11 @@ test_cases = [
         commands_factory=lambda: [Set7000To7FMemVar()],
         expected_bytes=[],
     ),
-    Case(label="SetBit", commands_factory=lambda: [SetBit()], expected_bytes=[]),
+    Case(
+        label="SetBit",
+        commands_factory=lambda: [SetBit(Flag(0x7045, 5))],
+        expected_bytes=[],
+    ),
     Case(label="ClearBit", commands_factory=lambda: [ClearBit()], expected_bytes=[]),
     Case(
         label="Set0158Bit3Offset",

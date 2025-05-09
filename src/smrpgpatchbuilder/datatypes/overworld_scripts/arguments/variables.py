@@ -1,7 +1,7 @@
 """Definitions of each in-game variable that can be accessed by event/action scripts
 
-These are variable usages as used in SMRPG randomizer. 
-You can import these and rename them in your codebase if you like, 
+These are variable usages as used in SMRPG randomizer.
+You can import these and rename them in your codebase if you like,
 or just not use them."""
 
 from .types.byte_var import ByteVar
@@ -721,7 +721,7 @@ EXP_STAR_BIT_1 = Flag(0x7064, 0)
 EXP_STAR_BIT_2 = Flag(0x7064, 1)
 EXP_STAR_BIT_3 = Flag(0x7064, 2)
 EXP_STAR_BIT_4 = Flag(0x7064, 3)
-UNKNOWN_7064_5 = Flag(0x7064, 4)
+UNKNOWN_7064_4 = Flag(0x7064, 4)
 UNKNOWN_MIMIC_BIT = Flag(0x7064, 5)
 MIMIC_3_CLEARED = Flag(0x7064, 6)
 UNUSED_MAP_DIRECTIONAL = Flag(0x7065, 0)

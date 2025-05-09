@@ -2514,7 +2514,7 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB0, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
 
 
@@ -2559,7 +2559,7 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 3
@@ -2596,7 +2596,7 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(self.address, ShortVar):
             return super().render(0xB1, self.address, UInt16(self.value))
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
 
 
@@ -2630,7 +2630,7 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB2, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}"
         )
 
 
@@ -2664,7 +2664,7 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         if isinstance(self.address, ShortVar):
             return super().render(0xB3, self.address)
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}"
         )
 
 
@@ -2708,7 +2708,7 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             to_var = self.to_var
         if isinstance(from_var, ByteVar) and isinstance(to_var, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.label}: 0x{from_var:04x} 0x{to_var:04x}"
+                f"illegal args for {self.identifier.label}: 0x{from_var:04X} 0x{to_var:04X}"
             )
         if PRIMARY_TEMP_700C not in (self.from_var, self.to_var):
             self._size: int = 3
@@ -2749,7 +2749,7 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             return super().render(0xBC, self.from_var, self.to_var)
         raise InvalidCommandArgumentException(
             f"""illegal args for {self.identifier.label}: 
-            0x{self.from_var:04x} 0x{self.to_var:04x}"""
+            0x{self.from_var:04X} 0x{self.to_var:04X}"""
         )
 
 
@@ -2952,46 +2952,46 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
         3 bytes
 
     Args:
-        from_var (ShortVar): The first of the two variables you want to swap.
-        to_var (ShortVar): The second of the two variables you want to swap.
+        memory_a (ShortVar): The first of the two variables you want to swap.
+        memory_b (ShortVar): The second of the two variables you want to swap.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xBD
     _size: int = 3
-    _from_var: ShortVar
-    _to_var: ShortVar
+    _memory_a: ShortVar
+    _memory_b: ShortVar
 
     @property
-    def from_var(self) -> ShortVar:
+    def memory_a(self) -> ShortVar:
         """The first variable whose value to swap."""
-        return self._from_var
+        return self._memory_a
 
-    def set_from_var(self, from_var: ShortVar) -> None:
+    def set_memory_a(self, memory_a: ShortVar) -> None:
         """Set the first variable whose value to swap."""
-        self._from_var = from_var
+        self._memory_a = memory_a
 
     @property
-    def to_var(self) -> ShortVar:
+    def memory_b(self) -> ShortVar:
         """The second variable whose value to swap."""
-        return self._to_var
+        return self._memory_b
 
-    def set_to_var(self, to_var: ShortVar) -> None:
+    def set_memory_b(self, memory_b: ShortVar) -> None:
         """Set the second variable whose value to swap."""
-        self._to_var = to_var
+        self._memory_b = memory_b
 
     def __init__(
         self,
-        from_var: ShortVar,
-        to_var: ShortVar,
+        memory_a: ShortVar,
+        memory_b: ShortVar,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
-        self.set_from_var(from_var)
-        self.set_to_var(to_var)
+        self.set_memory_a(memory_a)
+        self.set_memory_b(memory_b)
 
     def render(self) -> bytearray:
-        return super().render(self.from_var, self.to_var)
+        return super().render(self.memory_b, self.memory_a)
 
 
 class A_Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -3080,7 +3080,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 5
@@ -3120,7 +3120,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
                 0xE4, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
 
 
@@ -3172,7 +3172,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
             address = self.address
         if isinstance(value, UInt16) and isinstance(address, ByteVar):
             raise InvalidCommandArgumentException(
-                f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
+                f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
         if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
             self._size: int = 5
@@ -3212,7 +3212,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
                 0xE5, self.address, UInt16(self.value), *self.destinations
             )
         raise InvalidCommandArgumentException(
-            f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
+            f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
 
 
@@ -3639,7 +3639,7 @@ class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
         self.set_shift(shift)
 
     def render(self) -> bytearray:
-        return super().render(self.address, 0xFF - self.shift)
+        return super().render(self.address, 0x100 - self.shift)
 
 
 class A_LoadMemory(UsableActionScriptCommand, ActionScriptCommandShortMem):
