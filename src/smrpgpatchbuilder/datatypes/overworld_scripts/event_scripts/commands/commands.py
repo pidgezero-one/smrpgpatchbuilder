@@ -2814,46 +2814,46 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        from_var (ShortVar): The first of the two variables you want to swap.
-        to_var (ShortVar): The second of the two variables you want to swap.
+        memory_a (ShortVar): The first of the two variables you want to swap.
+        memory_b (ShortVar): The second of the two variables you want to swap.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xBD
     _size: int = 3
-    _from_var: ShortVar
-    _to_var: ShortVar
+    _memory_a: ShortVar
+    _memory_b: ShortVar
 
     @property
-    def from_var(self) -> ShortVar:
+    def memory_a(self) -> ShortVar:
         """The first variable whose value to swap."""
-        return self._from_var
+        return self._memory_a
 
-    def set_from_var(self, from_var: ShortVar) -> None:
+    def set_memory_a(self, memory_a: ShortVar) -> None:
         """Set the first variable whose value to swap."""
-        self._from_var = from_var
+        self._memory_a = memory_a
 
     @property
-    def to_var(self) -> ShortVar:
+    def memory_b(self) -> ShortVar:
         """The second variable whose value to swap."""
-        return self._to_var
+        return self._memory_b
 
-    def set_to_var(self, to_var: ShortVar) -> None:
+    def set_memory_b(self, memory_b: ShortVar) -> None:
         """Set the second variable whose value to swap."""
-        self._to_var = to_var
+        self._memory_b = memory_b
 
     def __init__(
         self,
-        from_var: ShortVar,
-        to_var: ShortVar,
+        memory_a: ShortVar,
+        memory_b: ShortVar,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
-        self.set_from_var(from_var)
-        self.set_to_var(to_var)
+        self.set_memory_a(memory_a)
+        self.set_memory_b(memory_b)
 
     def render(self) -> bytearray:
-        return super().render(self.from_var, self.to_var)
+        return super().render(self.memory_b, self.memory_a)
 
 
 # math operations

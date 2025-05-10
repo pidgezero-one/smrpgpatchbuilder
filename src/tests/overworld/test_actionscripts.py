@@ -1078,318 +1078,403 @@ test_cases = [
     ),
     Case(
         label="A_LoadMemory",
-        commands_factory=lambda: [A_LoadMemory()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_LoadMemory(TEMP_7030)],
+        expected_bytes=[0xD6, 0x18],
     ),
     Case(
         label="A_SetSpriteSequence",
-        commands_factory=lambda: [A_SetSpriteSequence()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_SetSpriteSequence(
+                sprite_offset=2, index=1, is_mold=True, mirror_sprite=True
+            ),
+            A_SetSpriteSequence(
+                sprite_offset=7, index=15, is_mold=True, is_sequence=True, looping=True
+            ),
+        ],
+        expected_bytes=[0x08, 0x1A, 0x81, 0x08, 0x4F, 0x0F],
     ),
     Case(
         label="A_SetSequenceSpeed",
-        commands_factory=lambda: [A_SetSequenceSpeed()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_SetSequenceSpeed(VERY_FAST),
+            A_SetSequenceSpeed(VERY_SLOW),
+        ],
+        expected_bytes=[0x10, 0x83, 0x10, 0x86],
     ),
     Case(
         label="A_SetWalkingSpeed",
-        commands_factory=lambda: [A_SetWalkingSpeed()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_SetWalkingSpeed(FAST), A_SetWalkingSpeed(FASTEST)],
+        expected_bytes=[0x10, 0x41, 0x10, 0x44],
     ),
     Case(
         label="A_SetAllSpeeds",
-        commands_factory=lambda: [A_SetAllSpeeds()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_SetAllSpeeds(NORMAL), A_SetAllSpeeds(FAST)],
+        expected_bytes=[0x10, 0xC0, 0x10, 0xC1],
     ),
     Case(
         label="A_MaximizeSequenceSpeed",
         commands_factory=lambda: [A_MaximizeSequenceSpeed()],
-        expected_bytes=[],
+        expected_bytes=[0x85],
     ),
     Case(
         label="A_MaximizeSequenceSpeed86",
         commands_factory=lambda: [A_MaximizeSequenceSpeed86()],
-        expected_bytes=[],
+        expected_bytes=[0x86],
     ),
     Case(
         label="A_Set700CToCurrentLevel",
         commands_factory=lambda: [A_Set700CToCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xC3],
     ),
     Case(
         label="A_Set700CToPressedButton",
         commands_factory=lambda: [A_Set700CToPressedButton()],
-        expected_bytes=[],
+        expected_bytes=[0xCA],
     ),
     Case(
-        label="A_BPL262728", commands_factory=lambda: [A_BPL262728()], expected_bytes=[]
+        label="A_BPL262728",
+        commands_factory=lambda: [A_BPL262728()],
+        expected_bytes=[0x21],
     ),
     Case(
-        label="A_BMI262728", commands_factory=lambda: [A_BMI262728()], expected_bytes=[]
+        label="A_BMI262728",
+        commands_factory=lambda: [A_BMI262728()],
+        expected_bytes=[0x22],
     ),
-    Case(label="A_BPL2627", commands_factory=lambda: [A_BPL2627()], expected_bytes=[]),
+    Case(
+        label="A_BPL2627", commands_factory=lambda: [A_BPL2627()], expected_bytes=[0x2A]
+    ),
     Case(
         label="A_SummonObjectToSpecificLevel",
-        commands_factory=lambda: [A_SummonObjectToSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_SummonObjectToSpecificLevel(
+                target_npc=NPC_4, level_id=R020_MUSHROOM_KINGDOM_CASTLE_TOADSTOOLS_ROOM
+            )
+        ],
+        expected_bytes=[0xF2, 0x14, 0xB0],
     ),
     Case(
         label="A_SummonObjectAt70A8ToCurrentLevel",
         commands_factory=lambda: [A_SummonObjectAt70A8ToCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF4],
     ),
     Case(
         label="A_RemoveObjectFromSpecificLevel",
-        commands_factory=lambda: [A_RemoveObjectFromSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_RemoveObjectFromSpecificLevel(
+                target_npc=NPC_1, level_id=R076_BANDITS_WAY_AREA_01
+            )
+        ],
+        expected_bytes=[0xF2, 0x4C, 0x2A],
     ),
     Case(
         label="A_RemoveObjectAt70A8FromCurrentLevel",
         commands_factory=lambda: [A_RemoveObjectAt70A8FromCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF5],
     ),
     Case(
         label="A_EnableObjectTriggerInSpecificLevel",
-        commands_factory=lambda: [A_EnableObjectTriggerInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_EnableObjectTriggerInSpecificLevel(
+                target_npc=NPC_3, level_id=R311_SEASIDE_TOWN_HEALTH_FOOD_STORE
+            )
+        ],
+        expected_bytes=[0xF3, 0x37, 0xAF],
     ),
     Case(
         label="A_EnableTriggerOfObjectAt70A8InCurrentLevel",
         commands_factory=lambda: [A_EnableTriggerOfObjectAt70A8InCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF6],
     ),
     Case(
         label="A_DisableObjectTriggerInSpecificLevel",
-        commands_factory=lambda: [A_DisableObjectTriggerInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_DisableObjectTriggerInSpecificLevel(
+                target_npc=NPC_6, level_id=R509_FACTORY_GROUNDS_SMITHYS_PAD
+            )
+        ],
+        expected_bytes=[0xF3, 0xFD, 0x35],
     ),
     Case(
         label="A_DisableTriggerOfObjectAt70A8InCurrentLevel",
         commands_factory=lambda: [A_DisableTriggerOfObjectAt70A8InCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF7],
+    ),
+    Case(
+        label="A_WalkEastSteps",
+        commands_factory=lambda: [A_WalkEastSteps(37)],
+        expected_bytes=[0x50, 0x25],
     ),
     Case(
         label="A_WalkSoutheastSteps",
-        commands_factory=lambda: [A_WalkSoutheastSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSoutheastSteps(10)],
+        expected_bytes=[0x51, 0x0A],
     ),
     Case(
         label="A_WalkSouthSteps",
-        commands_factory=lambda: [A_WalkSouthSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSouthSteps(100)],
+        expected_bytes=[0x52, 0x64],
     ),
     Case(
         label="A_WalkSouthwestSteps",
-        commands_factory=lambda: [A_WalkSouthwestSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSouthwestSteps(88)],
+        expected_bytes=[0x53, 0x58],
     ),
     Case(
         label="A_WalkWestSteps",
-        commands_factory=lambda: [A_WalkWestSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkWestSteps(69)],
+        expected_bytes=[0x54, 0x45],
     ),
     Case(
         label="A_WalkNorthwestSteps",
-        commands_factory=lambda: [A_WalkNorthwestSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNorthwestSteps(8)],
+        expected_bytes=[0x55, 0x08],
     ),
     Case(
         label="A_WalkNorthSteps",
-        commands_factory=lambda: [A_WalkNorthSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNorthSteps(255)],
+        expected_bytes=[0x56, 0xFF],
     ),
     Case(
         label="A_WalkNortheastSteps",
-        commands_factory=lambda: [A_WalkNortheastSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNortheastSteps(13)],
+        expected_bytes=[0x57, 0x0D],
     ),
     Case(
         label="A_WalkFDirectionSteps",
-        commands_factory=lambda: [A_WalkFDirectionSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkFDirectionSteps(49)],
+        expected_bytes=[0x58, 0x31],
     ),
     Case(
         label="A_ShiftZUpSteps",
-        commands_factory=lambda: [A_ShiftZUpSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftZUpSteps(20)],
+        expected_bytes=[0x5A, 0x14],
     ),
     Case(
         label="A_ShiftZDownSteps",
-        commands_factory=lambda: [A_ShiftZDownSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftZDownSteps(101)],
+        expected_bytes=[0x5B, 0x65],
     ),
     Case(
         label="A_WalkEastPixels",
-        commands_factory=lambda: [A_WalkEastPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkEastPixels(3)],
+        expected_bytes=[0x60, 0x03],
     ),
     Case(
         label="A_WalkSoutheastPixels",
-        commands_factory=lambda: [A_WalkSoutheastPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSoutheastPixels(7)],
+        expected_bytes=[0x61, 0x07],
     ),
     Case(
         label="A_WalkSouthPixels",
-        commands_factory=lambda: [A_WalkSouthPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSouthPixels(16)],
+        expected_bytes=[0x62, 0x10],
     ),
     Case(
         label="A_WalkSouthwestPixels",
-        commands_factory=lambda: [A_WalkSouthwestPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkSouthwestPixels(41)],
+        expected_bytes=[0x63, 0x29],
     ),
     Case(
         label="A_WalkWestPixels",
-        commands_factory=lambda: [A_WalkWestPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkWestPixels(74)],
+        expected_bytes=[0x64, 0x4A],
     ),
     Case(
         label="A_WalkNorthwestPixels",
-        commands_factory=lambda: [A_WalkNorthwestPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNorthwestPixels(96)],
+        expected_bytes=[0x65, 0x60],
     ),
     Case(
         label="A_WalkNorthPixels",
-        commands_factory=lambda: [A_WalkNorthPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNorthPixels(121)],
+        expected_bytes=[0x66, 0x79],
     ),
     Case(
         label="A_WalkNortheastPixels",
-        commands_factory=lambda: [A_WalkNortheastPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkNortheastPixels(183)],
+        expected_bytes=[0x67, 0xB7],
     ),
     Case(
         label="A_WalkFDirectionPixels",
-        commands_factory=lambda: [A_WalkFDirectionPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkFDirectionPixels(231)],
+        expected_bytes=[0x68, 0xE7],
     ),
     Case(
         label="A_WalkFDirection16Pixels",
         commands_factory=lambda: [A_WalkFDirection16Pixels()],
-        expected_bytes=[],
+        expected_bytes=[0x69],  # nice
     ),
     Case(
         label="A_ShiftZUpPixels",
-        commands_factory=lambda: [A_ShiftZUpPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftZUpPixels(187)],
+        expected_bytes=[0x6A, 0xBB],
     ),
     Case(
         label="A_ShiftZDownPixels",
-        commands_factory=lambda: [A_ShiftZDownPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftZDownPixels(200)],
+        expected_bytes=[0x6B, 0xC8],
     ),
     Case(
         label="A_TurnClockwise45DegreesNTimes",
-        commands_factory=lambda: [A_TurnClockwise45DegreesNTimes()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_TurnClockwise45DegreesNTimes(10)],
+        expected_bytes=[0x7B, 0x0A],
     ),
     Case(
         label="A_JumpToHeight",
-        commands_factory=lambda: [A_JumpToHeight()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JumpToHeight(1000, silent=True),
+            A_JumpToHeight(10000, silent=False),
+        ],
+        expected_bytes=[0x7E, 0xE8, 0x03, 0x7F, 0x10, 0x27],
     ),
     Case(
         label="A_WalkToXYCoords",
-        commands_factory=lambda: [A_WalkToXYCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkToXYCoords(3, 5)],
+        expected_bytes=[0x80, 0x03, 0x05],
     ),
     Case(
         label="A_WalkXYSteps",
-        commands_factory=lambda: [A_WalkXYSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_WalkXYSteps(10, 9)],
+        expected_bytes=[0x81, 0x0A, 0x09],
     ),
     Case(
         label="A_ShiftToXYCoords",
-        commands_factory=lambda: [A_ShiftToXYCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftToXYCoords(100, 200)],
+        expected_bytes=[0x82, 0x64, 0xC8],
     ),
     Case(
         label="A_ShiftXYSteps",
-        commands_factory=lambda: [A_ShiftXYSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftXYSteps(62, 77)],
+        expected_bytes=[0x83, 0x3E, 0x4D],
     ),
     Case(
         label="A_ShiftXYPixels",
-        commands_factory=lambda: [A_ShiftXYPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_ShiftXYPixels(90, 88)],
+        expected_bytes=[0x84, 0x5A, 0x58],
     ),
     Case(
         label="A_TransferToObjectXY",
-        commands_factory=lambda: [A_TransferToObjectXY()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_TransferToObjectXY(NPC_1)],
+        expected_bytes=[0x87, 0x15],
     ),
     Case(
         label="A_TransferToObjectXYZ",
-        commands_factory=lambda: [A_TransferToObjectXYZ()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_TransferToObjectXYZ(NPC_8)],
+        expected_bytes=[0x95, 0x1C],
     ),
     Case(
         label="A_RunAwayShift",
         commands_factory=lambda: [A_RunAwayShift()],
-        expected_bytes=[],
+        expected_bytes=[0x8A],
     ),
     Case(
         label="A_TransferTo70167018",
         commands_factory=lambda: [A_TransferTo70167018()],
-        expected_bytes=[],
+        expected_bytes=[0x89],
     ),
     Case(
         label="A_TransferTo70167018701A",
         commands_factory=lambda: [A_TransferTo70167018701A()],
-        expected_bytes=[],
+        expected_bytes=[0x99],
     ),
     Case(
         label="A_WalkTo70167018",
         commands_factory=lambda: [A_WalkTo70167018()],
-        expected_bytes=[],
+        expected_bytes=[0x88],
     ),
     Case(
         label="A_WalkTo70167018701A",
         commands_factory=lambda: [A_WalkTo70167018701A()],
-        expected_bytes=[],
+        expected_bytes=[0x98],
     ),
     Case(
         label="A_BounceToXYWithHeight",
-        commands_factory=lambda: [A_BounceToXYWithHeight()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_BounceToXYWithHeight(x=5, y=20, height=10)],
+        expected_bytes=[0x90, 0x05, 0x14, 0x0A],
     ),
     Case(
         label="A_BounceXYStepsWithHeight",
-        commands_factory=lambda: [A_BounceXYStepsWithHeight()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_BounceXYStepsWithHeight(x=100, y=127, height=40)],
+        expected_bytes=[0x91, 0x64, 0x7F, 0x28],
     ),
     Case(
         label="A_TransferToXYZF",
-        commands_factory=lambda: [A_TransferToXYZF()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_TransferToXYZF(x=5, y=9, z=2, direction=NORTHWEST)],
+        expected_bytes=[0x92, 0x05, 0x09, 0xA2],
     ),
     Case(
         label="A_TransferXYZFSteps",
-        commands_factory=lambda: [A_TransferXYZFSteps()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_TransferXYZFSteps(x=2, y=3, z=1, direction=NORTHEAST)
+        ],
+        expected_bytes=[0x93, 0x02, 0x03, 0xE1],
     ),
     Case(
         label="A_TransferXYZFPixels",
-        commands_factory=lambda: [A_TransferXYZFPixels()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_TransferXYZFPixels(x=7, y=3, z=9, direction=SOUTH)],
+        expected_bytes=[0x94, 0x07, 0x03, 0x49],
     ),
     Case(
         label="A_Set700CToObjectCoord",
-        commands_factory=lambda: [A_Set700CToObjectCoord()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_Set700CToObjectCoord(target_npc=NPC_6, coord=COORD_X, pixel=True),
+            A_Set700CToObjectCoord(target_npc=DUMMY_0X0B, coord=COORD_Y, pixel=True),
+            A_Set700CToObjectCoord(
+                target_npc=DUMMY_0X07, coord=COORD_Z, pixel=True, bit_7=True
+            ),
+            A_Set700CToObjectCoord(target_npc=MARIO, isometric=True, coord=COORD_X),
+            A_Set700CToObjectCoord(
+                target_npc=CHARACTER_IN_SLOT_3, isometric=True, coord=COORD_Y
+            ),
+            A_Set700CToObjectCoord(target_npc=MEM_70A8, isometric=True, coord=COORD_Z),
+        ],
+        expected_bytes=[
+            0xC4,
+            0x1A,
+            0xC5,
+            0x0B,
+            0xC6,
+            0x87,
+            0xC4,
+            0x40,
+            0xC5,
+            0x4A,
+            0xC6,
+            0x50,
+        ],
     ),
     Case(
-        label="A_PlaySound", commands_factory=lambda: [A_PlaySound()], expected_bytes=[]
+        label="A_Set700CToObjectCoord should fail if both types are specified",
+        commands_factory=lambda: [
+            A_Set700CToObjectCoord(
+                target_npc=NPC_6, coord=COORD_X, pixel=True, isometric=True
+            )
+        ],
+        exception_type=AssertionError,
+    ),
+    Case(
+        label="A_PlaySound",
+        commands_factory=lambda: [
+            A_PlaySound(sound=SO091_TUMBLING_BOULDERS, channel=4),
+            A_PlaySound(sound=SO010_TRAMPOLINE, channel=6),
+        ],
+        expected_bytes=[0xFD, 0x9E, 0x5B, 0x9C, 0x0A],
+    ),
+    Case(
+        label="A_PlaySound should fail with invalid channel",
+        commands_factory=lambda: [A_PlaySound(sound=SO009_GREEN_SWITCH, channel=2)],
+        exception_type=AssertionError,
     ),
     Case(
         label="A_PlaySoundBalance",
-        commands_factory=lambda: [A_PlaySoundBalance()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_PlaySoundBalance(sound=SO014_FLOWER, balance=10)],
+        expected_bytes=[0x9D, 0x0E, 0x0A],
     ),
     Case(
         label="A_FadeOutSoundToVolume",
-        commands_factory=lambda: [A_FadeOutSoundToVolume()],
-        expected_bytes=[],
+        commands_factory=lambda: [A_FadeOutSoundToVolume(duration=10, volume=20)],
+        expected_bytes=[0x9E, 0x0A, 0x14],
     ),
     #
     # Tests with defined GOTOs

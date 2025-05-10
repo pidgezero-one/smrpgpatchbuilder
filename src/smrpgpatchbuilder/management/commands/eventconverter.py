@@ -5876,8 +5876,8 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "swap_vars":
         cls = "SwapVars"
         include_argnames = False
-        args["from_var"] = get_var(cmdargs[0])
-        args["to_var"] = get_var(cmdargs[1])
+        args["memory_a"] = get_var(cmdargs[1])
+        args["memory_b"] = get_var(cmdargs[0])
     elif cmd["command"] == "tint_layers":
         cls = "TintLayers"
         layers = []
@@ -6383,8 +6383,8 @@ def convert_action_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "swap_vars":
         cls = "A_SwapVars"
         include_argnames = False
-        args["from_var"] = get_var(cmdargs[0])
-        args["to_var"] = get_var(cmdargs[1])
+        args["memory_a"] = get_var(cmdargs[1])
+        args["memory_b"] = get_var(cmdargs[0])
     elif cmd["command"] == "move_7010_7015_to_7016_701B":
         cls = "A_Move70107015To7016701B"
     elif cmd["command"] == "move_7016_701B_to_7010_7015":
