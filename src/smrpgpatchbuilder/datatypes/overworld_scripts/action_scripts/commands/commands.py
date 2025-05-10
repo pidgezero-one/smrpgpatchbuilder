@@ -3046,7 +3046,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         `0xE4`
 
     ## Size
-        5 bytes if `address` is $700C
+        5 bytes if `address` is $700C or a byte var
         6 bytes otherwise
 
     Args:
@@ -3138,7 +3138,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
         `0xE5`
 
     ## Size
-        5 bytes if `address` is $700C
+        5 bytes if `address` is $700C or a byte var
         6 bytes otherwise
 
     Args:
@@ -7087,7 +7087,7 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_arg1(arg1)
-        self.set_arg(arg2)
+        self.set_arg2(arg2)
 
     def render(self) -> bytearray:
         return super().render(self.arg1, self.arg2, *self.destinations)

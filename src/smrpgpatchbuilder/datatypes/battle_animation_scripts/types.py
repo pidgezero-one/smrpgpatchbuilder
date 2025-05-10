@@ -295,7 +295,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         if position > self.end:
             print(f"{self.start:06x} {position:06x} {self.end:06x}")
             raise IdentifierException(
-                f"command exceeded max bank size: {key} @ {position:06x}"
+                f"command exceeded max bank size of {self.end:06X}: {key} @ {position:06x}"
             )
         return position
 

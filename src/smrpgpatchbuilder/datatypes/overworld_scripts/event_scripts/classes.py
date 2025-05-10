@@ -182,7 +182,7 @@ class EventScriptBank(ScriptBank[EventScript]):
 
         if position > self.end:
             raise ScriptBankTooLongException(
-                f"command exceeded max bank size: {key} @ 0x{position:06X}"
+                f"command exceeded max bank size of {self.end:06X}: {key} @ 0x{position:06X}"
             )
         return position
 

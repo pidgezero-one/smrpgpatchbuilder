@@ -1546,13 +1546,21 @@ test_cases = [
     ),
     Case(
         label="A_JmpIfComparisonResultIsGreaterOrEqual",
-        commands_factory=lambda: [A_JmpIfComparisonResultIsGreaterOrEqual()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_CompareVarToConst(X_COORD_1, 12544),
+            A_JmpIfComparisonResultIsGreaterOrEqual(["ACTION_18_ret_61"]),
+            A_ReturnQueue(identifier="ACTION_18_ret_61"),
+        ],
+        expected_bytes=[0xC2, 0x08, 0x00, 0x31, 0xEC, 0x09, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfComparisonResultIsLesser",
-        commands_factory=lambda: [A_JmpIfComparisonResultIsLesser()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_CompareVarToConst(X_COORD_1, 12544),
+            A_JmpIfComparisonResultIsLesser(["ACTION_18_ret_61"]),
+            A_ReturnQueue(identifier="ACTION_18_ret_61"),
+        ],
+        expected_bytes=[0xC2, 0x08, 0x00, 0x31, 0xED, 0x09, 0x00, 0xFE],
     ),
     Case(
         "Jump if bit clear",
@@ -1599,103 +1607,225 @@ test_cases = [
     ),
     Case(
         label="A_JmpIfVarEqualsConst",
-        commands_factory=lambda: [A_JmpIfVarEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfVarEqualsConst(PRIMARY_TEMP_700C, 1, ["end_here"]),
+            A_JmpIfVarEqualsConst(TEMP_70AF, 1, ["end_here"]),
+            A_JmpIfVarEqualsConst(TEMP_7030, 0, ["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[
+            0xE2,
+            0x01,
+            0x00,
+            0x12,
+            0x00,
+            0xE0,
+            0x0F,
+            0x01,
+            0x12,
+            0x00,
+            0xE4,
+            0x18,
+            0x00,
+            0x00,
+            0x12,
+            0x00,
+            0xFE,
+        ],
     ),
     Case(
         label="A_JmpIfVarNotEqualsConst",
-        commands_factory=lambda: [A_JmpIfVarNotEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfVarNotEqualsConst(PRIMARY_TEMP_700C, 13, ["end_here"]),
+            A_JmpIfVarNotEqualsConst(TEMP_7032, 1, ["end_here"]),
+            A_JmpIfVarNotEqualsConst(TEMP_70AE, 21, ["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[
+            0xE3,
+            0x0D,
+            0x00,
+            0x12,
+            0x00,
+            0xE5,
+            0x19,
+            0x01,
+            0x00,
+            0x12,
+            0x00,
+            0xE1,
+            0x0E,
+            0x15,
+            0x12,
+            0x00,
+            0xFE,
+        ],
     ),
     Case(
         label="A_JmpIf700CAllBitsClear",
-        commands_factory=lambda: [A_JmpIf700CAllBitsClear()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIf700CAllBitsClear(bits=[0], destinations=["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xE6, 0x01, 0x00, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIf700CAnyBitsSet",
-        commands_factory=lambda: [A_JmpIf700CAnyBitsSet()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIf700CAnyBitsSet(bits=[0, 1], destinations=["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xE7, 0x03, 0x00, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfRandom2of3",
-        commands_factory=lambda: [A_JmpIfRandom2of3()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_StopSound(identifier="start_here"),
+            A_JmpIfRandom2of3(["end_here", "start_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x9B, 0xE9, 0x08, 0x00, 0x02, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfRandom1of2",
-        commands_factory=lambda: [A_JmpIfRandom1of2()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfRandom1of2(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xE8, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfLoadedMemoryIs0",
-        commands_factory=lambda: [A_JmpIfLoadedMemoryIs0()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfLoadedMemoryIs0(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xEA, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfLoadedMemoryIsAboveOrEqual0",
-        commands_factory=lambda: [A_JmpIfLoadedMemoryIsAboveOrEqual0()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfLoadedMemoryIsAboveOrEqual0(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xEF, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfLoadedMemoryIsBelow0",
-        commands_factory=lambda: [A_JmpIfLoadedMemoryIsBelow0()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfLoadedMemoryIsBelow0(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xEE, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfLoadedMemoryIsNot0",
-        commands_factory=lambda: [A_JmpIfLoadedMemoryIsNot0()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfLoadedMemoryIsNot0(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xEB, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfObjectWithinRange",
-        commands_factory=lambda: [A_JmpIfObjectWithinRange()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfObjectWithinRange(
+                comparing_npc=NPC_0, usually=48, tiles=0, destinations=["end_here"]
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3A, 0x14, 0x30, 0x00, 0x08, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfObjectWithinRangeSameZ",
-        commands_factory=lambda: [A_JmpIfObjectWithinRangeSameZ()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfObjectWithinRangeSameZ(
+                comparing_npc=MARIO,
+                usually=128,
+                tiles=3,
+                destinations=["end_here"],
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3B, 0x00, 0x80, 0x03, 0x08, 0x00, 0xFE],
     ),
     Case(
         label="A_CreatePacketAtObjectCoords",
-        commands_factory=lambda: [A_CreatePacketAtObjectCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_CreatePacketAtObjectCoords(
+                packet=P032_BLUE_CLOUD,
+                target_npc=DUMMY_0X07,
+                destinations=["end_here"],
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3E, 0x20, 0x07, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_CreatePacketAt7010",
-        commands_factory=lambda: [A_CreatePacketAt7010()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_CreatePacketAt7010(
+                packet=P024_REGULAR_SOUND_EXPLOSION, destinations=["end_here"]
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3F, 0x18, 0x06, 0x00, 0xFE],
     ),
     Case(
         label="A_CreatePacketAt7010WithEvent",
-        commands_factory=lambda: [A_CreatePacketAt7010WithEvent()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_CreatePacketAt7010WithEvent(
+                packet=P028_MUSHROOM_THROWN_SOUTHWEST,
+                event_id=E3077_SHIP_PUZZLE_MUSHROOM,
+                destinations=["end_here"],
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xFD, 0x3E, 0x1C, 0x05, 0x0C, 0x09, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfObjectInSpecificLevel",
-        commands_factory=lambda: [A_JmpIfObjectInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfObjectInSpecificLevel(
+                NPC_6, R251_BEAN_VALLEY_PIRANHA_PIPE_AREA, ["end_here"]
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xF8, 0xFB, 0xB4, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfObjectNotInSpecificLevel",
-        commands_factory=lambda: [A_JmpIfObjectNotInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfObjectNotInSpecificLevel(
+                NPC_2, R043_BOOSTER_TOWER_1F_AREA_01_MAIN_ROOM, ["end_here"]
+            ),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xF8, 0x2B, 0x2C, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfObjectInAir",
-        commands_factory=lambda: [A_JmpIfObjectInAir()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfObjectInAir(NPC_3, ["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0xFD, 0x3D, 0x17, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_UnknownJmp3C",
-        commands_factory=lambda: [A_UnknownJmp3C()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_UnknownJmp3C(0x00, 0x20, ["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3C, 0x00, 0x20, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="A_JmpIfMarioInAir",
-        commands_factory=lambda: [A_JmpIfMarioInAir()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            A_JmpIfMarioInAir(["end_here"]),
+            A_ReturnQueue(identifier="end_here"),
+        ],
+        expected_bytes=[0x3D, 0x05, 0x00, 0xFE],
     ),
     #
     # Unknown command tests

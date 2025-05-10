@@ -149,7 +149,7 @@ class ActionScriptBank(ScriptBank):
 
         if position > self.end:
             raise ScriptBankTooLongException(
-                f"command exceeded max bank size: {key} @ {position:06X}"
+                f"command exceeded max bank size of {self.end:06X}: {key} @ {position:06X}"
             )
         return position
 
