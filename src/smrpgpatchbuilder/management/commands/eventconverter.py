@@ -24,6 +24,7 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids.shops_ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *
+from smrpgpatchbuilder.datatypes.battles.ids.pack_ids import *
 
 import sys, re, os, shutil
 
@@ -4137,6 +4138,254 @@ DIRECTIONS = [
     "NORTHEAST",
 ]
 
+PACK_IDS = [
+    "PACK0000_SNIFIT_FIGHT",
+    "PACK0001_BOBOMB_HENCHMEN",
+    "PACK0002_SPIKEYS_AND_TROOPAS",
+    "PACK0003_SPIKEYS_AND_FROGS",
+    "PACK0004_JUST_TROOPAS",
+    "PACK0005_TROOPAS_WITH_FROGS_OR_GOOMBAS",
+    "PACK0006_JUST_GOOMBAS",
+    "PACK0007_GOOMBAS_WITH_FROGS_OR_SPIKEYS",
+    "PACK0008_K9S_WITH_SPIKEYS",
+    "PACK0009_K9S_WITH_SPIKEYS_OR_FROGS",
+    "PACK0010_REGULAR_SHYSTERS_BIASED_2",
+    "PACK0011_REGULAR_SHYSTERS_BIASED_3",
+    "PACK0012_RATFUNKS_WITH_SHADOW_OR_HOBGOBLIN",
+    "PACK0013_RATFUNKS_ALWAYS_WITH_ONE_OTHER_MONSTER",
+    "PACK0014_BIGBOO_ALWAYS_WITH_ONE_OTHER_MONSTER_1",
+    "PACK0015_BIGBOO_ALWAYS_WITH_ONE_OTHER_MONSTER_2",
+    "PACK0016_MULTIPLE_GOBYS_BIASED_2",
+    "PACK0017_MULTIPLE_GOBYS_BIASED_3",
+    "PACK0018_CROOKS_WITH_SHYGUY_OR_SNAPDRAGON",
+    "PACK0019_CROOKS_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0020_SHYGUYS_WITH_STARSLAP_OR_SNAPDRAGON",
+    "PACK0021_SHYGUY_STARSLAP_SNAPDRAGON_CROOK_ARACHNE",
+    "PACK0022_STARSLAP_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0023_STARSLAPS_SOMETIMES_WITH_OTHER_MONSTERS",
+    "PACK0024_WIGGLERS_WITH_AMANITA",
+    "PACK0025_WIGGLERS_WITH_GUERRILLA_OR_AMANITA",
+    "PACK0026_AMANITAS_WITH_BUZZER_OR_OCTOLOT",
+    "PACK0027_AMANITAS_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0028_BUZZERS_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0029_BUZZERS_WITH_AMANITA",
+    "PACK0030_SPARKY_WITH_SHYRANGER",
+    "PACK0031_MULTIPLE_SPARKY_WITH_SHYRANGER",
+    "PACK0032_APPRENTICE_HENCHMAN_FIGHT",
+    "PACK0034_PIRANHA_WITH_SHYRANGER",
+    "PACK0035_MULTIPLE_PIRANHA_WITH_SHYRANGER",
+    "PACK0036_BOBOMB_WITH_CLUSTER",
+    "PACK0037_BOBOMB_WITH_CLUSTER_SOMETIMES_ENIGMA",
+    "PACK0038_SPARKY_WITH_ALWAYS_OTHER_ENEMIES_1",
+    "PACK0039_SPARKY_WITH_ALWAYS_OTHER_ENEMIES_2",
+    "PACK0040_MAGMITES_WITH_SPARKY_BOBOMB_OR_CLUSTER",
+    "PACK0041_MAGMITES_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0042_LAKITU_WITH_SPIKESTER_ARTICHOKER",
+    "PACK0043_LAKITU_USUALLY_WITH_ARTICHOKER",
+    "PACK0044_SPIKESTER_WITH_OTHER_ENEMIES",
+    "PACK0045_MULTIPLE_SPIKESTER_WITH_OTHER_ENEMIES",
+    "PACK0046_SPOOKUM_WITH_OTHER_MONSTERS",
+    "PACK0047_MULTIPLE_SPOOKUM_WITH_OTHER_MONSTERS",
+    "PACK0048_ROBOMB_WITH_REMOCON",
+    "PACK0049_ROBOMB_WITH_REMOCON_OR_ORBUSER",
+    "PACK0050_CHOMP_WITH_OTHER_MONSTERS_1",
+    "PACK0051_CHOMP_WITH_OTHER_MONSTERS_2",
+    "PACK0052_BLASTERS_AND_SPOOKUMS_1",
+    "PACK0053_BLASTERS_AND_SPOOKUMS_2",
+    "PACK0054_TORTES",
+    "PACK0055_MULTIPLE_TORTES",
+    "PACK0056_MUKU_PULSAR_GECKO",
+    "PACK0057_MUKU_PULSAR_GECKO_MULTI",
+    "PACK0058_SACKIT_WITH_OTHER_MONSTERS",
+    "PACK0059_SACKIT_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0060_GECKO_PACK_1",
+    "PACK0061_GECKO_PACK_2",
+    "PACK0062_ZEOSTAR_WITH_BLOOBER_OR_LEUKO",
+    "PACK0063_ZEOSTAR_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0064_BLOOBER_PACK_1",
+    "PACK0065_BLOOBER_PACK_2",
+    "PACK0066_KIPPER_PACK_1",
+    "PACK0067_KIPPER_PACK_2",
+    "PACK0068_BANDANA_REDS_1",
+    "PACK0069_BANDANA_REDS_2",
+    "PACK0070_BANDANA_BLUES",
+    "PACK0071_BANDANA_RED_HENCHMEN",
+    "PACK0072_DRYBONES_WITH_GREAPER_REACHER",
+    "PACK0073_DRYBONES_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0074_ALLEYRAT_PACK_1",
+    "PACK0075_ALLEYRAT_PACK_2",
+    "PACK0076_GREAPER_WITH_REACHER_STRAWHEAD",
+    "PACK0077_GREAPER_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0078_DRILLBIT_PACK_1",
+    "PACK0079_DRILLBIT_PACK_2",
+    "PACK0080_STINGER_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0081_STINGER_WITH_OCTOVADER_OR_FINKFLOWER",
+    "PACK0082_CHOW_PACK_1",
+    "PACK0083_CHOW_PACK_2",
+    "PACK0084_CHOMPCHOMP_PACK_1",
+    "PACK0085_CHOMPCHOMP_PACK_2",
+    "PACK0086_SHYAWAY_WITH_KRIFFID_OR_RIBBITE",
+    "PACK0087_SHYAWAY_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0088_CHEWY_WITH_SHYAWAY_OR_SPINTHRA",
+    "PACK0089_CHEWY_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0090_GECKIT_PACK_1",
+    "PACK0091_GECKIT_PACK_2",
+    "PACK0092_BIRDY_PACK_1",
+    "PACK0093_BIRDY_PACK_2",
+    "PACK0094_BLUEBIRD_PACK_1",
+    "PACK0095_BLUEBIRD_PACK_2",
+    "PACK0096_PINWHEEL_WITH_MUCKLE",
+    "PACK0097_PINWHEEL_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0098_SHAMAN_WITH_ORBISON_JAWFUL",
+    "PACK0099_SHAMAN_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0100_SLINGSHY_PACK_1",
+    "PACK0101_SLINGSHY_PACK_2",
+    "PACK0102_MAGMUS_WITH_ARMOREDANT_OERLIKON",
+    "PACK0103_MAGMUS_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0104_OERLIKON_PACK_1",
+    "PACK0105_OERLIKON_PACK_2",
+    "PACK0106_PYROSPHERE_WITH_CHAINEDKONG_CORKPEDITE",
+    "PACK0107_PYROSPHERE_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0108_VOMER_PACK_1",
+    "PACK0109_VOMER_PACK_2",
+    "PACK0110_TERRACOTTA_PACK_1",
+    "PACK0111_TERRACOTTA_PACK_2",
+    "PACK0112_MALAKOOPA_PACK_1",
+    "PACK0113_MALAKOOPA_PACK_2",
+    "PACK0114_GUGOOMBA_PACK_1",
+    "PACK0115_GUGOOMBA_PACK_2",
+    "PACK0116_BIGBERTHA_PACK_1",
+    "PACK0117_BIGBERTHA_PACK_2",
+    "PACK0120_NINJA_PACK_1",
+    "PACK0121_NINJA_PACK_2",
+    "PACK0122_SPRINGER_PACK_1",
+    "PACK0123_SPRINGER_PACK_2",
+    "PACK0124_MADMALLET_PACK_1",
+    "PACK0126_POUNDER_PACK_1",
+    "PACK0128_POUNDETTE_PACK_1",
+    "PACK0130_AMEBOIDS",
+    "PACK0132_GLUMREAPER_WITH_HIPPOPO_DOPPEL",
+    "PACK0133_GLUMREAPER_ALWAYS_WITH_OTHER_MONSTERS",
+    "PACK0134_LILBOO_PACK_1",
+    "PACK0135_LILBOO_PACK_2",
+    "PACK0136_JABITS_HAMMERS_PACK_1",
+    "PACK0137_JABITS_HAMMERS_PACK_2",
+    "PACK0138_RATFUNKS_ONLY",
+    "PACK0139_ARTICHOKERS_ONLY",
+    "PACK0140_PUNCHINELLO_STATIC",
+    "PACK0141_CROOK_HENCHMEN_ONLY",
+    "PACK0142_SNIFIT_ONLY",
+    "PACK0143_TOWER_FIREBALLS",
+    "PACK0144_STUMPET_ENCOUNTER",
+    "PACK0145_CORKPEDITE_ENCOUNTER",
+    "PACK0146_CLERK_STATIC",
+    "PACK0147_MANAGER_STATIC",
+    "PACK0148_DIRECTOR_STATIC",
+    "PACK0149_GUNYOLK_STATIC",
+    "PACK0150_MAD_MALLET_FACTORY_FIGHT",
+    "PACK0151_APPRENTICE_FIGHT",
+    "PACK0152_THREE_MACHINE_SHYSTER_SUBSTITUTE",
+    "PACK0153_THREE_DRILLBIT_SUBSTITUTE",
+    "PACK0154_SINGLE_SHYGUY_HENCHMAN",
+    "PACK0155_MAD_MALLET_HENCHMEN",
+    "PACK0156_PANDORITE_FIGHT_STATIC",
+    "PACK0157_HIDON_FIGHT_STATIC",
+    "PACK0158_BOXBOY_FIGHT_STATIC",
+    "PACK0159_CHESTER_FIGHT_STATIC",
+    "PACK0160_BOWYER_AERO_HENCHMEN",
+    "PACK0161_BOOSTER_FIGHT_STATIC",
+    "PACK0162_DUMMY_BOOSTER_POSSIBLY_UNUSED",
+    "PACK0163_CROCO1_FIGHT_STATIC",
+    "PACK0164_CROCO2_FIGHT_STATIC",
+    "PACK0166_JOHNNY_FIGHT_STATIC",
+    "PACK0167_CALAMARI_FIGHT_STATIC",
+    "PACK0168_BELOME1_FIGHT_STATIC",
+    "PACK0169_BELOME2_FIGHT_STATIC",
+    "PACK0171_VALENTINA_FIGHT_STATIC",
+    "PACK0172_CZAR_FIGHT_STATIC",
+    "PACK0173_MEGASMILAX_FIGHT_STATIC",
+    "PACK0174_COUNTDOWN_FIGHT_STATIC",
+    "PACK0175_BIRDETTA_FIGHT_STATIC",
+    "PACK0176_BUNDT_FIGHT_STATIC",
+    "PACK0177_KGGG_FIGHT_STATIC",
+    "PACK0178_JINX1_FIGHT_STATIC",
+    "PACK0179_MACK_FIGHT_STATIC",
+    "PACK0180_YARIDOVICH_FIGHT_STATIC",
+    "PACK0181_BOWYER_FIGHT_STATIC",
+    "PACK0182_AXEM_FIGHT_STATIC",
+    "PACK0183_HAMMERBRO_FIGHT_STATIC",
+    "PACK0184_CLOAKER_DOMINO_FIGHT_STATIC",
+    "PACK0185_SMITHY1_FIGHT_STATIC",
+    "PACK0186_EXOR_FIGHT_STATIC",
+    "PACK0187_JINX2_FIGHT_STATIC",
+    "PACK0188_JINX3_FIGHT_STATIC",
+    "PACK0189_JAGGER_FIGHT_STATIC",
+    "PACK0190_PYROSPHERE_HENCHMEN",
+    "PACK0191_HEAVY_TROOPAS",
+    "PACK0193_HELIO_HENCHMEN",
+    "PACK0194_BODYGUARD_PACK_1",
+    "PACK0195_BODYGUARD_PACK_2",
+    "PACK0196_GENO_CLONE_HENCHMAN",
+    "PACK0197_BOWSER_CLONE_HENCHMAN",
+    "PACK0198_TOADSTOOL_CLONE_HENCHMAN",
+    "PACK0199_CROOKS_ONLY",
+    "PACK0200_MARIO_CLONE_HENCHMAN",
+    "PACK0201_BIRDY_HENCHMEN",
+    "PACK0202_MALLOW_CLONE_HENCHMAN",
+    "PACK0203_MACHINE_AXEM_HENCHMEN",
+    "PACK0204_BLOOBER_HENCHMEN",
+    "PACK0205_BLUEBIRD_HENCHMEN",
+    "PACK0206_DESERT_SHOGUNS",
+    "PACK0207_MOKURA_BOSS_STATIC",
+    "PACK0208_DODO_BOSS_STATIC",
+    "PACK0209_MAGIKOOPA_BOSS_STATIC",
+    "PACK0210_BOOMER_BOSS_STATIC",
+    "PACK0211_MACHINE_MACK_PACK",
+    "PACK0212_MACHINE_BOWYER_PACK",
+    "PACK0213_MACHINE_YARIDOVICH_PACK",
+    "PACK0214_FACTORY_MACHINE_AXEMS",
+    "PACK0215_SMITHY_2_PACK",
+    "PACK0216_CULEX_BOSS_STATIC",
+    "PACK0217_FIRE_CRYSTAL_HENCHMAN",
+    "PACK0218_WATER_CRYSTAL_HENCHMAN",
+    "PACK0219_EARTH_CRYSTAL_HENCHMAN",
+    "PACK0220_WIND_CRYSTAL_HENCHMAN",
+    "PACK0221_GOOMBETTE_HENCHMEN",
+    "PACK0222_PIRANHA_HENCHMEN",
+    "PACK0223_EGGBERT_HENCHMEN",
+    "PACK0224_OBSTACLE_TERRA_COTTA",
+    "PACK0225_OBSTACLE_OERLIKON",
+    "PACK0226_OBSTACLE_SACKIT",
+    "PACK0227_OBSTACLE_CHOW",
+    "PACK0228_OBSTACLE_ALLEYRAT",
+    "PACK0229_OBSTACLE_BLOOBER",
+    "PACK0230_OBSTACLE_STINGER",
+    "PACK0231_OBSTACLE_GECKIT",
+    "PACK0232_OBSTACLE_ROBOMB",
+    "PACK0233_OBSTACLE_VOMER",
+    "PACK0234_OBSTACLE_MAGMUS",
+    "PACK0236_OBSTACLE_GUGOOMBA",
+    "PACK0237_OBSTACLE_MALAKOOPA",
+    "PACK0238_OBSTACLE_BIGBOO",
+    "PACK0239_OBSTACLE_SLINGSHY",
+    "PACK0240_OBSTACLE_CHEWY",
+    "PACK0241_OBSTACLE_KIPPER",
+    "PACK0242_OBSTACLE_AMANITA",
+    "PACK0243_OBSTACLE_GREAPER",
+    "PACK0244_OBSTACLE_PYROSPHERE",
+    "PACK0245_OBSTACLE_LAKITU",
+    "PACK0246_OBSTACLE_ZEOSTAR",
+    "PACK0247_OBSTACLE_SHAMANS",
+    "PACK0248_AXEM_BLACK_ALONE",
+    "PACK0249_AXEM_PINK_ALONE",
+    "PACK0250_AXEM_YELLOW_ALONE",
+    "PACK0251_AXEM_GREEN_ALONE",
+    "PACK0252_DINGALING_ALONE",
+    "PACK0253_SMITHY_HENCHMEN_PACK_1",
+    "PACK0254_SMITHY_HENCHMEN_PACK_2",
+    "PACK0255_SMITHY_HENCHMEN_PACK_3",
+]
+
 AREA_OBJECTS = [
     "MARIO",
     "TOADSTOOL",
@@ -4867,6 +5116,10 @@ def get_tutorial_name(id):
     return get_var_name_string(id, "TU")
 
 
+def get_pack_name(id):
+    return get_var_name_string(id, "PACK")
+
+
 actions_jumped_to = []
 events_jumped_to = []
 
@@ -5080,9 +5333,8 @@ def convert_event_script_command(cmd, valid_identifiers):
         cls = "Dec7000FromFrogCoins"
     elif cmd["command"] == "display_intro_title":
         cls = "DisplayIntroTitleText"
-        include_argnames = False
-        args["y"] = str(cmdargs[0])
         args["title"] = INTRO_TEXT[cmdargs[1]]
+        args["y"] = str(cmdargs[0])
     elif (
         cmd["command"] == "enable_controls"
         or cmd["command"] == "enable_controls_until_return"
@@ -5508,14 +5760,14 @@ def convert_event_script_command(cmd, valid_identifiers):
         cls = "PaletteSet"
         args["palette_set"] = str(cmdargs[0])
         args["row"] = str(cmdargs[1])
-        if 4 in cmdargs[2]:
-            args["bit_4"] = "True"
-        if 5 in cmdargs[2]:
-            args["bit_5"] = "True"
-        if 6 in cmdargs[2]:
-            args["bit_6"] = "True"
-        if 7 in cmdargs[2]:
-            args["bit_7"] = "True"
+        if 0 in cmdargs[2]:
+            args["bit_0"] = "True"
+        if 1 in cmdargs[2]:
+            args["bit_1"] = "True"
+        if 2 in cmdargs[2]:
+            args["bit_2"] = "True"
+        if 3 in cmdargs[2]:
+            args["bit_3"] = "True"
     elif cmd["command"] == "palette_set_morphs":
         cls = "PaletteSetMorphs"
         args["palette_type"] = PALETTE_TYPES[cmdargs[0]]
@@ -5637,9 +5889,9 @@ def convert_event_script_command(cmd, valid_identifiers):
             cls = "RunBackgroundEventWithPauseReturnOnExit"
         args["event_id"] = get_event_name(cmdargs[0])
         args["timer_var"] = get_var(cmdargs[1])
-        if 4 in cmdargs[2]:
+        if 12 in cmdargs[2]:
             args["bit_4"] = "True"
-        if 5 in cmdargs[2]:
+        if 13 in cmdargs[2]:
             args["bit_5"] = "True"
     elif cmd["command"] == "run_dialog":
         cls = "RunDialog"
@@ -5758,7 +6010,11 @@ def convert_event_script_command(cmd, valid_identifiers):
         include_argnames = False
         try:
             cls = "Set70107015ToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0]]
+            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x63]
+            if cmdargs[0] & 0x40:
+                args["bit_6"] = "True"
+            if cmdargs[0] & 0x80:
+                args["bit_7"] = "True"
         except:
             cls = "Db"
             args["args"] = "%r" % bytearray([0xC7, cmdargs[0]])
@@ -5798,7 +6054,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "start_battle":
         cls = "StartBattleAtBattlefield"
         include_argnames = False
-        args["pack_id"] = str(cmdargs[0])
+        args["pack_id"] = get_pack_name(cmdargs[0])
         args["battlefield"] = get_battlefield_name(cmdargs[1])
     elif cmd["command"] == "stop_all_background_events":
         cls = "StopAllBackgroundEvents"
@@ -6759,6 +7015,7 @@ def produce_event_script(index, script, valid_identifiers):
     output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.ids import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.dialogs.ids.dialog_ids import *"
     output += "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+    output += "\nfrom smrpgpatchbuilder.datatypes.battles.ids.pack_ids import *"
     output += "\n\nscript = EventScript([\n\t"
 
     contents = convert_script(script, valid_identifiers, convert_event_script_command)

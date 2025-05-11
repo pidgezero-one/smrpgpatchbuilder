@@ -1518,7 +1518,7 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
         if first_byte == 0xFD:
             opcode = contents[1]
             expected_length = _valid_unknowncmd_opcodes_fd[opcode]
-            if expected_length[opcode] == 0:
+            if expected_length == 0:
                 raise InvalidCommandArgumentException(
                     f"do not use UnknownCommand for opcode 0xFD 0x{opcode:02X}, there is already a class for it"
                 )
@@ -5870,12 +5870,16 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
+        bit_6 (bool): (unknown)
+        bit_7 (bool): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0xC7
     _size: int = 2
     _target: AreaObject
+    _bit_6: bool
+    _bit_7: bool
 
     @property
     def target(self) -> AreaObject:
@@ -5886,16 +5890,38 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC whose coordinates to store."""
         self._target = target
 
+    @property
+    def bit_6(self) -> bool:
+        """(unknown)"""
+        return self._bit_6
+
+    def set_bit_6(self, bit_6: bool) -> None:
+        """(unknown)"""
+        self._bit_6 = bit_6
+
+    @property
+    def bit_7(self) -> bool:
+        """(unknown)"""
+        return self._bit_7
+
+    def set_bit_7(self, bit_7: bool) -> None:
+        """(unknown)"""
+        self._bit_7 = bit_7
+
     def __init__(
         self,
         target: AreaObject,
+        bit_6: bool = False,
+        bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
+        self.set_bit_6(bit_6)
+        self.set_bit_7(bit_7)
 
     def render(self) -> bytearray:
-        return super().render(self.target)
+        return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
 
 class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
@@ -6660,7 +6686,7 @@ class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode = bytearray([0xFD, 0x58])
+    _opcode = bytearray([0xFD, 0x5B])
 
 
 class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -7015,10 +7041,10 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
     Args:
         palette_set (int): The palette set to apply to the NPCs in the current level (8 bit)
         row (int): The row offset relative to the palette (8 bit)
-        bit_4 (bool): (unknown)
-        bit_5 (bool): (unknown)
-        bit_6 (bool): (unknown)
-        bit_7 (bool): (unknown)
+        bit_0 (bool): (unknown)
+        bit_1 (bool): (unknown)
+        bit_2 (bool): (unknown)
+        bit_3 (bool): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -7026,10 +7052,10 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
     _size: int = 3
     _palette_set: UInt8
     _row: UInt8
-    _bit_4: bool
-    _bit_5: bool
-    _bit_6: bool
-    _bit_7: bool
+    _bit_0: bool
+    _bit_1: bool
+    _bit_2: bool
+    _bit_3: bool
 
     @property
     def palette_set(self) -> UInt8:
@@ -7051,63 +7077,62 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         self._row = UInt8(row)
 
     @property
-    def bit_4(self) -> bool:
+    def bit_0(self) -> bool:
         """(unknown)"""
-        return self._bit_4
+        return self._bit_0
 
-    def set_bit_4(self, bit_4: bool) -> None:
+    def set_bit_0(self, bit_0: bool) -> None:
         """(unknown)"""
-        self._bit_4 = bit_4
-
-    @property
-    def bit_5(self) -> bool:
-        """(unknown)"""
-        return self._bit_5
-
-    def set_bit_5(self, bit_5: bool) -> None:
-        """(unknown)"""
-        self._bit_5 = bit_5
+        self._bit_0 = bit_0
 
     @property
-    def bit_6(self) -> bool:
+    def bit_1(self) -> bool:
         """(unknown)"""
-        return self._bit_6
+        return self._bit_1
 
-    def set_bit_6(self, bit_6: bool) -> None:
+    def set_bit_1(self, bit_1: bool) -> None:
         """(unknown)"""
-        self._bit_6 = bit_6
+        self._bit_1 = bit_1
 
     @property
-    def bit_7(self) -> bool:
+    def bit_2(self) -> bool:
         """(unknown)"""
-        return self._bit_7
+        return self._bit_2
 
-    def set_bit_7(self, bit_7: bool) -> None:
+    def set_bit_2(self, bit_2: bool) -> None:
         """(unknown)"""
-        self._bit_7 = bit_7
+        self._bit_2 = bit_2
+
+    @property
+    def bit_3(self) -> bool:
+        """(unknown)"""
+        return self._bit_3
+
+    def set_bit_3(self, bit_3: bool) -> None:
+        """(unknown)"""
+        self._bit_3 = bit_3
 
     def __init__(
         self,
         palette_set: int,
         row: int,
-        bit_4: bool = False,
-        bit_5: bool = False,
-        bit_6: bool = False,
-        bit_7: bool = False,
+        bit_0: bool = False,
+        bit_1: bool = False,
+        bit_2: bool = False,
+        bit_3: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_palette_set(palette_set)
         self.set_row(row)
-        self.set_bit_4(bit_4)
-        self.set_bit_5(bit_5)
-        self.set_bit_6(bit_6)
-        self.set_bit_7(bit_7)
+        self.set_bit_0(bit_0)
+        self.set_bit_1(bit_1)
+        self.set_bit_2(bit_2)
+        self.set_bit_3(bit_3)
 
     def render(self) -> bytearray:
-        flags: int = bools_to_int(self.bit_4, self.bit_5, self.bit_6, self.bit_7)
-        flags = flags << 4
-        arg_1 = UInt8(flags + (self.row - 1))
+        flags: int = bools_to_int(self.bit_0, self.bit_1, self.bit_2, self.bit_3)
+        arg_1 = UInt8(flags + ((self.row - 1) << 4))
         return super().render(arg_1, self.palette_set)
 
 
@@ -8166,7 +8191,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_change(change)
 
     def render(self) -> bytearray:
-        return super().render(self.duration, self.change)
+        return super().render(self.duration, 256 - self.change)
 
 
 class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
@@ -8219,7 +8244,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_change(change)
 
     def render(self) -> bytearray:
-        return super().render(self.duration, 256 - self.change)
+        return super().render(self.duration, self.change)
 
 
 class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
@@ -10314,7 +10339,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
         self.set_battlefield(battlefield)
 
     def render(self) -> bytearray:
-        return super().render(self.pack_id, UInt16(self.battlefield))
+        return super().render(UInt16(self.pack_id), self.battlefield)
 
 
 class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoArgs):

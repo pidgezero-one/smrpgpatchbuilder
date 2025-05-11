@@ -318,7 +318,7 @@ script = EventScript([
 	SetSyncActionScript(MEM_70A8, A1022_HIT_BY_EXP_STAR),
 	IncEXPByPacket(),
 	JmpIfVarEqualsConst(PRIMARY_TEMP_7000, 0, ["EVENT_255_ret_13"]),
-	SetBit(UNKNOWN_7064_5, identifier="EVENT_255_set_bit_5"),
+	SetBit(UNKNOWN_MIMIC_BIT, identifier="EVENT_255_set_bit_5"),
 	SetBit(EXP_STAR_BIT_6),
 	UnfreezeAllNPCs(),
 	Pause(3),
