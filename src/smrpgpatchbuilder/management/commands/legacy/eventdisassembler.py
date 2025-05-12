@@ -2031,8 +2031,8 @@ names[0xB6] = named("set_var_to_random", con(0x7000), short_int())
 names[0xB7] = named(
     "set_var_to_random", dbyte(0x7000), short_int()
 )  # may be confused for 0xB6
-names[0xB8] = named("add_var_to_7000", con(0x7000), dbyte(0x7000))
-names[0xB9] = named("dec_var_from_7000", con(0x7000), dbyte(0x7000))
+names[0xB8] = named("add_var_to_7000", dbyte(0x7000))
+names[0xB9] = named("dec_var_from_7000", dbyte(0x7000))
 names[0xBA] = named("copy_var_to_var", dbyte(0x7000), con(0x7000))
 names[0xBB] = named("copy_var_to_var", con(0x7000), dbyte(0x7000))
 names[0xBC] = named("copy_var_to_var", dbyte(0x7000), dbyte(0x7000))
@@ -2243,7 +2243,7 @@ fd_names[0xFA] = named("set_bit_3", con(0x01D8))
 fd_names[0xFB] = named("store_01_to_0248")
 fd_names[0xFC] = named("store_00_to_0248")
 fd_names[0xFD] = named("store_02_to_0248")
-fd_names[0xFE] = named("xor_3105_with_01")
+fd_names[0xFE] = named("return_fd")
 
 
 class Command(BaseCommand):

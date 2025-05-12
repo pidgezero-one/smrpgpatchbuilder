@@ -339,221 +339,291 @@ test_cases = [
         ],
         expected_bytes=[0xAA, 0x1B, 0xB2, 0x12, 0xAE],
     ),
-    Case(label="Dec", commands_factory=lambda: [Dec()], expected_bytes=[]),
+    Case(
+        label="Dec",
+        commands_factory=lambda: [
+            Dec(TEMP_7026),
+            Dec(PRIMARY_TEMP_7000),
+            Dec(TEMP_70AE),
+        ],
+        expected_bytes=[0xB3, 0x13, 0xAF, 0xAB, 0x0E],
+    ),
     Case(
         label="AddVarTo7000",
-        commands_factory=lambda: [AddVarTo7000()],
-        expected_bytes=[],
+        commands_factory=lambda: [AddVarTo7000(SECONDARY_TEMP_7024)],
+        expected_bytes=[0xB8, 0x12],
     ),
     Case(
         label="DecVarFrom7000",
-        commands_factory=lambda: [DecVarFrom7000()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecVarFrom7000(TEMP_7026)],
+        expected_bytes=[0xB9, 0x13],
     ),
     Case(
         label="GenerateRandomNumFromRangeVar",
-        commands_factory=lambda: [GenerateRandomNumFromRangeVar()],
-        expected_bytes=[],
+        commands_factory=lambda: [GenerateRandomNumFromRangeVar(UNKNOWN_7008)],
+        expected_bytes=[0xFD, 0xB7, 0x04],
     ),
     Case(
         label="SetVarToRandom",
-        commands_factory=lambda: [SetVarToRandom()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetVarToRandom(TEMP_702A, 20),
+            SetVarToRandom(PRIMARY_TEMP_7000, 10000),
+        ],
+        expected_bytes=[0xB7, 0x15, 0x14, 0x00, 0xB6, 0x10, 0x27],
     ),
     Case(
         label="CompareVarToConst",
-        commands_factory=lambda: [CompareVarToConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            CompareVarToConst(X_COORD_2, 256),
+            CompareVarToConst(PRIMARY_TEMP_7000, 16384),
+        ],
+        expected_bytes=[0xC2, 0x0B, 0x00, 0x01, 0xC0, 0x00, 0x40],
     ),
     Case(
         label="Compare7000ToVar",
-        commands_factory=lambda: [Compare7000ToVar()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Compare7000ToVar(ROSE_WAY_703A),
+        ],
+        expected_bytes=[0xC1, 0x1D],
     ),
     Case(
         label="Mem7000AndConst",
-        commands_factory=lambda: [Mem7000AndConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Mem7000AndConst(0x007F),
+        ],
+        expected_bytes=[0xFD, 0xB0, 0x7F, 0x00],
     ),
     Case(
         label="Mem7000AndVar",
-        commands_factory=lambda: [Mem7000AndVar()],
-        expected_bytes=[],
+        commands_factory=lambda: [Mem7000AndVar(TEMP_702C)],
+        expected_bytes=[0xFD, 0xB3, 0x16],
     ),
     Case(
         label="Mem7000OrConst",
-        commands_factory=lambda: [Mem7000OrConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Mem7000OrConst(0x0060),
+        ],
+        expected_bytes=[0xFD, 0xB1, 0x60, 0x00],
     ),
     Case(
         label="Mem7000OrVar",
-        commands_factory=lambda: [Mem7000OrVar()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Mem7000OrVar(TEMP_7028),
+        ],
+        expected_bytes=[0xFD, 0xB4, 0x14],
     ),
     Case(
         label="Mem7000XorConst",
-        commands_factory=lambda: [Mem7000XorConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Mem7000XorConst(0xFFFF),
+        ],
+        expected_bytes=[0xFD, 0xB2, 0xFF, 0xFF],
     ),
     Case(
         label="Mem7000XorVar",
-        commands_factory=lambda: [Mem7000XorVar()],
-        expected_bytes=[],
+        commands_factory=lambda: [Mem7000XorVar(X_COORD_1)],
+        expected_bytes=[0xFD, 0xB5, 0x08],
     ),
     Case(
         label="VarShiftLeft",
-        commands_factory=lambda: [VarShiftLeft()],
-        expected_bytes=[],
-    ),
-    Case(
-        label="MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2",
         commands_factory=lambda: [
-            MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2()
+            VarShiftLeft(PRIMARY_TEMP_7000, 4),
+            VarShiftLeft(X_COORD_2, 8),
         ],
-        expected_bytes=[],
+        expected_bytes=[0xFD, 0xB6, 0x00, 0xFC, 0xFD, 0xB6, 0x0B, 0xF8],
     ),
     Case(
-        label="Xor3105With01",
-        commands_factory=lambda: [Xor3105With01()],
-        expected_bytes=[],
+        label="MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2",
+        commands_factory=lambda: [
+            MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
+                adding=0x02, multiplying=0x04
+            )
+        ],
+        expected_bytes=[0xFD, 0xC8, 0x02, 0x04],
     ),
     Case(
         label="SetAsyncActionScript",
-        commands_factory=lambda: [SetAsyncActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAsyncActionScript(MARIO, A0408_JUMP_ON_SAVE_BLOCK),
+            SetAsyncActionScript(NPC_3, A0099_LOOPED_JUMPING),
+        ],
+        expected_bytes=[0x00, 0xF3, 0x98, 0x01, 0x17, 0xF3, 0x63, 0x00],
     ),
     Case(
         label="SetSyncActionScript",
-        commands_factory=lambda: [SetSyncActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetSyncActionScript(MEM_70A8, A1022_HIT_BY_EXP_STAR),
+        ],
+        expected_bytes=[0x10, 0xF2, 0xFE, 0x03],
     ),
     Case(
         label="SetTempAsyncActionScript",
-        commands_factory=lambda: [SetTempAsyncActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetTempAsyncActionScript(NPC_1, A0650_BLUE_CLOUD_MOVEMENT),
+        ],
+        expected_bytes=[0x15, 0xF5, 0x8A, 0x02],
     ),
     Case(
         label="SetTempSyncActionScript",
-        commands_factory=lambda: [SetTempSyncActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetTempSyncActionScript(NPC_6, A0803_INC_PALETTE_ROW),
+        ],
+        expected_bytes=[0x1A, 0xF4, 0x23, 0x03],
     ),
     Case(
         label="UnsyncActionScript",
-        commands_factory=lambda: [UnsyncActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [UnsyncActionScript(NPC_9)],
+        expected_bytes=[0x1D, 0xF6],
     ),
     Case(
         label="SummonObjectToSpecificLevel",
-        commands_factory=lambda: [SummonObjectToSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SummonObjectToSpecificLevel(NPC_6, R204_MUSHROOM_WAY_AREA_02),
+        ],
+        expected_bytes=[0xF2, 0xCC, 0xB4],
     ),
     Case(
         label="SummonObjectToCurrentLevel",
-        commands_factory=lambda: [SummonObjectToCurrentLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SummonObjectToCurrentLevel(NPC_13),
+        ],
+        expected_bytes=[0x21, 0xF8],
     ),
     Case(
         label="SummonObjectToCurrentLevelAtMariosCoords",
-        commands_factory=lambda: [SummonObjectToCurrentLevelAtMariosCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SummonObjectToCurrentLevelAtMariosCoords(MEM_70A8),
+        ],
+        expected_bytes=[0x10, 0xF7],
     ),
     Case(
         label="SummonObjectAt70A8ToCurrentLevel",
         commands_factory=lambda: [SummonObjectAt70A8ToCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF4],
     ),
     Case(
         label="RemoveObjectFromSpecificLevel",
-        commands_factory=lambda: [RemoveObjectFromSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RemoveObjectFromSpecificLevel(
+                NPC_10, R023_MUSHROOM_KINGDOM_BEFORE_CROCO_OUTSIDE
+            ),
+        ],
+        expected_bytes=[0xF2, 0x17, 0x3C],
     ),
     Case(
         label="RemoveObjectFromCurrentLevel",
-        commands_factory=lambda: [RemoveObjectFromCurrentLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RemoveObjectFromCurrentLevel(MEM_70A8),
+        ],
+        expected_bytes=[0x10, 0xF9],
     ),
     Case(
         label="RemoveObjectAt70A8FromCurrentLevel",
         commands_factory=lambda: [RemoveObjectAt70A8FromCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF5],
     ),
     Case(
         label="PauseActionScript",
-        commands_factory=lambda: [PauseActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            PauseActionScript(NPC_3),
+        ],
+        expected_bytes=[0x17, 0xFA],
     ),
     Case(
         label="ResumeActionScript",
-        commands_factory=lambda: [ResumeActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ResumeActionScript(NPC_0),
+        ],
+        expected_bytes=[0x14, 0xFB],
     ),
     Case(
         label="EnableObjectTrigger",
-        commands_factory=lambda: [EnableObjectTrigger()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            EnableObjectTrigger(NPC_9),
+        ],
+        expected_bytes=[0x1D, 0xFC],
     ),
     Case(
         label="DisableObjectTrigger",
-        commands_factory=lambda: [DisableObjectTrigger()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DisableObjectTrigger(MEM_70A8),
+        ],
+        expected_bytes=[0x10, 0xFD],
     ),
     Case(
         label="EnableObjectTriggerInSpecificLevel",
-        commands_factory=lambda: [EnableObjectTriggerInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            EnableObjectTriggerInSpecificLevel(NPC_1, R204_MUSHROOM_WAY_AREA_02),
+        ],
+        expected_bytes=[0xF3, 0xCC, 0xAA],
     ),
     Case(
         label="DisableObjectTriggerInSpecificLevel",
-        commands_factory=lambda: [DisableObjectTriggerInSpecificLevel()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DisableObjectTriggerInSpecificLevel(
+                NPC_8, R125_PIPE_VAULT_AREA_04_LINE_OF_COINS_2_HIDDEN_TREASURES
+            ),
+        ],
+        expected_bytes=[0xF3, 0x7D, 0x38],
     ),
     Case(
         label="EnableTriggerOfObjectAt70A8InCurrentLevel",
         commands_factory=lambda: [EnableTriggerOfObjectAt70A8InCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF6],
     ),
     Case(
         label="DisableTriggerOfObjectAt70A8InCurrentLevel",
         commands_factory=lambda: [DisableTriggerOfObjectAt70A8InCurrentLevel()],
-        expected_bytes=[],
+        expected_bytes=[0xF7],
     ),
     Case(
         label="StopEmbeddedActionScript",
-        commands_factory=lambda: [StopEmbeddedActionScript()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            StopEmbeddedActionScript(MEM_70AA),
+        ],
+        expected_bytes=[0x12, 0xFE],
     ),
     Case(
-        label="ResetCoords", commands_factory=lambda: [ResetCoords()], expected_bytes=[]
+        label="ResetCoords",
+        commands_factory=lambda: [
+            ResetCoords(NPC_8),
+        ],
+        expected_bytes=[0x1C, 0xFF],
     ),
     Case(
         label="FreezeAllNPCsUntilReturn",
         commands_factory=lambda: [FreezeAllNPCsUntilReturn()],
-        expected_bytes=[],
+        expected_bytes=[0x30],
     ),
     Case(
         label="UnfreezeAllNPCs",
         commands_factory=lambda: [UnfreezeAllNPCs()],
-        expected_bytes=[],
+        expected_bytes=[0x31],
     ),
     Case(
         label="FreezeCamera",
         commands_factory=lambda: [FreezeCamera()],
-        expected_bytes=[],
+        expected_bytes=[0xFD, 0x31],
     ),
     Case(
         label="UnfreezeCamera",
         commands_factory=lambda: [UnfreezeCamera()],
-        expected_bytes=[],
+        expected_bytes=[0xFD, 0x30],
     ),
     Case(
         label="ReactivateObject70A8TriggerIfMarioOnTopOfIt",
         commands_factory=lambda: [ReactivateObject70A8TriggerIfMarioOnTopOfIt()],
-        expected_bytes=[],
+        expected_bytes=[0x5D],
     ),
     Case(
         label="Set7000ToObjectCoord",
-        commands_factory=lambda: [Set7000ToObjectCoord()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Set7000ToObjectCoord(target_npc=MARIO, coord=COORD_F),
+            Set7000ToObjectCoord(
+                target_npc=MEM_70A8, coord=COORD_Z, pixel=True, bit_7=True
+            ),
+        ],
+        expected_bytes=[0xC9, 0x00, 0xC6, 0x90],
     ),
     Case(
         label="Set70107015ToObjectXYZ",
@@ -1292,7 +1362,7 @@ test_cases = [
         label="StartBattleAtBattlefield",
         commands_factory=lambda: [
             StartBattleAtBattlefield(
-                PACK0198_TOADSTOOL_CLONE_HENCHMAN, BF21_KERO_SEWERS
+                PACK198_TOADSTOOL_CLONE_HENCHMAN, BF21_KERO_SEWERS
             ),
         ],
         expected_bytes=[0x4A, 0xC6, 0x00, 0x15],
@@ -1352,47 +1422,84 @@ test_cases = [
         ],
         expected_bytes=[0xFD, 0x62, 0x06, 0x00, 0xFE],
     ),
-    Case(label="Jmp", commands_factory=lambda: [Jmp()], expected_bytes=[]),
     Case(
-        label="JmpToEvent", commands_factory=lambda: [JmpToEvent()], expected_bytes=[]
+        label="JmpToEvent",
+        commands_factory=lambda: [
+            JmpToEvent(E0081_MARIO_LANDS_SUBROUTINE),
+        ],
+        expected_bytes=[0xD0, 0x51, 0x00],
     ),
     Case(
         label="JmpToStartOfThisScript",
         commands_factory=lambda: [JmpToStartOfThisScript()],
-        expected_bytes=[],
+        expected_bytes=[0xF9],
     ),
     Case(
         label="JmpToStartOfThisScriptFA",
         commands_factory=lambda: [JmpToStartOfThisScriptFA()],
-        expected_bytes=[],
+        expected_bytes=[0xFA],
     ),
     Case(
         label="JmpToSubroutine",
-        commands_factory=lambda: [JmpToSubroutine()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpToSubroutine(["subroutine"]),
+            StopSound(identifier="subroutine"),
+            Return(),
+        ],
+        expected_bytes=[0xD3, 0x05, 0x00, 0x9B, 0xFE],
     ),
     Case(
         label="JmpIf316DIs3",
-        commands_factory=lambda: [JmpIf316DIs3()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIf316DIs3(["jmp_here"]),
+            Return(identifier="jmp_here"),
+        ],
+        expected_bytes=[0x41, 0x05, 0x00, 0xFE],
     ),
     Case(
         label="JmpIf7000AllBitsClear",
-        commands_factory=lambda: [JmpIf7000AllBitsClear()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIf7000AllBitsClear(bits=[4, 5, 6, 7], destinations=["jmp_here"]),
+            Return(identifier="jmp_here"),
+        ],
+        expected_bytes=[0xE6, 0xF0, 0x00, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="JmpIf7000AnyBitsSet",
-        commands_factory=lambda: [JmpIf7000AnyBitsSet()],
-        expected_bytes=[],
-    ),
-    Case(
-        label="JmpIfBitSet", commands_factory=lambda: [JmpIfBitSet()], expected_bytes=[]
+        commands_factory=lambda: [
+            JmpIf7000AnyBitsSet(bits=[0, 1, 2, 3], destinations=["jmp_here"]),
+            Return(identifier="jmp_here"),
+        ],
+        expected_bytes=[0xE7, 0x0F, 0x00, 0x07, 0x00, 0xFE],
     ),
     Case(
         label="JmpIfBitClear",
         commands_factory=lambda: [JmpIfBitClear()],
         expected_bytes=[],
+    ),
+    Case(
+        label="JmpIfBitSet",
+        commands_factory=lambda: [
+            JmpIfBitSet(EXP_STAR_BIT_5, ["jmp_here"]),
+            JmpIfBitSet(GAME_OVER, ["jmp_here"]),
+            JmpIfBitSet(SIGNAL_RING_STAR_PIECE_5, ["jmp_here"]),
+            Return(identifier="jmp_here"),
+        ],
+        expected_bytes=[
+            0xD9,
+            0xE2,
+            0x0E,
+            0x00,
+            0xD8,
+            0x00,
+            0x0E,
+            0x00,
+            0xDA,
+            0x24,
+            0x0E,
+            0x00,
+            0xFE,
+        ],
     ),
     Case(
         label="JmpIfLoadedMemoryIs0",

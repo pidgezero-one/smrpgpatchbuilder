@@ -1585,10 +1585,10 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
         `(not available in Lazy Shell)`
 
     ## Opcode
-        `41`
+        `0x41`
 
     ## Size
-        4 bytes
+        3 bytes
 
     Args:
         destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
@@ -2720,7 +2720,7 @@ class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
         (not available in Lazy Shell)
 
     ## Opcode
-        0xFD 0x91``
+        `0xFD 0x91`
 
     ## Size
         2 bytes
@@ -3621,10 +3621,10 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
         self.set_shift(shift)
 
     def render(self) -> bytearray:
-        return super().render(self.address, 0xFF - self.shift)
+        return super().render(self.address, 0xFF - self._shift)
 
 
-class MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2(
+class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
     UsableEventScriptCommand, EventScriptCommand
 ):
     """(unknown)
@@ -5841,7 +5841,8 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
-        assert isometric ^ pixel
+        if coord != COORD_F:
+            assert isometric ^ pixel
         super().__init__(identifier)
         self.set_target_npc(target_npc)
         self.set_coord(coord)

@@ -84,7 +84,7 @@ from .commands import (
     Mem7000XorConst,
     Mem7000XorVar,
     VarShiftLeft,
-    MultiplyAndAddMem3148StoreToOffsrt7fB000PlusOutputX2,
+    MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2,
     Xor3105With01,
     ActionQueueAsync,
     ActionQueueSync,
