@@ -1497,6 +1497,7 @@ def parse_obj_fxn(obj):
         if sub_command <= 0xF1:
             if sub_command < 0xF0:
                 is_async = bit(args, 0, 7)
+                print(args, is_async)
                 cmd = "action_queue"
                 if len(args) > 1:
                     script = args[1:]

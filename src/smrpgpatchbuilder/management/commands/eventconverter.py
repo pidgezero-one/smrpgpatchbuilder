@@ -5157,15 +5157,15 @@ def convert_event_script_command(cmd, valid_identifiers):
         contents = "[\n\t\t%s\n\t]" % contents
         if cmd["command"] == "action_queue":
             if cmdargs[1]:
-                cls = "ActionQueueSync"
-            else:
                 cls = "ActionQueueAsync"
+            else:
+                cls = "ActionQueueSync"  # why did i have these backwards lol
             args["target"] = AREA_OBJECTS[cmdargs[0]]
         elif cmd["command"] == "start_embedded_action_script":
             if cmdargs[1]:
-                cls = "StartSyncEmbeddedActionScript"
-            else:
                 cls = "StartAsyncEmbeddedActionScript"
+            else:
+                cls = "StartSyncEmbeddedActionScript"
             args["target"] = AREA_OBJECTS[cmdargs[0]]
             args["prefix"] = f"0x{cmdargs[2]:02X}"
         elif cmd["command"] == "non_embedded_action_queue":

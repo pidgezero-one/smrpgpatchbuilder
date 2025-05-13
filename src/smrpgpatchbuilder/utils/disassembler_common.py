@@ -51,7 +51,7 @@ def byte_signed(num):
 
 
 def bit(arr, dex, bit_num):
-    return (arr[dex] & 1 << bit_num) >> bit_num
+    return (arr[dex] & (1 << bit_num)) >> bit_num
 
 
 def bit_bool_from_num(num, bit_num):
@@ -65,6 +65,7 @@ def byte_str(offset=0, prefix="", table=None):
         return "0x%02x" % (args[0] + offset), args[1:]
 
     return inner_byte
+
 
 def byte(offset=0, prefix="", table=None):
     def inner_byte(args):
@@ -179,6 +180,7 @@ def use_table_name(prefix, table, val):
 def flags_short(prefix="", table=None, bits=None):
     return flags(prefix, table, bits, size=2)
 
+
 def flags_short_str(prefix="", table=None, bits=None):
     return flags_str(prefix, table, bits, size=2)
 
@@ -195,6 +197,7 @@ def flags_str(prefix="", table=None, bits=None, size=None):
         return b, args[length:]
 
     return inner_flags
+
 
 def flags(prefix="", table=None, bits=None, size=None):
     def inner_flags(args):
@@ -237,6 +240,7 @@ def parse_flags_as_str(value, prefix="", table=None, bits=None):
             else:
                 b.append("%i" % i)
     return b
+
 
 def parse_flags(value, prefix="", table=None, bits=None):
     val = 0x00
