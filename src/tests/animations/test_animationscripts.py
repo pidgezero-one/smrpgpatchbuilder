@@ -89,17 +89,34 @@ test_cases = [
     Case(
         label="RemoveObject",
         commands_factory=lambda: [RemoveObject()],
-        expected_bytes=[],
+        expected_bytes=[0x05],
     ),
     Case(
         label="ReturnObjectQueue",
         commands_factory=lambda: [ReturnObjectQueue()],
-        expected_bytes=[],
+        expected_bytes=[0x07],
     ),
     Case(
-        label="MoveObject", commands_factory=lambda: [MoveObject()], expected_bytes=[]
+        label="MoveObject",
+        commands_factory=lambda: [
+            MoveObject(
+                speed=1,
+                start_position=256,
+                end_position=0,
+                apply_to_x=True,
+                should_set_speed=True,
+            ),
+        ],
+        expected_bytes=[0x08, 0x84, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00],
     ),
-    Case(label="Jmp", commands_factory=lambda: [Jmp()], expected_bytes=[]),
+    Case(
+        label="Jmp",
+        commands_factory=lambda: [
+            StopCurrentSoundEffect(identifier="jmp_here"),
+            Jmp(["jmp_here"]),
+        ],
+        expected_bytes=[0xB2, 0x09, 0x02, 0xC0],
+    ),
     Case(
         label="Pause1Frame", commands_factory=lambda: [Pause1Frame()], expected_bytes=[]
     ),

@@ -717,7 +717,12 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
             + (self.should_set_end_position * 0x40)
             + (self.should_set_speed * 0x80)
         )
-        return super().render(byte1, self.speed, self.start_position, self.end_position)
+        return super().render(
+            byte1,
+            self.start_position,
+            self.end_position,
+            self.speed,
+        )
 
 
 class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
