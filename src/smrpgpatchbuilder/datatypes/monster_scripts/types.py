@@ -151,7 +151,6 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         self._range_2_end = range_2_end
         self._pointer_table_start = pointer_table_start
         super().__init__(scripts)
-        print(len(scripts), self.script_count)
 
     def render(self) -> Tuple[bytearray, bytearray]:
         """Return this script as two bytearrays

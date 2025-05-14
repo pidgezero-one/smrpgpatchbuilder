@@ -83,8 +83,21 @@ test_cases = [
         commands_factory=lambda: [
             PauseScriptUntil(condition=FRAMES_ELAPSED, frames=60),
             PauseScriptUntil(condition=FADE_4BPP_COMPLETE),
+            PauseScriptUntil(condition=UNKNOWN_PAUSE_4),
         ],
-        expected_bytes=[0x04, 0x10, 0x3C, 0x00, 0x74, 0x00, 0x04],
+        expected_bytes=[
+            0x04,
+            0x10,
+            0x3C,
+            0x00,
+            0x74,
+            0x00,
+            0x04,
+            0x04,
+            0x04,
+            0x00,
+            0x00,
+        ],
     ),
     Case(
         label="RemoveObject",
@@ -118,147 +131,241 @@ test_cases = [
         expected_bytes=[0xB2, 0x09, 0x02, 0xC0],
     ),
     Case(
-        label="Pause1Frame", commands_factory=lambda: [Pause1Frame()], expected_bytes=[]
+        label="Pause1Frame",
+        commands_factory=lambda: [Pause1Frame()],
+        expected_bytes=[0x0A],
     ),
     Case(
         label="SetAMEM40ToXYZCoords",
-        commands_factory=lambda: [SetAMEM40ToXYZCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM40ToXYZCoords(
+                origin=CASTER_INITIAL_POSITION, x=-22, y=8, z=0, set_y=True, set_z=True
+            ),
+            SetAMEM40ToXYZCoords(
+                origin=ABSOLUTE_POSITION,
+                x=184,
+                y=128,
+                z=0,
+                set_x=True,
+                set_y=True,
+                set_z=True,
+            ),
+        ],
+        expected_bytes=[
+            0x0B,
+            0x16,
+            0xEA,
+            0xFF,
+            0x08,
+            0x00,
+            0x00,
+            0x00,
+            0x0B,
+            0x07,
+            0xB8,
+            0x00,
+            0x80,
+            0x00,
+            0x00,
+            0x00,
+        ],
     ),
     Case(
         label="MoveSpriteToCoords",
-        commands_factory=lambda: [MoveSpriteToCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            MoveSpriteToCoords(shift_type=SHIFT_TYPE_0X00, speed=512, arch_height=0),
+            MoveSpriteToCoords(
+                shift_type=SHIFT_TYPE_TRANSFER, speed=1024, arch_height=96
+            ),
+        ],
+        expected_bytes=[
+            0x0C,
+            0x00,
+            0x00,
+            0x02,
+            0x00,
+            0x00,
+            0x0C,
+            0x04,
+            0x00,
+            0x04,
+            0x60,
+            0x00,
+        ],
     ),
     Case(
         label="ResetTargetMappingMemory",
         commands_factory=lambda: [ResetTargetMappingMemory()],
-        expected_bytes=[],
+        expected_bytes=[0x0E],
     ),
     Case(
         label="ResetObjectMappingMemory",
         commands_factory=lambda: [ResetObjectMappingMemory()],
-        expected_bytes=[],
+        expected_bytes=[0x0F],
     ),
     Case(
         label="RunSubroutine",
-        commands_factory=lambda: [RunSubroutine()],
-        expected_bytes=[],
-    ),
-    Case(
-        label="ReturnSubroutine",
-        commands_factory=lambda: [ReturnSubroutine()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RunSubroutine(["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x10, 0x05, 0xC0, 0x11],
     ),
     Case(
         label="VisibilityOn",
         commands_factory=lambda: [VisibilityOn()],
-        expected_bytes=[],
+        expected_bytes=[0x1A, 0x01],
     ),
     Case(
         label="VisibilityOff",
         commands_factory=lambda: [VisibilityOff()],
-        expected_bytes=[],
+        expected_bytes=[0x1B, 0x01],
     ),
     Case(
         label="SetAMEM8BitToConst",
-        commands_factory=lambda: [SetAMEM8BitToConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM8BitToConst(0x68, 1),
+        ],
+        expected_bytes=[0x20, 0x08, 0x01, 0x00],
     ),
     Case(
         label="SetAMEM16BitToConst",
-        commands_factory=lambda: [SetAMEM16BitToConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetAMEM16BitToConst(0x60, 0)],
+        expected_bytes=[0x21, 0x00, 0x00, 0x00],
     ),
     Case(
         label="JmpIfAMEM8BitEqualsConst",
-        commands_factory=lambda: [JmpIfAMEM8BitEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitEqualsConst(0x60, 4, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x24, 0x00, 0x04, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitEqualsConst",
-        commands_factory=lambda: [JmpIfAMEM16BitEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM16BitEqualsConst(0x60, 77, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x25, 0x00, 0x4D, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM8BitNotEqualsConst",
-        commands_factory=lambda: [JmpIfAMEM8BitNotEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitNotEqualsConst(0x60, 0, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x26, 0x00, 0x00, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitNotEqualsConst",
-        commands_factory=lambda: [JmpIfAMEM16BitNotEqualsConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM16BitNotEqualsConst(0x62, 6, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x27, 0x02, 0x06, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM8BitLessThanConst",
-        commands_factory=lambda: [JmpIfAMEM8BitLessThanConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitLessThanConst(0x68, 3, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x28, 0x08, 0x03, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitLessThanConst",
-        commands_factory=lambda: [JmpIfAMEM16BitLessThanConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM16BitLessThanConst(0x62, 6, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x29, 0x02, 0x06, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM8BitGreaterOrEqualThanConst",
-        commands_factory=lambda: [JmpIfAMEM8BitGreaterOrEqualThanConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitGreaterOrEqualThanConst(0x60, 31, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x2A, 0x00, 0x1F, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitGreaterOrEqualThanConst",
-        commands_factory=lambda: [JmpIfAMEM16BitGreaterOrEqualThanConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM16BitGreaterOrEqualThanConst(0x62, 128, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x2B, 0x02, 0x80, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="IncAMEM8BitByConst",
-        commands_factory=lambda: [IncAMEM8BitByConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IncAMEM8BitByConst(0x67, 2),
+        ],
+        expected_bytes=[0x2C, 0x07, 0x02, 0x00],
     ),
     Case(
         label="IncAMEM16BitByConst",
-        commands_factory=lambda: [IncAMEM16BitByConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IncAMEM16BitByConst(0x60, 96),
+        ],
+        expected_bytes=[0x2D, 0x00, 0x60, 0x00],
     ),
     Case(
         label="DecAMEM8BitByConst",
-        commands_factory=lambda: [DecAMEM8BitByConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitByConst(0x6B, 2)],
+        expected_bytes=[0x2E, 0x0B, 0x02, 0x00],
     ),
     Case(
         label="DecAMEM16BitByConst",
-        commands_factory=lambda: [DecAMEM16BitByConst()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DecAMEM16BitByConst(0x60, 64),
+        ],
+        expected_bytes=[0x2F, 0x00, 0x40, 0x00],
     ),
     Case(
         label="SetAMEM8BitTo7E1x",
-        commands_factory=lambda: [SetAMEM8BitTo7E1x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM8BitTo7E1x(0x60, 0x7EFAC3),
+        ],
+        expected_bytes=[0x20, 0x10, 0xC3, 0xFA],
     ),
     Case(
         label="SetAMEM16BitTo7E1x",
-        commands_factory=lambda: [SetAMEM16BitTo7E1x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM16BitTo7E1x(0x60, 0x7EE022),
+        ],
+        expected_bytes=[0x21, 0x10, 0x22, 0xE0],
     ),
     Case(
         label="Set7E1xToAMEM8Bit",
-        commands_factory=lambda: [Set7E1xToAMEM8Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Set7E1xToAMEM8Bit(0x7EE001, 0x60),
+        ],
+        expected_bytes=[0x22, 0x10, 0x01, 0xE0],
     ),
     Case(
         label="Set7E1xToAMEM16Bit",
-        commands_factory=lambda: [Set7E1xToAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Set7E1xToAMEM16Bit(0x7EE022, 0x60),
+        ],
+        expected_bytes=[0x23, 0x10, 0x22, 0xE0],
     ),
     Case(
         label="JmpIfAMEM8BitEquals7E1x",
-        commands_factory=lambda: [JmpIfAMEM8BitEquals7E1x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitEquals7E1x(0x61, 0x7EE003, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x24, 0x11, 0x03, 0xE0, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitEquals7E1x",
-        commands_factory=lambda: [JmpIfAMEM16BitEquals7E1x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM16BitEquals7E1x(0x61, 0x7EE005, ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x25, 0x11, 0x05, 0xE0, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM8BitNotEquals7E1x",
@@ -392,8 +499,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM8BitToAMEM",
-        commands_factory=lambda: [SetAMEM8BitToAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM8BitToAMEM(amem=0x62, source_amem=0x60, upper=0x00),
+        ],
+        expected_bytes=[0x20, 0x32, 0x00, 0x00],
     ),
     Case(
         label="SetAMEM16BitToAMEM",
@@ -402,13 +511,17 @@ test_cases = [
     ),
     Case(
         label="SetAMEMToAMEM8Bit",
-        commands_factory=lambda: [SetAMEMToAMEM8Bit()],
+        commands_factory=lambda: [
+            SetAMEMToAMEM8Bit(dest_amem=0x67, upper=0x40, amem=0x6F),
+        ],
         expected_bytes=[],
     ),
     Case(
         label="SetAMEMToAMEM16Bit",
-        commands_factory=lambda: [SetAMEMToAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEMToAMEM16Bit(dest_amem=0x6E, upper=0x00, amem=0x62),
+        ],
+        expected_bytes=[0x23, 0x32, 0x0E, 0x00],
     ),
     Case(
         label="JmpIfAMEM8BitEqualsAMEM",
@@ -552,8 +665,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM8BitTo7E5x",
-        commands_factory=lambda: [SetAMEM8BitTo7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM8BitTo7E5x(0x60, 0x7E002C),
+        ],
+        expected_bytes=[0x20, 0x50, 0x2C, 0x00],
     ),
     Case(
         label="SetAMEM16BitTo7E5x",
@@ -562,13 +677,17 @@ test_cases = [
     ),
     Case(
         label="Set7E5xToAMEM8Bit",
-        commands_factory=lambda: [Set7E5xToAMEM8Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Set7E5xToAMEM8Bit(0x7E0000, 0x62),
+        ],
+        expected_bytes=[0x22, 0x52, 0x00, 0x00],
     ),
     Case(
         label="Set7E5xToAMEM16Bit",
-        commands_factory=lambda: [Set7E5xToAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            Set7E5xToAMEM16Bit(0x7E0070, 0x62),
+        ],
+        expected_bytes=[0x23, 0x52, 0x70, 0x00],
     ),
     Case(
         label="JmpIfAMEM8BitEquals7E5x",
@@ -632,8 +751,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM8BitToOMEMMain",
-        commands_factory=lambda: [SetAMEM8BitToOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM8BitToOMEMMain(amem=0x6F, omem=0x6F),
+        ],
+        expected_bytes=[0x20, 0x6F, 0x6F, 0x00],
     ),
     Case(
         label="SetAMEM16BitToOMEMMain",
@@ -642,8 +763,10 @@ test_cases = [
     ),
     Case(
         label="SetOMEMMainToAMEM8Bit",
-        commands_factory=lambda: [SetOMEMMainToAMEM8Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetOMEMMainToAMEM8Bit(omem=0x6F, amem=0x6F),
+        ],
+        expected_bytes=[0x22, 0x6F, 0x6F, 0x00],
     ),
     Case(
         label="SetOMEMMainToAMEM16Bit",
@@ -717,8 +840,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM16BitToUnknownShort",
-        commands_factory=lambda: [SetAMEM16BitToUnknownShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM16BitToUnknownShort(amem=0x62, type=0x9, value=0x0032),
+        ],
+        expected_bytes=[0x21, 0x92, 0x32, 0x00],
     ),
     Case(
         label="JmpIfAMEM8BitEqualsUnknownShort",
@@ -781,12 +906,16 @@ test_cases = [
         expected_bytes=[],
     ),
     Case(
-        label="IncAMEM8Bit", commands_factory=lambda: [IncAMEM8Bit()], expected_bytes=[]
+        label="IncAMEM8Bit",
+        commands_factory=lambda: [
+            IncAMEM8Bit(0x6D),
+        ],
+        expected_bytes=[0x30, 0x0D],
     ),
     Case(
         label="IncAMEM16Bit",
-        commands_factory=lambda: [IncAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16Bit(0x62)],
+        expected_bytes=[0x31, 0x02],
     ),
     Case(
         label="DecAMEM8Bit", commands_factory=lambda: [DecAMEM8Bit()], expected_bytes=[]
@@ -798,13 +927,15 @@ test_cases = [
     ),
     Case(
         label="ClearAMEM8Bit",
-        commands_factory=lambda: [ClearAMEM8Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [ClearAMEM8Bit(0x61)],
+        expected_bytes=[0x34, 0x01],
     ),
     Case(
         label="ClearAMEM16Bit",
-        commands_factory=lambda: [ClearAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ClearAMEM16Bit(0x60),
+        ],
+        expected_bytes=[0x35, 0x00],
     ),
     Case(
         label="SetAMEMBits", commands_factory=lambda: [SetAMEMBits()], expected_bytes=[]
@@ -816,8 +947,11 @@ test_cases = [
     ),
     Case(
         label="JmpIfAMEMBitsSet",
-        commands_factory=lambda: [JmpIfAMEMBitsSet()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEMBitsSet(0x60, [7], ["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x38, 0x00, 0x80, 0x07, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEMBitsClear",
@@ -831,8 +965,10 @@ test_cases = [
     ),
     Case(
         label="PauseScriptUntilAMEMBitsSet",
-        commands_factory=lambda: [PauseScriptUntilAMEMBitsSet()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            PauseScriptUntilAMEMBitsSet(0x6C, [0]),
+        ],
+        expected_bytes=[0x40, 0x0C, 0x01],
     ),
     Case(
         label="PauseScriptUntilAMEMBitsClear",
@@ -841,8 +977,10 @@ test_cases = [
     ),
     Case(
         label="SpriteSequence",
-        commands_factory=lambda: [SpriteSequence()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SpriteSequence(sequence=4),
+        ],
+        expected_bytes=[0x43, 0x04],
     ),
     Case(
         label="SetAMEM60ToCurrentTarget",
@@ -857,25 +995,36 @@ test_cases = [
     Case(
         label="PauseScriptUntilSpriteSequenceDone",
         commands_factory=lambda: [PauseScriptUntilSpriteSequenceDone()],
-        expected_bytes=[],
+        expected_bytes=[0x4E],
     ),
     Case(
         label="JmpIfTargetDisabled",
-        commands_factory=lambda: [JmpIfTargetDisabled()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfTargetDisabled(["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x50, 0x05, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfTargetEnabled",
-        commands_factory=lambda: [JmpIfTargetEnabled()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfTargetEnabled(["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x51, 0x05, 0xC0, 0x11],
     ),
     Case(
-        label="SpriteQueue", commands_factory=lambda: [SpriteQueue()], expected_bytes=[]
-    ),
-    Case(
-        label="ReturnSpriteQueue",
-        commands_factory=lambda: [ReturnSpriteQueue()],
-        expected_bytes=[],
+        label="SpriteQueue",
+        commands_factory=lambda: [
+            SpriteQueue(
+                field_object=4,
+                destinations=["queuestart_0x35C007"],
+                character_slot=True,
+                bit_5=True,
+            ),
+            ReturnSpriteQueue(identifier="queuestart_0x35C007"),
+        ],
+        expected_bytes=[0x5D, 0x28, 0x04, 0x07, 0xC0, 0x5E],
     ),
     Case(
         label="DisplayMessageAtOMEM60As",
@@ -884,23 +1033,31 @@ test_cases = [
     ),
     Case(
         label="ObjectQueueAtOffsetAndIndexAtAMEM60",
-        commands_factory=lambda: [ObjectQueueAtOffsetAndIndexAtAMEM60()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ObjectQueueAtOffsetAndIndexAtAMEM60(target_address=0x35C005),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x64, 0x05, 0xC0, 0x11],
     ),
     Case(
         label="ObjectQueueAtOffsetAndIndex",
-        commands_factory=lambda: [ObjectQueueAtOffsetAndIndex()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ObjectQueueAtOffsetAndIndex(index=6, target_address=0x35C006),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x68, 0x06, 0xC0, 0x06, 0x11],
     ),
     Case(
         label="SetOMEM60To072C",
         commands_factory=lambda: [SetOMEM60To072C()],
-        expected_bytes=[],
+        expected_bytes=[0x69],
     ),
     Case(
         label="SetAMEMToRandomByte",
-        commands_factory=lambda: [SetAMEMToRandomByte()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEMToRandomByte(amem=0x68, upper_bound=7),
+        ],
+        expected_bytes=[0x6A, 0x08, 0x07],
     ),
     Case(
         label="SetAMEMToRandomShort",
@@ -941,13 +1098,15 @@ test_cases = [
     Case(label="Layer3Off", commands_factory=lambda: [Layer3Off()], expected_bytes=[]),
     Case(
         label="DisplayMessage",
-        commands_factory=lambda: [DisplayMessage()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DisplayMessage(BATTLE_MESSAGE, 11),
+        ],
+        expected_bytes=[0x7A, 0x02, 0x0B],
     ),
     Case(
         label="PauseScriptUntilDialogClosed",
         commands_factory=lambda: [PauseScriptUntilDialogClosed()],
-        expected_bytes=[],
+        expected_bytes=[0x7B],
     ),
     Case(
         label="FadeOutObject",
@@ -957,7 +1116,7 @@ test_cases = [
     Case(
         label="ResetSpriteSequence",
         commands_factory=lambda: [ResetSpriteSequence()],
-        expected_bytes=[],
+        expected_bytes=[0x7F],
     ),
     Case(
         label="ShineEffect", commands_factory=lambda: [ShineEffect()], expected_bytes=[]
@@ -1043,15 +1202,23 @@ test_cases = [
     ),
     Case(
         label="ScreenEffect",
-        commands_factory=lambda: [ScreenEffect()],
-        expected_bytes=[],
+        commands_factory=lambda: [ScreenEffect(SEF0006_SCREEN_FLASHES_WHITE)],
+        expected_bytes=[0xA3, 0x06],
     ),
     Case(
         label="JmpIfTimedHitSuccess",
         commands_factory=lambda: [JmpIfTimedHitSuccess()],
         expected_bytes=[],
     ),
-    Case(label="PlaySound", commands_factory=lambda: [PlaySound()], expected_bytes=[]),
+    Case(
+        label="PlaySound",
+        commands_factory=lambda: [
+            PlaySound(
+                sound=S0089_COMMON_MONSTER_EXPLOSION, identifier="command_0x3505e8"
+            ),
+        ],
+        expected_bytes=[0xAB, 0x59],
+    ),
     Case(
         label="PlayMusicAtCurrentVolume",
         commands_factory=lambda: [PlayMusicAtCurrentVolume()],
@@ -1069,10 +1236,16 @@ test_cases = [
     ),
     Case(
         label="FadeCurrentMusicToVolume",
-        commands_factory=lambda: [FadeCurrentMusicToVolume()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeCurrentMusicToVolume(speed=3, volume=1),
+        ],
+        expected_bytes=[0xB6, 0x03, 0x01],
     ),
-    Case(label="SetTarget", commands_factory=lambda: [SetTarget()], expected_bytes=[]),
+    Case(
+        label="SetTarget",
+        commands_factory=lambda: [SetTarget(MONSTER_1_SET)],
+        expected_bytes=[0xBB, 0x13],
+    ),
     Case(
         label="AddItemToStandardInventory",
         commands_factory=lambda: [AddItemToStandardInventory()],
@@ -1161,13 +1334,18 @@ test_cases = [
     ),
     Case(
         label="SummonMonster",
-        commands_factory=lambda: [SummonMonster()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SummonMonster(monster=Yaridovich, position=1, bit_6=True, bit_7=True)
+        ],
+        expected_bytes=[0xD5, 0xC0, 0xE2, 0x01],
     ),
     Case(
         label="MuteTimingJmp",
-        commands_factory=lambda: [MuteTimingJmp()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            MuteTimingJmp(destinations=["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0xD8, 0x05, 0xC0, 0x11],
     ),
     Case(
         label="DisplayCantRunDialog",
@@ -1177,7 +1355,7 @@ test_cases = [
     Case(
         label="StoreOMEM60ToItemInventory",
         commands_factory=lambda: [StoreOMEM60ToItemInventory()],
-        expected_bytes=[],
+        expected_bytes=[0xE0],
     ),
     Case(
         label="RunBattleEvent",
@@ -1185,9 +1363,10 @@ test_cases = [
         expected_bytes=[],
     ),
     Case(
+        # this one doesn't have as many protections as event and action scripts do, just don't fuck it up
         label="UnknownCommand",
-        commands_factory=lambda: [UnknownCommand()],
-        expected_bytes=[],
+        commands_factory=lambda: [UnknownCommand(bytearray(b"\x16"))],
+        expected_bytes=[0x16],
     ),
 ]
 

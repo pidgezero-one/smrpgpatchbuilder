@@ -1464,7 +1464,7 @@ class JmpIfAMEM8BitEquals7E1x(
 
     def render(self) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
-        return super().render(self._amem_bits(), addr, *self.destinations)
+        return super().render(0x10 + self._amem_bits(), addr, *self.destinations)
 
 
 class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -7642,7 +7642,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         `Summon monster...`
 
     ## Opcode
-        `0x5D`
+        `0xD5`
 
     ## Size
         4 bytes
@@ -7661,7 +7661,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5D
+    _opcode: int = 0xD5
     _size: int = 4
 
     _monster: Type["Enemy"]
@@ -7793,7 +7793,17 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bit_7(bit_7)
 
     def render(self) -> bytearray:
-        byte1: int = bits_to_int(
+        byte1: int = bools_to_int(
+            self.bit_0,
+            self.bit_1,
+            self.bit_2,
+            self.bit_3,
+            self.bit_4,
+            self.bit_5,
+            self.bit_6,
+            self.bit_7,
+        )
+        print(
             [
                 self.bit_0,
                 self.bit_1,
@@ -7803,7 +7813,8 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
                 self.bit_5,
                 self.bit_6,
                 self.bit_7,
-            ]
+            ],
+            byte1,
         )
         return super().render(byte1, self.monster().monster_id, self.position)
 
