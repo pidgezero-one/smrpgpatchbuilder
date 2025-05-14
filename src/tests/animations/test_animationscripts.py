@@ -1329,8 +1329,16 @@ test_cases = [
     ),
     Case(
         label="TimingForChargePress",
-        commands_factory=lambda: [TimingForChargePress()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForChargePress(
+                charge_level_1_end=30,
+                charge_level_2_end=55,
+                charge_level_3_end=80,
+                charge_level_4_end=105,
+                overcharge_end=130,
+            ),
+        ],
+        expected_bytes=[0xD4, 0x1E, 0x37, 0x50, 0x69, 0x82],
     ),
     Case(
         label="SummonMonster",
