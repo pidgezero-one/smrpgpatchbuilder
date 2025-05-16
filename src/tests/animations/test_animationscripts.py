@@ -506,15 +506,17 @@ test_cases = [
     ),
     Case(
         label="SetAMEM16BitToAMEM",
-        commands_factory=lambda: [SetAMEM16BitToAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM16BitToAMEM(amem=0x68, source_amem=0x6A, upper=0x30),
+        ],
+        expected_bytes=[0x21, 0x38, 0x3A, 0x00],
     ),
     Case(
         label="SetAMEMToAMEM8Bit",
         commands_factory=lambda: [
             SetAMEMToAMEM8Bit(dest_amem=0x67, upper=0x40, amem=0x6F),
         ],
-        expected_bytes=[],
+        expected_bytes=[0x22, 0x3F, 0x47, 0x00],
     ),
     Case(
         label="SetAMEMToAMEM16Bit",
@@ -525,8 +527,11 @@ test_cases = [
     ),
     Case(
         label="JmpIfAMEM8BitEqualsAMEM",
-        commands_factory=lambda: [JmpIfAMEM8BitEqualsAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitEqualsAMEM(amem=0x68, source_amem=0x69, upper=0x60, destinations=["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x24, 0x38, 0x69, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitEqualsAMEM",
@@ -535,8 +540,11 @@ test_cases = [
     ),
     Case(
         label="JmpIfAMEM8BitNotEqualsAMEM",
-        commands_factory=lambda: [JmpIfAMEM8BitNotEqualsAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            JmpIfAMEM8BitNotEqualsAMEM(amem=0x6E, source_amem=0x6C, upper=0x60, destinations=["jmp"]),
+            ReturnSubroutine(identifier="jmp")
+        ],
+        expected_bytes=[0x26, 0x3E, 0x6C, 0x00, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM16BitNotEqualsAMEM",
