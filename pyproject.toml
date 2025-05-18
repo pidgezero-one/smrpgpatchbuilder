@@ -1,6 +1,6 @@
 [project]
 name = "smrpgpatchbuilder"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
   { name="pidgezero_one", email="s.kischak@gmail.com" },
 ]
