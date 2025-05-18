@@ -1,10 +1,10 @@
 """Base classes fors spells."""
 
 from copy import deepcopy
-from typing import List
+from typing import List, Dict
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
+
 
 from .arguments.types.classes import DamageModifiers, TimingProperties
 from .ids.misc import (
@@ -289,19 +289,19 @@ class Spell:
         """The class name of this spell."""
         return self.__class__.__name__
 
-    def get_patch(self) -> Patch:
-        """Get patch for this spell."""
-        patch = Patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
+        patch: Dict[int, bytearray] = {}
 
         # FP is byte 3, power is byte 6, hit rate is byte 7.  Each spell is 12 bytes.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
-        patch.add_data(
-            base_addr,
+        patch[
+            base_addr] =
             (self.check_stats * 0x01)
             + (self.ignore_defense * 0x02)
             + (self.check_ohko * 0x20)
-            + (self.usable_outside_of_battle * 0x80),
-        )
+            + (self.usable_outside_of_battle * 0x80)
+        
         spell_type: int = 0
         effect_type: int = 0
         element: int = 0
@@ -315,31 +315,31 @@ class Spell:
             element = self.element.value.spell_value
         if self.inflict is not None:
             inflict_value = self.inflict.value
-        patch.add_data(base_addr + 1, spell_type + effect_type + (self.quad9s * 0x08))
-        patch.add_data(base_addr + 2, ByteField(self.fp).as_bytes())
-        patch.add_data(
-            base_addr + 3,
+        patch[base_addr + 1] = spell_type + effect_type + (self.quad9s * 0x08)
+        patch[base_addr + 2] = ByteField(self.fp).as_bytes()
+        patch[
+            base_addr + 3]
             (self.target_others * 0x02)
             + (self.target_enemies * 0x04)
             + (self.target_party * 0x10)
             + (self.target_wounded * 0x20)
             + (self.target_one_party * 0x40)
             + (self.target_not_self * 0x80),
-        )
-        patch.add_data(base_addr + 4, element)
+        
+        patch[base_addr + 4] = element
         data = ByteField(self.power).as_bytes()
         data += ByteField(self.hit_rate).as_bytes()
-        patch.add_data(base_addr + 5, data)
+        patch[base_addr + 5] = data
         effects = 0
         for index in self.status_effects:
             effects += 2**index.spell_value
-        patch.add_data(base_addr + 7, effects)
+        patch[base_addr + 7] = effects
         buffs = 0
         for boost in self.boosts:
             buffs += 2**boost
-        patch.add_data(base_addr + 8, buffs)
-        patch.add_data(base_addr + 10, inflict_value)
-        patch.add_data(base_addr + 11, (self.hide_num * 0x04))
+        patch[base_addr + 8] = buffs
+        patch[base_addr + 10] = inflict_value
+        patch[base_addr + 11] = (self.hide_num * 0x04)
 
         return patch
 
@@ -370,23 +370,17 @@ class CharacterSpell(Spell):
         """(unknown)"""
         self._damage_modifiers = damage_modifiers
 
-    def get_patch(self) -> Patch:
-        """Get patch for this spell."""
-        patch = super().get_patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
+        patch = super().render()
 
         name_bytes = "\x40" + self.title
         name_bytes += " " * (15 - len(name_bytes))
-        patch.add_data(SPELL_BASE_NAME_ADDRESS + (self.index * 15), name_bytes)
+        patch[SPELL_BASE_NAME_ADDRESS + self.index * 15] = name_bytes
         if self.timing_modifiers != 0:
-            patch.add_data(
-                SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2,
-                ByteField(self.timing_modifiers).as_bytes(),
-            )
+            patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(self.timing_modifiers).as_bytes()
         if self.damage_modifiers != 0:
-            patch.add_data(
-                SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2,
-                ByteField(self.damage_modifiers).as_bytes(),
-            )
+            patch[SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(self.damage_modifiers).as_bytes()
 
         return patch
 
@@ -398,13 +392,13 @@ class EnemySpell(Spell):
     def title(self) -> str:
         return self.__class__.__name__
 
-    def get_patch(self) -> Patch:
-        """Get patch for this spell."""
-        patch = super().get_patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
+        patch = super().render()
 
         # Add status effects for enemy attacks, if any.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
         data = BitMapSet(1, self.status_effects).as_bytes()
-        patch.add_data(base_addr + 7, data)
+        patch[base_addr + 7] = data
 
         return patch

@@ -1,13 +1,17 @@
 """Base classes for enemies encountered in battle and their overworld representations."""
 
 from copy import deepcopy
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Dict
 
-from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt16, UInt8
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    BitMapSet,
+    ByteField,
+    UInt16,
+    UInt8,
+)
 from smrpgpatchbuilder.datatypes.spells.classes import Status, Element
 from smrpgpatchbuilder.datatypes.items.classes import Item, RegularItem
 from smrpgpatchbuilder.datatypes.items.implementations import Mushroom
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
 
 from .constants import (
     BASE_ENEMY_ADDRESS,
@@ -343,7 +347,7 @@ class Enemy:
     def reward_address(self):
         """The ROM address at which to begin writing reward/drop properties to for this enemy."""
         return BASE_REWARD_ADDRESS + self.monster_id * 6
-    
+
     def __str__(self) -> str:
         return f"""<{self.name}
          hp: {self.hp} 
@@ -359,10 +363,10 @@ class Enemy:
     def name(self) -> str:
         """Enemy's default name"""
         return self.__class__.__name__
-    
-    def get_patch(self) -> Patch:
-        """Get patch for this enemy."""
-        patch = Patch()
+
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this enemy in `{0x123456: bytearray([0x00])}` format."""
+        patch: Dict[int, bytearray] = {}
 
         # Main stats.
         data = bytearray()
@@ -375,7 +379,7 @@ class Enemy:
         data += ByteField(self.fp).as_bytes()
         data += ByteField(self.evade).as_bytes()
         data += ByteField(self.magic_evade).as_bytes()
-        patch.add_data(self.address, data)
+        patch[self.address] = data
 
         # Special defense bits, sound on hit is top half.
         data = bytearray()
@@ -408,13 +412,13 @@ class Enemy:
             1, [immunity.stat_value for immunity in self.status_immunities]
         ).as_bytes()
 
-        patch.add_data(self.address + 11, data)
+        patch[self.address + 11] = data
 
         # Flower bonus.
         bonus_addr = FLOWER_BONUS_BASE_ADDRESS + self.monster_id
         bonus = (self.flower_bonus_chance // 10) << 4
         bonus |= self.flower_bonus_type
-        patch.add_data(bonus_addr, ByteField(bonus).as_bytes())
+        patch[bonus_addr] = ByteField(bonus).as_bytes()
 
         yoshi_cookie_item_id = self.yoshi_cookie_item.item_id
         common_item = 0xFF
@@ -431,6 +435,6 @@ class Enemy:
         data += ByteField(yoshi_cookie_item_id).as_bytes()
         data += ByteField(common_item).as_bytes()
         data += ByteField(rare_item).as_bytes()
-        patch.add_data(self.reward_address, data)
+        patch[self.reward_address] = data
 
         return patch

@@ -4,8 +4,14 @@ from copy import deepcopy
 from typing import Dict, List
 
 
-from smrpgpatchbuilder.datatypes.numbers.classes import UInt4, UInt8, UInt16, ByteField, BitMapSet
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    UInt4,
+    UInt8,
+    UInt16,
+    ByteField,
+    BitMapSet,
+)
+
 from smrpgpatchbuilder.datatypes.spells.classes import CharacterSpell
 
 from .constants import (
@@ -180,15 +186,15 @@ class LevelUpExps:
         assert 1 <= level <= 30
         return self.levels[level - 1]
 
-    def get_patch(self) -> Patch:
-        """Get patch for exp required for each level up."""
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for exp required for each level up in `{0x123456: bytearray([0x00])}` format"""
         # Data is 29 blocks (starting at level 2), 2 bytes each block.
         data = bytearray()
         for level in range(2, 31):
             data += ByteField(self.get_xp_for_level(level)).as_bytes()
 
-        patch = Patch()
-        patch.add_data(LEVELUP_BASE_ADDRESS, data)
+        patch: Dict[int, bytearray] = {}
+        patch[LEVELUP_BASE_ADDRESS] = data
         return patch
 
 
@@ -283,9 +289,9 @@ class Character:
         """String representation of class name"""
         return self.__class__.__name__
 
-    def get_patch(self) -> Patch:
-        """Get ROM patch for this item."""
-        patch = Patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this character in `{0x123456: bytearray([0x00])}` format"""
+        patch: Dict[int, bytearray] = {}
 
         # Build character patch data.
         char_data = bytearray()
@@ -319,7 +325,7 @@ class Character:
 
         # Base address plus offset based on character index.
         addr = CHARACTER_BASE_ADDRESS + (self.character_id * 20)
-        patch.add_data(addr, char_data)
+        patch[addr] = char_data
 
         # Add levelup stat growth and bonuses to the patch data for this character.
         # Offset is 15 bytes for each stat object, 3 bytes per character.
@@ -329,7 +335,7 @@ class Character:
                 + (growth_index * 15)
                 + (self.character_id * 3)
             )
-            patch.add_data(addr, stat.as_bytes())
+            patch[addr] = stat.as_bytes()
 
         for growth_index, stat in enumerate(self.levelup_bonuses):
             addr = (
@@ -337,7 +343,7 @@ class Character:
                 + (growth_index * 15)
                 + (self.character_id * 3)
             )
-            patch.add_data(addr, stat.as_bytes())
+            patch[addr] = stat.as_bytes()
 
         # Add learned spells data.
         # Data is 29 blocks (starting at level 2), 5 bytes each block
@@ -348,11 +354,10 @@ class Character:
             # If we have a spell for this level, add the index.
             # Otherwise it should be 0xff for no spell learned.
             if self.learned_spells.get(level):
-                patch.add_data(
-                    level_addr,
-                    ByteField(self.learned_spells[level].index).as_bytes(),
-                )
+                patch[level_addr] = ByteField(
+                    self.learned_spells[level].index
+                ).as_bytes()
             else:
-                patch.add_data(level_addr, ByteField(0xFF).as_bytes())
+                patch[level_addr] = ByteField(0xFF).as_bytes()
 
         return patch

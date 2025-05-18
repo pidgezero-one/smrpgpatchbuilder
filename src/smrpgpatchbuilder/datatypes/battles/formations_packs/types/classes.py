@@ -2,12 +2,17 @@
 
 from random import choices
 import statistics
-from typing import List, Tuple, Type, Optional
+from typing import List, Tuple, Type, Optional, Dict
+
 
 from smrpgpatchbuilder.datatypes.battles.enums import BattleMusic, Battlefields
 from smrpgpatchbuilder.datatypes.enemies.classes import Enemy
-from smrpgpatchbuilder.datatypes.numbers.classes import ByteField, BitMapSet, UInt16, UInt8
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    ByteField,
+    BitMapSet,
+    UInt16,
+    UInt8,
+)
 
 from smrpgpatchbuilder.datatypes.battles.ids.misc import (
     BASE_FORMATION_ADDRESS,
@@ -333,10 +338,10 @@ class Formation:
         self.set_additional_enemies_to_scale(additional_enemies_to_scale)
         self.set_additional_enemies_for_stat_count(additional_enemies_for_stat_count)
 
-    def get_patch(self, formation_index: int) -> Patch:
-        """Get the patch object for this formation to be written to the ROM."""
+    def render(self, formation_index: int) -> Dict[int, bytearray]:
+        """Get formation data in `{0x123456: bytearray([0x00])}` format."""
         assert 0 <= formation_index < TOTAL_FORMATIONS
-        patch = Patch()
+        patch: Dict[int, bytearray] = {}
         data = bytearray()
 
         # Monsters present bitmap.
@@ -365,7 +370,7 @@ class Formation:
                 data += ByteField(0).as_bytes()
 
         base_addr = BASE_FORMATION_ADDRESS + (formation_index * 26)
-        patch.add_data(base_addr, data)
+        patch[base_addr] = data
 
         # Add formation metadata.
         data = bytearray()
@@ -378,7 +383,7 @@ class Formation:
         data += ByteField(music_byte).as_bytes()
 
         base_addr = BASE_FORMATION_META_ADDRESS + formation_index * 3 + 1
-        patch.add_data(base_addr, data)
+        patch[base_addr] = data
 
         return patch
 
@@ -426,12 +431,12 @@ class FormationPack:
         else:
             self.set_formation_ids(*formation_ids)
 
-    def get_patch(self, pack_index: int) -> Patch:
-        """Return the patch for this pack to be written to the ROM."""
+    def render(self, pack_index: int) -> Dict[int, bytearray]:
+        """Get pack data in `{0x123456: bytearray([0x00])}` format."""
         assert UInt8(pack_index)
         assert len(self._formation_ids) == 3
 
-        patch = Patch()
+        patch: Dict[int, bytearray] = {}
         data = bytearray()
         hi_num = False
 
@@ -447,6 +452,6 @@ class FormationPack:
         data += ByteField(val).as_bytes()
 
         base_addr = PACK_BASE_ADDRESS + (pack_index * 4)
-        patch.add_data(base_addr, data)
+        patch[base_addr] = data
 
         return patch

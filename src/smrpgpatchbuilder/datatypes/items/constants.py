@@ -1,4 +1,4 @@
-""""Miscellaeous constants used for item classes and functions."""
+""" "Miscellaeous constants used for item classes and functions."""
 
 from typing import List
 
@@ -13,6 +13,7 @@ ITEMS_BASE_DESC_DATA_ADDRESSES = (
     (0x3A3120, 0x3A40F1),
     (0x3A55F0, 0x3A5FFF),
 )
+ITEMS_BASE_TIMING_ADDRESS: int = 0x3A438A
 
 # Total number of items in the data.
 NUM_ITEMS: int = 256

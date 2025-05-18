@@ -9,15 +9,15 @@ from smrpgpatchbuilder.datatypes.dialogs.ids.misc import (
     DIALOG_BANK_24_BEGINS,
     DIALOG_BANK_24_ENDS,
 )
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
-from smrpgpatchbuilder.datatypes.scripts_common.classes import ScriptBankTooLongException
+from smrpgpatchbuilder.datatypes.scripts_common.classes import (
+    ScriptBankTooLongException,
+)
 
 from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
 from .ids.types.classes import DialogBankID
 from .utils import compress, COMPRESSION_TABLE, DEFAULT_COMPRESSION_TABLE
-
 
 
 class Dialog:
@@ -96,7 +96,9 @@ class DialogCollection:
             for index, string in enumerate(bank):
                 self.raw_data[bank_index][index] = string.replace(search, replace)
 
-    def _set_compression_table(self, compression_table: List[tuple[str, bytearray]]) -> None:
+    def _set_compression_table(
+        self, compression_table: List[tuple[str, bytearray]]
+    ) -> None:
         """Set the compression table for this dialog collection."""
         self._compression_table = compression_table
 
@@ -104,8 +106,19 @@ class DialogCollection:
     def compression_table(self) -> List[tuple[str, bytearray]]:
         """Get the compression table for this dialog collection."""
         return self._compression_table
-    
-    def __init__(self, dialogs: List[Dialog], raw_data: List[list[str]], compression_table: List[tuple[str, bytearray]] = DEFAULT_COMPRESSION_TABLE, dialog_bank_22_begins = DIALOG_BANK_22_BEGINS, dialog_bank_22_ends = DIALOG_BANK_22_ENDS, dialog_bank_23_begins = DIALOG_BANK_23_BEGINS, dialog_bank_23_ends = DIALOG_BANK_23_ENDS, dialog_bank_24_begins = DIALOG_BANK_24_BEGINS, dialog_bank_24_ends = DIALOG_BANK_24_ENDS) -> None:
+
+    def __init__(
+        self,
+        dialogs: List[Dialog],
+        raw_data: List[list[str]],
+        compression_table: List[tuple[str, bytearray]] = DEFAULT_COMPRESSION_TABLE,
+        dialog_bank_22_begins=DIALOG_BANK_22_BEGINS,
+        dialog_bank_22_ends=DIALOG_BANK_22_ENDS,
+        dialog_bank_23_begins=DIALOG_BANK_23_BEGINS,
+        dialog_bank_23_ends=DIALOG_BANK_23_ENDS,
+        dialog_bank_24_begins=DIALOG_BANK_24_BEGINS,
+        dialog_bank_24_ends=DIALOG_BANK_24_ENDS,
+    ) -> None:
         self._set_dialogs(dialogs)
         self._set_raw_data(raw_data)
         self._set_compression_table([*COMPRESSION_TABLE, *compression_table])
@@ -117,7 +130,7 @@ class DialogCollection:
         self._dialog_bank_24_ends = dialog_bank_24_ends
 
     def render(self) -> Dict[int, bytearray]:
-        """Get ROM patch for dialogs."""
+        """Get all dialog data in `{0x123456: bytearray([0x00])}` format."""
         if len(self.dialogs) != 4096:
             raise ValueError("must be exactly 4096 dialogs")
         if len(self.raw_data) != 3:
@@ -238,3 +251,4 @@ class DialogCollection:
             0x230000: assembled_dialog_data[1],
             0x240000: assembled_dialog_data[2],
         }
+        # TODO: add compression table

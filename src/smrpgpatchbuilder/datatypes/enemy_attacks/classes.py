@@ -1,9 +1,14 @@
 """Base classes for enemy attack data."""
 
-from typing import List
+from typing import List, Dict
 
-from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt4, UInt8
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
+from smrpgpatchbuilder.datatypes.numbers.classes import (
+    BitMapSet,
+    ByteField,
+    UInt4,
+    UInt8,
+)
+
 from smrpgpatchbuilder.datatypes.spells.enums import TempStatBuff, Status
 
 from .constants import ENEMY_ATTACK_BASE_ADDRESS
@@ -118,9 +123,9 @@ class EnemyAttack:
         """Attack's default name"""
         return self.__class__.__name__
 
-    def get_patch(self) -> Patch:
-        """Get ROM patch for this enemy attack."""
-        patch = Patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this attack in `{0x123456: bytearray([0x00])}` format"""
+        patch: Dict[int, bytearray] = {}
         base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
 
         data = bytearray()
@@ -142,5 +147,5 @@ class EnemyAttack:
         data += BitMapSet(1, self.status_effects).as_bytes()
         data += BitMapSet(1, self.buffs).as_bytes()
 
-        patch.add_data(base_addr, data)
+        patch[base_addr] = data
         return patch

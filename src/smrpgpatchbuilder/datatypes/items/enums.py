@@ -14,6 +14,7 @@ import enum
     BUFFS = enum.auto()
  """
 
+
 class EquipStats(str, enum.Enum):
     """Enumeration for numerical stats that are directly affected by equips."""
 
@@ -32,21 +33,24 @@ class ItemTypeValue(enum.IntEnum):
     ACCESSORY = 0b10
     ITEM = 0b11
 
-class EffectType(enum.Enum):
-    INFLICTION = enum.auto()
-    PROTECTION = enum.auto()
-    NULLIFICATION = enum.auto()
 
-class InflictFunction(enum.Enum):
-    ITEM_MORPH = enum.auto()
-    REVIVE = enum.auto()
-    RESTORE_FP = enum.auto()
-    INCREASE_STATS_ITEM = enum.auto()
-    RESTORE_HP = enum.auto()
-    RESTORE_ALL_HP_FP = enum.auto()
-    RAISE_MAX_FP = enum.auto()
-    INSTANT_DEATH = enum.auto()
+class EffectType(enum.IntEnum):
+    INFLICTION = 0x02
+    PROTECTION = 0x01
+    NULLIFICATION = 0x04
 
-class OverworldMenuBehaviour(enum.Enum):
-    LEAD_TO_HP = enum.auto()
-    LEAD_TO_FP = enum.auto()
+
+class InflictFunction(enum.IntEnum):
+    ITEM_MORPH = 0
+    REVIVE = 1
+    RESTORE_FP = 2
+    INCREASE_STATS_ITEM = 3
+    RESTORE_HP = 4
+    RESTORE_ALL_HP_FP = 5
+    RAISE_MAX_FP = 6
+    INSTANT_DEATH = 7
+
+
+class OverworldMenuBehaviour(enum.IntEnum):
+    LEAD_TO_HP = 0
+    LEAD_TO_FP = 1

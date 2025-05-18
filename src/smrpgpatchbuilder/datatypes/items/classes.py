@@ -3,27 +3,23 @@
 from copy import deepcopy
 import random
 import math
-from typing import List, TypeVar, Optional
+from typing import List, TypeVar, Optional, Dict
 
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import (
     PartyCharacter,
 )
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, ByteField, BitMapSet
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
+
 
 # target .enums specifically to prevent cyclic import
 from smrpgpatchbuilder.datatypes.spells.enums import Status, Element, TempStatBuff
 
-from .enums import (
-    ItemTypeValue,
-    EffectType, 
-    InflictFunction, 
-    OverworldMenuBehaviour
-)
+from .enums import ItemTypeValue, EffectType, InflictFunction, OverworldMenuBehaviour
 from .constants import (
     ITEMS_BASE_ADDRESS,
     ITEMS_BASE_PRICE_ADDRESS,
+    ITEMS_BASE_TIMING_ADDRESS,
 )
 
 
@@ -62,14 +58,16 @@ class Item:
     _usable_overworld: bool = False
     _reusable: bool = False
 
-    _overworld_menu_behaviour: OverworldMenuBehaviour = OverworldMenuBehaviour.LEAD_TO_HP
+    _overworld_menu_behaviour: OverworldMenuBehaviour = (
+        OverworldMenuBehaviour.LEAD_TO_HP
+    )
     _overworld_menu_fill_fp: bool = False
     _overworld_menu_fill_hp: bool = False
 
     _can_target_others: bool = False
     _can_target_self: bool = True
     _one_side_only: bool = False
-    _koed_target_only: bool = False 
+    _koed_target_only: bool = False
     _target_enemies: bool = False
     _target_all: bool = False
 
@@ -202,11 +200,12 @@ class Item:
         """Set item cost, regardless of currency type."""
         maximum: int = 999 if self.frog_coin_item else 9999
         self._price = min(maximum, price)
-        
+
     @property
     def inflict(self) -> int:
         """The inflict value used in effect resolution"""
         return self._inflict
+
     def set_inflict(self, inflict: int) -> None:
         """Update the inflict value used in effect resolution"""
         self._inflict = inflict
@@ -215,6 +214,7 @@ class Item:
     def effect_type(self) -> Optional[EffectType]:
         """The type of effect this represents"""
         return self._effect_type
+
     def set_effect_type(self, effect_type: Optional[EffectType]) -> None:
         """Update the effect type"""
         self._effect_type = effect_type
@@ -223,6 +223,7 @@ class Item:
     def inflict_type(self) -> Optional[InflictFunction]:
         """The function that determines infliction logic"""
         return self._inflict_type
+
     def set_inflict_type(self, inflict_type: Optional[InflictFunction]) -> None:
         """Update the inflict type function"""
         self._inflict_type = inflict_type
@@ -231,6 +232,7 @@ class Item:
     def inflict_element(self) -> Optional[Element]:
         """The elemental type associated with this effect"""
         return self._inflict_element
+
     def set_inflict_element(self, inflict_element: Optional[Element]) -> None:
         """Update the infliction element"""
         self._inflict_element = inflict_element
@@ -239,6 +241,7 @@ class Item:
     def prevent_ko(self) -> bool:
         """Whether this prevents KO"""
         return self._prevent_ko
+
     def set_prevent_ko(self, prevent_ko: bool) -> None:
         """Set whether this prevents KO"""
         self._prevent_ko = prevent_ko
@@ -247,6 +250,7 @@ class Item:
     def hide_damage(self) -> bool:
         """Whether to hide damage display"""
         return self._hide_damage
+
     def set_hide_damage(self, hide_damage: bool) -> None:
         """Set whether to hide damage display"""
         self._hide_damage = hide_damage
@@ -255,6 +259,7 @@ class Item:
     def usable_battle(self) -> bool:
         """Whether this can be used in battle"""
         return self._usable_battle
+
     def set_usable_battle(self, usable_battle: bool) -> None:
         """Set battle usability"""
         self._usable_battle = usable_battle
@@ -263,6 +268,7 @@ class Item:
     def usable_overworld(self) -> bool:
         """Whether this can be used in the overworld"""
         return self._usable_overworld
+
     def set_usable_overworld(self, usable_overworld: bool) -> None:
         """Set overworld usability"""
         self._usable_overworld = usable_overworld
@@ -271,6 +277,7 @@ class Item:
     def overworld_menu_behaviour(self) -> OverworldMenuBehaviour:
         """The menu behavior when used in the overworld"""
         return self._overworld_menu_behaviour
+
     def set_overworld_menu_behaviour(self, behaviour: OverworldMenuBehaviour) -> None:
         """Set overworld menu behavior"""
         self._overworld_menu_behaviour = behaviour
@@ -279,6 +286,7 @@ class Item:
     def overworld_menu_fill_fp(self) -> bool:
         """Whether this fills FP in the overworld"""
         return self._overworld_menu_fill_fp
+
     def set_overworld_menu_fill_fp(self, fill_fp: bool) -> None:
         """Set whether this fills FP in the overworld"""
         self._overworld_menu_fill_fp = fill_fp
@@ -287,6 +295,7 @@ class Item:
     def overworld_menu_fill_hp(self) -> bool:
         """Whether this fills HP in the overworld"""
         return self._overworld_menu_fill_hp
+
     def set_overworld_menu_fill_hp(self, fill_hp: bool) -> None:
         """Set whether this fills HP in the overworld"""
         self._overworld_menu_fill_hp = fill_hp
@@ -295,6 +304,7 @@ class Item:
     def can_target_others(self) -> bool:
         """Whether this can target others"""
         return self._can_target_others
+
     def set_can_target_others(self, can_target_others: bool) -> None:
         """Set whether this can target others"""
         self._can_target_others = can_target_others
@@ -303,6 +313,7 @@ class Item:
     def can_target_self(self) -> bool:
         """Whether this can target self"""
         return self._can_target_self
+
     def set_can_target_self(self, can_target_self: bool) -> None:
         """Set whether this can target self"""
         self._can_target_self = can_target_self
@@ -311,6 +322,7 @@ class Item:
     def one_side_only(self) -> bool:
         """Whether this can only target one character"""
         return self._one_side_only
+
     def set_one_side_only(self, one_side_only: bool) -> None:
         """Set single target only restriction"""
         self._one_side_only = one_side_only
@@ -319,6 +331,7 @@ class Item:
     def koed_target_only(self) -> bool:
         """Whether this can only target KOed characters"""
         return self._koed_target_only
+
     def set_koed_target_only(self, koed_target_only: bool) -> None:
         """Set KOed target only restriction"""
         self._koed_target_only = koed_target_only
@@ -327,6 +340,7 @@ class Item:
     def target_enemies(self) -> bool:
         """Whether this can target enemies"""
         return self._target_enemies
+
     def set_target_enemies(self, target_enemies: bool) -> None:
         """Set enemy targeting"""
         self._target_enemies = target_enemies
@@ -335,10 +349,10 @@ class Item:
     def target_all(self) -> bool:
         """Whether this can target party members"""
         return self._target_all
+
     def set_target_all(self, target_all: bool) -> None:
         """Set party targeting"""
         self._target_all = target_all
-
 
     @property
     def frog_coin_item(self) -> bool:
@@ -396,34 +410,90 @@ class Item:
         self.set_price(min(price, 9999))
         self._set_frog_coin_item(False)
 
-    def get_patch(self) -> Patch:
-        """Get patch for this item."""
-        patch = Patch()
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
+        patch: Dict[int, bytearray] = {}
         if self.price == 0:
             return patch
         base_addr = ITEMS_BASE_ADDRESS + (self.item_id * 18)
 
         # Stats and special properties.
         data = bytearray()
+        val = self.type_value
+        if self.usable_battle:
+            val |= 1 << 3
+        if self.usable_overworld:
+            val |= 1 << 4
+        if self._reusable:
+            val |= 1 << 5
+        if self.prevent_ko:
+            val |= 1 << 7
+        data += ByteField(val).as_bytes()
+
+        val = 0
+        if self.effect_type is not None:
+            val = self.effect_type
+        if self.overworld_menu_behaviour == OverworldMenuBehaviour.LEAD_TO_FP:
+            val |= 1 << 5
+        if self.overworld_menu_fill_hp:
+            val |= 1 << 6
+        if self.overworld_menu_fill_fp:
+            val |= 1 << 7
+        data += ByteField(val).as_bytes()
+
+        val = 0
+        for c in self.equip_chars:
+            val += 1 << int(c)
+        data += ByteField(val).as_bytes()
+
+        target = (
+            (self.can_target_others << 1)
+            + (self.target_enemies << 2)
+            + (self.target_all << 4)
+            + (self.koed_target_only << 5)
+            + (self.one_side_only << 6)
+            + (not (self.can_target_self) << 7)
+        )
+        data += ByteField(target).as_bytes()
+
+        if self.inflict_element is not None:
+            data += ByteField(self.inflict_element[2]).as_bytes()
+        else:
+            data += ByteField(0).as_bytes()
+
         data += BitMapSet(
             1, [i.stat_value for i in self.elemental_immunities]
         ).as_bytes()
+
         data += BitMapSet(
             1, [r.stat_value for r in self.elemental_resistances]
         ).as_bytes()
+
         data += BitMapSet(1, [i.stat_value for i in self.status_immunities]).as_bytes()
+
         data += BitMapSet(1, self.temp_buffs).as_bytes()
+
         data += ByteField(self.speed).as_bytes()
         data += ByteField(self.attack).as_bytes()
         data += ByteField(self.defense).as_bytes()
         data += ByteField(self.magic_attack).as_bytes()
         data += ByteField(self.magic_defense).as_bytes()
         data += ByteField(self.variance).as_bytes()
-        patch.add_data(base_addr + 5, data)
+        data += ByteField(self.inflict).as_bytes()
+
+        if self.inflict_type is None:
+            data += ByteField(0xDD).as_bytes()
+        else:
+            val = self.inflict_type
+            if self.hide_damage:
+                val |= 1 << 2
+            data += ByteField(val).as_bytes()
+
+        patch[base_addr] = data
 
         # Price
         price_addr = ITEMS_BASE_PRICE_ADDRESS + (self.item_id * 2)
-        patch.add_data(price_addr, ByteField(self.price, num_bytes=2).as_bytes())
+        patch[price_addr] = ByteField(self.price, num_bytes=2).as_bytes()
 
         return patch
 
@@ -505,38 +575,6 @@ class Equipment(Item):
         if buff in self._temp_buffs:
             self._temp_buffs.remove(buff)
 
-    def get_patch(self) -> Patch:
-        """Get patch for this item."""
-        patch = Patch()
-        base_addr = ITEMS_BASE_ADDRESS + (self.item_id * 18)
-
-        data = bytearray()
-
-        # Only include initial item type and inflict/protect flags for equipment.
-
-        # Item type and instant KO protection.
-        val = self.type_value
-        if self.prevent_ko:
-            val |= 1 << 7
-        data += ByteField(val).as_bytes()
-
-        # Inflict/protect flags for status ailments/buffs.
-        val = 0
-        if self.status_immunities:
-            val += 1 << 0
-        if self.temp_buffs:
-            val += 1 << 1
-        data += ByteField(val).as_bytes()
-
-        # Which characters can equip
-        data += BitMapSet(1, self.equip_chars).as_bytes()
-
-        patch.add_data(base_addr, data)
-
-        patch += super().get_patch()
-
-        return patch
-
 
 class Weapon(Equipment):
     """Base class for all weapons.
@@ -558,7 +596,7 @@ class Weapon(Equipment):
     def half_time_window_begins(self) -> UInt8:
         """Frame where half timing window starts"""
         return self._half_time_window_begins
-    
+
     def set_half_time_window_begins(self, value: int) -> None:
         """Set frame for half timing window start"""
         self._half_time_window_begins = UInt8(value)
@@ -567,7 +605,7 @@ class Weapon(Equipment):
     def perfect_window_begins(self) -> UInt8:
         """Frame where perfect timing window starts"""
         return self._perfect_window_begins
-    
+
     def set_perfect_window_begins(self, value: int) -> None:
         """Set frame for perfect timing window start"""
         self._perfect_window_begins = UInt8(value)
@@ -576,7 +614,7 @@ class Weapon(Equipment):
     def perfect_window_ends(self) -> UInt8:
         """Frame where perfect timing window ends"""
         return self._perfect_window_ends
-    
+
     def set_perfect_window_ends(self, value: int) -> None:
         """Set frame for perfect timing window end"""
         self._perfect_window_ends = UInt8(value)
@@ -585,10 +623,26 @@ class Weapon(Equipment):
     def half_time_window_ends(self) -> UInt8:
         """Frame where half timing window ends"""
         return self._half_time_window_ends
-    
+
     def set_half_time_window_ends(self, value: int) -> None:
         """Set frame for half timing window end"""
         self._half_time_window_ends = UInt8(value)
+
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
+        patch = super().render()
+        if self.price == 0:
+            return patch
+        base_addr = ITEMS_BASE_TIMING_ADDRESS + (self.item_id * 4)
+
+        data += ByteField(self.half_time_window_begins).as_bytes()
+        data += ByteField(self.perfect_window_begins).as_bytes()
+        data += ByteField(self.perfect_window_ends).as_bytes()
+        data += ByteField(self.half_time_window_ends).as_bytes()
+
+        patch[base_addr] = data
+
+        return patch
 
 
 class Armor(Equipment):
@@ -603,9 +657,11 @@ class Accessory(Equipment):
 
     _item_id: int = 2
     _type_value: ItemTypeValue = ItemTypeValue.ACCESSORY
-    
+
+
 class RegularItem(Item):
     """Base class for most obtainable, non-equippable items."""
+
     _type_value: ItemTypeValue = ItemTypeValue.ITEM
 
     @property

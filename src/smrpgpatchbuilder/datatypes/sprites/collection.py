@@ -2,14 +2,19 @@
 
 from functools import cmp_to_key
 from math import trunc
-from typing import List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union, Dict
 from random import choices
 from copy import deepcopy
-from smrpgpatchbuilder.datatypes.dialogs.ids.misc import DIALOG_BANK_22_ENDS, DIALOG_BANK_23_ENDS
+from smrpgpatchbuilder.datatypes.dialogs.ids.misc import (
+    DIALOG_BANK_22_ENDS,
+    DIALOG_BANK_23_ENDS,
+)
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
-from smrpgpatchbuilder.datatypes.patch.classes import Patch
-from smrpgpatchbuilder.datatypes.scripts_common.classes import ScriptBankTooLongException
+
+from smrpgpatchbuilder.datatypes.scripts_common.classes import (
+    ScriptBankTooLongException,
+)
 
 from .disassembler import ImagePack
 from .exceptions import (
@@ -1255,10 +1260,8 @@ def _create_dummy_sprite() -> _WorkingAnimationData:
 class SpriteCollection(list[SpriteContainer]):
     """Managerial class for everything relating to NPC sprites."""
 
-    def get_patch(
-        self,
-    ) -> Patch:
-        """Get patch for all NPC sprite data."""
+    def render(self) -> Dict[int, bytearray]:
+        """Get data for all NPC sprite data in `{0x123456: bytearray([0x00])}` format"""
         ### Produce ROM bytes
         tile_groups = _TileGroupSet()
         wip_sprites: _WIPSprites = _WIPSprites()
@@ -1881,13 +1884,13 @@ class SpriteCollection(list[SpriteContainer]):
         animation_pointers += bytearray(
             [0] * (ANIMATION_PTRS_END - ANIMATION_PTRS_START - len(animation_pointers))
         )
-        patch = Patch()
+        patch: Dict[int, bytearray] = {}
 
-        patch.add_data(0x250000, bytearray(sprite_data))
-        patch.add_data(0x251800, bytearray(image_data) + bytearray(animation_pointers))
+        patch[0x250000] = bytearray(sprite_data)
+        patch[0x251800] = bytearray(image_data) + bytearray(animation_pointers)
         for offset, animation in anim_tile_ranges:
-            patch.add_data(offset, animation)
+            patch[offset] = animation
         for offset, subtiles in output_tile_ranges:
-            patch.add_data(offset, subtiles)
+            patch[offset] = subtiles
 
         return patch
