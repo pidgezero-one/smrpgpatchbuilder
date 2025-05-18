@@ -232,4 +232,6 @@ from .commands import (
     JmpIfTimedHitSuccess,
     UnknownCommand,
     GameOverIfNoAlliesStanding,
+    SetUnknownShortToAMEM8Bit,
+    SetUnknownShortToAMEM16Bit,
 )

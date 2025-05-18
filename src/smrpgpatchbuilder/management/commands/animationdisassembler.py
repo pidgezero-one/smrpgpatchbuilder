@@ -3606,11 +3606,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "SetAMEM8BitToOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "SetAMEM8BitToUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
         elif opcode == 0x21:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
             if byte2 == 0:
@@ -3640,11 +3642,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "SetAMEM16BitToOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "SetAMEM16BitToUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
         elif opcode == 0x22:
             if byte2 == 0x10:
                 cls = "Set7E1xToAMEM8Bit"
@@ -3669,6 +3673,11 @@ def convert_event_script_command(command, valid_identifiers):
             elif byte2 == 0x60:
                 cls = "SetOMEMMainToAMEM8Bit"
                 args["omem"] = f"0x{cmd[2]:02X}"
+                include_argnames = True
+            elif byte2 <= 0xB0:
+                cls = "SetUnknownShortToAMEM8Bit"
+                args["type"] = f"0x{(byte2 >> 4):01X}"
+                args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
             else:
                 raise Exception("invalid amem shift type: %r" % command)
@@ -3697,6 +3706,11 @@ def convert_event_script_command(command, valid_identifiers):
             elif byte2 == 0x60:
                 cls = "SetOMEMMainToAMEM16Bit"
                 args["omem"] = f"0x{cmd[2]:02X}"
+                include_argnames = True
+            elif byte2 <= 0xB0:
+                cls = "SetUnknownShortToAMEM16Bit"
+                args["type"] = f"0x{(byte2 >> 4):01X}"
+                args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
             else:
                 raise Exception("invalid amem shift type: %r" % command)
@@ -3765,11 +3779,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM16BitEqualsOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM16BitEqualsUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x26:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3800,11 +3816,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM8BitNotEqualsOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM8BitNotEqualsUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x27:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3835,11 +3853,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM16BitNotEq16BitualsOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM16BitNotEqualsUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x28:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3870,11 +3890,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM8BitLessThanOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM8BitLessThanUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x29:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3905,11 +3927,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM16BitLessThanOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM16BitLessThanUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x2A:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3940,11 +3964,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM8BitGreaterOrEqualThanOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM8BitGreaterOrEqualThanUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x2B:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -3975,11 +4001,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "JmpIfAMEM16BitGreaterOrEqualThanOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "JmpIfAMEM16BitGreaterOrEqualThanUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         elif opcode == 0x2C:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
@@ -4010,11 +4038,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "IncAMEM8BitByOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "IncAMEM8BitByUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
         elif opcode == 0x2D:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
             if byte2 == 0:
@@ -4044,11 +4074,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "IncAMEM16BitByOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "IncAMEM16BitByUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
         elif opcode == 0x2E:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
             if byte2 == 0:
@@ -4078,11 +4110,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "DecAMEM8BitByOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "DecAMEM8BitByUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
         elif opcode == 0x2F:
             args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
             if byte2 == 0:
@@ -4112,11 +4146,13 @@ def convert_event_script_command(command, valid_identifiers):
                 cls = "DecAMEM16BitByOMEMMain"
                 args["omem"] = f"0x{cmd[2]:02X}"
                 include_argnames = True
-            else:
+            elif byte2 <= 0xB0:
                 cls = "DecAMEM16BitByUnknownShort"
                 args["type"] = f"0x{(byte2 >> 4):01X}"
                 args["value"] = f"0x{shortify(cmd, 2):04X}"
                 include_argnames = True
+            else:
+                raise Exception("invalid amem shift type: %r" % command)
     elif opcode in [0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B]:
         cls = "UnknownJmp%02X" % opcode
         args["byte_1"] = str(cmd[1])

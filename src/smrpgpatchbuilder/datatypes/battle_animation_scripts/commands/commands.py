@@ -1855,7 +1855,7 @@ class JmpIfAMEM8BitEquals7F(
 
     def render(self) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
-        return super().render(self._amem_bits(), addr, *self.destinations)
+        return super().render(0x20 + self._amem_bits(), addr, *self.destinations)
 
 
 class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
@@ -3456,7 +3456,7 @@ class JmpIfAMEM8BitEqualsOMEMMain(
 
     def render(self) -> bytearray:
         return super().render(
-            0x40 + self._amem_bits(), UInt16(self.omem), *self.destinations
+            0x60 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
 
 
@@ -3769,6 +3769,69 @@ class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
     _opcode: int = 0x21
 
 
+class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
+    """Set variable type 0x07-0x0B to AMEM 8 bit
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (8-bit) $xx`
+
+    ## Opcode
+        `0x22`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x22
+    _type: int
+
+    @property
+    def type(self) -> int:
+        return self._type
+
+    def set_type(self, type: int) -> None:
+        self._type = type
+
+    def __init__(
+        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+    ) -> None:
+        super().__init__(identifier)
+        self.set_amem(amem)
+        self.set_value(value)
+        self.set_type(type)
+
+    def render(self) -> bytearray:
+        return super().render(self._amem_bits() + (self.type << 4), self.value)
+
+
+class SetUnknownShortToAMEM16Bit(AnimationScriptAMEMAndConst):
+    """Set variable type 0x07-0x0B to AMEM 16 bit
+
+    ## Lazy Shell command
+        `Variable {xx} = AMEM (16-bit) $xx`
+
+    ## Opcode
+        `0x23`
+
+    ## Size
+        4 bytes
+
+    Args:
+        amem (int): AMEM target address in range $60-$6F
+        type (int): (unknown)
+        value (int): (unknown)
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode: int = 0x23
+
+
 class JmpIfAMEM8BitEqualsUnknownShort(
     UsableAnimationScriptCommand,
     AnimationScriptCommandWithJmps,
@@ -3846,7 +3909,7 @@ class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     _opcode: int = 0x25
 
 
-class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
+class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
 
     ## Lazy Shell command
@@ -8080,6 +8143,8 @@ commands = [
     JmpIfAMEM16BitLessThanOMEMMain,
     JmpIfAMEM8BitGreaterOrEqualThanOMEMMain,
     JmpIfAMEM16BitGreaterOrEqualThanOMEMMain,
+    SetUnknownShortToAMEM8Bit,
+    SetUnknownShortToAMEM16Bit,
     JmpIfAMEM8BitEqualsUnknownShort,
     JmpIfAMEM16BitEqualsUnknownShort,
     JmpIfAMEM8BitNotEqualsUnknownShort,
