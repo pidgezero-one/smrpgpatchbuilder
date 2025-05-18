@@ -7881,19 +7881,6 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.bit_6,
             self.bit_7,
         )
-        print(
-            [
-                self.bit_0,
-                self.bit_1,
-                self.bit_2,
-                self.bit_3,
-                self.bit_4,
-                self.bit_5,
-                self.bit_6,
-                self.bit_7,
-            ],
-            byte1,
-        )
         return super().render(byte1, self.monster().monster_id, self.position)
 
 

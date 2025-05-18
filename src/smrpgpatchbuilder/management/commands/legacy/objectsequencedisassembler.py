@@ -1231,7 +1231,6 @@ class Command(BaseCommand):
         event_lengths = []
         for i in range(len(ptrs)):
             ptr = ptrs[i]
-            # print("[%04i] @ [%x]-------------------\n" % (i, ptr))
             if i < len(ptrs) - 1:
                 event_lengths.append(ptrs[i + 1] - ptrs[i])
                 script_content = tok(rom, ptrs[i], ptrs[i + 1] - 1)
@@ -1239,7 +1238,6 @@ class Command(BaseCommand):
                 event_lengths.append(end - ptrs[i])
                 script_content = tok(rom, ptrs[i], end)
             scripts.append(script_content)
-            # print("\n\n\n")
 
         # translate lines into commands and note any jump addresses
         for i in range(len(scripts)):

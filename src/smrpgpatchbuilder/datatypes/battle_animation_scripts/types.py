@@ -281,7 +281,6 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position
         # verify that this command isn't trying to go after the end of the bank
-        # print(command.size, f'{position:06x}', command)
         if position >= self.end:
             print(f"{self.start:06x} {position:06x} {self.end:06x}")
             raise IdentifierException(
@@ -290,7 +289,6 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         position += command.size
 
-        # print("+", command.size, "=", f'{position:06x}')
         # verify that adding this command won't make the bank exceed its size
         if position > self.end:
             print(f"{self.start:06x} {position:06x} {self.end:06x}")
@@ -306,34 +304,14 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         script: Union[AnimationScript, BattleAnimationScript]
 
-        # validate bytes and set addresses
+        # replace jump placeholders with addresses
         for script in self.scripts:
-            script.contents[0].verify_position(position)
-            command_offset = 0
-            if isinstance(script, BattleAnimationScript):
-                length_without_header = sum([c.size for c in script.contents])
-                command_offset = script.length - length_without_header
-                print(command_offset)
-                position += command_offset
-            for command in script.contents:
-                position = self.associate_address(command, position)
-
-        # match identifiers
-        for script in self.scripts:
-            command_offset = 0
-            if isinstance(script, BattleAnimationScript):
-                length_without_header = sum([c.size for c in script.contents])
-                command_offset = script.length - length_without_header
-                position += command_offset
             self._populate_jumps(script)
             if isinstance(script, BattleAnimationScript):
-                self._set_identifier_addresses([h for h in script.header])
-
-        position: int = self._start
+                self._set_identifier_addresses(script.header)
 
         # finalize bytes
-        for script_id, script in enumerate(self.scripts):
-            self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
+        for script in self.scripts:
             if isinstance(script, BattleAnimationScript):
                 rendered_script = script.render(position)
                 position += len(rendered_script)
@@ -348,7 +326,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         final_length: int = len(self.script_bytes)
         if final_length > expected_length:
             raise ScriptBankTooLongException(
-                f"animation script output too long: got {final_length} expected {expected_length}"
+                f"action script output too long: got {final_length} expected {expected_length}"
             )
         buffer: List[int] = [0xFF] * (expected_length - final_length)
         self.script_bytes.extend(buffer)

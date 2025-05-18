@@ -2543,7 +2543,6 @@ def tok(rom, start, end, bank):
         elif cmd == 0xBA and l == 0:
             l = 2 + rom[dex + 1] * 2
         bytestring = [("0x%02x" % i) for i in rom[dex : dex + l]]
-        # print('0x%06x' % dex, bytestring)
         script.append((rom[dex : dex + l], dex))
         dex += l
     return script
@@ -2578,7 +2577,6 @@ jmp_cmds_1 = [0x68]
 
 
 def string_byte(word):
-    # print(type(word))
     if type(word) == str:
         return '''"%s"''' % word
     else:
@@ -2750,7 +2748,6 @@ class Command(BaseCommand):
                     elif opcode == 0xBA:
                         length = rom[current_addr + 1] * 2 + 2
                     command = rom[current_addr : current_addr + length]
-                    # print(f"0x{current_addr:06x}",f"0x{opcode:02x}", [f"0x{b:02x}" for b in command])
                     cvr_range = current_addr & 0xFFFF
 
                     if "pointers" in bank and (i < len(cmd_lengths)):
@@ -3391,7 +3388,6 @@ def get_script(script, valid_identifiers):
 
     for cmd in script:
         identifier = ""
-        # print(cmd['id'], f'{cmd['addr']:06x}', len(cmd["data"]), [f'0x{b:02x}' if isinstance(b, numbers.Number) else b for b in cmd["data"]])
         cls, args, use_identifier, include_argnames = convert_event_script_command(
             cmd, valid_identifiers
         )
@@ -3421,7 +3417,6 @@ def get_script(script, valid_identifiers):
 
 
 def convert_event_script_command(command, valid_identifiers):
-    # print(command)
     cmd = command["data"]
     use_identifier: bool = (
         command["id"] in valid_identifiers or "queuestart" in command["id"]
@@ -4462,7 +4457,6 @@ def convert_event_script_command(command, valid_identifiers):
         include_argnames = False
     elif opcode in [0xAB, 0xAE]:
         cls = "PlaySound"
-        # print(command)
         args["sound"] = SOUNDS[cmd[1]]
         if opcode == 0xAE:
             args["channel"] = "4"

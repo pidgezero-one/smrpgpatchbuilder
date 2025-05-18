@@ -927,7 +927,6 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
 
     def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
-        print(contents)
         self.set_contents(contents)
 
     def render(self) -> bytearray:

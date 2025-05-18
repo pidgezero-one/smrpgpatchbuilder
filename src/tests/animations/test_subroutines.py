@@ -83,7 +83,8 @@ def test_add(case: Case):
                 end=0x02FFFF,
                 scripts=[script],
             )
-            bank.render()
+            c = AnimationScriptBankCollection([bank])
+            c.render()
         if case.exception:
             assert case.exception in str(exc_info.value)
     elif case.expected_bytes is not None:
@@ -98,6 +99,8 @@ def test_add(case: Case):
             end=0x02F000 + len(expected_bytes),
             scripts=[script],
         )
-        assert bank.render() == expected_bytes
+        c = AnimationScriptBankCollection([bank])
+        comp = c.render()
+        assert comp[bank.start] == expected_bytes
     else:
         raise "At least one of exception or expected_bytes needs to be set"

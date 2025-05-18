@@ -6932,7 +6932,6 @@ def convert_script(script, valid_identifiers, converter):
     new_script = []
 
     for cmd in script:
-        # print(cmd["identifier"])
         identifier = ""
         cls, args, use_identifier, include_argnames = converter(cmd, valid_identifiers)
 

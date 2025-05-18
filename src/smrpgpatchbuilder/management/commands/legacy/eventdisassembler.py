@@ -2275,8 +2275,6 @@ class Command(BaseCommand):
                 ptrs.append((bank["id"] << 16) | (shortify(rom, i)))
             event_lengths = []
             for i in range(len(ptrs)):
-                # ptr = ptrs[i]
-                # print("[%04i] @ [%x]-------------------\n" % (i, ptr))
                 if i < len(ptrs) - 1:
                     event_lengths.append(ptrs[i + 1] - ptrs[i])
                     script_content = tok(rom, ptrs[i], ptrs[i + 1] - 1, bank)
@@ -2284,7 +2282,6 @@ class Command(BaseCommand):
                     event_lengths.append(bank["end"] - ptrs[i])
                     script_content = tok(rom, ptrs[i], bank["end"], bank)
                 scripts.append(script_content)
-                # print('\n\n\n')
 
         # translate lines into commands and note any jump addresses
         for i in range(len(scripts)):
@@ -2366,7 +2363,6 @@ class Command(BaseCommand):
             for cmd in script:
                 jumps = []
                 commands_to_replace = len(cmd["jumps"]) * -1
-                # print(i, cmd, [hex(x) for x in cmd["jumps"]], [c for c in sd if c["original_offset"] == j])
                 for j in cmd["jumps"]:
                     for sd in scripts_data:
                         candidates = [c for c in sd if c["original_offset"] == j]
@@ -2423,7 +2419,6 @@ class Command(BaseCommand):
                                 raise Exception(
                                     f'Event {i} @ subscript {hex(emb["original_offset"])} contains an invalid target address'
                                 )
-                                # print(f'Event {i} @ subscript {hex(emb["original_offset"])} contains an invalid target address')
                             new_subscript_args = (
                                 emb["args"][:commands_to_replace] + subscript_jumps
                             )
