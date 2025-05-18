@@ -1231,15 +1231,15 @@ test_cases = [
     Case(
         label="JmpIfAMEMBitsClear",
         commands_factory=lambda: [
-            JmpIfAMEMBitsClear(),
+            JmpIfAMEMBitsClear(0x68, [3], ["jmp"]),
             ReturnSubroutine(identifier="jmp"),
         ],
-        expected_bytes=[],
+        expected_bytes=[0x39, 0x08, 0x08, 0x07, 0xC0, 0x11],
     ),
     Case(
         label="AttackTimerBegins",
         commands_factory=lambda: [AttackTimerBegins()],
-        expected_bytes=[],
+        expected_bytes=[0x3A],
     ),
     Case(
         label="PauseScriptUntilAMEMBitsSet",
@@ -1250,8 +1250,8 @@ test_cases = [
     ),
     Case(
         label="PauseScriptUntilAMEMBitsClear",
-        commands_factory=lambda: [PauseScriptUntilAMEMBitsClear()],
-        expected_bytes=[],
+        commands_factory=lambda: [PauseScriptUntilAMEMBitsClear(0x64, [2, 6])],
+        expected_bytes=[0x41, 0x04, 0x44],
     ),
     Case(
         label="SpriteSequence",
@@ -1263,12 +1263,12 @@ test_cases = [
     Case(
         label="SetAMEM60ToCurrentTarget",
         commands_factory=lambda: [SetAMEM60ToCurrentTarget()],
-        expected_bytes=[],
+        expected_bytes=[0x45],
     ),
     Case(
         label="GameOverIfNoAlliesStanding",
         commands_factory=lambda: [GameOverIfNoAlliesStanding()],
-        expected_bytes=[],
+        expected_bytes=[0x46],
     ),
     Case(
         label="PauseScriptUntilSpriteSequenceDone",
@@ -1306,8 +1306,10 @@ test_cases = [
     ),
     Case(
         label="DisplayMessageAtOMEM60As",
-        commands_factory=lambda: [DisplayMessageAtOMEM60As()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DisplayMessageAtOMEM60As(SPELL_NAME),
+        ],
+        expected_bytes=[0x63, 0x01],
     ),
     Case(
         label="ObjectQueueAtOffsetAndIndexAtAMEM60",
@@ -1377,7 +1379,7 @@ test_cases = [
     Case(
         label="DisplayMessage",
         commands_factory=lambda: [
-            DisplayMessage(BATTLE_MESSAGE, 11),
+            DisplayMessage(ITEM_NAME, 11),
         ],
         expected_bytes=[0x7A, 0x02, 0x0B],
     ),

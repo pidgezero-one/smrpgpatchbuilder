@@ -86,7 +86,14 @@ from .mask_effects import (
     WAVY_CIRCLE_MASK,
     CYLINDER_MASK,
 )
-from .message_type import BATTLE_DIALOGUE, PSYCHOPATH_MESSAGE, BATTLE_MESSAGE
+from .message_type import (
+    ATTACK_NAME,
+    SPELL_NAME,
+    ITEM_NAME,
+    UNKNOWN_MESSAGE_TYPE_3,
+    UNKNOWN_MESSAGE_TYPE_4,
+    UNKNOWN_MESSAGE_TYPE_5,
+)
 from .origins import (
     ABSOLUTE_POSITION,
     CASTER_INITIAL_POSITION,

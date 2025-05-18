@@ -38,7 +38,7 @@ class MessageType(int):
 
     def __new__(cls, *args: int):
         num = args[0]
-        assert 0 <= num <= 2
+        assert 0 <= num <= 5
         return super(MessageType, cls).__new__(cls, num)
 
 

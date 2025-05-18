@@ -259,7 +259,7 @@ SOUNDS = [
     "S0070_GENO_BEAM",
     "S0071_PSYCHOPATH_DRUM_ROLL",
     "S0072_PSYCHOPATH_CLOUD_APPEARS",
-    "S0073_PSYCHOPATH_MESSAGE",
+    "S0073_SPELL_NAME",
     "S0074_QUACK",
     "S0075_YOSHI_TALK",
     "S0076_STAT_BOOST_SINGLE",
@@ -4247,11 +4247,17 @@ def convert_event_script_command(command, valid_identifiers):
     elif opcode == 0x63 and 0 <= cmd[1] <= 2:
         cls = "DisplayMessageAtOMEM60As"
         if cmd[1] == 0:
-            args["type"] = "BATTLE_DIALOGUE"
+            args["type"] = "ATTACK_NAME"
         elif cmd[1] == 1:
-            args["type"] = "PSYCHOPATH_MESSAGE"
+            args["type"] = "SPELL_NAME"
         elif cmd[1] == 2:
-            args["type"] = "BATTLE_MESSAGE"
+            args["type"] = "ITEM_NAME"
+        elif cmd[1] == 3:
+            args["type"] = "UNKNOWN_MESSAGE_TYPE_3"
+        elif cmd[1] == 4:
+            args["type"] = "UNKNOWN_MESSAGE_TYPE_4"
+        elif cmd[1] == 5:
+            args["type"] = "UNKNOWN_MESSAGE_TYPE_5"
         include_argnames = False
     elif opcode == 0x64:
         cls = "ObjectQueueAtOffsetAndIndexAtAMEM60"
@@ -4347,11 +4353,11 @@ def convert_event_script_command(command, valid_identifiers):
     elif opcode == 0x7A and 0 <= cmd[1] <= 2:
         cls = "DisplayMessage"
         if cmd[1] == 0:
-            args["type"] = "BATTLE_DIALOGUE"
+            args["type"] = "ATTACK_NAME"
         elif cmd[1] == 1:
-            args["type"] = "PSYCHOPATH_MESSAGE"
+            args["type"] = "SPELL_NAME"
         elif cmd[1] == 2:
-            args["type"] = "BATTLE_MESSAGE"
+            args["type"] = "ITEM_NAME"
         args["dialog_id"] = str(cmd[2])
         include_argnames = False
     elif opcode == 0x7B:
