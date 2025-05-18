@@ -131,7 +131,6 @@ class ScriptCommand:
     def __init__(self, identifier: Optional[str] = None) -> None:
         if identifier is None or len(identifier) == 0:
             identifier = self._generate_identifier()
-            print(self, identifier)
         self._identifier = TransformableIdentifier(identifier)
 
     def render(self, *args) -> bytearray:
