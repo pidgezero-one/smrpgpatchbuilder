@@ -1341,41 +1341,55 @@ test_cases = [
     ),
     Case(
         label="SetAMEMToRandomShort",
-        commands_factory=lambda: [SetAMEMToRandomShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetAMEMToRandomShort(amem=0x60, upper_bound=9)],
+        expected_bytes=[0x6B, 0x00, 0x09, 0x00],
     ),
     Case(
         label="EnableSpritesOnSubscreen",
         commands_factory=lambda: [EnableSpritesOnSubscreen()],
-        expected_bytes=[],
+        expected_bytes=[0x70],
     ),
     Case(
         label="DisableSpritesOnSubscreen",
         commands_factory=lambda: [DisableSpritesOnSubscreen()],
-        expected_bytes=[],
+        expected_bytes=[0x71],
     ),
     Case(
         label="NewEffectObject",
-        commands_factory=lambda: [NewEffectObject()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            NewEffectObject(effect=EF0102_SLEDGE, playback_off=True),
+        ],
+        expected_bytes=[0x72, 0x02, 0x66],
     ),
     Case(
         label="Pause2Frames",
         commands_factory=lambda: [Pause2Frames()],
-        expected_bytes=[],
+        expected_bytes=[0x73],
     ),
     Case(
         label="PauseScriptUntilBitsClear",
-        commands_factory=lambda: [PauseScriptUntilBitsClear()],
-        expected_bytes=[],
+        commands_factory=lambda: [PauseScriptUntilBitsClear(0x300)],
+        expected_bytes=[0x75, 0x00, 0x03],
     ),
     Case(
         label="ClearEffectIndex",
         commands_factory=lambda: [ClearEffectIndex()],
-        expected_bytes=[],
+        expected_bytes=[0x76],
     ),
-    Case(label="Layer3On", commands_factory=lambda: [Layer3On()], expected_bytes=[]),
-    Case(label="Layer3Off", commands_factory=lambda: [Layer3Off()], expected_bytes=[]),
+    Case(
+        label="Layer3On",
+        commands_factory=lambda: [
+            Layer3On(property=TRANSPARENCY_OFF, bit_0=True, bpp4=True, invisible=True),
+        ],
+        expected_bytes=[0x77, 0x0B],
+    ),
+    Case(
+        label="Layer3Off",
+        commands_factory=lambda: [
+            Layer3Off(property=OVERLAP_ALL, bpp4=True),
+        ],
+        expected_bytes=[0x78, 0x12],
+    ),
     Case(
         label="DisplayMessage",
         commands_factory=lambda: [
@@ -1390,8 +1404,10 @@ test_cases = [
     ),
     Case(
         label="FadeOutObject",
-        commands_factory=lambda: [FadeOutObject()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeOutObject(duration=1),
+        ],
+        expected_bytes=[0x7E, 0x01],
     ),
     Case(
         label="ResetSpriteSequence",
@@ -1399,86 +1415,131 @@ test_cases = [
         expected_bytes=[0x7F],
     ),
     Case(
-        label="ShineEffect", commands_factory=lambda: [ShineEffect()], expected_bytes=[]
+        label="ShineEffect",
+        commands_factory=lambda: [
+            ShineEffect(
+                colour_count=14,
+                starting_colour_index=10,
+                glow_duration=3,
+                east=True,
+            ),
+        ],
+        expected_bytes=[0x80, 0x00, 0xAE, 0x03],
     ),
     Case(
         label="FadeOutEffect",
-        commands_factory=lambda: [FadeOutEffect()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeOutEffect(duration=1),
+        ],
+        expected_bytes=[0x85, 0x00, 0x01],
     ),
     Case(
         label="FadeOutSprite",
-        commands_factory=lambda: [FadeOutSprite()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeOutSprite(duration=2),
+        ],
+        expected_bytes=[0x85, 0x10, 0x02],
     ),
     Case(
         label="FadeOutScreen",
-        commands_factory=lambda: [FadeOutScreen()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeOutScreen(duration=1),
+        ],
+        expected_bytes=[0x85, 0x20, 0x01],
     ),
     Case(
         label="FadeInEffect",
-        commands_factory=lambda: [FadeInEffect()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeInEffect(duration=2),
+        ],
+        expected_bytes=[0x85, 0x02, 0x02],
     ),
     Case(
         label="FadeInSprite",
-        commands_factory=lambda: [FadeInSprite()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            FadeInSprite(duration=8),
+        ],
+        expected_bytes=[0x85, 0x12, 0x08],
     ),
     Case(
         label="FadeInScreen",
-        commands_factory=lambda: [FadeInScreen()],
-        expected_bytes=[],
+        commands_factory=lambda: [FadeInScreen(duration=1)],
+        expected_bytes=[0x85, 0x22, 0x01],
     ),
     Case(
-        label="ShakeScreen", commands_factory=lambda: [ShakeScreen()], expected_bytes=[]
+        label="ShakeScreen",
+        commands_factory=lambda: [
+            ShakeScreen(amount=5, speed=200),
+        ],
+        expected_bytes=[0x86, 0x01, 0x00, 0x00, 0x05, 0xC8, 0x00],
     ),
     Case(
         label="ShakeSprites",
-        commands_factory=lambda: [ShakeSprites()],
-        expected_bytes=[],
+        commands_factory=lambda: [ShakeSprites(amount=2, speed=26)],
+        expected_bytes=[0x86, 0x02, 0x00, 0x00, 0x02, 0x1A, 0x00],
     ),
     Case(
         label="ShakeScreenAndSprites",
-        commands_factory=lambda: [ShakeScreenAndSprites()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ShakeScreenAndSprites(amount=5, speed=200),
+        ],
+        expected_bytes=[0x86, 0x04, 0x00, 0x00, 0x05, 0xC8, 0x00],
     ),
     Case(
         label="StopShakingObject",
         commands_factory=lambda: [StopShakingObject()],
-        expected_bytes=[],
+        expected_bytes=[0x87],
     ),
     Case(
         label="ScreenFlashWithDuration",
-        commands_factory=lambda: [ScreenFlashWithDuration()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ScreenFlashWithDuration(WHITE, 1, 16),
+        ],
+        expected_bytes=[0x8E, 0x17, 0x01],
     ),
     Case(
-        label="ScreenFlash", commands_factory=lambda: [ScreenFlash()], expected_bytes=[]
+        label="ScreenFlash",
+        commands_factory=lambda: [
+            ScreenFlash(NO_COLOUR, 8),
+            ScreenFlash(RED, 0),
+        ],
+        expected_bytes=[0x8F, 0x08, 0x8F, 0x01],
     ),
     Case(
         label="InitializeBonusMessageSequence",
         commands_factory=lambda: [InitializeBonusMessageSequence()],
-        expected_bytes=[],
+        expected_bytes=[0x95],
     ),
     Case(
         label="DisplayBonusMessage",
-        commands_factory=lambda: [DisplayBonusMessage()],
-        expected_bytes=[],
+        commands_factory=lambda: [DisplayBonusMessage(message=BM_LUCKY, x=2, y=-32)],
+        expected_bytes=[0x96, 0x00, 0x06, 0x02, 0xE0],
     ),
     Case(
         label="PauseScriptUntilBonusMessageComplete",
         commands_factory=lambda: [PauseScriptUntilBonusMessageComplete()],
-        expected_bytes=[],
+        expected_bytes=[0x97],
     ),
     Case(
-        label="WaveEffect", commands_factory=lambda: [WaveEffect()], expected_bytes=[]
+        label="WaveEffect",
+        commands_factory=lambda: [
+            WaveEffect(
+                layer=WAVE_LAYER_4BPP,
+                direction=WAVE_LAYER_HORIZONTAL,
+                depth=32,
+                intensity=4,
+                speed=96,
+                byte_1=0x80,
+            ),
+        ],
+        expected_bytes=[0x9C, 0x80, 0x42, 0x20, 0x00, 0x04, 0x00, 0x60, 0x00],
     ),
     Case(
         label="StopWaveEffect",
-        commands_factory=lambda: [StopWaveEffect()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            StopWaveEffect(bit_7=True),
+        ],
+        expected_bytes=[0x9D, 0x82],
     ),
     Case(
         label="ScreenEffect",
@@ -1488,10 +1549,10 @@ test_cases = [
     Case(
         label="JmpIfTimedHitSuccess",
         commands_factory=lambda: [
-            JmpIfTimedHitSuccess(),
+            JmpIfTimedHitSuccess(["jmp"]),
             ReturnSubroutine(identifier="jmp"),
         ],
-        expected_bytes=[],
+        expected_bytes=[0xA7, 0x05, 0xC0, 0x11],
     ),
     Case(
         label="PlaySound",
@@ -1504,18 +1565,22 @@ test_cases = [
     ),
     Case(
         label="PlayMusicAtCurrentVolume",
-        commands_factory=lambda: [PlayMusicAtCurrentVolume()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            PlayMusicAtCurrentVolume(M0021_SADSONG),
+        ],
+        expected_bytes=[0xB0, 0x15],
     ),
     Case(
         label="PlayMusicAtVolume",
-        commands_factory=lambda: [PlayMusicAtVolume()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            PlayMusicAtVolume(M0069_FIGHTAGAINSTSMITHY2, 61456),
+        ],
+        expected_bytes=[0xB1, 0x45, 0x10, 0xF0],
     ),
     Case(
         label="StopCurrentSoundEffect",
         commands_factory=lambda: [StopCurrentSoundEffect()],
-        expected_bytes=[],
+        expected_bytes=[0xB2],
     ),
     Case(
         label="FadeCurrentMusicToVolume",
@@ -1531,84 +1596,128 @@ test_cases = [
     ),
     Case(
         label="AddItemToStandardInventory",
-        commands_factory=lambda: [AddItemToStandardInventory()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            AddItemToStandardInventory(SheepAttack),
+        ],
+        expected_bytes=[0xBC, 0x88, 0x00],
     ),
     Case(
         label="RemoveItemFromStandardInventory",
-        commands_factory=lambda: [RemoveItemFromStandardInventory()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RemoveItemFromStandardInventory(LambsLure),
+        ],
+        expected_bytes=[0xBC, 0x71, 0xFF],
     ),
     Case(
         label="AddItemToKeyItemInventory",
-        commands_factory=lambda: [AddItemToKeyItemInventory()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            AddItemToKeyItemInventory(RareFrogCoin),
+        ],
+        expected_bytes=[0xBD, 0x80, 0x00],
     ),
     Case(
         label="RemoveItemFromKeyItemInventory",
-        commands_factory=lambda: [RemoveItemFromKeyItemInventory()],
-        expected_bytes=[],
+        commands_factory=lambda: [RemoveItemFromKeyItemInventory(RareFrogCoin)],
+        expected_bytes=[0xBD, 0x80, 0xFF],
     ),
-    Case(label="AddCoins", commands_factory=lambda: [AddCoins()], expected_bytes=[]),
+    Case(
+        label="AddCoins",
+        commands_factory=lambda: [AddCoins(5)],
+        expected_bytes=[0xBE, 0x05, 0x00],
+    ),
     Case(
         label="AddYoshiCookiesToInventory",
-        commands_factory=lambda: [AddYoshiCookiesToInventory()],
-        expected_bytes=[],
+        commands_factory=lambda: [AddYoshiCookiesToInventory(10)],
+        expected_bytes=[0xBF, 0x0A],
     ),
     Case(
         label="DoMaskEffect",
-        commands_factory=lambda: [DoMaskEffect()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DoMaskEffect(CYLINDER_MASK),
+        ],
+        expected_bytes=[0xC3, 0x07],
     ),
     Case(
         label="SetMaskCoords",
-        commands_factory=lambda: [SetMaskCoords()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetMaskCoords(points=[(-48, -64), (-48, 112), (48, -64), (48, 112)]),
+        ],
+        expected_bytes=[0xC6, 0x08, 0xD0, 0xC0, 0xD0, 0x70, 0x30, 0xC0, 0x30, 0x70],
     ),
     Case(
         label="SetSequenceSpeed",
-        commands_factory=lambda: [SetSequenceSpeed()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetSequenceSpeed(4)],
+        expected_bytes=[0xCB, 0x04],
     ),
     Case(
         label="StartTrackingAllyButtonInputs",
         commands_factory=lambda: [StartTrackingAllyButtonInputs()],
-        expected_bytes=[],
+        expected_bytes=[0xCC],
     ),
     Case(
         label="EndTrackingAllyButtonInputs",
         commands_factory=lambda: [EndTrackingAllyButtonInputs()],
-        expected_bytes=[],
+        expected_bytes=[0xCD],
     ),
     Case(
         label="TimingForOneTieredButtonPress",
-        commands_factory=lambda: [TimingForOneTieredButtonPress()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForOneTieredButtonPress(
+                start_accepting_input=0,
+                end_accepting_input=30,
+                partial_start=26,
+                perfect_start=29,
+                perfect_end=30,
+                destinations=["jmp"],
+            ),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0xCE, 0x1E, 0x00, 0x1A, 0x1D, 0x1E, 0x0A, 0xC0, 0x11],
     ),
     Case(
         label="TimingForOneBinaryButtonPress",
-        commands_factory=lambda: [TimingForOneBinaryButtonPress()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForOneBinaryButtonPress(
+                start_accepting_input=0,
+                end_accepting_input=15,
+                timed_hit_ends=15,
+                destinations=["jmp"],
+            ),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0xCF, 0x0F, 0x00, 0x0F, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="TimingForMultipleButtonPresses",
-        commands_factory=lambda: [TimingForMultipleButtonPresses()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForMultipleButtonPresses(
+                start_accepting_input=7,
+                destinations=["jmp"],
+            ),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0xD0, 0x07, 0x06, 0xC0, 0x11],
     ),
     Case(
         label="TimingForButtonMashUnknown",
         commands_factory=lambda: [TimingForButtonMashUnknown()],
-        expected_bytes=[],
+        expected_bytes=[0xD1],
     ),
     Case(
         label="TimingForButtonMashCount",
-        commands_factory=lambda: [TimingForButtonMashCount()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForButtonMashCount(max_presses=16),
+        ],
+        expected_bytes=[0xD2, 0x10],
     ),
     Case(
         label="TimingForRotationCount",
-        commands_factory=lambda: [TimingForRotationCount()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            TimingForRotationCount(
+                start_accepting_input=0, end_accepting_input=120, max_presses=26
+            )
+        ],
+        expected_bytes=[0xD3, 0x78, 0x00, 0x1A],
     ),
     Case(
         label="TimingForChargePress",
@@ -1641,7 +1750,7 @@ test_cases = [
     Case(
         label="DisplayCantRunDialog",
         commands_factory=lambda: [DisplayCantRunDialog()],
-        expected_bytes=[],
+        expected_bytes=[0xD9],
     ),
     Case(
         label="StoreOMEM60ToItemInventory",
@@ -1650,8 +1759,10 @@ test_cases = [
     ),
     Case(
         label="RunBattleEvent",
-        commands_factory=lambda: [RunBattleEvent()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            RunBattleEvent(script_id=BE0085_FEAR_ROULETTE, offset=4),
+        ],
+        expected_bytes=[0xE1, 0x55, 0x00, 0x04],
     ),
     Case(
         # this one doesn't have as many protections as event and action scripts do, just don't fuck it up

@@ -4323,7 +4323,7 @@ def convert_event_script_command(command, valid_identifiers):
             args["condition"] = "FADE_2BPP_COMPLETE"
     elif opcode == 0x75:
         cls = "PauseScriptUntilBitsClear"
-        args["bits"] = str(shortify(cmd, 1))
+        args["bits"] = f"0x{shortify(cmd, 1):04X}"
         include_argnames = False
     elif opcode == 0x76:
         cls = "ClearEffectIndex"
@@ -4425,6 +4425,8 @@ def convert_event_script_command(command, valid_identifiers):
             args["bit_4"] = "True"
         if param1 & 0x20 == 0x20:
             args["bit_5"] = "True"
+        if cmd[1] != 0:
+            args["byte_1"] = f"0x{cmd[1]:02X}"
     elif opcode == 0x9D:
         cls = "StopWaveEffect"
         if cmd[1] & 0x80 == 0x80:
@@ -4449,9 +4451,9 @@ def convert_event_script_command(command, valid_identifiers):
         cls = "InitializeBonusMessageSequence"
     elif opcode == 0x96:
         cls = "DisplayBonusMessage"
-        args["message"] = BONUS_MESSAGES[cmd[1]]
-        args["x"] = str(byte_signed(cmd[2]))
-        args["y"] = str(byte_signed(cmd[3]))
+        args["message"] = BONUS_MESSAGES[cmd[2]]
+        args["x"] = str(byte_signed(cmd[3]))
+        args["y"] = str(byte_signed(cmd[4]))
     elif opcode == 0x97:
         cls = "PauseScriptUntilBonusMessageComplete"
     elif opcode == 0xA3:

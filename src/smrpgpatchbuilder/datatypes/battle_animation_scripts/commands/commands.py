@@ -5503,7 +5503,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_invisible(invisible)
 
     def render(self) -> bytearray:
-        byte1 = bits_to_int([self.bit_0, self.bpp4, self.bpp2, self.invisible]) + (
+        byte1 = bools_to_int(self.bit_0, self.bpp4, self.bpp2, self.invisible) + (
             self.prop << 4
         )
         return super().render(byte1)
@@ -6237,6 +6237,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_3 (bool): The third bit flag for wave effect configuration.
         bit_4 (bool): The fourth bit flag for wave effect configuration.
         bit_5 (bool): The fifth bit flag for wave effect configuration.
+        byte_1 (int): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -6251,6 +6252,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     _bit_3: bool = False
     _bit_4: bool = False
     _bit_5: bool = False
+    _byte_1: UInt8 = UInt8(0)
 
     @property
     def layer(self) -> WaveEffectLayer:
@@ -6324,6 +6326,15 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         """Set the fifth bit flag for wave effect configuration."""
         self._bit_5 = bit_5
 
+    @property
+    def byte_1(self) -> bool:
+        """(unknown)"""
+        return self._byte_1
+
+    def set_byte_1(self, byte_1: int) -> None:
+        """(unknown)"""
+        self._byte_1 = UInt8(byte_1)
+
     def __init__(
         self,
         layer: WaveEffectLayer,
@@ -6334,6 +6345,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_3: bool = False,
         bit_4: bool = False,
         bit_5: bool = False,
+        byte_1: int = 0,
         identifier: Optional[str] = None,
     ):
         super().__init__(identifier)
@@ -6345,6 +6357,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bit_3(bit_3)
         self.set_bit_4(bit_4)
         self.set_bit_5(bit_5)
+        self.set_byte_1(byte_1)
 
     def render(self) -> bytearray:
         arg_1 = (
@@ -6355,7 +6368,9 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
             + (self.bit_5 << 5)
         )
 
-        return super().render(0, UInt8(arg_1), self.depth, self.intensity, self.speed)
+        return super().render(
+            self.byte_1, UInt8(arg_1), self.depth, self.intensity, self.speed
+        )
 
 
 class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -7022,7 +7037,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self) -> bytearray:
         points = [num for tup in self.points for num in tup]
-        count = len(points) * 2
+        count = len(self.points) * 2
         if self.extra_byte is not None:
             points.append(self.extra_byte)
             count += 1
@@ -7252,8 +7267,8 @@ class TimingForOneTieredButtonPress(
 
     def render(self) -> bytearray:
         return super().render(
-            self.start_accepting_input,
             self.end_accepting_input,
+            self.start_accepting_input,
             self.partial_start,
             self.perfect_start,
             self.perfect_end,
@@ -7352,8 +7367,8 @@ class TimingForOneBinaryButtonPress(
 
     def render(self) -> bytearray:
         return super().render(
-            self.start_accepting_input,
             self.end_accepting_input,
+            self.start_accepting_input,
             self.timed_hit_ends,
             *self.destinations,
         )
@@ -7548,7 +7563,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
 
     def render(self) -> bytearray:
         return super().render(
-            self.start_accepting_input, self.end_accepting_input, self.max_presses
+            self.end_accepting_input, self.start_accepting_input, self.max_presses
         )
 
 
