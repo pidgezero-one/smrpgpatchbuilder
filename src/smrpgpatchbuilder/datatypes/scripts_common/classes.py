@@ -172,7 +172,7 @@ class ScriptCommand:
             raise RenderException(
                 (
                     f"{self.identifier} of type {self} output wrong length: "
-                    f"{args} length {len(output)}, expected {self.size}"
+                    f"{self.__name__}{args} length {len(output)}, expected {self.size}"
                 )
             )
         return output

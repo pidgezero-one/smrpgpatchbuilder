@@ -5344,7 +5344,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         cls = "Dec7000FromFrogCoins"
     elif cmd["command"] == "display_intro_title":
         cls = "DisplayIntroTitleText"
-        args["title"] = INTRO_TEXT[cmdargs[1]]
+        args["text"] = INTRO_TEXT[cmdargs[1]]
         args["y"] = str(cmdargs[0])
     elif (
         cmd["command"] == "enable_controls"
@@ -5389,7 +5389,7 @@ def convert_event_script_command(cmd, valid_identifiers):
         args["room_id"] = get_room_name(cmdargs[0])
         args["face_direction"] = DIRECTIONS[cmdargs[1]]
         args["x"] = str(cmdargs[2])
-        args["y"] = str(cmdargs[3])
+        args["y"] = str(cmdargs[3] & 127)
         args["z"] = str(cmdargs[4])
         if 31 in cmdargs[5]:
             args["z_add_half_unit"] = "True"
@@ -6022,21 +6022,25 @@ def convert_event_script_command(cmd, valid_identifiers):
         try:
             cls = "Set70107015ToObjectXYZ"
             args["object"] = AREA_OBJECTS[cmdargs[0] & 0x63]
-            if cmdargs[0] & 0x40:
+            if cmdargs[0] & 0x40 == 0x40:
                 args["bit_6"] = "True"
-            if cmdargs[0] & 0x80:
+            if cmdargs[0] & 0x80 == 0x80:
                 args["bit_7"] = "True"
         except:
-            cls = "Db"
+            cls = "UnknownCommand"
             args["args"] = "%r" % bytearray([0xC7, cmdargs[0]])
     elif cmd["command"] == "set_7016_to_object_xyz":
         include_argnames = False
         try:
             cls = "Set7016701BToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0]]
+            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x63]
+            if cmdargs[0] & 0x40 == 0x40:
+                args["bit_6"] = "True"
+            if cmdargs[0] & 0x80 == 0x80:
+                args["bit_7"] = "True"
         except:
-            cls = "Db"
-            args["args"] = "%r" % bytearray([0xC7, cmdargs[0]])
+            cls = "UnknownCommand"
+            args["args"] = "%r" % bytearray([0xC8, cmdargs[0]])
         include_argnames = False
     elif cmd["command"] == "set_experience_packet_7000":
         cls = "SetEXPPacketTo7000"
@@ -6252,14 +6256,14 @@ def convert_action_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_palette_row":
         cls = "A_SetPaletteRow"
         args["row"] = str(cmdargs[0] & 0xF)
-        upper = cmdargs[0] & 0xF0 >> 4
+        upper = (cmdargs[0] & 0xF0) >> 4
         if upper != 0:
             args["upper"] = str(upper)
     elif cmd["command"] == "inc_palette_row_by":
         cls = "A_IncPaletteRowBy"
         include_argnames = False
         args["rows"] = str(cmdargs[0] & 0x0F)
-        upper = cmdargs[0] & 0xF0 >> 4
+        upper = (cmdargs[0] & 0xF0) >> 4
         if upper != 0:
             args["upper"] = str(upper)
     elif cmd["command"] == "set_animation_speed":
@@ -6407,7 +6411,7 @@ def convert_action_script_command(cmd, valid_identifiers):
         include_argnames = False
         args["steps"] = str(cmdargs[0])
     elif cmd["command"] == "shift_z_20_steps":
-        cls = "A_ShiftZ20Steps"
+        cls = "A_ShiftZUp20Steps"
     elif cmd["command"] == "shift_z_up_steps":
         cls = "A_ShiftZUpSteps"
         include_argnames = False

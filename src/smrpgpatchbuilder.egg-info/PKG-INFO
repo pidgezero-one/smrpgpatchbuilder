@@ -179,7 +179,7 @@ script = SubroutineOrBanklessScript(
         ClearAMEMBits(0x60, [6]),
         SetAMEMToAMEM8Bit(dest_amem=0xB0, amem=0x60),
         ReturnSubroutine(),
-        Db(bytearray(b"\xa0"), identifier="command_0x3a7550"),
+        UnknownCommand(bytearray(b"\xa0"), identifier="command_0x3a7550"),
         ReturnObjectQueue(),
     ],
 )

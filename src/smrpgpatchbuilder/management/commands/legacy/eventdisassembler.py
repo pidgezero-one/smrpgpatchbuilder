@@ -1383,7 +1383,7 @@ def enter_area(args):
     room_short = shortify(args, 0)
     room = room_short & ~0x8000 & ~0x800
     x = args[2]
-    y = args[3]
+    y = args[3] & 127
     flags = parse_flags(args[:4], "_0x68Flags", _0x68_flags, [11, 15, 31])
     z_direction = args[4]
     z = z_direction & 0x1F

@@ -295,13 +295,13 @@ class Spell:
 
         # FP is byte 3, power is byte 6, hit rate is byte 7.  Each spell is 12 bytes.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
-        patch[
-            base_addr] =
+        patch[base_addr] = (
             (self.check_stats * 0x01)
             + (self.ignore_defense * 0x02)
             + (self.check_ohko * 0x20)
             + (self.usable_outside_of_battle * 0x80)
-        
+        )
+
         spell_type: int = 0
         effect_type: int = 0
         element: int = 0
@@ -317,15 +317,15 @@ class Spell:
             inflict_value = self.inflict.value
         patch[base_addr + 1] = spell_type + effect_type + (self.quad9s * 0x08)
         patch[base_addr + 2] = ByteField(self.fp).as_bytes()
-        patch[
-            base_addr + 3]
+        patch[base_addr + 3] = (
             (self.target_others * 0x02)
             + (self.target_enemies * 0x04)
             + (self.target_party * 0x10)
             + (self.target_wounded * 0x20)
             + (self.target_one_party * 0x40)
             + (self.target_not_self * 0x80),
-        
+        )
+
         patch[base_addr + 4] = element
         data = ByteField(self.power).as_bytes()
         data += ByteField(self.hit_rate).as_bytes()
@@ -339,7 +339,7 @@ class Spell:
             buffs += 2**boost
         patch[base_addr + 8] = buffs
         patch[base_addr + 10] = inflict_value
-        patch[base_addr + 11] = (self.hide_num * 0x04)
+        patch[base_addr + 11] = self.hide_num * 0x04
 
         return patch
 
@@ -378,9 +378,13 @@ class CharacterSpell(Spell):
         name_bytes += " " * (15 - len(name_bytes))
         patch[SPELL_BASE_NAME_ADDRESS + self.index * 15] = name_bytes
         if self.timing_modifiers != 0:
-            patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(self.timing_modifiers).as_bytes()
+            patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
+                self.timing_modifiers
+            ).as_bytes()
         if self.damage_modifiers != 0:
-            patch[SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(self.damage_modifiers).as_bytes()
+            patch[SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
+                self.damage_modifiers
+            ).as_bytes()
 
         return patch
 

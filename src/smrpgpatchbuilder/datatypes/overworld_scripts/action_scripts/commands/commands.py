@@ -624,6 +624,7 @@ _valid_unknowncmd_queue_opcodes_fd = [
     0,
     0,
     0,
+    0,
     0,  # 10
     0,
     2,
@@ -640,8 +641,7 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
-    2,  # 20
-    5,
+    5,  # 20
     2,
     2,
     4,
@@ -656,8 +656,8 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
-    2,  # 30
-    8,
+    2,
+    8,  # 30
     8,
     7,
     5,
@@ -669,10 +669,11 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
+    2,
     0,
     0,
-    7,
-    5,  # 40
+    5,
+    2,  # 40
     2,
     2,
     2,
@@ -699,8 +700,8 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
-    2,
     3,
+    2,
     2,
     2,
     2,
@@ -710,8 +711,8 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
-    2,
     3,
+    2,
     2,
     2,
     2,
@@ -764,10 +765,10 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
+    3,
     2,
-    3,
     0,
-    3,
+    2,
     2,  # A0
     2,
     2,
@@ -791,7 +792,7 @@ _valid_unknowncmd_queue_opcodes_fd = [
     0,
     0,
     0,
-    4,
+    2,
     2,
     2,
     2,
@@ -808,8 +809,8 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,
-    2,
     4,
+    2,
     2,
     2,
     2,
@@ -849,7 +850,6 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
     2,
     2,  # F0
-    2,
     2,
     2,
     2,
@@ -6108,7 +6108,8 @@ class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
-        assert isometric ^ pixel
+        if coord != COORD_F:
+            assert isometric ^ pixel
         super().__init__(identifier)
         self.set_target_npc(target_npc)
         self.set_coord(coord)
@@ -6951,16 +6952,16 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         """The row offset to increase by, relative to the current palette."""
         return self._rows
 
+    @property
+    def size(self) -> int:
+        if self.rows == 1 and self.upper == 0:
+            return 1
+        return 2
+
     def set_rows(self, rows: int) -> None:
         """Designate the row offset to increase by, relative to the current palette,
         for this command."""
         self._rows = UInt4(rows)
-        if self.rows == 1:
-            self._size: int = 1
-            self._opcode = 0x0F
-        else:
-            self._size: int = 2
-            self._opcode = 0x0E
 
     def __init__(
         self, rows: int, upper: int = 0, identifier: Optional[str] = None
@@ -6970,9 +6971,10 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         self.set_upper(upper)
 
     def render(self) -> bytearray:
+        print(self.rows, self.upper)
         if self.rows == 1 and self.upper == 0:
-            return super().render()
-        return super().render(UInt8((self.upper << 4) + self.rows))
+            return super().render(0x0F)
+        return super().render(0x0E, UInt8((self.upper << 4) + self.rows))
 
 
 # branching / jumps
