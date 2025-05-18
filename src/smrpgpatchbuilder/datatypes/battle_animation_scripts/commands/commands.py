@@ -3770,7 +3770,7 @@ class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
 
 
 class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
-    """Set variable type 0x07-0x0B to AMEM 8 bit
+    """Set variable type 0x7-0xB to AMEM 8 bit
 
     ## Lazy Shell command
         `Variable {xx} = AMEM (8-bit) $xx`
@@ -3810,8 +3810,8 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
 
-class SetUnknownShortToAMEM16Bit(AnimationScriptAMEMAndConst):
-    """Set variable type 0x07-0x0B to AMEM 16 bit
+class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
+    """Set variable type 0x7-0xB to AMEM 16 bit
 
     ## Lazy Shell command
         `Variable {xx} = AMEM (16-bit) $xx`

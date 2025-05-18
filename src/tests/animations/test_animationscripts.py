@@ -538,23 +538,23 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitBy7F",
-        commands_factory=lambda: [IncAMEM8BitBy7F()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM8BitBy7F(0x67, 0x7F0BA0)],
+        expected_bytes=[0x2C, 0x27, 0xA0, 0x0B],
     ),
     Case(
         label="IncAMEM16BitBy7F",
-        commands_factory=lambda: [IncAMEM16BitBy7F()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16BitBy7F(0x67, 0x7F0BA0)],
+        expected_bytes=[0x2D, 0x27, 0xA0, 0x0B],
     ),
     Case(
         label="DecAMEM8BitBy7F",
-        commands_factory=lambda: [DecAMEM8BitBy7F()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitBy7F(0x67, 0x7F0BA0)],
+        expected_bytes=[0x2E, 0x27, 0xA0, 0x0B],
     ),
     Case(
         label="DecAMEM16BitBy7F",
-        commands_factory=lambda: [DecAMEM16BitBy7F()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16BitBy7F(0x67, 0x7F0BA0)],
+        expected_bytes=[0x2F, 0x27, 0xA0, 0x0B],
     ),
     Case(
         label="SetAMEM8BitToAMEM",
@@ -672,23 +672,23 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitByAMEM",
-        commands_factory=lambda: [IncAMEM8BitByAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM8BitByAMEM(amem=0x61, source_amem=0x63)],
+        expected_bytes=[0x2C, 0x31, 0x03, 0x00],
     ),
     Case(
         label="IncAMEM16BitByAMEM",
-        commands_factory=lambda: [IncAMEM16BitByAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16BitByAMEM(amem=0x61, source_amem=0x63)],
+        expected_bytes=[0x2D, 0x31, 0x03, 0x00],
     ),
     Case(
         label="DecAMEM8BitByAMEM",
-        commands_factory=lambda: [DecAMEM8BitByAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitByAMEM(amem=0x61, source_amem=0x63)],
+        expected_bytes=[0x2E, 0x31, 0x03, 0x00],
     ),
     Case(
         label="DecAMEM16BitByAMEM",
-        commands_factory=lambda: [DecAMEM16BitByAMEM()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16BitByAMEM(amem=0x61, source_amem=0x63)],
+        expected_bytes=[0x2F, 0x31, 0x03, 0x00],
     ),
     Case(
         label="SetAMEM8BitToOMEMCurrent",
@@ -697,8 +697,8 @@ test_cases = [
     ),
     Case(
         label="SetAMEM16BitToOMEMCurrent",
-        commands_factory=lambda: [SetAMEM16BitToOMEMCurrent()],
-        expected_bytes=[],
+        commands_factory=lambda: [SetAMEM16BitToOMEMCurrent(0x60, 0x6F)],
+        expected_bytes=[0x21, 0x40, 0x6F, 0x00],
     ),
     Case(
         label="SetOMEMCurrentToAMEM8Bit",
@@ -790,23 +790,23 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitByOMEMCurrent",
-        commands_factory=lambda: [IncAMEM8BitByOMEMCurrent()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM8BitByOMEMCurrent(amem=0x62, omem=0xF7)],
+        expected_bytes=[0x2C, 0x42, 0xF7, 0x00],
     ),
     Case(
         label="IncAMEM16BitByOMEMCurrent",
-        commands_factory=lambda: [IncAMEM16BitByOMEMCurrent()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16BitByOMEMCurrent(amem=0x62, omem=0xF7)],
+        expected_bytes=[0x2D, 0x42, 0xF7, 0x00],
     ),
     Case(
         label="DecAMEM8BitByOMEMCurrent",
-        commands_factory=lambda: [DecAMEM8BitByOMEMCurrent()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitByOMEMCurrent(amem=0x62, omem=0xF7)],
+        expected_bytes=[0x2E, 0x42, 0xF7, 0x00],
     ),
     Case(
         label="DecAMEM16BitByOMEMCurrent",
-        commands_factory=lambda: [DecAMEM16BitByOMEMCurrent()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16BitByOMEMCurrent(amem=0x62, omem=0xF7)],
+        expected_bytes=[0x2F, 0x42, 0xF7, 0x00],
     ),
     Case(
         label="SetAMEM8BitTo7E5x",
@@ -817,8 +817,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM16BitTo7E5x",
-        commands_factory=lambda: [SetAMEM16BitTo7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM16BitTo7E5x(0x60, 0x7E002C),
+        ],
+        expected_bytes=[0x21, 0x50, 0x2C, 0x00],
     ),
     Case(
         label="Set7E5xToAMEM8Bit",
@@ -881,10 +883,10 @@ test_cases = [
     Case(
         label="JmpIfAMEM16BitLessThan7E5x",
         commands_factory=lambda: [
-            JmpIfAMEM16BitLessThan7E5x(),
+            JmpIfAMEM16BitLessThan7E5x(0x65, 0x7E1A00, destinations=["jmp"]),
             ReturnSubroutine(identifier="jmp"),
         ],
-        expected_bytes=[],
+        expected_bytes=[0x29, 0x55, 0x00, 0x1A, 0x08, 0xC0, 0x11],
     ),
     Case(
         label="JmpIfAMEM8BitGreaterOrEqualThan7E5x",
@@ -904,23 +906,23 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitBy7E5x",
-        commands_factory=lambda: [IncAMEM8BitBy7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM8BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        expected_bytes=[0x2C, 0x53, 0x00, 0xAA],
     ),
     Case(
         label="IncAMEM16BitBy7E5x",
-        commands_factory=lambda: [IncAMEM16BitBy7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        expected_bytes=[0x2D, 0x53, 0x00, 0xAA],
     ),
     Case(
         label="DecAMEM8BitBy7E5x",
-        commands_factory=lambda: [DecAMEM8BitBy7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        expected_bytes=[0x2E, 0x53, 0x00, 0xAA],
     ),
     Case(
         label="DecAMEM16BitBy7E5x",
-        commands_factory=lambda: [DecAMEM16BitBy7E5x()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        expected_bytes=[0x2F, 0x53, 0x00, 0xAA],
     ),
     Case(
         label="SetAMEM8BitToOMEMMain",
@@ -931,8 +933,10 @@ test_cases = [
     ),
     Case(
         label="SetAMEM16BitToOMEMMain",
-        commands_factory=lambda: [SetAMEM16BitToOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetAMEM16BitToOMEMMain(amem=0x6F, omem=0x6F),
+        ],
+        expected_bytes=[0x21, 0x6F, 0x6F, 0x00],
     ),
     Case(
         label="SetOMEMMainToAMEM8Bit",
@@ -1016,23 +1020,23 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitByOMEMMain",
-        commands_factory=lambda: [IncAMEM8BitByOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM8BitByOMEMMain(amem=0x6B, omem=0x70)],
+        expected_bytes=[0x2C, 0x6B, 0x70, 0x00],
     ),
     Case(
         label="IncAMEM16BitByOMEMMain",
-        commands_factory=lambda: [IncAMEM16BitByOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [IncAMEM16BitByOMEMMain(amem=0x6B, omem=0x70)],
+        expected_bytes=[0x2D, 0x6B, 0x70, 0x00],
     ),
     Case(
         label="DecAMEM8BitByOMEMMain",
-        commands_factory=lambda: [DecAMEM8BitByOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM8BitByOMEMMain(amem=0x6B, omem=0x70)],
+        expected_bytes=[0x2E, 0x6B, 0x70, 0x00],
     ),
     Case(
         label="DecAMEM16BitByOMEMMain",
-        commands_factory=lambda: [DecAMEM16BitByOMEMMain()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16BitByOMEMMain(amem=0x6B, omem=0x70)],
+        expected_bytes=[0x2F, 0x6B, 0x70, 0x00],
     ),
     Case(
         label="SetAMEM8BitToUnknownShort",
@@ -1057,8 +1061,10 @@ test_cases = [
     ),
     Case(
         label="SetUnknownShortToAMEM16Bit",
-        commands_factory=lambda: [SetUnknownShortToAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            SetUnknownShortToAMEM16Bit(amem=0x61, type=0x8, value=45)
+        ],
+        expected_bytes=[0x23, 0x81, 0x2D, 0x00],
     ),
     Case(
         label="JmpIfAMEM8BitEqualsUnknownShort",
@@ -1142,23 +1148,31 @@ test_cases = [
     ),
     Case(
         label="IncAMEM8BitByUnknownShort",
-        commands_factory=lambda: [IncAMEM8BitByUnknownShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IncAMEM8BitByUnknownShort(amem=0x60, type=0x08, value=256)
+        ],
+        expected_bytes=[0x2C, 0x80, 0x00, 0x01],
     ),
     Case(
         label="IncAMEM16BitByUnknownShort",
-        commands_factory=lambda: [IncAMEM16BitByUnknownShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            IncAMEM16BitByUnknownShort(amem=0x60, type=0x08, value=256)
+        ],
+        expected_bytes=[0x2D, 0x80, 0x00, 0x01],
     ),
     Case(
         label="DecAMEM8BitByUnknownShort",
-        commands_factory=lambda: [DecAMEM8BitByUnknownShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DecAMEM8BitByUnknownShort(amem=0x60, type=0x08, value=256)
+        ],
+        expected_bytes=[0x2E, 0x80, 0x00, 0x01],
     ),
     Case(
         label="DecAMEM16BitByUnknownShort",
-        commands_factory=lambda: [DecAMEM16BitByUnknownShort()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            DecAMEM16BitByUnknownShort(amem=0x60, type=0x08, value=256)
+        ],
+        expected_bytes=[0x2F, 0x80, 0x00, 0x01],
     ),
     Case(
         label="IncAMEM8Bit",
@@ -1173,12 +1187,14 @@ test_cases = [
         expected_bytes=[0x31, 0x02],
     ),
     Case(
-        label="DecAMEM8Bit", commands_factory=lambda: [DecAMEM8Bit()], expected_bytes=[]
+        label="DecAMEM8Bit",
+        commands_factory=lambda: [DecAMEM8Bit(0x62)],
+        expected_bytes=[0x32, 0x02],
     ),
     Case(
         label="DecAMEM16Bit",
-        commands_factory=lambda: [DecAMEM16Bit()],
-        expected_bytes=[],
+        commands_factory=lambda: [DecAMEM16Bit(0x62)],
+        expected_bytes=[0x33, 0x02],
     ),
     Case(
         label="ClearAMEM8Bit",
@@ -1193,12 +1209,16 @@ test_cases = [
         expected_bytes=[0x35, 0x00],
     ),
     Case(
-        label="SetAMEMBits", commands_factory=lambda: [SetAMEMBits()], expected_bytes=[]
+        label="SetAMEMBits",
+        commands_factory=lambda: [SetAMEMBits(0x68, [4])],
+        expected_bytes=[0x36, 0x08, 0x10],
     ),
     Case(
         label="ClearAMEMBits",
-        commands_factory=lambda: [ClearAMEMBits()],
-        expected_bytes=[],
+        commands_factory=lambda: [
+            ClearAMEMBits(0x60, [4, 5, 6, 7]),
+        ],
+        expected_bytes=[0x37, 0x00, 0xF0],
     ),
     Case(
         label="JmpIfAMEMBitsSet",
