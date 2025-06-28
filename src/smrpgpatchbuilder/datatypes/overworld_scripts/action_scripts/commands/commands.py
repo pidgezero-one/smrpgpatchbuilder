@@ -6971,7 +6971,6 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         self.set_upper(upper)
 
     def render(self) -> bytearray:
-        print(self.rows, self.upper)
         if self.rows == 1 and self.upper == 0:
             return super().render(0x0F)
         return super().render(0x0E, UInt8((self.upper << 4) + self.rows))

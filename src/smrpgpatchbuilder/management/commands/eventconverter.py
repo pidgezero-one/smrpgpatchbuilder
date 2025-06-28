@@ -6018,10 +6018,9 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_7000_to_tapped_button":
         cls = "Set7000ToTappedButton"
     elif cmd["command"] == "set_7010_to_object_xyz":
-        include_argnames = False
         try:
             cls = "Set70107015ToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x63]
+            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
             if cmdargs[0] & 0x40 == 0x40:
                 args["bit_6"] = "True"
             if cmdargs[0] & 0x80 == 0x80:
@@ -6030,10 +6029,9 @@ def convert_event_script_command(cmd, valid_identifiers):
             cls = "UnknownCommand"
             args["args"] = "%r" % bytearray([0xC7, cmdargs[0]])
     elif cmd["command"] == "set_7016_to_object_xyz":
-        include_argnames = False
         try:
             cls = "Set7016701BToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x63]
+            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
             if cmdargs[0] & 0x40 == 0x40:
                 args["bit_6"] = "True"
             if cmdargs[0] & 0x80 == 0x80:

@@ -630,6 +630,8 @@ class Weapon(Equipment):
 
     def render(self) -> Dict[int, bytearray]:
         """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
+        if self.item_id > 40:
+            raise TypeError("weapon IDs can only be 0-40")
         patch = super().render()
         if self.price == 0:
             return patch

@@ -4937,10 +4937,10 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
         return super().render(self.message_type)
 
 
-class ObjectQueueAtOffsetAndIndexAtAMEM60(
+class ObjectQueueAtOffsetWithAMEM60Index(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Perform a set of script commands at the specified address, further specified by the current value of AMEM $60. Usually, you will only be setting target_address, and the corresponding destinations will be termined at time of assembly.
+    """Point to an object queue. The starting pointer is chosen by the current value of AMEM $60 (offset + AMEM $60 * 2)
 
     ## Lazy Shell command
         `Object queue [$offset] index = AMEM $60`
@@ -4952,62 +4952,33 @@ class ObjectQueueAtOffsetAndIndexAtAMEM60(
         3 bytes
 
     Args:
-        target_address (int): The address at which the index will be applied to, which will determine the exact
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the `ObjectQueueHeader` to jump to.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
     _opcode: int = 0x64
     _size: int = 3
 
-    _target_address: int
-
-    def set_targets(
-        self, target_address: int = 0, destinations: Optional[List[str]] = None
-    ) -> None:
-        """Update and validate the arguments for this command."""
-        if destinations is None:
-            destinations = []
-        assert not (target_address == 0 and len(destinations) == 0) and not (
-            target_address != 0 and len(destinations) > 0
-        )
-        self._target_address = target_address
-        super().set_destinations(destinations)
-
-    @property
-    def target_address(self) -> int:
-        """The address at which the index will be applied to, which will determine the exact
-        address of the code to be run."""
-        return self._target_address
-
-    def set_target_address(self, target_address: int) -> None:
-        """Update the base address."""
-        self.set_targets(target_address, [ident.label for ident in self.destinations])
-
-    def set_destinations(self, destinations: List[str]) -> None:
-        """Set the identifier of a specific command to start running at."""
-        self.set_targets(self.target_address, destinations)
-
     def __init__(
         self,
-        target_address: int = 0,
         destinations: Optional[List[str]] = None,
         identifier: Optional[str] = None,
     ) -> None:
-        if destinations is None:
-            destinations = []
-        self._target_address = target_address
+        if not destinations:
+            raise InvalidCommandArgumentException(
+                "object queue command needs at least one destination label"
+            )
         super().__init__(destinations, identifier)
-        self.set_targets(target_address, destinations)
 
     def render(self) -> bytearray:
-        return super().render(UInt16(self.target_address & 0xFFFF))
+        return super().render(*self.destinations)
 
 
-class ObjectQueueAtOffsetAndIndex(
+class ObjectQueueAtOffsetWithAMEM60PointerOffset(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
-    """Perform a set of script commands at the specified address, further specified by an index. Usually, you will only be setting target_address, and the corresponding destinations will be termined at time of assembly.
+    """Point to an object queue. The pointer table reference is at (offset + AMEM $60 * 2) and then the starting pointer is at (reference pointer + index).
+    Must point to a `ObjectQueueLayeredPointerTable`.
 
     ## Lazy Shell command
         `Object queue [$offset, AMEM $60] index = {xx}`
@@ -5020,7 +4991,6 @@ class ObjectQueueAtOffsetAndIndex(
 
     Args:
         index (int): The index value to be applied on top of the target address.
-        target_address (int): The address at which the index will be applied to, which will determine the exact
         destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
@@ -5028,34 +4998,7 @@ class ObjectQueueAtOffsetAndIndex(
     _opcode: int = 0x68
     _size: int = 4
 
-    _target_address: int
-    _index: UInt8
-
-    def set_targets(
-        self, target_address: int = 0, destinations: Optional[List[str]] = None
-    ) -> None:
-        """Update and validate the arguments for this command."""
-        if destinations is None:
-            destinations = []
-        assert not (target_address == 0 and len(destinations) == 0) and not (
-            target_address != 0 and len(destinations) > 0
-        )
-        self._target_address = target_address
-        super().set_destinations(destinations)
-
-    @property
-    def target_address(self) -> int:
-        """The address at which the index will be applied to, which will determine the exact
-        address of the code to be run."""
-        return self._target_address
-
-    def set_target_address(self, target_address: int) -> None:
-        """Update the base address."""
-        self.set_targets(target_address, [ident.label for ident in self.destinations])
-
-    def set_destinations(self, destinations: List[str]) -> None:
-        """Set the identifier of a specific command to start running at."""
-        self.set_targets(self.target_address, destinations)
+    _index: UInt8 = UInt8(0)
 
     @property
     def index(self) -> UInt8:
@@ -5069,20 +5012,101 @@ class ObjectQueueAtOffsetAndIndex(
     def __init__(
         self,
         index: int,
-        target_address: int = 0,
         destinations: Optional[List[str]] = None,
         identifier: Optional[str] = None,
     ) -> None:
-        if destinations is None:
-            destinations = []
-        self._target_address = target_address
-        self._index = UInt8(index)
+        if not destinations:
+            raise InvalidCommandArgumentException(
+                "object queue command needs at least one destination label"
+            )
         super().__init__(destinations, identifier)
         self.set_index(index)
-        self.set_targets(target_address, destinations)
 
     def render(self) -> bytearray:
-        return super().render(UInt16(self.target_address & 0xFFFF), self.index)
+        return super().render(*self.destinations, self.index)
+
+
+class ObjectQueueHeader(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+    """This structure holds object queue pointers. It needs to be targeted by `ObjectQueueAtOffsetWithAMEM60Index`.
+
+    Args:
+        destinations (List[str]): The commands that this queue's indexes should start at, in order of index.
+        identifier (str): The label that an `ObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
+    """
+
+    @property
+    def size(self) -> int:
+        return len(self.destinations) * 2
+
+    def __init__(self, destinations: List[str], identifier: str) -> None:
+        if not destinations:
+            raise InvalidCommandArgumentException(
+                "object queue needs at least one destination label"
+            )
+        if not identifier:
+            raise InvalidCommandArgumentException("object queues require an identifier")
+        super().__init__(destinations, identifier)
+
+    def render(self) -> bytearray:
+        return super().render(*self.destinations)
+
+
+class ObjectQueueHeaderMultiTable(
+    UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
+):
+    """This structure holds object queue pointers. It needs to be targeted by `ObjectQueueAtOffsetWithAMEM60PointerOffset`.
+
+    Args:
+        index_destinations(List[str]): The commands that define a pointer index. Must be included in `destinations`.
+        destinations (List[str]): The commands that this queue's indexes should start at, in order of index.
+        identifier (str): The label that an `ObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
+    """
+
+    _index_destinations: List[str]
+
+    @property
+    def index_destinations(self) -> List[str]:
+        return self._index_destinations
+
+    def set_index_destinations(self, headers: List[str]) -> None:
+        excluded = [h for h in headers if h not in [d.label for d in self.destinations]]
+        if len(excluded) != 0:
+            raise InvalidCommandArgumentException(
+                "all index destinations need to be included in queue destinations"
+            )
+
+    @property
+    def size(self) -> int:
+        return len(self.destinations) * 2 + len(self.index_destinations) * 2
+
+    def __init__(
+        self, index_destinations: List[str], destinations: List[str], identifier: str
+    ) -> None:
+        if not index_destinations:
+            raise InvalidCommandArgumentException(
+                "object queue index_destinations needs at least one destination label"
+            )
+        if not destinations:
+            raise InvalidCommandArgumentException(
+                "object queue destinations needs at least one destination label"
+            )
+        if not identifier:
+            raise InvalidCommandArgumentException("object queues require an identifier")
+        super().__init__(destinations, identifier)
+        self.set_index_destinations(index_destinations)
+
+    def render(self) -> bytearray:
+        dest_bytes = super().render(*self.destinations)
+        # good lord this is jank
+        table_start = dest_bytes[0] + (dest_bytes[1] << 8)
+        header = bytearray()
+        for i in self.index_destinations:
+            index = next(
+                idx for idx, dest in enumerate(self.destinations) if dest.label == i
+            )
+            offset = table_start + index * 2
+            header += bytearray([offset & 0xFF, (offset & 0xFF00) >> 8])
+        return header + dest_bytes
 
 
 class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -8208,8 +8232,8 @@ commands = [
     SpriteQueue,
     ReturnSpriteQueue,
     DisplayMessageAtOMEM60As,
-    ObjectQueueAtOffsetAndIndexAtAMEM60,
-    ObjectQueueAtOffsetAndIndex,
+    ObjectQueueAtOffsetWithAMEM60Index,
+    ObjectQueueAtOffsetWithAMEM60PointerOffset,
     SetOMEM60To072C,
     SetAMEMToRandomByte,
     SetAMEMToRandomShort,

@@ -10,6 +10,8 @@ import os
 import shutil
 from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *
 from copy import deepcopy
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass, field
 
 ORIGINS = [
     "ABSOLUTE_POSITION",
@@ -1259,44 +1261,164 @@ SCRIPT_NAMES = {
         "Mushroom2",
         "StarEgg",
     ],
-    # "misses": [
-    #     "Weapon",
-    #     "Armor",
-    #     "Accessory",
-    #     "Space",
-    #     "Space",
-    #     "Hammer",
-    #     "FroggieStick",
-    #     "NokNokShell",
-    #     "PunchGlove",
-    #     "FingerShot",
-    #     "Cymbals",
-    #     "Chomp",
-    #     "Masher",
-    #     "ChompShell",
-    #     "SuperHammer",
-    #     "HandGun",
-    #     "WhompGlove",
-    #     "SlapGlove",
-    #     "TroopaShell",
-    #     "Parasol",
-    #     "HurlyGloves",
-    #     "DoublePunch",
-    #     "RibbitStick",
-    #     "SpikedLink",
-    #     "MegaGlove",
-    #     "WarFan",
-    #     "HandCannon",
-    #     "StickyGlove",
-    #     "UltraHammer",
-    #     "SuperSlap",
-    #     "DrillClaw",
-    #     "StarGun",
-    #     "SonicCymbal",
-    #     "LazyShellWeapon",
-    #     "FryingPan",
-    #     "LuckyHammer",
-    # ],
+    "monster_behaviours_1": [  # 5
+        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit'
+        'Monster behaviour 1: flinch animation of sprite behaviours: no movement for "Escape"',
+        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 2: flinch animation of sprite behaviours: slide backward when hit",
+        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 3: flinch animation of sprite behaviours: Bowser Clone sprite",
+        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 4: flinch animation of sprite behaviours: Mario Clone sprite",
+        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        "Monster behaviour 5: flinch animation of sprite behaviours: no reaction when hit",
+        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+        "Monster behaviour 11: KO animation of sprite behaviours: no reaction when hit",
+    ],
+    "monster_behaviours_2": [  # 1
+        "Monster behaviour 12: entrance animation of sprite behaviours: sprite shadow",
+        "Monster behaviour 13: flinch animation of sprite behaviours: sprite shadow",
+        "Monster behaviour 14: initiate spell animation of sprite behaviours: sprite shadow",
+        "Monster behaviour 15: initiate attack animation of sprite behaviours: sprite shadow",
+        "Monster behaviour 16: escape animation of sprite behaviours: sprite shadow",
+        "Monster behaviour 17: KO animation of sprite behaviours: sprite shadow",
+    ],
+    "monster_behaviours_3": [  # 2
+        "Monster behaviour 18: entrance animation of sprite behaviours: floating, sprite shadow",
+        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 23: escape animation of sprite behaviours: floating, sprite shadow",
+        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 19: entrance animation of sprite behaviours: floating",
+        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+        "Monster behaviour 24: escape animation of sprite behaviours: floating",
+        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+    ],
+    "monster_behaviours_4": [  # 3
+        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 32: escape animation of sprite behaviours: floating, slide backward when hit (1)",
+        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 33: escape animation of sprite behaviours: floating, slide backward when hit (2)",
+        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 28: flinch animation of sprite behaviours: fade out death, floating",
+        "Monster behaviour 30: initiate spell animation of sprite behaviours: fade out death, floating",
+        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+        "Monster behaviour 34: escape animation of sprite behaviours: fade out death, floating",
+        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    ],
+    "monster_behaviours_5": [  # 4
+        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        "Monster behaviour 38: initiate spell aanimation of sprite behaviours: fade out death (2)",
+        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        "Monster behaviour 42: escape animation of sprite behaviours: fade out death, Smithy spell cast",
+        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+        'Monster behaviour 43: escape animation of sprite behaviours: fade out death, no "Escape" movement',
+        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    ],
+    "monster_behaviours_6": [  # 3
+        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 46: flinch animation of sprite behaviours: fade out death, no "Escape" transition',
+        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 51: escape animation of sprite behaviours: fade out death, no "Escape" transition',
+        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        "Monster behaviour 47: flinch animation of sprite behaviours: (normal)",
+        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        "Monster behaviour 48: flinch animation of sprite behaviours: no reaction when hit",
+        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    ],
+    "misses": [
+        "Weapon",
+        "Armor",
+        "Accessory",
+        "Space",
+        "Space",
+        "Hammer",
+        "FroggieStick",
+        "NokNokShell",
+        "PunchGlove",
+        "FingerShot",
+        "Cymbals",
+        "Chomp",
+        "Masher",
+        "ChompShell",
+        "SuperHammer",
+        "HandGun",
+        "WhompGlove",
+        "SlapGlove",
+        "TroopaShell",
+        "Parasol",
+        "HurlyGloves",
+        "DoublePunch",
+        "RibbitStick",
+        "SpikedLink",
+        "MegaGlove",
+        "WarFan",
+        "HandCannon",
+        "StickyGlove",
+        "UltraHammer",
+        "SuperSlap",
+        "DrillClaw",
+        "StarGun",
+        "SonicCymbal",
+        "LazyShellWeapon",
+        "FryingPan",
+        "LuckyHammer",
+    ],
     "weapons": [
         "Weapon",
         "Armor",
@@ -1540,717 +1662,95 @@ def get_sprite_name(id):
     return get_var_name_string(id, "SPR")
 
 
-banks = {
-    "flower_bonus": {
-        "pointers": {"start": 0x02F455, "end": 0x02F460},
-        "start": 0x02F461,
-        "end": 0x02F4A0,
-    },
-    "toad_tutorial": {"start": 0x02F4BF, "end": 0x02F50D},
-    "monster_spells": {
-        "pointers": {"start": 0x351026, "end": 0x35107F},
-        "start": 0x351080,
-        "end": 0x351492,
-    },
-    "monster_attacks": {
-        "pointers": {"start": 0x351493, "end": 0x351594},
-        "start": 0x351595,
-        "end": 0x352127,
-    },
-    "monster_entrances": {
-        "pointers": {"start": 0x352128, "end": 0x352147},
-        "start": 0x352148,
-        "end": 0x3523C3,
-    },
-    # "misses": {
-    #     "pointers": {"start": 0x35816D, "end": 0x3581B6},
-    #     "start": 0x3581B7,
-    #     "end": 0x35826E,
-    # },
-    "items": {
-        "pointers": {"start": 0x35C761, "end": 0x35C802},
-        "start": 0x35C803,
-        "end": 0x35C967,
-    },
-    "ally_spells": {
-        "pointers": {
-            "start": 0x35C992,
-            "end": 0x35C9C7,  # NOTE: Adjusted due to cloen spells!
-        },
-        "start": 0x35C9C8,
-        "end": 0x35CAAB,
-    },
-    "weapons": {
-        "pointers": {"start": 0x35ECA2, "end": 0x35ECE9},
-        "start": 0x35ECEA,
-        "end": 0x35F111,
-    },
-    "battle_events": {
-        "pointers": {"start": 0x3A6004, "end": 0x3A60CF},
-        "start": 0x3A60D0,
-        "end": 0x3A705C,
-        # "end": 0x3A7036,  # changed this cause i inserted a party size subroutine
-    },
-    # "allybehaviour_0_0x350468": {"start": 0x350468, "end": 0x350483},
-    # "allybehaviour_1_0x350502": {"start": 0x350502, "end": 0x35054D},
-    "behaviour_0_0x3505C6": {"start": 0x3505C6, "end": 0x3505D9},
-    "behaviour_1_0x3505DA": {"start": 0x3505DA, "end": 0x3505FD},
-    "behaviour_2_0x350635": {"start": 0x350635, "end": 0x350668},
-    "behaviour_3_0x350669": {"start": 0x350669, "end": 0x3506A6},
-    "behaviour_4_0x3506A7": {"start": 0x3506A7, "end": 0x3506FF},
-    "behaviour_5_0x350737": {"start": 0x350737, "end": 0x350758},
-    "behaviour_6_0x350790": {"start": 0x350790, "end": 0x350795},
-    "behaviour_7_0x350796": {"start": 0x350796, "end": 0x3507A1},
-    "behaviour_8_0x3507A2": {"start": 0x3507A2, "end": 0x3507E8},
-    "behaviour_9_0x3507E9": {"start": 0x3507E9, "end": 0x35082F},
-    "behaviour_10_0x350830": {"start": 0x350830, "end": 0x350869},
-    "behaviour_11_0x35086A": {"start": 0x35086A, "end": 0x350897},
-    "behaviour_12_0x3508A4": {"start": 0x3508A4, "end": 0x3508B9},
-    "behaviour_13_0x3508BA": {"start": 0x3508BA, "end": 0x3508DE},
-    "behaviour_14_0x350916": {"start": 0x350916, "end": 0x35091B},
-    "behaviour_15_0x35091C": {"start": 0x35091C, "end": 0x350927},
-    "behaviour_16_0x350928": {"start": 0x350928, "end": 0x35096E},
-    "behaviour_17_0x35096F": {"start": 0x35096F, "end": 0x350984},
-    "behaviour_18_0x35099D": {"start": 0x35099D, "end": 0x3509D4},
-    # Skip this one
-    "behaviour_20_0x3509D5": {"start": 0x3509D5, "end": 0x350A00},
-    "behaviour_21_0x350A38": {"start": 0x350A38, "end": 0x350A3D},
-    "behaviour_22_0x350A3E": {"start": 0x350A3E, "end": 0x350A4E},
-    "behaviour_23_0x350A55": {"start": 0x350A55, "end": 0x350A9B},
-    "behaviour_24_0x350A9C": {"start": 0x350A9C, "end": 0x350ABC},
-    "behaviour_25_0x350ABD": {"start": 0x350ABD, "end": 0x350AD2},
-    "behaviour_26_0x350AF7": {"start": 0x350AF7, "end": 0x350B2C},
-    "behaviour_27_0x350B2D": {"start": 0x350B2D, "end": 0x350B7F},
-    "behaviour_28_0x350BB7": {"start": 0x350BB7, "end": 0x350BF2},
-    "behaviour_29_0x350BF3": {"start": 0x350BF3, "end": 0x350BF8},
-    "behaviour_30_0x350BF9": {"start": 0x350BF9, "end": 0x350BFC},
-    "behaviour_31_0x350BFD": {"start": 0x350BFD, "end": 0x350C0D},
-    "behaviour_32_0x350C14": {"start": 0x350C14, "end": 0x350C5A},
-    "behaviour_33_0x350C5B": {"start": 0x350C5B, "end": 0x350C9D},
-    "behaviour_34_0x350C9E": {"start": 0x350C9E, "end": 0x350CDB},
-    "behaviour_35_0x350CDC": {"start": 0x350CDC, "end": 0x350CF1},
-    "behaviour_36_0x350D22": {"start": 0x350D22, "end": 0x350D35},
-    "behaviour_37_0x350D36": {"start": 0x350D36, "end": 0x350D71},
-    "behaviour_38_0x350D72": {"start": 0x350D72, "end": 0x350D9C},
-    "behaviour_39_0x350D9D": {"start": 0x350D9D, "end": 0x350DA2},
-    "behaviour_40_0x350DA3": {"start": 0x350DA3, "end": 0x350DAE},
-    "behaviour_41_0x350DAF": {"start": 0x350DAF, "end": 0x350DEC},
-    "behaviour_42_0x350DED": {"start": 0x350DED, "end": 0x350E37},
-    "behaviour_43_0x350E38": {"start": 0x350E38, "end": 0x350E49},
-    "behaviour_44_0x350E4A": {"start": 0x350E4A, "end": 0x350E5F},
-    "behaviour_45_0x350E84": {"start": 0x350E84, "end": 0x350E97},
-    "behaviour_46_0x350E98": {"start": 0x350E98, "end": 0x350ED0},
-    "behaviour_47_0x350EEE": {"start": 0x350EEE, "end": 0x350F19},
-    "behaviour_48_0x350F1A": {"start": 0x350F1A, "end": 0x350F43},
-    "behaviour_49_0x350F44": {"start": 0x350F44, "end": 0x350F49},
-    "behaviour_50_0x350F4A": {"start": 0x350F4A, "end": 0x350F55},
-    "behaviour_51_0x350F56": {"start": 0x350F56, "end": 0x350F6A},
-    "behaviour_52_0x350F6B": {"start": 0x350F6B, "end": 0x350F79},
-    "behaviour_53_0x350F7A": {"start": 0x350F7A, "end": 0x351025},
-    # flower subroutines
-    "subroutines_0x02f50e": {"start": 0x02F50E, "end": 0x02F51D},  # size:
-    # ally behaviour subroutines
-    # "subroutines_0x350463": {"start": 0x350463, "end": 0x350467},
-    # battle behaviour subroutines
-    "subroutines_0x350463": {
-        "start": 0x350463,
-        "end": 0x350467,
-    },  # size:     5
-    "subroutines_0x350606": {"start": 0x350606, "end": 0x350606},  # size:     1
-    "subroutines_0x35061e": {"start": 0x35061E, "end": 0x3506FF},  # size:     226
-    "subroutines_0x350761": {"start": 0x350761, "end": 0x350761},  # size:     1
-    "subroutines_0x3508e7": {"start": 0x3508E7, "end": 0x3508E7},  # size:     1
-    "subroutines_0x3508ff": {"start": 0x3508FF, "end": 0x350915},  # size:     134
-    "subroutines_0x350a09": {"start": 0x350A09, "end": 0x350A09},  # size:     1
-    "subroutines_0x350a21": {"start": 0x350A21, "end": 0x350A37},  # size:     46
-    "subroutines_0x350b88": {"start": 0x350B88, "end": 0x350B88},  # size:     1
-    "subroutines_0x3523C4": {"start": 0x3523C4, "end": 0x3523FC},  # size:     693
-    "subroutines_0x350ED1": {"start": 0x350ED1, "end": 0x350EED},
-    "subroutines_0x351080": {"start": 0x351080, "end": 0x351492},  # size:     1043
-    # distance: 258
-    "subroutines_0x351595": {"start": 0x351595, "end": 0x352127},  # size:     2963
-    # distance: 32
-    "subroutines_0x352148": {"start": 0x352148, "end": 0x3523FC},  # size:     693
-    # distance: 15
-    "subroutines_0x35240c": {"start": 0x35240C, "end": 0x352456},  # size:     75
-    # distance: 30
-    "subroutines_0x352475": {"start": 0x352475, "end": 0x352569},  # size:     245
-    # distance: 12
-    "subroutines_0x352576": {"start": 0x352576, "end": 0x3525A2},  # size:     45
-    # distance: 50
-    "subroutines_0x3525d5": {"start": 0x3525D5, "end": 0x3525DD},  # size:     9
-    # distance: 216
-    "subroutines_0x3526b6": {"start": 0x3526B6, "end": 0x3526BD},  # size:     8
-    # distance: 98
-    "subroutines_0x352720": {"start": 0x352720, "end": 0x352731},  # size:     18
-    # distance: 158
-    "subroutines_0x3527d0": {"start": 0x3527D0, "end": 0x3527D9},  # size:     10
-    # distance: 780
-    "subroutines_0x352ae6": {"start": 0x352AE6, "end": 0x352AED},  # size:     8
-    # distance: 50
-    "subroutines_0x352b20": {"start": 0x352B20, "end": 0x352B28},  # size:     9
-    # distance: 216
-    "subroutines_0x352c01": {"start": 0x352C01, "end": 0x352C08},  # size:     8
-    # distance: 38
-    "subroutines_0x352c2f": {"start": 0x352C2F, "end": 0x352C40},  # size:     18
-    # distance: 38
-    "subroutines_0x352c67": {"start": 0x352C67, "end": 0x352C78},  # size:     18
-    # distance: 57
-    "subroutines_0x352cb2": {"start": 0x352CB2, "end": 0x352CBA},  # size:     9
-    # distance: 88
-    "subroutines_0x352d13": {"start": 0x352D13, "end": 0x352D1A},  # size:     8
-    # distance: 68
-    "subroutines_0x352d5f": {"start": 0x352D5F, "end": 0x352D67},  # size:     9
-    # distance: 88
-    "subroutines_0x352dc0": {"start": 0x352DC0, "end": 0x352DC7},  # size:     8
-    # distance: 57
-    "subroutines_0x352e01": {"start": 0x352E01, "end": 0x352E09},  # size:     9
-    # distance: 85
-    "subroutines_0x352e5f": {"start": 0x352E5F, "end": 0x352E66},  # size:     8
-    # distance: 86
-    "subroutines_0x352ebd": {"start": 0x352EBD, "end": 0x352ECE},  # size:     18
-    # distance: 86
-    "subroutines_0x352f25": {"start": 0x352F25, "end": 0x3530F2},  # size:     462
-    # distance: 72
-    "subroutines_0x35313b": {"start": 0x35313B, "end": 0x3531ED},  # size:     15
-    # distance: 61
-    "subroutines_0x3531f8": {"start": 0x3531F8, "end": 0x3532D0},  # size:     217
-    # distance: 158
-    "subroutines_0x35336f": {"start": 0x35336F, "end": 0x35342B},  # size:     189
-    # distance: 11
-    "subroutines_0x353437": {"start": 0x353437, "end": 0x353705},  # size:     719
-    # distance: 88
-    "subroutines_0x35375e": {"start": 0x35375E, "end": 0x353963},  # size:     518
-    # distance: 14
-    "subroutines_0x353972": {"start": 0x353972, "end": 0x353ACE},  # size:     349
-    # distance: 18
-    "subroutines_0x353ae1": {"start": 0x353AE1, "end": 0x353C6F},  # size:     399
-    # distance: 18
-    "subroutines_0x353c82": {"start": 0x353C82, "end": 0x353DCB},  # size:     330
-    # distance: 14
-    "subroutines_0x353dda": {"start": 0x353DDA, "end": 0x353F10},  # size:     311
-    # distance: 42
-    "subroutines_0x353f3b": {"start": 0x353F3B, "end": 0x353F6A},  # size:     48
-    # distance: 22
-    "subroutines_0x353f81": {"start": 0x353F81, "end": 0x3540AF},  # size:     303
-    # distance: 26
-    "subroutines_0x3540ca": {"start": 0x3540CA, "end": 0x3542BE},  # size:     501
-    # distance: 30
-    "subroutines_0x3542dd": {"start": 0x3542DD, "end": 0x3542FF},  # size:     35
-    # distance: 6
-    "subroutines_0x354306": {"start": 0x354306, "end": 0x3543B8},  # size:     179
-    # distance: 14
-    "subroutines_0x3543c7": {"start": 0x3543C7, "end": 0x35458B},  # size:     453
-    # distance: 18
-    "subroutines_0x35459e": {"start": 0x35459E, "end": 0x3547C1},  # size:     548
-    # distance: 56
-    "subroutines_0x3547fa": {"start": 0x3547FA, "end": 0x354891},  # size:     152
-    # distance: 42
-    "subroutines_0x3548bc": {"start": 0x3548BC, "end": 0x3548F3},  # size:     56
-    # distance: 12
-    "subroutines_0x354900": {"start": 0x354900, "end": 0x354914},  # size:     21
-    # distance: 35
-    "subroutines_0x354938": {"start": 0x354938, "end": 0x354A17},  # size:     224
-    # distance: 12
-    "subroutines_0x354a24": {"start": 0x354A24, "end": 0x354AF3},  # size:     208
-    # distance: 23
-    "subroutines_0x354b0b": {"start": 0x354B0B, "end": 0x354B30},  # size:     38
-    # distance: 4
-    "subroutines_0x354b35": {"start": 0x354B35, "end": 0x354BB3},  # size:     127
-    # distance: 6
-    "subroutines_0x354bba": {"start": 0x354BBA, "end": 0x354C83},  # size:     202
-    # distance: 6
-    "subroutines_0x354c8a": {"start": 0x354C8A, "end": 0x354CF8},  # size:     111
-    # distance: 14
-    "subroutines_0x354d07": {"start": 0x354D07, "end": 0x354E00},  # size:     250
-    # distance: 30
-    "subroutines_0x354e1f": {"start": 0x354E1F, "end": 0x354E6B},  # size:     77
-    # distance: 6
-    "subroutines_0x354e72": {"start": 0x354E72, "end": 0x354F10},  # size:     159
-    # distance: 8
-    "subroutines_0x354f19": {"start": 0x354F19, "end": 0x354FC3},  # size:     171
-    # distance: 24
-    "subroutines_0x354fdc": {"start": 0x354FDC, "end": 0x3551CA},  # size:     495
-    # distance: 210
-    "subroutines_0x3551fe": {"start": 0x3551FE, "end": 0x355233},  # size:     54
-    "subroutines_0x35529d": {"start": 0x35529D, "end": 0x3552C4},  # size:     40
-    # distance: 12
-    "subroutines_0x3552d1": {"start": 0x3552D1, "end": 0x355498},  # size:     456
-    # distance: 217
-    "subroutines_0x35549d": {"start": 0x35549D, "end": 0x35554D},  # size:     177
-    # distance: 12
-    "subroutines_0x35555a": {"start": 0x35555A, "end": 0x3555B5},  # size:     92
-    # distance: 2
-    "subroutines_0x3555b8": {"start": 0x3555B8, "end": 0x3555D4},  # size:     29
-    # distance: 12
-    "subroutines_0x3555e1": {"start": 0x3555E1, "end": 0x3556E2},  # size:     258
-    # distance: 10
-    "subroutines_0x3556ed": {"start": 0x3556ED, "end": 0x3557C5},  # size:     217
-    # distance: 8
-    "subroutines_0x3557ce": {"start": 0x3557CE, "end": 0x3558A7},  # size:     218
-    # distance: 8
-    "subroutines_0x3558b0": {"start": 0x3558B0, "end": 0x355950},  # size:     161
-    # distance: 8
-    "subroutines_0x355959": {"start": 0x355959, "end": 0x3559EF},  # size:     151
-    # distance: 12
-    "subroutines_0x3559fc": {"start": 0x3559FC, "end": 0x355AD8},  # size:     221
-    # distance: 251
-    "subroutines_0x355bd4": {"start": 0x355BD4, "end": 0x355DB5},  # size:     482
-    # distance: 4
-    "subroutines_0x355dba": {"start": 0x355DBA, "end": 0x355E00},  # size:     71
-    # distance: 14
-    "subroutines_0x355e0f": {"start": 0x355E0F, "end": 0x355F1C},  # size:     270
-    # distance: 239
-    "subroutines_0x35600c": {"start": 0x35600C, "end": 0x356040},  # size:     53
-    # distance: 2
-    "subroutines_0x356043": {"start": 0x356043, "end": 0x35605E},  # size:     28
-    # distance: 2
-    "subroutines_0x356061": {"start": 0x356061, "end": 0x356075},  # size:     21
-    # distance: 2
-    "subroutines_0x356078": {"start": 0x356078, "end": 0x356086},  # size:     15
-    # distance: 2
-    "subroutines_0x356089": {"start": 0x356089, "end": 0x3560A8},  # size:     32
-    # distance: 2
-    "subroutines_0x3560ab": {"start": 0x3560AB, "end": 0x3560CC},  # size:     34
-    # distance: 51
-    "subroutines_0x356100": {"start": 0x356100, "end": 0x356130},  # size:     49
-    # distance: 2
-    "subroutines_0x356133": {"start": 0x356133, "end": 0x356151},  # size:     31
-    # distance: 2
-    "subroutines_0x356154": {"start": 0x356154, "end": 0x356179},  # size:     38
-    # distance: 2
-    "subroutines_0x35617c": {"start": 0x35617C, "end": 0x3561AC},  # size:     49
-    # distance: 2
-    "subroutines_0x3561af": {"start": 0x3561AF, "end": 0x3561DF},  # size:     49
-    # distance: 145
-    "subroutines_0x356271": {"start": 0x356271, "end": 0x3563A5},  # size:     309
-    # distance: 63
-    "subroutines_0x3563e5": {"start": 0x3563E5, "end": 0x356455},  # size:     113
-    # distance: 129
-    "subroutines_0x3564d7": {"start": 0x3564D7, "end": 0x35651C},  # size:     70
-    # distance: 8
-    "subroutines_0x356525": {"start": 0x356525, "end": 0x35659F},  # size:     123
-    # distance: 2
-    "subroutines_0x3565a2": {"start": 0x3565A2, "end": 0x3565FE},  # size:     93
-    # distance: 80
-    "subroutines_0x35664f": {"start": 0x35664F, "end": 0x3566BE},  # size:     112
-    # distance: 149
-    "subroutines_0x356754": {"start": 0x356754, "end": 0x35678A},  # size:     55
-    # distance: 108
-    "subroutines_0x3567f7": {"start": 0x3567F7, "end": 0x35682A},  # size:     52
-    # distance: 6
-    "subroutines_0x356831": {"start": 0x356831, "end": 0x356918},  # size:     232
-    # distance: 2
-    "subroutines_0x35691b": {"start": 0x35691B, "end": 0x356968},  # size:     78
-    # distance: 2
-    "subroutines_0x35696b": {"start": 0x35696B, "end": 0x3569A9},  # size:     63
-    # distance: 122
-    "subroutines_0x356a24": {"start": 0x356A24, "end": 0x356A7D},  # size:     90
-    # distance: 4
-    "subroutines_0x356a82": {"start": 0x356A82, "end": 0x356B14},  # size:     147
-    # distance: 54
-    "subroutines_0x356b4b": {"start": 0x356B4B, "end": 0x356B65},  # size:     27
-    # distance: 32
-    "subroutines_0x356b86": {"start": 0x356B86, "end": 0x356BF1},  # size:     108
-    # distance: 20
-    "subroutines_0x356c06": {"start": 0x356C06, "end": 0x356C87},  # size:     130
-    # distance: 410
-    "subroutines_0x356e22": {"start": 0x356E22, "end": 0x356EAF},  # size:     142
-    # distance: 6
-    "subroutines_0x356eb6": {"start": 0x356EB6, "end": 0x356F14},  # size:     95
-    # distance: 32
-    "subroutines_0x356f35": {"start": 0x356F35, "end": 0x357345},  # size:     1041
-    # distance: 2
-    "subroutines_0x357348": {"start": 0x357348, "end": 0x357399},  # size:     82
-    # distance: 18
-    "subroutines_0x3573ac": {"start": 0x3573AC, "end": 0x3575FB},  # size:     592
-    # distance: 8
-    "subroutines_0x357604": {"start": 0x357604, "end": 0x3576B7},  # size:     180
-    # distance: 6
-    "subroutines_0x3576be": {"start": 0x3576BE, "end": 0x3578B3},  # size:     502
-    # distance: 61
-    "subroutines_0x3578f1": {"start": 0x3578F1, "end": 0x35791C},  # size:     44
-    # distance: 1
-    "subroutines_0x35791e": {"start": 0x35791E, "end": 0x35794F},  # size:     50
-    # distance: 1
-    "subroutines_0x357951": {"start": 0x357951, "end": 0x3579A0},  # size:     80
-    # distance: 1
-    "subroutines_0x3579a2": {"start": 0x3579A2, "end": 0x357AE3},  # size:     322
-    # distance: 1
-    "subroutines_0x357ae5": {"start": 0x357AE5, "end": 0x357B71},  # size:     141
-    # distance: 1
-    "subroutines_0x357b73": {"start": 0x357B73, "end": 0x357C43},  # size:     209
-    # distance: 19
-    "subroutines_0x357c57": {"start": 0x357C57, "end": 0x357CF5},  # size:     159
-    # distance: 21
-    "subroutines_0x357d0b": {"start": 0x357D0B, "end": 0x357F73},  # size:     617
-    # distance: 44
-    "subroutines_0x357fa0": {"start": 0x357FA0, "end": 0x357FE1},  # size:     66
-    # distance: 22
-    "subroutines_0x357ff8": {"start": 0x357FF8, "end": 0x358071},  # size:     122
-    # distance: 20
-    "subroutines_0x358086": {"start": 0x358086, "end": 0x35809C},  # size:     23
-    # distance: 23
-    "subroutines_0x3580b4": {"start": 0x3580B4, "end": 0x358132},  # size:     127
-    # distance: 51
-    "subroutines_0x358166": {"start": 0x358166, "end": 0x35816A},  # size:     5
-    # distance: 76
-    "subroutines_0x358323": {"start": 0x358323, "end": 0x35837B},  # size:     89
-    # distance: 6
-    "subroutines_0x358382": {"start": 0x358382, "end": 0x3583DA},  # size:     89
-    # distance: 6
-    "subroutines_0x3583e1": {"start": 0x3583E1, "end": 0x358439},  # size:     89
-    # distance: 6
-    "subroutines_0x358440": {"start": 0x358440, "end": 0x358498},  # size:     89
-    # distance: 38
-    "subroutines_0x3584bf": {"start": 0x3584BF, "end": 0x358684},  # size:     454
-    # distance: 56
-    "subroutines_0x3586bd": {"start": 0x3586BD, "end": 0x3588DE},  # size:     546
-    # distance: 21
-    "subroutines_0x3588f4": {"start": 0x3588F4, "end": 0x358915},  # size:     34
-    # distance: 889
-    "subroutines_0x358c8f": {"start": 0x358C8F, "end": 0x35924B},  # size:     1469
-    # distance: 6
-    "subroutines_0x359252": {"start": 0x359252, "end": 0x359396},  # size:     325
-    # distance: 12
-    "subroutines_0x3593a3": {"start": 0x3593A3, "end": 0x3595C0},  # size:     542
-    # distance: 6
-    "subroutines_0x3595c7": {"start": 0x3595C7, "end": 0x3597EC},  # size:     550
-    # distance: 10
-    "subroutines_0x3597f7": {"start": 0x3597F7, "end": 0x3599E5},  # size:     495
-    # distance: 4
-    "subroutines_0x3599ea": {"start": 0x3599EA, "end": 0x359C08},  # size:     543
-    # distance: 10
-    "subroutines_0x359c13": {"start": 0x359C13, "end": 0x359E0A},  # size:     504
-    # distance: 12
-    "subroutines_0x359e17": {"start": 0x359E17, "end": 0x359F19},  # size:     259
-    # distance: 18
-    "subroutines_0x359f2c": {"start": 0x359F2C, "end": 0x35A0A4},  # size:     377
-    # distance: 34
-    "subroutines_0x35a0c7": {"start": 0x35A0C7, "end": 0x35A2FF},  # size:     569
-    # distance: 161
-    "subroutines_0x35a3a1": {"start": 0x35A3A1, "end": 0x35A3B7},  # size:     23
-    # distance: 105
-    "subroutines_0x35a421": {"start": 0x35A421, "end": 0x35A48E},  # size:     110
-    # distance: 79
-    "subroutines_0x35a4de": {"start": 0x35A4DE, "end": 0x35A4E6},  # size:     9
-    # distance: 20
-    "subroutines_0x35a4fb": {"start": 0x35A4FB, "end": 0x35A69F},  # size:     421
-    # distance: 1
-    "subroutines_0x35a6a1": {"start": 0x35A6A1, "end": 0x35A770},  # size:     208
-    # distance: 12
-    "subroutines_0x35a77d": {"start": 0x35A77D, "end": 0x35A97B},  # size:     511
-    # distance: 18
-    "subroutines_0x35a98e": {"start": 0x35A98E, "end": 0x35ABAC},  # size:     543
-    # distance: 44
-    "subroutines_0x35abd9": {"start": 0x35ABD9, "end": 0x35ABF5},  # size:     29
-    # distance: 90
-    "subroutines_0x35ac50": {"start": 0x35AC50, "end": 0x35AC58},  # size:     9
-    # distance: 12
-    "subroutines_0x35ac65": {"start": 0x35AC65, "end": 0x35AD49},  # size:     229
-    # distance: 18
-    "subroutines_0x35ad5c": {"start": 0x35AD5C, "end": 0x35B019},  # size:     702
-    # distance: 30
-    "subroutines_0x35b038": {"start": 0x35B038, "end": 0x35B35C},  # size:     805
-    # distance: 8
-    "subroutines_0x35b365": {"start": 0x35B365, "end": 0x35B43C},  # size:     216
-    # distance: 50
-    "subroutines_0x35b46f": {"start": 0x35B46F, "end": 0x35B5FF},  # size:     401
-    # distance: 96
-    "subroutines_0x35b660": {"start": 0x35B660, "end": 0x35B944},  # size:     741
-    # distance: 90
-    "subroutines_0x35b99f": {"start": 0x35B99F, "end": 0x35B9A7},  # size:     9
-    # distance: 10
-    "subroutines_0x35b9b2": {"start": 0x35B9B2, "end": 0x35BA90},  # size:     97
-    # distance: 10
-    "subroutines_0x35ba9b": {"start": 0x35BA9B, "end": 0x35BBC6},  # size:     300
-    # distance: 38
-    "subroutines_0x35bbed": {"start": 0x35BBED, "end": 0x35BE03},  # size:     535
-    # distance: 10
-    "subroutines_0x35be0e": {"start": 0x35BE0E, "end": 0x35BEAF},  # size:     162
-    # distance: 8
-    "subroutines_0x35beb8": {"start": 0x35BEB8, "end": 0x35BF61},  # size:     170
-    # distance: 14
-    "subroutines_0x35bf70": {"start": 0x35BF70, "end": 0x35C123},  # size:     436
-    # distance: 10
-    "subroutines_0x35c12e": {"start": 0x35C12E, "end": 0x35C292},  # size:     357
-    # distance: 10
-    "subroutines_0x35c29d": {"start": 0x35C29D, "end": 0x35C2DC},  # size:     64
-    # distance: 42
-    "subroutines_0x35c307": {"start": 0x35C307, "end": 0x35C362},  # size:     92
-    # distance: 10
-    "subroutines_0x35c36d": {"start": 0x35C36D, "end": 0x35C4BD},  # size:     337
-    # distance: 8
-    "subroutines_0x35c4c6": {"start": 0x35C4C6, "end": 0x35C5FD},  # size:     312
-    # distance: 6
-    "subroutines_0x35c604": {"start": 0x35C604, "end": 0x35C685},  # size:     130
-    # distance: 4
-    "subroutines_0x35c68a": {"start": 0x35C68A, "end": 0x35C711},  # size:     136
-    # distance: 13
-    "subroutines_0x35c71f": {"start": 0x35C71F, "end": 0x35C760},  # size:     66
-    # distance: 162
-    "subroutines_0x35c968": {"start": 0x35C968, "end": 0x35C991},  # size:     399
-    # distance: 54
-    "subroutines_0x35caac": {"start": 0x35CAAC, "end": 0x35CF28},  # size:     1377
-    # distance: 12
-    "subroutines_0x35cf35": {"start": 0x35CF35, "end": 0x35D186},  # size:     594
-    # distance: 10
-    "subroutines_0x35d191": {"start": 0x35D191, "end": 0x35D1FD},  # size:     109
-    # distance: 10
-    "subroutines_0x35d208": {"start": 0x35D208, "end": 0x35D2D4},  # size:     205
-    # distance: 14
-    "subroutines_0x35d2e3": {"start": 0x35D2E3, "end": 0x35D38D},  # size:     171
-    # distance: 1
-    "subroutines_0x35d38f": {"start": 0x35D38F, "end": 0x35D45C},  # size:     206
-    # distance: 16
-    "subroutines_0x35d46d": {"start": 0x35D46D, "end": 0x35D74A},  # size:     734
-    # distance: 20
-    "subroutines_0x35d75f": {"start": 0x35D75F, "end": 0x35DAD8},  # size:     890
-    # distance: 10
-    "subroutines_0x35dae3": {"start": 0x35DAE3, "end": 0x35DB50},  # size:     110
-    # distance: 12
-    "subroutines_0x35db5d": {"start": 0x35DB5D, "end": 0x35DC6B},  # size:     271
-    # distance: 4
-    "subroutines_0x35dc70": {"start": 0x35DC70, "end": 0x35DC8E},  # size:     31
-    # distance: 4
-    "subroutines_0x35dc93": {"start": 0x35DC93, "end": 0x35DCB1},  # size:     31
-    # distance: 4
-    "subroutines_0x35dcb6": {"start": 0x35DCB6, "end": 0x35DCD4},  # size:     31
-    # distance: 20
-    "subroutines_0x35dce9": {"start": 0x35DCE9, "end": 0x35DCFC},  # size:     20
-    # distance: 4
-    "subroutines_0x35dd01": {"start": 0x35DD01, "end": 0x35DFC7},  # size:     711
-    # distance: 6
-    "subroutines_0x35dfce": {"start": 0x35DFCE, "end": 0x35E044},  # size:     119
-    # distance: 4
-    "subroutines_0x35e049": {"start": 0x35E049, "end": 0x35E07B},  # size:     51
-    # distance: 26
-    "subroutines_0x35e096": {"start": 0x35E096, "end": 0x35E5D7},  # size:     1346
-    # distance: 8
-    "subroutines_0x35e5e0": {"start": 0x35E5E0, "end": 0x35E758},  # size:     377
-    # distance: 20
-    "subroutines_0x35e76d": {"start": 0x35E76D, "end": 0x35E865},  # size:     249
-    # distance: 6
-    "subroutines_0x35e86c": {"start": 0x35E86C, "end": 0x35E9C2},  # size:     343
-    # distance: 4
-    "subroutines_0x35e9c7": {"start": 0x35E9C7, "end": 0x35EA0B},  # size:     69
-    # distance: 10
-    "subroutines_0x35ea16": {"start": 0x35EA16, "end": 0x35EAF8},  # size:     227
-    # distance: 14
-    "subroutines_0x35eb07": {"start": 0x35EB07, "end": 0x35ECA1},  # size:     411
-    # distance: 72
-    "subroutines_0x35f112": {"start": 0x35F112, "end": 0x35F123},  # size:     1082
-    # distance: 4
-    "subroutines_0x35f128": {"start": 0x35F128, "end": 0x35F136},  # size:     15
-    # distance: 8
-    "subroutines_0x35f13f": {"start": 0x35F13F, "end": 0x35F1BD},  # size:     127
-    # distance: 6
-    "subroutines_0x35f1c4": {"start": 0x35F1C4, "end": 0x35F214},  # size:     81
-    # distance: 4
-    "subroutines_0x35f219": {"start": 0x35F219, "end": 0x35F262},  # size:     74
-    # distance: 4
-    "subroutines_0x35f267": {"start": 0x35F267, "end": 0x35F2B0},  # size:     74
-    # distance: 4
-    "subroutines_0x35f2b5": {"start": 0x35F2B5, "end": 0x35F2FE},  # size:     74
-    # distance: 6
-    "subroutines_0x35f305": {"start": 0x35F305, "end": 0x35F35E},  # size:     90
-    # distance: 10
-    "subroutines_0x35f369": {"start": 0x35F369, "end": 0x35F390},  # size:     40
-    # distance: 6
-    "subroutines_0x35f397": {"start": 0x35F397, "end": 0x35F3E7},  # size:     81
-    # distance: 6
-    "subroutines_0x35f3ee": {"start": 0x35F3EE, "end": 0x35F43E},  # size:     81
-    # distance: 6
-    "subroutines_0x35f445": {"start": 0x35F445, "end": 0x35F49D},  # size:     89
-    # distance: 4
-    "subroutines_0x35f4a2": {"start": 0x35F4A2, "end": 0x35F4A8},  # size:     7
-    # distance: 6
-    "subroutines_0x35f4af": {"start": 0x35F4AF, "end": 0x35F541},  # size:     147
-    # distance: 6
-    "subroutines_0x35f548": {"start": 0x35F548, "end": 0x35F5E3},  # size:     156
-    # distance: 8
-    "subroutines_0x35f5ec": {"start": 0x35F5EC, "end": 0x35F729},  # size:     318
-    # distance: 8
-    "subroutines_0x35f732": {"start": 0x35F732, "end": 0x35F782},  # size:     81
-    # distance: 8
-    "subroutines_0x35f78b": {"start": 0x35F78B, "end": 0x35F816},  # size:     140
-    # distance: 14
-    "subroutines_0x35f825": {"start": 0x35F825, "end": 0x35F92B},  # size:     263
-    # distance: 4
-    "subroutines_0x35f930": {"start": 0x35F930, "end": 0x35F965},  # size:     54
-    # distance: 4
-    "subroutines_0x35f96a": {"start": 0x35F96A, "end": 0x35F9A1},  # size:     56
-    # distance: 18
-    "subroutines_0x35f9b4": {"start": 0x35F9B4, "end": 0x35FA94},  # size:     225
-    # distance: 66
-    "subroutines_0x35fad7": {"start": 0x35FAD7, "end": 0x35FC88},  # size:     434
-    # distance: 6
-    "subroutines_0x35fc8f": {"start": 0x35FC8F, "end": 0x35FD47},  # size:     185
-    # distance: 4
-    "subroutines_0x35fd4c": {"start": 0x35FD4C, "end": 0x35FD8F},  # size:     68
-    # distance: 10
-    "subroutines_0x35fd9a": {"start": 0x35FD9A, "end": 0x35FEEA},  # size:     337
-    # "subroutines_0x3a60d0": {"start": 0x3A647C, "end": 0x3A6493},  # size:     718
-    # distance: 205
-    "subroutines_0x3a711f": {"start": 0x3A711F, "end": 0x3A715C},  # size:     62
-    # distance: 125
-    "subroutines_0x3a71da": {"start": 0x3A71DA, "end": 0x3A72B5},  # size:     220
-    # distance: 24
-    "subroutines_0x3a72ce": {"start": 0x3A72CE, "end": 0x3A7327},  # size:     90
-    # distance: 11
-    "subroutines_0x3a7333": {"start": 0x3A7333, "end": 0x3A751A},  # size:     488
-    # distance: 22
-    "subroutines_0x3a7531": {"start": 0x3A7531, "end": 0x3A7551},  # size:     33
-    # distance: 12
-    "subroutines_0x3a755e": {"start": 0x3A755E, "end": 0x3A76F3},  # size:     406
-    # distance: 14
-    "subroutines_0x3a7702": {"start": 0x3A7702, "end": 0x3A785C},  # size:     347
-    # distance: 11
-    "subroutines_0x3a7868": {"start": 0x3A7868, "end": 0x3A7885},  # size:     30
-    # distance: 50
-    "subroutines_0x3a78b8": {"start": 0x3A78B8, "end": 0x3A78C0},  # size:     9
-    # distance: 216
-    "subroutines_0x3a7999": {"start": 0x3A7999, "end": 0x3A79A0},  # size:     8
-    # distance: 98
-    "subroutines_0x3a7a03": {"start": 0x3A7A03, "end": 0x3A7A14},  # size:     18
-    # distance: 126
-    "subroutines_0x3a7a93": {"start": 0x3A7A93, "end": 0x3A7A9B},  # size:     9
-    # distance: 558
-    "subroutines_0x3a7cca": {"start": 0x3A7CCA, "end": 0x3A7CD1},  # size:     8
-    # distance: 50
-    "subroutines_0x3a7d04": {"start": 0x3A7D04, "end": 0x3A7D0C},  # size:     9
-    # distance: 216
-    "subroutines_0x3a7de5": {"start": 0x3A7DE5, "end": 0x3A7DEC},  # size:     8
-    # distance: 38
-    "subroutines_0x3a7e13": {"start": 0x3A7E13, "end": 0x3A7E24},  # size:     18
-    # distance: 38
-    "subroutines_0x3a7e4b": {"start": 0x3A7E4B, "end": 0x3A7E5C},  # size:     18
-    # distance: 57
-    "subroutines_0x3a7e96": {"start": 0x3A7E96, "end": 0x3A7EA6},  # size:     17
-    # distance: 62
-    "subroutines_0x3a7ee5": {"start": 0x3A7EE5, "end": 0x3A7EFE},  # size:     26
-    # distance: 68
-    "subroutines_0x3a7f43": {"start": 0x3A7F43, "end": 0x3A7F53},  # size:     17
-    # distance: 62
-    "subroutines_0x3a7f92": {"start": 0x3A7F92, "end": 0x3A7FAB},  # size:     26
-    # distance: 57
-    "subroutines_0x3a7fe5": {"start": 0x3A7FE5, "end": 0x3A7FF5},  # size:     17
-    # distance: 68
-    "subroutines_0x3a803a": {"start": 0x3A803A, "end": 0x3A804A},  # size:     17
-    # distance: 68
-    "subroutines_0x3a808f": {"start": 0x3A808F, "end": 0x3A8097},  # size:     9
-    # distance: 20
-    "subroutines_0x3a80ac": {"start": 0x3A80AC, "end": 0x3A80B5},  # size:     10
-    # distance: 60
-    "subroutines_0x3a80f2": {"start": 0x3A80F2, "end": 0x3A80FB},  # size:     10
-    # distance: 10
-    "subroutines_0x3a8106": {"start": 0x3A8106, "end": 0x3A812D},  # size:     40
-    # distance: 20
-    "subroutines_0x3a8142": {"start": 0x3A8142, "end": 0x3A8155},  # size:     20
-    # distance: 10
-    "subroutines_0x3a8160": {"start": 0x3A8160, "end": 0x3A8169},  # size:     10
-    # distance: 10
-    "subroutines_0x3a8174": {"start": 0x3A8174, "end": 0x3A817D},  # size:     10
-    # distance: 20
-    "subroutines_0x3a8192": {"start": 0x3A8192, "end": 0x3A81B9},  # size:     40
-    # distance: 10
-    "subroutines_0x3a81c4": {"start": 0x3A81C4, "end": 0x3A81EB},  # size:     40
-    # distance: 10
-    "subroutines_0x3a81f6": {"start": 0x3A81F6, "end": 0x3A821D},  # size:     40
-    # distance: 20
-    "subroutines_0x3a8232": {"start": 0x3A8232, "end": 0x3A823B},  # size:     10
-    # distance: 40
-    "subroutines_0x3a8264": {"start": 0x3A8264, "end": 0x3A826D},  # size:     10
-    # distance: 20
-    "subroutines_0x3a8282": {"start": 0x3A8282, "end": 0x3A829F},  # size:     30
-    # distance: 10
-    "subroutines_0x3a82aa": {"start": 0x3A82AA, "end": 0x3A82C7},  # size:     30
-    # distance: 10
-    "subroutines_0x3a82d2": {"start": 0x3A82D2, "end": 0x3A82E5},  # size:     20
-    # distance: 20
-    "subroutines_0x3a82fa": {"start": 0x3A82FA, "end": 0x3A8303},  # size:     10
-    # distance: 30
-    "subroutines_0x3a8322": {"start": 0x3A8322, "end": 0x3A832B},  # size:     10
-    # distance: 10
-    "subroutines_0x3a8336": {"start": 0x3A8336, "end": 0x3A8349},  # size:     20
-    # distance: 10
-    "subroutines_0x3a8354": {"start": 0x3A8354, "end": 0x3A835D},  # size:     10
-    # distance: 250
-    "subroutines_0x3a8458": {"start": 0x3A8458, "end": 0x3A8461},  # size:     10
-    # distance: 130
-    "subroutines_0x3a84e4": {"start": 0x3A84E4, "end": 0x3A84ED},  # size:     10
-    # distance: 60
-    "subroutines_0x3a852a": {"start": 0x3A852A, "end": 0x3A853D},  # size:     20
-    # distance: 30
-    "subroutines_0x3a855c": {"start": 0x3A855C, "end": 0x3A8579},  # size:     30
-    # distance: 10
-    "subroutines_0x3a8584": {"start": 0x3A8584, "end": 0x3A858D},  # size:     10
-    # distance: 40
-    "subroutines_0x3a85b6": {"start": 0x3A85B6, "end": 0x3A85BF},  # size:     10
-    # distance: 180
-    "subroutines_0x3a8674": {"start": 0x3A8674, "end": 0x3A867F},  # size:     12
-    # distance: 24
-    "subroutines_0x3a8698": {"start": 0x3A8698, "end": 0x3A87BB},  # size:     292
-    # distance: 150
-    "subroutines_0x3a8852": {"start": 0x3A8852, "end": 0x3A8891},  # size:     64
-    # distance: 2
-    "subroutines_0x3a8894": {"start": 0x3A8894, "end": 0x3A88DE},  # size:     75
-    # distance: 32
-    "subroutines_0x3a88ff": {"start": 0x3A88FF, "end": 0x3A8A67},  # size:     361
-    # distance: 22
-    "subroutines_0x3a8a7e": {"start": 0x3A8A7E, "end": 0x3A8ABF},  # size:     66
-    # distance: 40
-    "subroutines_0x3a8ae8": {"start": 0x3A8AE8, "end": 0x3A8BB0},  # size:     201
-    # distance: 51
-    "subroutines_0x3a8be4": {"start": 0x3A8BE4, "end": 0x3A8C89},  # size:     166
-    # distance: 22
-    "subroutines_0x3a8ca0": {"start": 0x3A8CA0, "end": 0x3A8E6F},  # size:     464
-    # distance: 8
-    "subroutines_0x3a8e78": {"start": 0x3A8E78, "end": 0x3A9523},  # size:     1708
-    # distance: 14
-    "subroutines_0x3a9532": {"start": 0x3A9532, "end": 0x3A96B8},  # size:     391
-    # distance: 4
-    "subroutines_0x3a96bd": {"start": 0x3A96BD, "end": 0x3A971C},  # size:     96
-    # distance: 8
-    "subroutines_0x3a9725": {"start": 0x3A9725, "end": 0x3A97CD},  # size:     169
-    # distance: 4
-    "subroutines_0x3a97d2": {"start": 0x3A97D2, "end": 0x3A985B},  # size:     138
-    # distance: 14
-    "subroutines_0x3a986a": {"start": 0x3A986A, "end": 0x3A9D74},  # size:     1291
-    # distance: 6
-    "subroutines_0x3a9d7b": {"start": 0x3A9D7B, "end": 0x3A9EB6},  # size:     316
-    # distance: 10
-    "subroutines_0x3a9ec1": {"start": 0x3A9EC1, "end": 0x3A9F8A},  # size:     202
-    # distance: 8
-    "subroutines_0x3a9f93": {"start": 0x3A9F93, "end": 0x3AA069},  # size:     215
-    # distance: 6
-    "subroutines_0x3aa070": {"start": 0x3AA070, "end": 0x3AA140},  # size:     209
-    # distance: 58
-    "subroutines_0x3aa17b": {"start": 0x3AA17B, "end": 0x3AA242},  # size:     200
-    # distance: 69
-    "subroutines_0x3aa288": {"start": 0x3AA288, "end": 0x3AA53E},  # size:     695
-    # distance: 127
-    "subroutines_0x3aa5be": {"start": 0x3AA5BE, "end": 0x3AA655},  # size:     152
-    # distance: 81
-    "subroutines_0x3aa6a7": {"start": 0x3AA6A7, "end": 0x3AA8EC},  # size:     582
-    # distance: 5
-    "subroutines_0x3aa8f2": {"start": 0x3AA8F2, "end": 0x3ABBC1},  # size:     4816
-    # distance: 4
-    "subroutines_0x3abbc6": {"start": 0x3ABBC6, "end": 0x3AC146},  # size:     1409
-    # distance: 1
-    "subroutines_0x3ac148": {"start": 0x3AC148, "end": 0x3AC1EF},  # size:     168
-    # distance: 1
-    "subroutines_0x3ac1f1": {"start": 0x3AC1F1, "end": 0x3AC777},  # size:     1415
-    # distance: 29
-    "subroutines_0x3ac795": {"start": 0x3AC795, "end": 0x3AC7B1},  # size:     29
-    # distance: 29
-    "subroutines_0x3ac7cf": {"start": 0x3AC7CF, "end": 0x3ACCAF},  # size:     1249
-    # distance: 1
-    "subroutines_0x3accb1": {"start": 0x3ACCB1, "end": 0x3AECF6},  # size:     5866
-}
+# Monster behaviours are pretty much just object queues.
+# The "Sprite behaviour" dropdown is a pointer to an object queue.
+# 0x350202 + (enemy index * 2) = at this address you will find the address of the object queue the monster uses
+monster_behaviour_oq_offsets = [
+    0x35058A,  # no movement for "Escape"
+    0x350596,  # slide backward when hit
+    0x3505A2,  # Bowser Clone sprite
+    0x3505AE,  # Mario Clone sprite
+    0x3505BA,  # no reaction when hit
+    0x350898,  # sprite shadow
+    0x350985,  # floating, sprite shadow
+    0x350991,  # floating
+    0x350AD3,  # floating, slide backward when hit
+    0x350ADF,  # floating, slide backward when hit
+    0x350AEB,  # fade out death, floating
+    0x350CF2,  # fade out death
+    0x350CFE,  # fade out death
+    0x350D0A,  # fade out death, Smithy spell cast
+    0x350D16,  # fade out death, no "Escape" movement
+    0x350E60,  # fade out death, no "Escape" transition
+    0x350E6C,  # (normal)
+    0x350E78,  # no reaction when hit
+]
 
-# Subroutines in item animations aren't actually disassembled.
-# ie star egg references 0x35CEFC
+
+@dataclass
+class Bank:
+    pointer_table_start: Optional[int]
+    pointer_table_end: Optional[int]
+    start: int
+    end: int
+
+    @property
+    def has_pointers(self) -> bool:
+        return (
+            self.pointer_table_end is not None and self.pointer_table_start is not None
+        )
+
+    def __init__(
+        self,
+        start: int,
+        end: int,
+        pointer_table_start: Optional[int] = None,
+        pointer_table_end: Optional[int] = None,
+    ):
+        self.pointer_table_start = pointer_table_start
+        self.pointer_table_end = pointer_table_end
+        self.start = start
+        self.end = end
+
+
+banks: Dict[str, Bank] = {
+    "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
+    # gap
+    "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
+    "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
+    "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
+    "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
+    "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
+    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
+    "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
+    "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
+    "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
+    "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
+    "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
+    # gap
+    "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
+    # gap (2 bytes, ptr table header)
+    "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
+    # gap
+    "weapon_wrapper_mario": Bank(0x358916, 0x358935),
+    # gap
+    "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
+    # gap
+    "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
+    # gap
+    "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
+    # gap
+    "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
+    # gap
+    "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
+    # gap
+    "ally_spells": Bank(
+        0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
+    ),  # NOTE: Adjusted due to clone spells!
+    # gap
+    "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
+    "battle_events": Bank(0x3A60D0, 0x3A705C, 0x3A6004, 0x3A60CF),
+}
 
 
 command_lens = [
@@ -2531,10 +2031,13 @@ command_lens = [
 #   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  # 0xF0
 # ]
 
+rom_coverage = [None] * 0x400000
+addresses_to_track = []
 
-def tok(rom, start, end, bank):
+
+def tok(rom, start, end) -> List[Tuple[List[int], int]]:
     dex = start
-    script = []
+    script: List[Tuple[List[int], int]] = []
     while dex <= end:
         cmd = rom[dex]
         l = command_lens[cmd]
@@ -2542,7 +2045,6 @@ def tok(rom, start, end, bank):
             l = 2 + rom[dex + 1]
         elif cmd == 0xBA and l == 0:
             l = 2 + rom[dex + 1] * 2
-        bytestring = [("0x%02x" % i) for i in rom[dex : dex + l]]
         script.append((rom[dex : dex + l], dex))
         dex += l
     return script
@@ -2575,12 +2077,129 @@ jmp_cmds = [
 
 jmp_cmds_1 = [0x68]
 
+SPECIAL_CASE_BREAKS = [
+    0x356076,
+    0x356087,
+    0x3560A9,
+    0x3560CD,
+    0x3560FE,
+    0x356131,
+    0x356152,
+    0x35617A,
+    0x3561AD,
+    0x3561E0,
+    0x356213,
+    0x35624B,
+    0x3A8A68,
+    0x3A8AC0,
+    0x3A8C8A,
+]
+
+
+class AMEM(list[list[int]]):
+    """Base class representing a battlefield layout as a list of 16 lists of ints."""
+
+    def __new__(cls, data):
+        # Validate the outer list length
+        if not isinstance(data, list) or len(data) != 16:
+            raise ValueError("AMEM must be a list of 16 lists.")
+
+        # Validate each inner list
+        for i, inner in enumerate(data):
+            if not isinstance(inner, list):
+                raise TypeError(f"Element at index {i} is not a list.")
+            if not all(isinstance(x, int) for x in inner):
+                raise TypeError(f"Element at index {i} contains non-integer values.")
+
+        # Create the list instance
+        return super(AMEM, cls).__new__(cls, data)
+
+    def __init__(self, data):
+        # Initialize list contents
+        super().__init__(data)
+
+
+@dataclass
+class Addr:
+    offset: int
+    amem: AMEM
+    ref_label: str
+    referenced_by: list[str]
+
+    def __init__(self, offset: int, amem: AMEM, ref_label: str, refs: list):
+        self.offset = offset
+        self.amem = amem
+        self.ref_label = ref_label
+        self.referenced_by = refs
+
+
+@dataclass
+class ObjectQueue:
+    offset: int
+    destination_offsets: List[int]
+
+    def __init__(self, offset: int, destination_offsets: List[int]):
+        self.offset = offset
+        self.destination_offsets = destination_offsets
+
+
+@dataclass
+class ObjectQueueWithIndex:
+    offset: int
+    destination_offsets: List[List[int]]
+
+    def __init__(self, offset: int, destination_offsets: List[List[int]]):
+        self.offset = offset
+        self.destination_offsets = destination_offsets
+
+@dataclass
+class ProtoCommand:
+    id: str 
+    addr: int
+    data: List[int]
+    length: Optional[int]
+
+    def __init__(
+        self,
+        id: str,
+        addr: int,
+        data: List[int],
+        length: Optional[int] = None
+    ):
+        self.id = id
+        self.addr = addr
+        self.data = data
+        self.length = length
+
+@dataclass
+class ContiguousBlock:
+    start: int
+    contents: List[int]
+
+    @property
+    def size(self):
+        return len(self.contents)
+    
+    @property
+    def end(self):
+        return self.start + self.size
+    
+    def __init__(self, start: int, contents: List[int]):
+        self.start = start
+        self.contents = contents
+
 
 def string_byte(word):
     if type(word) == str:
         return '''"%s"''' % word
     else:
         return "0x%02x" % word
+
+
+INIT_AMEM: AMEM = [[0]] * 16
+
+BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE = [22]
+BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE = [75, 80]
 
 
 class Command(BaseCommand):
@@ -2598,9 +2217,11 @@ class Command(BaseCommand):
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
 
-        scripts = []
+        scripts: List[List[Tuple[List[int], int]]] = []
 
-        relevant_pointers = []
+        jump_pointers = []
+        object_queues_begin: List[ObjectQueue] = []
+        object_queues_double_offset_begin: List[ObjectQueueWithIndex] = []
 
         known_addresses_covered = {
             "02": [False] * 0x10000,
@@ -2610,137 +2231,119 @@ class Command(BaseCommand):
 
         scripts_with_headers = {"22": [], "70": [], "85": []}
 
-        SPECIAL_CASE_BREAKS = [
-            0x356076,
-            0x356087,
-            0x3560A9,
-            0x3560CD,
-            0x3560FE,
-            0x356131,
-            0x356152,
-            0x35617A,
-            0x3561AD,
-            0x3561E0,
-            0x356213,
-            0x35624B,
-            0x3A8A68,
-            0x3A8AC0,
-            0x3A8C8A,
-        ]
-
         collective_data = {"35": [], "3A": [], "02": []}
-        queue_addresses = {"35": [], "3A": [], "02": []}
-        separated_data = {}
+        separated_data: List[str, List[List[ProtoCommand]]] = {}
 
-        references = {}
+        references: Dict[int, List[str]] = {}
         references_by_bank = {}
 
-        for key, bank in banks.items():
-
-            hint = ""
-            coverage = "35"
-            if "subroutine" in key:
-                coverage = key[-6:-4].upper()
-            elif key == "battle_events":
-                coverage = "3A"
-                hint = key
-            elif key in ["toad_tutorial", "flower_bonus"]:
-                coverage = "02"
-                hint = key
+        for bank_name, bank in banks.items():
+            reference_label = ""
+            third_byte_as_string = "35"
+            if "subroutine" in bank_name:
+                third_byte_as_string = bank_name[-6:-4].upper()
+            elif bank_name == "battle_events":
+                third_byte_as_string = "3A"
+                reference_label = bank_name
+            elif bank_name in ["toad_tutorial", "flower_bonus"]:
+                third_byte_as_string = "02"
+                reference_label = bank_name
             else:
-                hint = key
+                reference_label = bank_name
 
-            bank_num = bank["start"] & 0xFF0000
+            bank_as_upper_byte = bank.start & 0xFF0000
 
-            ptrs = []
-            cmd_lengths = []
+            bank_pointer_addresses: List[int] = []
+            script_sizes: List[int] = []
 
-            data = []
+            data: List[List[ProtoCommand]] = []
 
-            addresses_to_jump_to = []
+            # This is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
+            branches: List[Addr] = []
+            bank_beginning_offset = 2 if bank_name == "battle_events" else 0
+            amem: AMEM = deepcopy(INIT_AMEM)
 
-            offset = 2 if key == "battle_events" else 0
-
-            amem = [0] * 16
-            if "pointers" in bank:
-                for ind, i in enumerate(
-                    range(bank["pointers"]["start"], bank["pointers"]["end"], 2)
+            # To start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
+            if bank.has_pointers:
+                for pointer_table_index, pointer in enumerate(
+                    range(bank.pointer_table_start, bank.pointer_table_end, 2)
                 ):
-                    ptrs.append(shortify(rom, i) + bank_num)
-                    addresses_to_jump_to.append(
-                        (
-                            shortify(rom, i) + bank_num,
-                            deepcopy(amem),
-                            "%s %s"
-                            % (
-                                hint,
-                                (
-                                    str(ind)
-                                    if ind >= len(SCRIPT_NAMES[key])
-                                    else SCRIPT_NAMES[key][ind]
-                                ),
-                            ),
-                            [],
-                        )
+                    three_byte_pointer: int = (
+                        shortify(rom, pointer) + bank_as_upper_byte
                     )
-                for i in range(len(ptrs)):
-                    this_script = []
-                    if i < len(ptrs) - 1:
-                        cmd_lengths.append(ptrs[i + 1] - ptrs[i])
-                    else:
-                        cmd_lengths.append(bank["end"] - ptrs[i] + 1)
-                    offset_2 = 0
+                    # This is a string that tells us what the script does, i.e. froggiestick miss, ice bomb, etc.
+                    ref_label = "%s %s" % (
+                        reference_label,
+                        (
+                            str(pointer_table_index)
+                            if pointer_table_index >= len(SCRIPT_NAMES[bank_name])
+                            else SCRIPT_NAMES[bank_name][pointer_table_index]
+                        ),
+                    )
+                    bank_pointer_addresses.append(three_byte_pointer)
+                    branches.append(
+                        Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
+                    )
             else:
-                addresses_to_jump_to.append((bank["start"], deepcopy(amem), hint, []))
+                branches.append(Addr(bank.start, deepcopy(amem), reference_label, []))
 
-            searching: bool = True
-            i: int = 0
-            while searching:
-
+            # Now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
+            branch_index: int = 0
+            this_branch = branches[branch_index]
+            while True:
                 extra_offset = 0
-                if key == "battle_events" and i in [22]:
+
+                # Some battle events, like Yaridovich cloning himself, start off with a few bytes that are pointers to partway through the attack. Not known what it's for.
+                if (
+                    bank_name == "battle_events"
+                    and branch_index in BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE
+                ):
                     extra_offset = 2
                     base_header_ptr = (
-                        shortify(rom, bank["pointers"]["start"] + i * 2) + bank_num
+                        shortify(rom, bank.pointer_table_start + branch_index * 2)
+                        + bank_as_upper_byte
                     )
-                    scripts_with_headers["22"].append(
-                        shortify(rom, base_header_ptr + 2) + bank_num
+                    scripts_with_headers[str(branch_index)].append(
+                        shortify(rom, base_header_ptr + 2) + bank_as_upper_byte
                     )
-                elif key == "battle_events" and i in [70, 85]:
+                elif (
+                    bank_name == "battle_events"
+                    and branch_index in BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE
+                ):
                     base_header_ptr = (
-                        shortify(rom, bank["pointers"]["start"] + i * 2) + bank_num
+                        shortify(rom, bank.pointer_table_start + branch_index * 2)
+                        + bank_as_upper_byte
                     )
                     extra_offset = 4
-                    if i == 70:
-                        scripts_with_headers["70"].append(
-                            shortify(rom, base_header_ptr + 2) + bank_num
-                        )
-                        scripts_with_headers["70"].append(
-                            shortify(rom, base_header_ptr + 4) + bank_num
-                        )
-                    if i == 85:
-                        scripts_with_headers["85"].append(
-                            shortify(rom, base_header_ptr + 2) + bank_num
-                        )
-                        scripts_with_headers["85"].append(
-                            shortify(rom, base_header_ptr + 4) + bank_num
-                        )
+                    scripts_with_headers[str(branch_index)].append(
+                        shortify(rom, base_header_ptr + 2) + bank_as_upper_byte
+                    )
+                    scripts_with_headers[str(branch_index)].append(
+                        shortify(rom, base_header_ptr + 4) + bank_as_upper_byte
+                    )
 
-                end_found = False
-                amem = deepcopy(addresses_to_jump_to[i][1])
+                # AMEM can control where the code branches to.
+                amem = deepcopy(this_branch.amem)
+
                 is_subroutine = True
-                if "pointers" in bank and (i < len(cmd_lengths)):
+                if bank.has_pointers and (branch_index < len(script_sizes)):
                     is_subroutine = False
-                    addr = addresses_to_jump_to[i][0] + offset + extra_offset
+                    addr = this_branch.offset + bank_beginning_offset + extra_offset
                 else:
-                    addr = addresses_to_jump_to[i][0] + extra_offset
+                    addr = this_branch.offset + extra_offset
+
+                # Keep a running, recursive list of what top-level scripts ultimately reference this code.
+                # This will ultimatley be displayed in the output python file as an annotation.
                 current_addr = addr
                 if addr not in references:
                     references[addr] = []
-                references[addr].extend(addresses_to_jump_to[i][3])
+                references[addr].extend(this_branch.referenced_by)
                 references[addr] = list(set(references[addr]))
 
+                # Process every command in the script until we find a terminating byte.
+                end_found = False
                 while not end_found:
+                    # Get the bytes for whatever command begins at current_addr.
                     opcode = rom[current_addr]
                     length = command_lens[opcode]
                     if opcode == 0xC6:
@@ -2750,290 +2353,413 @@ class Command(BaseCommand):
                     command = rom[current_addr : current_addr + length]
                     cvr_range = current_addr & 0xFFFF
 
-                    if "pointers" in bank and (i < len(cmd_lengths)):
-                        for c in range(cvr_range - offset, cvr_range + length):
-                            known_addresses_covered[coverage][c] = True
+                    # I have no idea why the branch array length is being compared to the script size length, but it worked before
+                    # Here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
+                    if bank.has_pointers and (branch_index < len(script_sizes)):
+                        for c in range(
+                            cvr_range - bank_beginning_offset, cvr_range + length
+                        ):
+                            known_addresses_covered[third_byte_as_string][c] = True
                     else:
                         for c in range(cvr_range, cvr_range + length):
-                            known_addresses_covered[coverage][c] = True
-                    # set amem
-                    if opcode in [0x20, 0x21]:
-                        if command[1] & 0x30 == 0x30:
-                            index1 = command[2]
+                            known_addresses_covered[third_byte_as_string][c] = True
+
+                    # If this is a command that changes AMEM $60-$6F, or COULD change them, we need to keep track of what its possible values could be in case an AMEM-based object queue comes up.
+                    if opcode in [0x20, 0x21]:  # set amem 8 bit to...
+                        if command[1] & 0xF0 == 0x30:  # copy
+                            src = command[2] & 0x0F
+                            dst = command[1] & 0x0F
+                            amem[dst] = amem[src]
+                        elif command[1] & 0xF0 == 0x00 and command[1] <= 0x0F:  # const
+                            amem[command[1]] = [shortify(command, 2)]
+                        # impossible to evaluate other value sources
+                    elif (
+                        opcode in [0x22, 0x23] and command[1] & 0xF0 == 0x30
+                    ):  # copy, other way around
+                        dst = command[2] & 0x0F
+                        src = command[1] & 0x0F
+                        amem[dst] = amem[src]
+                    elif opcode in [0x2C, 0x2D]:  # inc
+                        if command[1] & 0xF0 == 0x30:  # by amem
+                            index1 = command[2] & 0x0F
                             index2 = command[1] & 0x0F
-                            if index1 <= 0x0F:
-                                amem[index2] = amem[index1]
-                        elif command[1] & 0x30 == 0x00 and command[1] <= 0x0F:
-                            amem[command[1]] = shortify(command, 2)
-                    elif opcode in [0x22, 0x23] and command[1] & 0x30 == 0x30:
-                        index1 = command[2]
-                        index2 = command[1] & 0x0F
-                        if index1 <= 0x0F:
-                            amem[index1] = amem[index2]
-                    elif opcode in [0x2C, 0x2D]:
-                        if command[1] & 0x30 == 0x30:
-                            index1 = command[2]
+                            consolidated: List[int] = []
+                            for x in amem[index2]:
+                                for y in amem[index1]:
+                                    consolidated.append(x + y)
+                            amem[index2] = List(set(consolidated))
+                        elif (
+                            command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
+                        ):  # by const
+                            amem[command[1]] = List(
+                                set(
+                                    [
+                                        (a + shortify(command, 2))
+                                        for a in amem[command[1]]
+                                    ]
+                                )
+                            )
+                    elif opcode in [0x2E, 0x2F]:  # dec
+                        if command[1] & 0xF0 == 0x30:  # by amem
+                            index1 = command[2] & 0x0F
                             index2 = command[1] & 0x0F
-                            if index1 <= 0x0F:
-                                amem[index2] += amem[index1]
-                        elif command[1] & 0x30 == 0x00 and command[1] <= 0x0F:
-                            amem[command[1]] += shortify(command, 2)
-                    elif opcode in [0x2E, 0x2F]:
-                        if command[1] & 0x30 == 0x30:
-                            index1 = command[2]
-                            index2 = command[1] & 0x0F
-                            if index1 <= 0x0F:
-                                amem[index2] -= amem[index1]
-                        elif command[1] & 0x30 == 0x00 and command[1] <= 0x0F:
-                            amem[command[1]] -= shortify(command, 2)
+                            consolidated: List[int] = []
+                            for x in amem[index2]:
+                                for y in amem[index1]:
+                                    consolidated.append(max(0, x - y))
+                            amem[index2] = List(set(consolidated))
+                        elif (
+                            command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
+                        ):  # by const
+                            amem[command[1]] = List(
+                                set(
+                                    [
+                                        max(0, a - shortify(command, 2))
+                                        for a in amem[command[1]]
+                                    ]
+                                )
+                            )
                     elif opcode in [0x30, 0x31] and command[1] <= 0x0F:
-                        amem[command[1]] += 1
+                        amem[command[1]] = List(set([a + 1 for a in amem[command[1]]]))
                     elif opcode in [0x32, 0x33] and command[1] <= 0x0F:
-                        amem[command[1]] -= 1
+                        amem[command[1]] = List(set([a - 1 for a in amem[command[1]]]))
                     elif opcode in [0x34, 0x35] and command[1] <= 0x0F:
-                        amem[command[1]] = 0
+                        amem[command[1]] = [0]
                     elif opcode in [0x6A, 0x6B] and command[1] <= 0x0F:
-                        amem[command[1]] = max(0, command[2] - 1)
+                        amem[command[1]] = List(range(command[2]))
 
                     amem_was = deepcopy(amem)
 
-                    jump_voided = False
-
+                    # If this command includes a GOTO, need to add the destinations to the branch array and process them separately
                     if opcode in jmp_cmds or opcode in jmp_cmds_1:
                         if opcode in jmp_cmds_1:
                             address_byte = command[-3:-1]
                         else:
                             address_byte = command[-2:]
 
-                        target_addr = (
-                            bank_num + (address_byte[1] << 8) + address_byte[0]
+                        branch_addr = (
+                            bank_as_upper_byte
+                            + (address_byte[1] << 8)
+                            + address_byte[0]
                         )
 
+                        # Which of AMEM $60-$6F are part of the branch condition? ie if AMEM $64 bit 1 = ... then ...
+                        # Clean up what the AMEMs can be at the target branch, and then add it to the array.
+                        # Only really tracking constants and other AMEM. Not really possible to track $7Exxxx and $7Fxxxx or OMEM
                         important_amem_indexes = [0]
 
-                        if opcode in [36, 37]:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = shortify(command, 2)
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = amem[index2]
-                        elif opcode in [38, 39]:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = abs(shortify(command, 2) - 1)
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = abs(amem[index2] - 1)
-                        elif opcode in [40, 41]:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = shortify(command, 2) - 1
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = amem[index2] - 1
-                        elif opcode in [42, 43]:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = shortify(command, 2)
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = amem[index2]
-                        elif opcode == 56:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            amem[index1] = command[2]
-                        elif opcode == 57:
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            amem[index1] = ~command[2]
-                        elif opcode == 0x64:
-                            if amem[0] >= 0x10:
-                                amem[0] = 0
-                            target_addr = (target_addr & 0xFF0000) + shortify(
-                                rom, target_addr + amem[0] * 2
-                            )
-                        elif opcode == 0x68:
-                            if amem[0] >= 0x40:
-                                amem[0] = 0
-                            target_addr = (target_addr & 0xFF0000) + shortify(
-                                rom, target_addr + amem[0] * 2
-                            )
-                            if target_addr in [0x356919, 0x356969]:
-                                target_addr += 2
-                            else:
-                                target_addr = (target_addr & 0xFF0000) + shortify(
-                                    rom, target_addr + command[3]
-                                )
-                        if target_addr >= bank_num + 0x10000:
-                            raise Exception("illegal addr 0x%06x" % target_addr)
-                        dc = deepcopy(addresses_to_jump_to[i][3])
-                        if (
-                            "subroutine" not in addresses_to_jump_to[i][2]
-                            and addresses_to_jump_to[i][2] != ""
-                        ):
-                            dc.append(addresses_to_jump_to[i][2])
-                        if target_addr not in references:
-                            references[target_addr] = []
-                        references[target_addr].append(addresses_to_jump_to[i][2])
-                        references[target_addr] = list(set(references[target_addr]))
-                        tup = (target_addr, deepcopy(amem), "", dc)
-                        for t in [
-                            t for t in addresses_to_jump_to if t[0] == target_addr
-                        ]:
-                            same_amem_count = 0
-                            for a in important_amem_indexes:
-                                if t[1][a] == amem[a]:
-                                    same_amem_count += 1
-                            if same_amem_count == len(important_amem_indexes):
-                                jump_voided = True
-                                break
+                        def validate_addr(offs: int, am: AMEM, lbl: str = ""):
+                            # ?
+                            jump_voided = False
 
-                        if not jump_voided:
-                            addresses_to_jump_to.append(tup)
-                            if opcode in [0x68, 0x64, 0x5D]:
-                                queue_addresses[coverage].append(hex(target_addr))
-                        else:
+                            # exit if the branch destination is somehow not in this bank
+                            if offs & 0xFF0000 != bank_as_upper_byte:
+                                raise Exception("illegal addr 0x%06x" % offs)
+
+                            # add this branch's label to the list of references the destination branch will receive
+                            dc = deepcopy(this_branch.referenced_by)
+                            if (
+                                "subroutine" not in this_branch.ref_label
+                                and this_branch.ref_label != ""
+                            ):
+                                dc.append(this_branch.ref_label)
+
+                            # separately, maintain an address<->references dict for easier lookup
+                            if offs not in references:
+                                references[offs] = []
+                            references[offs].append(this_branch.ref_label)
+                            references[offs] = list(set(references[offs]))
+
+                            destination_branch = Addr(
+                                branch_addr, deepcopy(am), lbl, dc
+                            )
+
+                            # if the destination branch already exists, verify that we don't have an exact copy with the same amem
+                            for t in [t for t in branches if t.offset == branch_addr]:
+                                same_amem_count = 0
+                                for a in important_amem_indexes:
+                                    if set(t.amem[a]) == set(am[a]):
+                                        same_amem_count += 1
+                                if same_amem_count == len(important_amem_indexes):
+                                    jump_voided = True
+                                    break
+
+                            if not jump_voided:
+                                branches.append(destination_branch)
+
+                            return destination_branch
+
+                        def process_object_queue(opcode: int):
+                            if opcode == 0x64:
+                                pass
+                            # Running loop starting from addr of lowest ptr.
+                            # Once you reach lowest ptr, you have your ptr table.
+                            elif opcode == 0x68:
+                                pass
+                            # Running loop starting from addr of lowest ptr index.
+                            # ie 0x358499: bytes are "0x9B 0x84" indicating that the ptr table starts at 0x35849B
+                            # which is immediately after this. Suggests that there is only one ptr table.
+                            # If it was "0x9D 0x84" then there would probably be two ptr table header ptrs.
+                            # For each header ptr, process the pre table like for opcode 0x64 - keep going until you reach the code OR until you reach another ptr table 
+                            # (Which you'd know from figuring out how many ptr tables there are)
+                            
                             pass
+
+                        if opcode in [0x24, 0x25]:  # if amem =
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            if command[1] & 0xF0 == 0:
+                                amem[index1] = [shortify(command, 2)]
+                            elif command[1] & 0xF0 == 3:
+                                index2 = command[2]
+                                amem[index1] = amem[index2]
+                        elif opcode in [0x26, 0x27]:  # if amem !=
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            if command[1] & 0xF0 == 0:
+                                amem[index1] = [abs(shortify(command, 2) - 1)]
+                            elif command[1] & 0xF0 == 3:
+                                index2 = command[2]
+                                amem[index1] = [abs(amem[index2] - 1)]
+                        elif opcode in [0x28, 0x29]:  # if amem <
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            if command[1] & 0xF0 == 0:
+                                amem[index1] = [shortify(command, 2) - 1]
+                            elif command[1] & 0xF0 == 3:
+                                index2 = command[2]
+                                amem[index1] = [amem[index2] - 1]
+                        elif opcode in [0x2A, 0x2B]:  # if amem >=
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            if command[1] & 0xF0 == 0:
+                                amem[index1] = [shortify(command, 2)]
+                            elif command[1] & 0xF0 == 3:
+                                index2 = command[2]
+                                amem[index1] = [amem[index2]]
+                        elif opcode == 0x38:  # if amem bits set
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            amem[index1] = [command[2]]
+                        elif opcode == 0x39:  # if amem bits clear
+                            index1 = command[1]
+                            important_amem_indexes.append(index1 & 0x0F)
+                            amem[index1] = [~command[2]]
+                        elif opcode == 0x64:  # object queue, command index = amem 60
+                            temp_amem = [List(range(0, max(amem[0])))]
+                            target_addrs = [
+                                validate_addr(
+                                    (branch_addr & 0xFF0000)
+                                    + shortify(rom, branch_addr + a * 2),
+                                    [a] + amem[1:] if a in amem[0] else INIT_AMEM,
+                                    reference_label,
+                                )
+                                for a in temp_amem
+                            ]
+                            offsets = [t.offset for t in target_addrs]
+                            oq = next(
+                                (
+                                    obj
+                                    for obj in object_queues_begin
+                                    if obj.offset == branch_addr
+                                ),
+                                None,
+                            )
+                            if oq is None:
+                                object_queues_begin.append(
+                                    ObjectQueue(branch_addr, offsets)
+                                )
+                            else:
+                                oq.destination_offsets.extend(offsets)
+                                oq.destination_offsets = List(
+                                    set(oq.destination_offsets)
+                                )
+                        elif (
+                            opcode == 0x68
+                        ):  # object queue, pointer table index = amem $60, command index is an arg
+                            if branch_addr in [0x356919, 0x356969]:
+                                branch_addr += 2
+                            temp_amem = [List(range(0, max(amem[0])))]
+                            dests: List[List[int]] = []
+                            for a in temp_amem:
+                                p = shortify(
+                                    rom,
+                                    (branch_addr & 0xFF0000)
+                                    + shortify(rom, branch_addr + a * 2),
+                                )
+                                dest_ptrs = [shortify(rom, p + command[3] * 2)]
+
+                                target_addrs = [
+                                    validate_addr(
+                                        dpt,
+                                        [a] + amem[1:] if a in amem[0] else INIT_AMEM,
+                                        reference_label,
+                                    )
+                                    for dpt in dest_ptrs
+                                ]
+                                dests.append(dest_ptrs)
+                            oq = next(
+                                (
+                                    obj
+                                    for obj in object_queues_double_offset_begin
+                                    if obj.offset == branch_addr
+                                ),
+                                None,
+                            )
+                            if oq is None:
+                                object_queues_begin.append(
+                                    ObjectQueueWithIndex(branch_addr, dests)
+                                )
+                            else:
+                                for di, d in enumerate(dests):
+                                    if len(oq.destination_offsets) < di:
+                                        oq.destination_offsets = deepcopy(d)
+                                    else:
+                                        oq.destination_offsets[di].extend(d)
+                                    oq.destination_offsets = List(
+                                        set(oq.destination_offsets)
+                                    )
+
+                        validate_addr(branch_addr, amem)
+
                         amem = deepcopy(amem_was)
 
+                    # terminating conditions
                     if opcode in [0x09, 0x11, 0x07, 0x5E]:
                         end_found = True
                     elif (
                         not is_subroutine
-                        and i < len(cmd_lengths)
-                        and (current_addr + length >= addr + cmd_lengths[i])
+                        and branch_index < len(script_sizes)
+                        and (current_addr + length >= addr + script_sizes[branch_index])
                     ):
                         end_found = True
                     elif current_addr + length in SPECIAL_CASE_BREAKS:
                         end_found = True
                     elif 0x3A0000 <= current_addr + length < 0x3A60D0:
                         end_found = True
+
+                    # if not terminated, move on to the next command
                     current_addr += length
 
-                i += 1
-                if i >= len(addresses_to_jump_to):
-                    searching = False
+                # move on to the next branch
+                branch_index += 1
+                if branch_index >= len(branches):
+                    break
+                this_branch = branches[branch_index]
 
-            if "pointers" in bank:
-                for i in range(len(ptrs)):
-                    if key == "battle_events" and i in [22]:
+
+        # Collect contiguous known bytes
+        used: Dict[str, List[ContiguousBlock]] = {
+            "02": [],
+            "35": [],
+            "3A": [],
+        }
+        for bank_name, bank_contents in known_addresses_covered.items():
+            started: Optional[int] = None
+            upper = (int(bank_name, 16)) << 16
+            for index, value in enumerate(bank_contents):
+                if value and started is None:
+                    started = index
+                if started is not None and not value:
+                    used[bank_name].append(ContiguousBlock(started + upper, bank_contents[started, index]))
+            if started is not None:
+                used[bank_name].append(ContiguousBlock(started + upper, bank_contents[started, 0x10000]))
+            
+
+        for bank_name, bank in banks.items():
+            # Start converting processed command bytes into dicts (prototypes for command classes).
+            # TODO: This looks like it ONLY looks through bank definitions.
+            # Need to adjust so that it will look at fully covered code. 
+            # And redo bank design of pointers/commands being separate, like dialogs. Allows overlapping script content
+            if bank.has_pointers:
+                for branch_index in range(len(bank_pointer_addresses)):
+                    if (
+                        bank_name == "battle_events"
+                        and branch_index in BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE
+                    ):
                         extra_offset = 2
-                    elif key == "battle_events" and i in [70, 85]:
+                    elif (
+                        bank_name == "battle_events"
+                        and branch_index
+                        in BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE
+                    ):
                         extra_offset = 4
                     else:
                         extra_offset = 0
-                    this_script = []
-                    #        writeline(file, '    [')
-                    if i < len(ptrs) - 1:
-                        cmd_lengths.append(ptrs[i + 1] - ptrs[i])
+                    this_script: List[ProtoCommand] = []
+                    if branch_index < len(bank_pointer_addresses) - 1:
+                        script_sizes.append(
+                            bank_pointer_addresses[branch_index + 1]
+                            - bank_pointer_addresses[branch_index]
+                        )
                         script_content = tok(
                             rom,
-                            ptrs[i] + offset + extra_offset,
-                            ptrs[i + 1] - 1,
-                            bank_num,
+                            bank_pointer_addresses[branch_index]
+                            + bank_beginning_offset
+                            + extra_offset,
+                            bank_pointer_addresses[branch_index + 1] - 1,
                         )
                     else:
-                        cmd_lengths.append(bank["end"] - ptrs[i])
+                        script_sizes.append(
+                            bank.end - bank_pointer_addresses[branch_index]
+                        )
                         script_content = tok(
-                            rom, ptrs[i] + offset + extra_offset, bank["end"], bank_num
+                            rom,
+                            bank_pointer_addresses[branch_index]
+                            + bank_beginning_offset
+                            + extra_offset,
+                            bank.end,
                         )
                     offset_2 = 0
                     for c in script_content:
-                        byte_string = [("0x%02x" % b) for b in c[0]]
-                        byte_string = ", ".join(byte_string)
-                        addr_ = ptrs[i] + offset + extra_offset + offset_2
+                        addr_ = (
+                            bank_pointer_addresses[branch_index]
+                            + bank_beginning_offset
+                            + extra_offset
+                            + offset_2
+                        )
                         addr = hex(addr_)
-                        #            writeline(file, '''        {'id': 'command_%s', 'addr': %s, 'data': [%s]},''' % (addr, addr, byte_string))
-                        if addr in queue_addresses[coverage]:
+                        if addr in [o.offset for o in object_queues_begin + object_queues_double_offset_begin]:
                             ider = "queuestart_%s" % addr
                         else:
                             ider = "command_%s" % (addr)
                         this_script.append(
-                            {
-                                "id": ider,
-                                "addr": addr_,
-                                "data": list(c[0]),
-                            }
+                            ProtoCommand(ider, addr_, c[0])
                         )
                         offset_2 += len(c[0])
 
                     scripts.append(script_content)
-                    #        writeline(file, '    ], # %i' % i)
                     data.append(this_script)
             else:
                 this_script = []
-                #    writeline(file, '    [')
-                script_content = tok(rom, bank["start"], bank["end"], bank_num)
+                script_content = tok(
+                    rom, bank.start, bank.start
+                )
                 offset_2 = 0
                 for c in script_content:
-                    addr_ = bank["start"] + offset_2
+                    addr_ = bank.start + offset_2
                     addr = hex(addr_)
-                    if addr in queue_addresses[coverage]:
+                    if addr in [o.offset for o in object_queues_begin + object_queues_double_offset_begin]:
                         ider = "queuestart_%s" % addr
                     else:
                         ider = "command_%s" % (addr)
-                    this_script.append(
-                        {
-                            "id": ider,
-                            "addr": addr_,
-                            "data": list(c[0]),
-                            "length": len(c[0]),
-                        }
-                    )
+                    this_script.append(ProtoCommand(ider, addr_, c[0], len(c[0])))
                     offset_2 += len(c[0])
                 scripts.append(script_content)
-                #    writeline(file, '    ]')
                 data.append(this_script)
-            # writeline(file, ']')
 
-            collective_data[coverage].extend(data)
-            separated_data[key] = data
+            collective_data[third_byte_as_string].extend(data)
+            separated_data[bank_name] = data
 
-        for key, bank in banks.items():
+        for bank_name, bank in banks.items():
             add_refs = []
-            for addr in range(bank["start"], bank["end"]):
+            for addr in range(bank.start, bank.end):
                 if addr in references and len(references[addr]) > 0:
                     add_refs.extend(references[addr])
             add_refs = list(set(add_refs))
-            references_by_bank[bank["start"]] = deepcopy(
+            references_by_bank[bank.start] = deepcopy(
                 [a for a in add_refs if a != ""]
             )
-
-        if False:  # print ranges
-            # I don't remember what this was for.
-            # But I think from its print statements, this might be code you could use if you wanted to
-            # print the ranges of the subroutines for your ROM if they differ from the original game's.
-            for key in known_addresses_covered:
-
-                # print("    Ranges for %s: [" % key)
-                state: bool = False
-                st = bank_num
-                en = 0
-                distance = 0
-                size = 0
-                for i, b in enumerate(known_addresses_covered[key]):
-                    if b != state:
-                        state = b
-                        if state:
-                            st = int(key, 16) * 0x10000 + i
-                            distance = st - en
-                            print(
-                                "                              # distance: %i"
-                                % (distance)
-                            )
-                        else:
-                            en = int(key, 16) * 0x10000 + i  # - 1
-                            size = en - st
-                            print(
-                                "        'subroutines_0x%06x': {'start': 0x%06x, 'end': 0x%06x}, # size:     %i"
-                                % (st, st, en - 1, size)
-                            )
-                print("    ]")
 
         output_02collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
         output_35collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
@@ -3046,15 +2772,15 @@ class Command(BaseCommand):
         output_3Acollection_import = ""
         output_3Acollection_export = ""
 
-        for key, bank in banks.items():
+        for bank_name, bank in banks.items():
 
-            coverage = "35"
-            if "subroutine" in key:
-                coverage = key[-6:-4].upper()
-            elif key == "battle_events":
-                coverage = "3A"
-            elif key in ["toad_tutorial", "flower_bonus"]:
-                coverage = "02"
+            third_byte_as_string = "35"
+            if "subroutine" in bank_name:
+                third_byte_as_string = bank_name[-6:-4].upper()
+            elif bank_name == "battle_events":
+                third_byte_as_string = "3A"
+            elif bank_name in ["toad_tutorial", "flower_bonus"]:
+                third_byte_as_string = "02"
 
             # when reassembling battle scripts: before each script body, need to insert 2 bytes
             # that are a pointer to its own start
@@ -3063,9 +2789,9 @@ class Command(BaseCommand):
             # actual script 0 begins at 3A60D2
 
             # replace jump addresses with IDs if in the same bank
-            for index, script in enumerate(separated_data[key]):
-                if key == "battle_events":
-                    for search_script in collective_data[coverage]:
+            for index, script in enumerate(separated_data[bank_name]):
+                if bank_name == "battle_events":
+                    for search_script in collective_data[third_byte_as_string]:
                         for search_command in search_script:
                             for header_addr_index, header_addr in enumerate(
                                 scripts_with_headers["22"]
@@ -3074,7 +2800,7 @@ class Command(BaseCommand):
                                     scripts_with_headers["22"][header_addr_index] = (
                                         search_command["id"]
                                     )
-                                    relevant_pointers.append(search_command["id"])
+                                    jump_pointers.append(search_command["id"])
                             for header_addr_index, header_addr in enumerate(
                                 scripts_with_headers["70"]
                             ):
@@ -3082,7 +2808,7 @@ class Command(BaseCommand):
                                     scripts_with_headers["70"][header_addr_index] = (
                                         search_command["id"]
                                     )
-                                    relevant_pointers.append(search_command["id"])
+                                    jump_pointers.append(search_command["id"])
                             for header_addr_index, header_addr in enumerate(
                                 scripts_with_headers["85"]
                             ):
@@ -3090,11 +2816,11 @@ class Command(BaseCommand):
                                     scripts_with_headers["85"][header_addr_index] = (
                                         search_command["id"]
                                     )
-                                    relevant_pointers.append(search_command["id"])
+                                    jump_pointers.append(search_command["id"])
 
                 for cmd_index, command in enumerate(script):
                     if (
-                        command["data"][0] in jmp_cmds
+                        command.data[0] in jmp_cmds
                         or command["data"][0] in jmp_cmds_1
                     ):
                         if command["data"][0] in jmp_cmds_1:
@@ -3111,7 +2837,7 @@ class Command(BaseCommand):
 
                         found = None
                         for search_index, search_script in enumerate(
-                            collective_data[coverage]
+                            collective_data[third_byte_as_string]
                         ):
                             for search_cmd_index, search_command in enumerate(
                                 search_script
@@ -3125,46 +2851,48 @@ class Command(BaseCommand):
                             else:
                                 del command["data"][-2:]
                                 command["data"].append(found)
-                            relevant_pointers.append(found)
+                            jump_pointers.append(found)
 
-                        separated_data[key][index][cmd_index]["data"] = command["data"]
+                        separated_data[bank_name][index][cmd_index]["data"] = command[
+                            "data"
+                        ]
 
-        for key, bank in banks.items():
+        for bank_name, bank in banks.items():
 
-            coverage = "35"
-            if "subroutine" in key:
-                coverage = key[-6:-4].upper()
-            elif key == "battle_events":
-                coverage = "3A"
-            elif key in ["toad_tutorial", "flower_bonus"]:
-                coverage = "02"
+            third_byte_as_string = "35"
+            if "subroutine" in bank_name:
+                third_byte_as_string = bank_name[-6:-4].upper()
+            elif bank_name == "battle_events":
+                third_byte_as_string = "3A"
+            elif bank_name in ["toad_tutorial", "flower_bonus"]:
+                third_byte_as_string = "02"
 
-            if "subroutine" in key:
-                hv = key[-6:]
+            if "subroutine" in bank_name:
+                hv = bank_name[-6:]
                 export_dest = f"{output_path}/subroutines"
                 os.makedirs(export_dest, exist_ok=True)
                 open(f"{export_dest}/__init__.py", "w")
                 export_file = open("%s/export_0x%s.py" % (export_dest, hv.upper()), "w")
-                if coverage == "02":
+                if third_byte_as_string == "02":
                     output_02collection_import += (
                         "\nfrom .subroutines.export_0x%s import bank as subroutine_0x%s"
                         % (hv.upper(), hv.upper())
                     )
                     output_02collection_export += "\n\tsubroutine_0x%s," % hv.upper()
-                if coverage == "35":
+                if third_byte_as_string == "35":
                     output_35collection_import += (
                         "\nfrom .subroutines.export_0x%s import bank as subroutine_0x%s"
                         % (hv.upper(), hv.upper())
                     )
                     output_35collection_export += "\n\tsubroutine_0x%s," % hv.upper()
-                if coverage == "3A":
+                if third_byte_as_string == "3A":
                     output_3Acollection_import += (
                         "\nfrom .subroutines.export_0x%s import bank as subroutine_0x%s"
                         % (hv.upper(), hv.upper())
                     )
                     output_3Acollection_export += "\n\tsubroutine_0x%s," % hv.upper()
-            elif "behaviour" in key:
-                spl = key.split("_")
+            elif "behaviour" in bank_name:
+                spl = bank_name.split("_")
                 os.makedirs(f"{output_path}/monster_behaviours", exist_ok=True)
                 open(f"{output_path}/monster_behaviours/__init__.py", "w")
                 export_file = open(
@@ -3177,38 +2905,38 @@ class Command(BaseCommand):
                 )
                 output_35collection_export += "\n\tmonster_behaviour_%s," % spl[1]
             else:
-                export_dest = f"{output_path}/{key}"
+                export_dest = f"{output_path}/{bank_name}"
                 os.makedirs(export_dest, exist_ok=True)
 
                 open(f"{export_dest}/__init__.py", "w")
                 export_file = open("%s/export.py" % export_dest, "w")
-                if coverage == "02":
+                if third_byte_as_string == "02":
                     output_02collection_import += (
                         "\nfrom .%s.export import bank as %s"
                         % (
-                            key,
-                            key,
+                            bank_name,
+                            bank_name,
                         )
                     )
-                    output_02collection_export += "\n\t%s," % key
-                if coverage == "35":
+                    output_02collection_export += "\n\t%s," % bank_name
+                if third_byte_as_string == "35":
                     output_35collection_import += (
                         "\nfrom .%s.export import bank as %s"
                         % (
-                            key,
-                            key,
+                            bank_name,
+                            bank_name,
                         )
                     )
-                    output_35collection_export += "\n\t%s," % key
-                if coverage == "3A":
+                    output_35collection_export += "\n\t%s," % bank_name
+                if third_byte_as_string == "3A":
                     output_3Acollection_import += (
                         "\nfrom .%s.export import bank as %s"
                         % (
-                            key,
-                            key,
+                            bank_name,
+                            bank_name,
                         )
                     )
-                    output_3Acollection_export += "\n\t%s," % key
+                    output_3Acollection_export += "\n\t%s," % bank_name
 
             import_body = ""
             export_body = ""
@@ -3219,12 +2947,12 @@ class Command(BaseCommand):
             # actual value at 3A60D0: 0xD2 0x60
             # actual script 0 begins at 3A60D2
 
-            for index, script in enumerate(separated_data[key]):
+            for index, script in enumerate(separated_data[bank_name]):
 
                 script_alias = ""
 
-                if "subroutine" in key:
-                    hv = key[-6:]
+                if "subroutine" in bank_name:
+                    hv = bank_name[-6:]
                     dest = f"{output_path}/subroutines/contents"
                     os.makedirs(dest, exist_ok=True)
 
@@ -3235,8 +2963,8 @@ class Command(BaseCommand):
                         script_alias,
                         script_alias,
                     )
-                elif "behaviour" in key:
-                    spl = key.split("_")
+                elif "behaviour" in bank_name:
+                    spl = bank_name.split("_")
                     os.makedirs(
                         f"{output_path}/monster_behaviours/contents/", exist_ok=True
                     )
@@ -3251,7 +2979,7 @@ class Command(BaseCommand):
                         script_alias,
                     )
                 else:
-                    dest = f"{output_path}/{key}"
+                    dest = f"{output_path}/{bank_name}"
                     os.makedirs(f"{dest}/contents", exist_ok=True)
                     open(f"{dest}/__init__.py", "w")
                     open(f"{dest}/contents/__init__.py", "w")
@@ -3263,11 +2991,11 @@ class Command(BaseCommand):
                     )
 
                 output = ""
-                if "behaviour" in key:
-                    output = "# %s" % key
-                elif key == "toad_tutorial":
-                    output = "# %s" % key
-                elif key in [
+                if "behaviour" in bank_name:
+                    output = "# %s" % bank_name
+                elif bank_name == "toad_tutorial":
+                    output = "# %s" % bank_name
+                elif bank_name in [
                     "flower_bonus",
                     "monster_spells",
                     "monster_attacks",
@@ -3277,10 +3005,10 @@ class Command(BaseCommand):
                     "ally_spells",
                     "weapons",
                     "battle_events",
-                ] and index < len(SCRIPT_NAMES[key]):
-                    output = "# %s" % SCRIPT_NAMES[key][index]
-                elif "subroutine" in key:
-                    hv = int(key[-8:], 16)
+                ] and index < len(SCRIPT_NAMES[bank_name]):
+                    output = "# %s" % SCRIPT_NAMES[bank_name][index]
+                elif "subroutine" in bank_name:
+                    hv = int(bank_name[-8:], 16)
                     if hv in references_by_bank:
                         output = "# referenced by %s" % ", ".join(
                             references_by_bank[hv]
@@ -3292,7 +3020,7 @@ class Command(BaseCommand):
                     "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
                 )
 
-                if key == "battle_events":
+                if bank_name == "battle_events":
                     if index == 22:
                         output += (
                             """\n\nscript = BattleAnimationScript(header=["%s"], script = [\n\t"""
@@ -3317,18 +3045,18 @@ class Command(BaseCommand):
                     else:
                         output += "\n\nscript = BattleAnimationScript(script=[\n\t"
                 elif (
-                    "subroutines_" in key
-                    or "behaviour_" in key
-                    or key in ["toad_tutorial"]
+                    "subroutines_" in bank_name
+                    or "behaviour_" in bank_name
+                    or bank_name in ["toad_tutorial"]
                 ):
                     output += (
                         """\n\nscript = SubroutineOrBanklessScript(expected_size = %i, script = [\n\t"""
-                        % (banks[key]["end"] - banks[key]["start"] + 1)
+                        % (banks[bank_name]["end"] - banks[bank_name]["start"] + 1)
                     )
                 else:
                     output += "\n\nscript = AnimationScript([\n\t"
 
-                contents = get_script(script, relevant_pointers)
+                contents = get_script(script, jump_pointers)
 
                 output += ",\n\t".join(contents)
 
@@ -3340,11 +3068,11 @@ class Command(BaseCommand):
             export_output = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBank"
             export_output += (
                 "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts.ids.bank_names import %s"
-                % (key.upper())
+                % (bank_name.upper())
             )
             export_output += import_body
             export_output += "\n\nbank = AnimationScriptBank("
-            export_output += "\n\tname = %s," % key.upper()
+            export_output += "\n\tname = %s," % bank_name.upper()
             export_output += "\n\tstart = 0x%06x," % bank["start"]
             export_output += f"\n\tend = 0x{(int(bank["end"]) + 1):06x},"
             if "pointers" in bank:
@@ -4255,7 +3983,7 @@ def convert_event_script_command(command, valid_identifiers):
             args["type"] = "UNKNOWN_MESSAGE_TYPE_5"
         include_argnames = False
     elif opcode == 0x64:
-        cls = "ObjectQueueAtOffsetAndIndexAtAMEM60"
+        cls = "ObjectQueueAtOffsetWithAMEM60Index"
         if isinstance(cmd[len(cmd) - 1], str):
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]
         else:
@@ -4263,7 +3991,7 @@ def convert_event_script_command(command, valid_identifiers):
                 f"0x{hex(command['addr'])[2:4].upper()}{shortify(cmd, 1):04X}"
             )
     elif opcode == 0x68:
-        cls = "ObjectQueueAtOffsetAndIndex"
+        cls = "ObjectQueueAtOffsetWithAMEM60PointerOffset"
         args["index"] = str(cmd[3])
         if isinstance(cmd[len(cmd) - 1], str):
             args["destinations"] = '["%s"]' % cmd[len(cmd) - 1]

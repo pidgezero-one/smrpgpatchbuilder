@@ -5945,6 +5945,8 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     _opcode: int = 0xC8
     _size: int = 2
     _target: AreaObject
+    _bit_6: bool = False
+    _bit_7: bool = False
 
     @property
     def target(self) -> AreaObject:
@@ -5955,16 +5957,38 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC whose coordinates to store."""
         self._target = target
 
+    @property
+    def bit_6(self) -> bool:
+        """(unknown)"""
+        return self._bit_6
+
+    def set_bit_6(self, bit_6: bool) -> None:
+        """(unknown)"""
+        self._bit_6 = bit_6
+
+    @property
+    def bit_7(self) -> bool:
+        """(unknown)"""
+        return self._bit_7
+
+    def set_bit_7(self, bit_7: bool) -> None:
+        """(unknown)"""
+        self._bit_7 = bit_7
+
     def __init__(
         self,
         target: AreaObject,
+        bit_6: bool = False,
+        bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
+        self.set_bit_6(bit_6)
+        self.set_bit_7(bit_7)
 
     def render(self) -> bytearray:
-        return super().render(self.target)
+        return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
 
 class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem):

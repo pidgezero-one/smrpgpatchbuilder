@@ -1554,7 +1554,7 @@ def pythonize(command):
             args["spell_3"] = SPELLS[command[3]]
             include_argnames = False
         case 0xF1:
-            cls = "DoMonsterBehaviour"
+            cls = "RunObjectSequence"
             args["animation_id"] = str(command[1])
             include_argnames = False
         case 0xF2:

@@ -15,7 +15,7 @@ from .commands import (
     ExitBattle,
     Set7EE005ToRandomNumber,
     CastSpell,
-    DoMonsterBehaviour,
+    RunObjectSequence,
     SetUntargetable,
     SetTargetable,
     EnableCommand,

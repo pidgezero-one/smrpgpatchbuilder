@@ -1312,17 +1312,19 @@ test_cases = [
         expected_bytes=[0x63, 0x01],
     ),
     Case(
-        label="ObjectQueueAtOffsetAndIndexAtAMEM60",
+        label="ObjectQueueAtOffsetWithAMEM60Index",
         commands_factory=lambda: [
-            ObjectQueueAtOffsetAndIndexAtAMEM60(target_address=0x35C005),
+            ObjectQueueAtOffsetWithAMEM60Index(target_address=0x35C005),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x64, 0x05, 0xC0, 0x11],
     ),
     Case(
-        label="ObjectQueueAtOffsetAndIndex",
+        label="ObjectQueueAtOffsetWithAMEM60PointerOffset",
         commands_factory=lambda: [
-            ObjectQueueAtOffsetAndIndex(index=6, target_address=0x35C006),
+            ObjectQueueAtOffsetWithAMEM60PointerOffset(
+                index=6, target_address=0x35C006
+            ),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x68, 0x06, 0xC0, 0x06, 0x11],

@@ -649,8 +649,8 @@ class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
         )
 
 
-class DoMonsterBehaviour(UsableMonsterScriptCommand, MonsterScriptCommand):
-    """Run a pre-set monster behaviour script by ID. It is recommended to use monster behaviour constants for this.
+class RunObjectSequence(UsableMonsterScriptCommand, MonsterScriptCommand):
+    """(unknown).
 
     ## Lazy Shell command
         `Run object sequence`

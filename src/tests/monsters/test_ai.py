@@ -120,8 +120,8 @@ test_cases = [
         expected_bytes=[0xF0, 0x5F, 0x40, 0xFB],
     ),
     Case(
-        label="DoMonsterBehaviour",
-        commands_factory=lambda: [DoMonsterBehaviour(3)],
+        label="RunObjectSequence",
+        commands_factory=lambda: [RunObjectSequence(3)],
         expected_bytes=[0xF1, 0x03],
     ),
     Case(
