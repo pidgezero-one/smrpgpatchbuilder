@@ -10,8 +10,9 @@ import os
 import shutil
 from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *
 from copy import deepcopy
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional, Union
 from dataclasses import dataclass, field
+import numpy as np
 
 ORIGINS = [
     "ABSOLUTE_POSITION",
@@ -1143,501 +1144,649 @@ SCRIPT_NAMES = {
         "BE0101_MAGIKOOPA_IS_THERE",
         "BE0102_NONE",
     ],
-    "ally_spells": [
-        "Jump",
-        "Fire Orb",
-        "Super Jump",
-        "Super Flame",
-        "Ultra Jump",
-        "Ultra Flame",
-        "Therapy",
-        "Group Hug",
-        "Sleepy Time",
-        "Come Back",
-        "Mute",
-        "Psych Bomb",
-        "Terrorize",
-        "Poison Gas",
-        "Crusher",
-        "Bowser Crush",
-        "Geno Beam",
-        "Geno Boost",
-        "Geno Whirl",
-        "Geno Blast",
-        "Geno Flash",
-        "Thunderbolt",
-        "HP Rain",
-        "Psychopath",
-        "Shocker",
-        "Snowy",
-        "Star Rain",
-    ],
-    "flower_bonus": [
-        "(empty flower bonus message)",
-        "Attack Up!",
-        "Defense Up!",
-        "HP Max!",
-        "Once Again!",
-        "Lucky!",
-    ],
-    "items": [  # offset 96
-        "Mushroom",
-        "MidMushroom",
-        "MaxMushroom",
-        "HoneySyrup",
-        "MapleSyrup",
-        "RoyalSyrup",
-        "PickMeUp",
-        "AbleJuice",
-        "Bracer",
-        "Energizer",
-        "YoshiAde",
-        "RedEssence",
-        "KerokeroCola",
-        "YoshiCookie",
-        "PureWater",
-        "SleepyBomb",
-        "BadMushroom",
-        "FireBomb",
-        "IceBomb",
-        "FlowerTab",
-        "FlowerJar",
-        "FlowerBox",
-        "YoshiCandy",
-        "FroggieDrink",
-        "MukuCookie",
-        "Elixir",
-        "Megalixir",
-        "SeeYa",
-        "TempleKey",
-        "GoodieBag",
-        "EarlierTimes",
-        "FreshenUp",
-        "RareFrogCoin",
-        "Wallet",
-        "CricketPie",
-        "RockCandy",
-        "CastleKey1",
-        "DebugBomb",
-        "CastleKey2",
-        "BambinoBomb",
-        "SheepAttack",
-        "CarboCookie",
-        "ShinyStone",
-        "DUMMY_43" "RoomKey",
-        "ElderKey",
-        "ShedKey",
-        "LambsLure",
-        "FrightBomb",
-        "MysteryEgg",
-        "BeetleBox",
-        "BeetleBox2",
-        "LuckyJewel",
-        "DUMMY_53" "SopranoCard",
-        "AltoCard",
-        "TenorCard",
-        "Crystalline",
-        "PowerBlast",
-        "WiltShroom",
-        "RottenMush",
-        "MoldyMush",
-        "Seed",
-        "Fertilizer",
-        "WasteBasket",
-        "BigBooFlag",
-        "DryBonesFlag",
-        "GreaperFlag",
-        "SecretGame",
-        "ScrowBomb",
-        "CricketJam",
-        "BaneBomb",
-        "DoomBomb",
-        "FearBomb",
-        "SleepBomb",
-        "MuteBomb",
-        "Fireworks",
-        "Bomb",
-        "BrightCard",
-        "Mushroom2",
-        "StarEgg",
-    ],
-    "monster_behaviours_1": [  # 5
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit'
-        'Monster behaviour 1: flinch animation of sprite behaviours: no movement for "Escape"',
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 2: flinch animation of sprite behaviours: slide backward when hit",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 3: flinch animation of sprite behaviours: Bowser Clone sprite",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 4: flinch animation of sprite behaviours: Mario Clone sprite",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 5: flinch animation of sprite behaviours: no reaction when hit",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
-        "Monster behaviour 11: KO animation of sprite behaviours: no reaction when hit",
-    ],
-    "monster_behaviours_2": [  # 1
-        "Monster behaviour 12: entrance animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 13: flinch animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 14: initiate spell animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 15: initiate attack animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 16: escape animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 17: KO animation of sprite behaviours: sprite shadow",
-    ],
-    "monster_behaviours_3": [  # 2
-        "Monster behaviour 18: entrance animation of sprite behaviours: floating, sprite shadow",
-        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 23: escape animation of sprite behaviours: floating, sprite shadow",
-        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 19: entrance animation of sprite behaviours: floating",
-        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 24: escape animation of sprite behaviours: floating",
-        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
-    ],
-    "monster_behaviours_4": [  # 3
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 32: escape animation of sprite behaviours: floating, slide backward when hit (1)",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 33: escape animation of sprite behaviours: floating, slide backward when hit (2)",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 28: flinch animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 30: initiate spell animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 34: escape animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-    ],
-    "monster_behaviours_5": [  # 4
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 38: initiate spell aanimation of sprite behaviours: fade out death (2)",
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 42: escape animation of sprite behaviours: fade out death, Smithy spell cast",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 43: escape animation of sprite behaviours: fade out death, no "Escape" movement',
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-    ],
-    "monster_behaviours_6": [  # 3
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 46: flinch animation of sprite behaviours: fade out death, no "Escape" transition',
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 51: escape animation of sprite behaviours: fade out death, no "Escape" transition',
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 47: flinch animation of sprite behaviours: (normal)",
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 48: flinch animation of sprite behaviours: no reaction when hit",
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-    ],
-    "misses": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "weapons": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "monster_attacks": [
-        "PhysicalAttack0",
-        "PhysicalAttack2",
-        "PhysicalAttack4",
-        "PhysicalAttack5",
-        "PhysicalAttack6",
-        "PhysicalAttack7",
-        "PhysicalAttack8",
-        "PhysicalAttack9",
-        "PhysicalAttack10",
-        "PhysicalAttack11",
-        "PhysicalAttack12",
-        "PhysicalAttack15",
-        "Thornet",
-        "PhysicalAttack18",
-        "Funguspike",
-        "PhysicalAttack20",
-        "PhysicalAttack21",
-        "FullHouse",
-        "WildCard",
-        "RoyalFlush",
-        "SpritzBomb",
-        "PhysicalAttack27",
-        "PhysicalAttack28",
-        "PhysicalAttack29",
-        "Blazer",
-        "PhysicalAttack31",
-        "PhysicalAttack32",
-        "Echofinder",
-        "ScrowBell",
-        "DoomReverb",
-        "SporeChimes",
-        "InkBlast",
-        "GunkBall",
-        "Endobubble",
-        "PhysicalAttack40",
-        "VenomDrool",
-        "MushFunk",
-        "Stench",
-        "PhysicalAttack46",
-        "PhysicalAttack47",
-        "ViroPlasm",
-        "PsychoPlasm",
-        "PhysicalAttack50",
-        "PhysicalAttack51",
-        "PollenNap",
-        "ScrowDust",
-        "Sporocyst",
-        "Toxicyst",
-        "PhysicalAttack56",
-        "PhysicalAttack57",
-        "LullaBye",
-        "Elegy",
-        "Backfire",
-        "VaVaVoom",
-        "FunRun",
-        "BodySlam",
-        "Howl",
-        "Scream",
-        "IronMaiden",
-        "Fangs",
-        "Poison",
-        "CarniKiss",
-        "Claw",
-        "Grinder",
-        "DarkClaw",
-        "Scythe",
-        "Sickle",
-        "Deathsickle",
-        "EerieJig",
-        "SomnusWaltz",
-        "DahliaDance",
-        "Skewer",
-        "Pierce",
-        "PhysicalAttack81",
-        "Magnum",
-        "Psyche",
-        "Migraine",
-        "PhysicalAttack85",
-        "PhysicalAttack86",
-        "Multistrike",
-        "FlutterHush",
-        "PhysicalAttack89",
-        "PhysicalAttack90",
-        "PhysicalAttack91",
-        "FearRoulette",
-        "PhysicalAttack93",
-        "PhysicalAttack94",
-        "PhysicalAttack95",
-        "ValorUp",
-        "LastShot",
-        "PhysicalAttack101",
-        "PhysicalAttack105",
-        "Gnight",
-        "PhysicalAttack107",
-        "PhysicalAttack108",
-        "Chomp",
-        "GetTough",
-        "PhysicalAttack111",
-        "Missedme",
-        "PhysicalAttack113",
-        "LocoExpress",
-        "PhysicalAttack115",
-        "PhysicalAttack116",
-        "PhysicalAttack117",
-        "PhysicalAttack118",
-        "Jinxed",
-        "TripleKick",
-        "Quicksilver",
-        "BombsAway",
-        "Vigorup",
-        "SilverBullet",
-        "Terrapunch",
-        "ScrowFangs",
-        "Shaker",
-    ],
-    "monster_entrances": [
-        "ENT0000_NONE",
-        "ENT0001_SLIDE_IN",
-        "ENT0002_LONG_JUMP",
-        "ENT0003_HOP_3_TIMES",
-        "ENT0004_DROP_FROM_ABOVE",
-        "ENT0005_ZOOM_IN_FROM_RIGHT",
-        "ENT0006_ZOOM_IN_FROM_LEFT",
-        "ENT0007_SPREAD_OUT_FROM_BACK",
-        "ENT0008_HOVER_IN",
-        "ENT0009_READY_TO_ATTACK",
-        "ENT0010_FADE_IN",
-        "ENT0011_SLOW_DROP_FROM_ABOVE",
-        "ENT0012_WAIT_THEN_APPEAR",
-        "ENT0013_SPREAD_FROM_FRONT",
-        "ENT0014_SPREAD_FROM_MIDDLE",
-        "ENT0015_READY_TO_ATTACK",
-    ],
-    "monster_spells": [  # offset: 64
-        "Drain",
-        "LightningOrb",
-        "Flame",
-        "Bolt",
-        "Crystal",
-        "FlameStone",
-        "MegaDrain",
-        "WillyWisp",
-        "DiamondSaw",
-        "Electroshock",
-        "Blast",
-        "Storm",
-        "IceRock",
-        "Escape",
-        "DarkStar",
-        "Recover",
-        "MegaRecover",
-        "FlameWall",
-        "StaticE",
-        "SandStorm",
-        "Blizzard",
-        "DrainBeam",
-        "MeteorBlast",
-        "LightBeam",
-        "WaterBlast",
-        "Solidify",
-        "PetalBlast",
-        "AuroraFlash",
-        "Boulder",
-        "Corona",
-        "MeteorSwarm",
-        "KnockOut",
-        "WeirdMushroom",
-        "BreakerBeam",
-        "Shredder",
-        "Sledge",
-        "SwordRain",
-        "SpearRain",
-        "ArrowRain",
-        "BigBang",
-        "ChestScrow",
-        "ChestFear",
-        "ChestMute",
-        "ChestPoison",
-        "ChainSaw",
-    ],
+    
+    # "ally_spells": [
+    #     "Jump",
+    #     "Fire Orb",
+    #     "Super Jump",
+    #     "Super Flame",
+    #     "Ultra Jump",
+    #     "Ultra Flame",
+    #     "Therapy",
+    #     "Group Hug",
+    #     "Sleepy Time",
+    #     "Come Back",
+    #     "Mute",
+    #     "Psych Bomb",
+    #     "Terrorize",
+    #     "Poison Gas",
+    #     "Crusher",
+    #     "Bowser Crush",
+    #     "Geno Beam",
+    #     "Geno Boost",
+    #     "Geno Whirl",
+    #     "Geno Blast",
+    #     "Geno Flash",
+    #     "Thunderbolt",
+    #     "HP Rain",
+    #     "Psychopath",
+    #     "Shocker",
+    #     "Snowy",
+    #     "Star Rain",
+    # ],
+    # "flower_bonus": [
+    #     "(empty flower bonus message)",
+    #     "Attack Up!",
+    #     "Defense Up!",
+    #     "HP Max!",
+    #     "Once Again!",
+    #     "Lucky!",
+    # ],
+    # "items": [  # offset 96
+    #     "Mushroom",
+    #     "MidMushroom",
+    #     "MaxMushroom",
+    #     "HoneySyrup",
+    #     "MapleSyrup",
+    #     "RoyalSyrup",
+    #     "PickMeUp",
+    #     "AbleJuice",
+    #     "Bracer",
+    #     "Energizer",
+    #     "YoshiAde",
+    #     "RedEssence",
+    #     "KerokeroCola",
+    #     "YoshiCookie",
+    #     "PureWater",
+    #     "SleepyBomb",
+    #     "BadMushroom",
+    #     "FireBomb",
+    #     "IceBomb",
+    #     "FlowerTab",
+    #     "FlowerJar",
+    #     "FlowerBox",
+    #     "YoshiCandy",
+    #     "FroggieDrink",
+    #     "MukuCookie",
+    #     "Elixir",
+    #     "Megalixir",
+    #     "SeeYa",
+    #     "TempleKey",
+    #     "GoodieBag",
+    #     "EarlierTimes",
+    #     "FreshenUp",
+    #     "RareFrogCoin",
+    #     "Wallet",
+    #     "CricketPie",
+    #     "RockCandy",
+    #     "CastleKey1",
+    #     "DebugBomb",
+    #     "CastleKey2",
+    #     "BambinoBomb",
+    #     "SheepAttack",
+    #     "CarboCookie",
+    #     "ShinyStone",
+    #     "DUMMY_43" "RoomKey",
+    #     "ElderKey",
+    #     "ShedKey",
+    #     "LambsLure",
+    #     "FrightBomb",
+    #     "MysteryEgg",
+    #     "BeetleBox",
+    #     "BeetleBox2",
+    #     "LuckyJewel",
+    #     "DUMMY_53" "SopranoCard",
+    #     "AltoCard",
+    #     "TenorCard",
+    #     "Crystalline",
+    #     "PowerBlast",
+    #     "WiltShroom",
+    #     "RottenMush",
+    #     "MoldyMush",
+    #     "Seed",
+    #     "Fertilizer",
+    #     "WasteBasket",
+    #     "BigBooFlag",
+    #     "DryBonesFlag",
+    #     "GreaperFlag",
+    #     "SecretGame",
+    #     "ScrowBomb",
+    #     "CricketJam",
+    #     "BaneBomb",
+    #     "DoomBomb",
+    #     "FearBomb",
+    #     "SleepBomb",
+    #     "MuteBomb",
+    #     "Fireworks",
+    #     "Bomb",
+    #     "BrightCard",
+    #     "Mushroom2",
+    #     "StarEgg",
+    # ],
+    # "ally_behaviours": [
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: Mario/DUMMY A attack',
+    #     'Ally behaviour unindexed: Mario/DUMMY Y attack',
+    #     'Ally behaviour unindexed: Mario/DUMMY X item',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: Peach A attack',
+    #     'Ally behaviour unindexed: Peach Y attack',
+    #     'Ally behaviour unindexed: Peach X item',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: Bowser A attack',
+    #     'Ally behaviour unindexed: Bowser Y attack',
+    #     'Ally behaviour unindexed: Bowser X item',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: Geno A attack',
+    #     'Ally behaviour unindexed: Geno Y attack',
+    #     'Ally behaviour unindexed: Geno X item',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: Mallow A attack',
+    #     'Ally behaviour unindexed: Mallow Y attack',
+    #     'Ally behaviour unindexed: Mallow X item',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+
+    #     'Ally behaviour unindexed: unknown 0x350462',
+    #     'Ally behaviour 0: flinch animation',
+    #     'Ally behaviour unindexed: unknown 0x350484',
+    #     'Ally behaviour unindexed: unknown 0x350488 (mario/dummy)',
+    #     'Ally behaviour unindexed: unknown 0x3504AB (mario/dummy)',
+    #     'Ally behaviour unindexed: unknown 0x3504CE (mario/dummy)',
+    #     'Ally behaviour unindexed: victory pose',
+    #     'Ally behaviour 1: run away attempt',
+    # ],
+    # "monster_behaviours_1": [  # 5
+    #     'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit'
+    #     'Monster behaviour 1: flinch animation of sprite behaviours: no movement for "Escape"',
+    #     'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+    #     'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+    #     'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 2: flinch animation of sprite behaviours: slide backward when hit",
+    #     'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+    #     'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+    #     'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 3: flinch animation of sprite behaviours: Bowser Clone sprite",
+    #     'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+    #     'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+    #     'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 4: flinch animation of sprite behaviours: Mario Clone sprite",
+    #     'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+    #     'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+    #     'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     "Monster behaviour 5: flinch animation of sprite behaviours: no reaction when hit",
+    #     'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+    #     'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+    #     "Monster behaviour 11: KO animation of sprite behaviours: no reaction when hit",
+    # ],
+    # "monster_behaviours_2": [  # 1
+    #     "Monster behaviour 12: entrance animation of sprite behaviours: sprite shadow",
+    #     "Monster behaviour 13: flinch animation of sprite behaviours: sprite shadow",
+    #     "Monster behaviour 14: initiate spell animation of sprite behaviours: sprite shadow",
+    #     "Monster behaviour 15: initiate attack animation of sprite behaviours: sprite shadow",
+    #     "Monster behaviour 16: escape animation of sprite behaviours: sprite shadow",
+    #     "Monster behaviour 17: KO animation of sprite behaviours: sprite shadow",
+    # ],
+    # "monster_behaviours_3": [  # 2
+    #     "Monster behaviour 18: entrance animation of sprite behaviours: floating, sprite shadow",
+    #     "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 23: escape animation of sprite behaviours: floating, sprite shadow",
+    #     "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 19: entrance animation of sprite behaviours: floating",
+    #     "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+    #     "Monster behaviour 24: escape animation of sprite behaviours: floating",
+    #     "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+    # ],
+    # "monster_behaviours_4": [  # 3
+    #     "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+    #     "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+    #     "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 32: escape animation of sprite behaviours: floating, slide backward when hit (1)",
+    #     "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+    #     "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+    #     "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 33: escape animation of sprite behaviours: floating, slide backward when hit (2)",
+    #     "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 28: flinch animation of sprite behaviours: fade out death, floating",
+    #     "Monster behaviour 30: initiate spell animation of sprite behaviours: fade out death, floating",
+    #     "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    #     "Monster behaviour 34: escape animation of sprite behaviours: fade out death, floating",
+    #     "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+    # ],
+    # "monster_behaviours_5": [  # 4
+    #     'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+    #     'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     "Monster behaviour 38: initiate spell aanimation of sprite behaviours: fade out death (2)",
+    #     'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+    #     'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     "Monster behaviour 42: escape animation of sprite behaviours: fade out death, Smithy spell cast",
+    #     'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    #     'Monster behaviour 43: escape animation of sprite behaviours: fade out death, no "Escape" movement',
+    #     'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+    # ],
+    # "monster_behaviours_6": [  # 3
+    #     'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 46: flinch animation of sprite behaviours: fade out death, no "Escape" transition',
+    #     'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 51: escape animation of sprite behaviours: fade out death, no "Escape" transition',
+    #     'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     "Monster behaviour 47: flinch animation of sprite behaviours: (normal)",
+    #     'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+    #     'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     "Monster behaviour 48: flinch animation of sprite behaviours: no reaction when hit",
+    #     'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    #     "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+    #     'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+    # ],
+    # "misses": [
+    #     "Weapon",
+    #     "Armor",
+    #     "Accessory",
+    #     "Space",
+    #     "Space",
+    #     "Hammer",
+    #     "FroggieStick",
+    #     "NokNokShell",
+    #     "PunchGlove",
+    #     "FingerShot",
+    #     "Cymbals",
+    #     "Chomp",
+    #     "Masher",
+    #     "ChompShell",
+    #     "SuperHammer",
+    #     "HandGun",
+    #     "WhompGlove",
+    #     "SlapGlove",
+    #     "TroopaShell",
+    #     "Parasol",
+    #     "HurlyGloves",
+    #     "DoublePunch",
+    #     "RibbitStick",
+    #     "SpikedLink",
+    #     "MegaGlove",
+    #     "WarFan",
+    #     "HandCannon",
+    #     "StickyGlove",
+    #     "UltraHammer",
+    #     "SuperSlap",
+    #     "DrillClaw",
+    #     "StarGun",
+    #     "SonicCymbal",
+    #     "LazyShellWeapon",
+    #     "FryingPan",
+    #     "LuckyHammer",
+    # ],
+    # "weapons": [
+    #     "Weapon",
+    #     "Armor",
+    #     "Accessory",
+    #     "Space",
+    #     "Space",
+    #     "Hammer",
+    #     "FroggieStick",
+    #     "NokNokShell",
+    #     "PunchGlove",
+    #     "FingerShot",
+    #     "Cymbals",
+    #     "Chomp",
+    #     "Masher",
+    #     "ChompShell",
+    #     "SuperHammer",
+    #     "HandGun",
+    #     "WhompGlove",
+    #     "SlapGlove",
+    #     "TroopaShell",
+    #     "Parasol",
+    #     "HurlyGloves",
+    #     "DoublePunch",
+    #     "RibbitStick",
+    #     "SpikedLink",
+    #     "MegaGlove",
+    #     "WarFan",
+    #     "HandCannon",
+    #     "StickyGlove",
+    #     "UltraHammer",
+    #     "SuperSlap",
+    #     "DrillClaw",
+    #     "StarGun",
+    #     "SonicCymbal",
+    #     "LazyShellWeapon",
+    #     "FryingPan",
+    #     "LuckyHammer",
+    # ],
+    # "weapon_misses": [
+    #     "Weapon",
+    #     "Armor",
+    #     "Accessory",
+    #     "Space",
+    #     "Space",
+    #     "Hammer",
+    #     "FroggieStick",
+    #     "NokNokShell",
+    #     "PunchGlove",
+    #     "FingerShot",
+    #     "Cymbals",
+    #     "Chomp",
+    #     "Masher",
+    #     "ChompShell",
+    #     "SuperHammer",
+    #     "HandGun",
+    #     "WhompGlove",
+    #     "SlapGlove",
+    #     "TroopaShell",
+    #     "Parasol",
+    #     "HurlyGloves",
+    #     "DoublePunch",
+    #     "RibbitStick",
+    #     "SpikedLink",
+    #     "MegaGlove",
+    #     "WarFan",
+    #     "HandCannon",
+    #     "StickyGlove",
+    #     "UltraHammer",
+    #     "SuperSlap",
+    #     "DrillClaw",
+    #     "StarGun",
+    #     "SonicCymbal",
+    #     "LazyShellWeapon",
+    #     "FryingPan",
+    #     "LuckyHammer",
+    # ],
+    # "weapon_sounds": [
+    #     "Weapon",
+    #     "Armor",
+    #     "Accessory",
+    #     "Space",
+    #     "Space",
+    #     "Hammer",
+    #     "FroggieStick",
+    #     "NokNokShell",
+    #     "PunchGlove",
+    #     "FingerShot",
+    #     "Cymbals",
+    #     "Chomp",
+    #     "Masher",
+    #     "ChompShell",
+    #     "SuperHammer",
+    #     "HandGun",
+    #     "WhompGlove",
+    #     "SlapGlove",
+    #     "TroopaShell",
+    #     "Parasol",
+    #     "HurlyGloves",
+    #     "DoublePunch",
+    #     "RibbitStick",
+    #     "SpikedLink",
+    #     "MegaGlove",
+    #     "WarFan",
+    #     "HandCannon",
+    #     "StickyGlove",
+    #     "UltraHammer",
+    #     "SuperSlap",
+    #     "DrillClaw",
+    #     "StarGun",
+    #     "SonicCymbal",
+    #     "LazyShellWeapon",
+    #     "FryingPan",
+    #     "LuckyHammer",
+    # ],
+    # "monster_attacks": [
+    #     "PhysicalAttack0",
+    #     "PhysicalAttack1",
+    #     "PhysicalAttack2",
+    #     "PhysicalAttack3",
+    #     "PhysicalAttack4",
+    #     "PhysicalAttack5",
+    #     "PhysicalAttack6",
+    #     "PhysicalAttack7",
+    #     "PhysicalAttack8",
+    #     "PhysicalAttack9",
+    #     "PhysicalAttack10",
+    #     "PhysicalAttack11",
+    #     "PhysicalAttack12",
+    #     "PhysicalAttack13",
+    #     "PhysicalAttack14",
+    #     "PhysicalAttack15",
+    #     "PhysicalAttack16",
+    #     "Thornet",
+    #     "PhysicalAttack18",
+    #     "Funguspike",
+    #     "PhysicalAttack20",
+    #     "PhysicalAttack21",
+    #     "FullHouse",
+    #     "WildCard",
+    #     "RoyalFlush",
+    #     "PhysicalAttack25",
+    #     "SpritzBomb",
+    #     "PhysicalAttack27",
+    #     "PhysicalAttack28",
+    #     "PhysicalAttack29",
+    #     "Blazer",
+    #     "PhysicalAttack31",
+    #     "PhysicalAttack32",
+    #     "Echofinder",
+    #     "ScrowBell",
+    #     "DoomReverb",
+    #     "SporeChimes",
+    #     "InkBlast",
+    #     "GunkBall",
+    #     "Endobubble",
+    #     "PhysicalAttack40",
+    #     "SleepSauce",
+    #     "VenomDrool",
+    #     "MushFunk",
+    #     "ScrowFunk",
+    #     "Stench",
+    #     "PhysicalAttack46",
+    #     "PhysicalAttack47",
+    #     "ViroPlasm",
+    #     "PsychoPlasm",
+    #     "PhysicalAttack50",
+    #     "PhysicalAttack51",
+    #     "PollenNap",
+    #     "ScrowDust",
+    #     "Sporocyst",
+    #     "Toxicyst",
+    #     "PhysicalAttack56",
+    #     "PhysicalAttack57",
+    #     "LullaBye",
+    #     "Elegy",
+    #     "Backfire",
+    #     "VaVaVoom",
+    #     "FunRun",
+    #     "BodySlam",
+    #     "Howl",
+    #     "Scream",
+    #     "IronMaiden",
+    #     "Fangs",
+    #     "Poison",
+    #     "CarniKiss",
+    #     "Claw",
+    #     "Grinder",
+    #     "DarkClaw",
+    #     "Scythe",
+    #     "Sickle",
+    #     "Deathsickle",
+    #     "EerieJig",
+    #     "SomnusWaltz",
+    #     "DahliaDance",
+    #     "Skewer",
+    #     "Pierce",
+    #     "PhysicalAttack81",
+    #     "Magnum",
+    #     "Psyche",
+    #     "Migraine",
+    #     "PhysicalAttack85",
+    #     "PhysicalAttack86",
+    #     "Multistrike",
+    #     "FlutterHush",
+    #     "PhysicalAttack89",
+    #     "PhysicalAttack90",
+    #     "PhysicalAttack91",
+    #     "FearRoulette",
+    #     "PhysicalAttack93",
+    #     "PhysicalAttack94",
+    #     "PhysicalAttack95",
+    #     "HammerTime",
+    #     "ValorUp",
+    #     "PhysicalAttack98",
+    #     "LastShot",
+    #     "PhysicalAttack100",
+    #     "PhysicalAttack101",
+    #     "PhysicalAttack102",
+    #     "PhysicalAttack103",
+    #     "PhysicalAttack104",
+    #     "PhysicalAttack105",
+    #     "Gnight",
+    #     "PhysicalAttack107",
+    #     "PhysicalAttack108",
+    #     "Chomp",
+    #     "GetTough",
+    #     "PhysicalAttack111",
+    #     "Missedme",
+    #     "PhysicalAttack113",
+    #     "LocoExpress",
+    #     "PhysicalAttack115",
+    #     "PhysicalAttack116",
+    #     "PhysicalAttack117",
+    #     "PhysicalAttack118",
+    #     "Jinxed",
+    #     "TripleKick",
+    #     "Quicksilver",
+    #     "BombsAway",
+    #     "Vigorup",
+    #     "PhysicalAttack124",
+    #     "SilverBullet",
+    #     "Terrapunch",
+    #     "ScrowFangs",
+    #     "Shaker",
+    # ],
+    # "monster_entrances": [
+    #     "ENT0000_NONE",
+    #     "ENT0001_SLIDE_IN",
+    #     "ENT0002_LONG_JUMP",
+    #     "ENT0003_HOP_3_TIMES",
+    #     "ENT0004_DROP_FROM_ABOVE",
+    #     "ENT0005_ZOOM_IN_FROM_RIGHT",
+    #     "ENT0006_ZOOM_IN_FROM_LEFT",
+    #     "ENT0007_SPREAD_OUT_FROM_BACK",
+    #     "ENT0008_HOVER_IN",
+    #     "ENT0009_READY_TO_ATTACK",
+    #     "ENT0010_FADE_IN",
+    #     "ENT0011_SLOW_DROP_FROM_ABOVE",
+    #     "ENT0012_WAIT_THEN_APPEAR",
+    #     "ENT0013_SPREAD_FROM_FRONT",
+    #     "ENT0014_SPREAD_FROM_MIDDLE",
+    #     "ENT0015_READY_TO_ATTACK",
+    # ],
+    # "monster_spells": [  # offset: 64
+    #     "Drain",
+    #     "LightningOrb",
+    #     "Flame",
+    #     "Bolt",
+    #     "Crystal",
+    #     "FlameStone",
+    #     "MegaDrain",
+    #     "WillyWisp",
+    #     "DiamondSaw",
+    #     "Electroshock",
+    #     "Blast",
+    #     "Storm",
+    #     "IceRock",
+    #     "Escape",
+    #     "DarkStar",
+    #     "Recover",
+    #     "MegaRecover",
+    #     "FlameWall",
+    #     "StaticE",
+    #     "SandStorm",
+    #     "Blizzard",
+    #     "DrainBeam",
+    #     "MeteorBlast",
+    #     "LightBeam",
+    #     "WaterBlast",
+    #     "Solidify",
+    #     "PetalBlast",
+    #     "AuroraFlash",
+    #     "Boulder",
+    #     "Corona",
+    #     "MeteorSwarm",
+    #     "KnockOut",
+    #     "WeirdMushroom",
+    #     "BreakerBeam",
+    #     "Shredder",
+    #     "Sledge",
+    #     "SwordRain",
+    #     "SpearRain",
+    #     "ArrowRain",
+    #     "BigBang",
+    #     "ChestScrow",
+    #     "ChestFear",
+    #     "ChestMute",
+    #     "ChestPoison",
+    #     "ChainSaw",
+    # ],
+
 }
 
 
@@ -1653,7 +1802,6 @@ def get_var_name_string(id, prefix):
     r = re.compile("^%s.*" % prefix)
     newlist = list(filter(r.match, candidates))
     if len(newlist) != 1:
-        print("%s %r" % (prefix, id))
         raise Exception(newlist)
     return newlist[0]
 
@@ -1712,44 +1860,59 @@ class Bank:
         self.start = start
         self.end = end
 
+    def __str__(self):
+        return "Bank(start=0x%06X, end=0x%06X, pointer_table_start=%s, pointer_table_end=%s)" % (
+            self.start,
+            self.end,
+            "0x%06X" % self.pointer_table_start
+            if self.pointer_table_start is not None
+            else "None",
+            "0x%06X" % self.pointer_table_end
+            if self.pointer_table_end is not None
+            else "None",
+        )
+
 
 banks: Dict[str, Bank] = {
-    "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
-    # gap
-    "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
-    "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
-    "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
-    "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
-    "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
-    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
-    "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
-    "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
-    "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
-    "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
-    "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
-    # gap
-    "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
-    # gap (2 bytes, ptr table header)
-    "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
-    # gap
-    "weapon_wrapper_mario": Bank(0x358916, 0x358935),
-    # gap
-    "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
-    # gap
-    "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
-    # gap
-    "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
-    # gap
-    "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
-    # gap
-    "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
-    # gap
-    "ally_spells": Bank(
-        0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
-    ),  # NOTE: Adjusted due to clone spells!
-    # gap
-    "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
-    "battle_events": Bank(0x3A60D0, 0x3A705C, 0x3A6004, 0x3A60CF),
+
+    # "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
+    # # gap
+    # "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
+    # "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
+    # "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
+    # "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
+    # "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
+    # "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
+    # "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
+    # "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
+    # "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
+    # "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
+    # "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
+    # # gap
+    # "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
+    # # gap (2 bytes, ptr table header)
+    # "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
+    # # gap
+    # "weapon_wrapper_mario": Bank(0x358916, 0x358935),
+    # # gap
+    # "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
+    # # gap
+    # "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
+    # # gap
+    # "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
+    # # gap
+    # "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
+    # # gap
+    # "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
+    # # gap
+    # "ally_spells": Bank(
+    #     0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
+    # ),  # NOTE: Adjusted due to clone spells!
+    # # gap
+    # "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
+    "battle_events": Bank(0x3A6000, 0x3A705C),
+
+    #"battle_events": Bank(0x3A60D0, 0x3A705C, 0x3A6004, 0x3A60CF),
 }
 
 
@@ -2035,18 +2198,71 @@ rom_coverage = [None] * 0x400000
 addresses_to_track = []
 
 
-def tok(rom, start, end) -> List[Tuple[List[int], int]]:
+class AMEM(list):
+    """Base class representing a battlefield layout as a list of 16 lists of ints."""
+
+    def __new__(cls, data):
+        # Validate the outer list length
+        if not isinstance(data, list) or len(data) != 16:
+            raise ValueError("AMEM must be a list of 16 lists.")
+
+        # Validate each inner list
+        for i, inner in enumerate(data):
+            if not isinstance(inner, list):
+                raise TypeError(f"Element at index {i} is not a list.")
+            if not all(isinstance(x, int) for x in inner):
+                raise TypeError(f"Element at index {i} contains non-integer values.")
+
+        # Create the list instance (empty; contents set in __init__)
+        return super().__new__(cls)
+
+    def __init__(self, data):
+        # Initialize list contents
+        super().__init__(data)
+
+    def __reduce_ex__(self, protocol):
+        # Tell pickle/deepcopy how to reconstruct us: call AMEM(list(self))
+        return (self.__class__, (list(self),))
+
+@dataclass
+class OQRef:
+    addr: int
+    amem: AMEM
+    relevant_indexes: List[int]
+    label: str
+    length: int
+    pointers: List[int]
+
+    def __init__(self, addr: int, amem: AMEM, relevant_indexes: List[int], label: str = ""):
+        self.addr = addr
+        self.amem = deepcopy(amem)
+        self.relevant_indexes = deepcopy (relevant_indexes)
+        self.label = label
+
+    def __repr__(self) -> str:
+        return f"OQRef(addr=0x{self.addr:06X}, label={self.label}, length={self.length if hasattr(self, 'length') else None}, pointers={[f'0x{p:06X}' for p in self.pointers] if hasattr(self, 'pointers') else None}, relevant_indexes={self.relevant_indexes}, amem={self.amem})"
+
+
+def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_starts: List[OQRef]) -> List[Tuple[bytearray, int, bool]]:
     dex = start
-    script: List[Tuple[List[int], int]] = []
-    while dex <= end:
-        cmd = rom[dex]
-        l = command_lens[cmd]
-        if cmd == 0xC6 and l == 0:
-            l = 2 + rom[dex + 1]
-        elif cmd == 0xBA and l == 0:
-            l = 2 + rom[dex + 1] * 2
-        script.append((rom[dex : dex + l], dex))
-        dex += l
+    script: List[Tuple[bytearray, int, bool]] = []
+    combo_oq = oq_starts + oq_idx_starts
+    while dex < end:
+        if dex in [s.addr for s in combo_oq]:
+            oq = next((s for s in combo_oq if s.addr == dex), None)
+            if oq is None:
+                raise Exception("how did you get here?")
+            script.append((rom[dex : dex + oq.length], dex, True))
+            dex += oq.length
+        else:
+            cmd = rom[dex]
+            l = command_lens[cmd]
+            if cmd == 0xC6 and l == 0:
+                l = 2 + rom[dex + 1]
+            elif cmd == 0xBA and l == 0:
+                l = 2 + rom[dex + 1] * 2
+            script.append((rom[dex : dex + l], dex, False))
+            dex += l
     return script
 
 
@@ -2096,41 +2312,28 @@ SPECIAL_CASE_BREAKS = [
 ]
 
 
-class AMEM(list[list[int]]):
-    """Base class representing a battlefield layout as a list of 16 lists of ints."""
-
-    def __new__(cls, data):
-        # Validate the outer list length
-        if not isinstance(data, list) or len(data) != 16:
-            raise ValueError("AMEM must be a list of 16 lists.")
-
-        # Validate each inner list
-        for i, inner in enumerate(data):
-            if not isinstance(inner, list):
-                raise TypeError(f"Element at index {i} is not a list.")
-            if not all(isinstance(x, int) for x in inner):
-                raise TypeError(f"Element at index {i} contains non-integer values.")
-
-        # Create the list instance
-        return super(AMEM, cls).__new__(cls, data)
-
-    def __init__(self, data):
-        # Initialize list contents
-        super().__init__(data)
-
-
 @dataclass
 class Addr:
     offset: int
     amem: AMEM
     ref_label: str
-    referenced_by: list[str]
+    _referenced_by: list[str]
 
-    def __init__(self, offset: int, amem: AMEM, ref_label: str, refs: list):
+    @property
+    def referenced_by(self) -> List[str]:
+        return [r for r in self._referenced_by if r != ""]
+
+    def __init__(self, offset: int, amem: AMEM, ref_label: str, refs: Optional[List[str]] = None):
         self.offset = offset
         self.amem = amem
         self.ref_label = ref_label
-        self.referenced_by = refs
+        self._referenced_by = refs if refs is not None else []
+
+    def __str__(self) -> str:
+        return (
+            f"Addr(offset=0x{self.offset:06X}, amem={self.amem}, "
+            f"ref_label={self.ref_label}, referenced_by={self.referenced_by})"
+        )
 
 
 @dataclass
@@ -2156,25 +2359,36 @@ class ObjectQueueWithIndex:
 class ProtoCommand:
     id: str 
     addr: int
-    data: List[int]
+    raw_data: bytearray
+    parsed_data: List[Union[int, str]]
     length: Optional[int]
+    oq: bool
 
     def __init__(
         self,
         id: str,
         addr: int,
-        data: List[int],
+        data: bytearray,
+        oq: bool = False,
         length: Optional[int] = None
     ):
         self.id = id
         self.addr = addr
-        self.data = data
+        self.raw_data = data
+        self.oq = oq
         self.length = length
+        self.parsed_data = []
+
+    def __repr__(self) -> str:
+        return (
+            f"ProtoCommand(id={self.id!r}, addr=0x{self.addr:06X}, "
+            f"data=[{" ".join([f'0x{b:02X}' for b in self.raw_data])}], oq={self.oq}, length={self.length})"
+        )
 
 @dataclass
 class ContiguousBlock:
     start: int
-    contents: List[int]
+    contents: bytearray
 
     @property
     def size(self):
@@ -2184,9 +2398,12 @@ class ContiguousBlock:
     def end(self):
         return self.start + self.size
     
-    def __init__(self, start: int, contents: List[int]):
+    def __init__(self, start: int, contents: bytearray):
         self.start = start
         self.contents = contents
+
+    def __str__(self) -> str:
+        return f"ContiguousBlock(start=0x{self.start:06X}, size={self.size}, end=0x{self.end:06X})"
 
 
 def string_byte(word):
@@ -2196,11 +2413,22 @@ def string_byte(word):
         return "0x%02x" % word
 
 
-INIT_AMEM: AMEM = [[0]] * 16
+INIT_AMEM: AMEM = AMEM([[0]] * 16)
 
 BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE = [22]
-BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE = [75, 80]
+BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE = [70, 85]
 
+def get_third_byte_as_string(bank_name: str) -> str:
+    if "subroutine" in bank_name:
+        return bank_name[-6:-4].upper()
+    elif bank_name == "battle_events":
+        return "3A"
+    elif bank_name in ["toad_tutorial", "flower_bonus"]:
+        return "02"
+    else:
+        return "35"
+
+BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -2217,11 +2445,10 @@ class Command(BaseCommand):
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
 
-        scripts: List[List[Tuple[List[int], int]]] = []
-
         jump_pointers = []
-        object_queues_begin: List[ObjectQueue] = []
-        object_queues_double_offset_begin: List[ObjectQueueWithIndex] = []
+
+        oq_starts: List[OQRef] = []
+        oq_idx_starts: List[OQRef] = []
 
         known_addresses_covered = {
             "02": [False] * 0x10000,
@@ -2229,44 +2456,32 @@ class Command(BaseCommand):
             "3A": [False] * 0x10000,
         }
 
-        scripts_with_headers = {"22": [], "70": [], "85": []}
-
-        collective_data = {"35": [], "3A": [], "02": []}
-        separated_data: List[str, List[List[ProtoCommand]]] = {}
+        collective_data: Dict[str, List[List[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
+        separated_data: Dict[str, List[List[ProtoCommand]]] = {}
 
         references: Dict[int, List[str]] = {}
         references_by_bank = {}
 
-        for bank_name, bank in banks.items():
-            reference_label = ""
-            third_byte_as_string = "35"
-            if "subroutine" in bank_name:
-                third_byte_as_string = bank_name[-6:-4].upper()
-            elif bank_name == "battle_events":
-                third_byte_as_string = "3A"
-                reference_label = bank_name
-            elif bank_name in ["toad_tutorial", "flower_bonus"]:
-                third_byte_as_string = "02"
-                reference_label = bank_name
-            else:
-                reference_label = bank_name
+        data: List[List[ProtoCommand]] = []
 
-            bank_as_upper_byte = bank.start & 0xFF0000
+        for bank_name, blocks in banks.items():
+            # print(f'Processing bank: {bank_name}')
+            third_byte_as_string = get_third_byte_as_string(bank_name)
+            reference_label = bank_name
+
+            bank_as_upper_byte = blocks.start & 0xFF0000
 
             bank_pointer_addresses: List[int] = []
             script_sizes: List[int] = []
 
-            data: List[List[ProtoCommand]] = []
-
             # This is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
             branches: List[Addr] = []
-            bank_beginning_offset = 2 if bank_name == "battle_events" else 0
             amem: AMEM = deepcopy(INIT_AMEM)
 
             # To start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
-            if bank.has_pointers:
+            if blocks.has_pointers:
                 for pointer_table_index, pointer in enumerate(
-                    range(bank.pointer_table_start, bank.pointer_table_end, 2)
+                    range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be None if has_pointers is True
                 ):
                     three_byte_pointer: int = (
                         shortify(rom, pointer) + bank_as_upper_byte
@@ -2285,84 +2500,215 @@ class Command(BaseCommand):
                         Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
                     )
             else:
-                branches.append(Addr(bank.start, deepcopy(amem), reference_label, []))
+                if bank_name == "battle_events":
+                    tertiary_cursor = blocks.start
+                    tertiary_cursor_short = tertiary_cursor & 0xFFFF
+                    tertiary_end = 0x10000
+                    while tertiary_cursor_short < tertiary_end:
+                        tertiary_points_to = shortify(rom, tertiary_cursor)
+                        known_addresses_covered[third_byte_as_string][tertiary_cursor & 0xFFFF] = True
+                        known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
+                        if tertiary_points_to < tertiary_end:
+                            tertiary_end = tertiary_points_to
+                        # print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
+                        tertiary_cursor += 2
+                        tertiary_cursor_short = tertiary_cursor & 0xFFFF
+                        oq_idx_starts.append(
+                            OQRef(
+                                bank_as_upper_byte + tertiary_points_to,
+                                deepcopy(INIT_AMEM),
+                                [0],
+                            )
+                        )
+                        branches.append(Addr(bank_as_upper_byte + tertiary_points_to, deepcopy(INIT_AMEM), BATTLE_EVENTS_ROOT_LABEL, []))
 
             # Now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                extra_offset = 0
-
-                # Some battle events, like Yaridovich cloning himself, start off with a few bytes that are pointers to partway through the attack. Not known what it's for.
-                if (
-                    bank_name == "battle_events"
-                    and branch_index in BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE
-                ):
-                    extra_offset = 2
-                    base_header_ptr = (
-                        shortify(rom, bank.pointer_table_start + branch_index * 2)
-                        + bank_as_upper_byte
-                    )
-                    scripts_with_headers[str(branch_index)].append(
-                        shortify(rom, base_header_ptr + 2) + bank_as_upper_byte
-                    )
-                elif (
-                    bank_name == "battle_events"
-                    and branch_index in BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE
-                ):
-                    base_header_ptr = (
-                        shortify(rom, bank.pointer_table_start + branch_index * 2)
-                        + bank_as_upper_byte
-                    )
-                    extra_offset = 4
-                    scripts_with_headers[str(branch_index)].append(
-                        shortify(rom, base_header_ptr + 2) + bank_as_upper_byte
-                    )
-                    scripts_with_headers[str(branch_index)].append(
-                        shortify(rom, base_header_ptr + 4) + bank_as_upper_byte
-                    )
-
+                # print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_name} (0x{this_branch.offset:06X}): {this_branch}')
+                
                 # AMEM can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
-
-                is_subroutine = True
-                if bank.has_pointers and (branch_index < len(script_sizes)):
-                    is_subroutine = False
-                    addr = this_branch.offset + bank_beginning_offset + extra_offset
-                else:
-                    addr = this_branch.offset + extra_offset
+                absolute_offset = this_branch.offset 
 
                 # Keep a running, recursive list of what top-level scripts ultimately reference this code.
                 # This will ultimatley be displayed in the output python file as an annotation.
-                current_addr = addr
-                if addr not in references:
-                    references[addr] = []
-                references[addr].extend(this_branch.referenced_by)
-                references[addr] = list(set(references[addr]))
+                cursor = absolute_offset
+                if absolute_offset not in references:
+                    references[absolute_offset] = []
+                references[absolute_offset].extend(this_branch.referenced_by)
+                references[absolute_offset] = list(set(references[absolute_offset]))
 
                 # Process every command in the script until we find a terminating byte.
                 end_found = False
                 while not end_found:
-                    # Get the bytes for whatever command begins at current_addr.
-                    opcode = rom[current_addr]
-                    length = command_lens[opcode]
-                    if opcode == 0xC6:
-                        length = rom[current_addr + 1] + 2
-                    elif opcode == 0xBA:
-                        length = rom[current_addr + 1] * 2 + 2
-                    command = rom[current_addr : current_addr + length]
-                    cvr_range = current_addr & 0xFFFF
+                    # print(f'        current_addr: 0x{cursor:06X}')
+                    def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
+                        if important_amem_indexes_raw is None:
+                            important_amem_indexes_raw = [0]
+                        important_amem_indexes = list(set(important_amem_indexes_raw))
 
+                        # ?
+                        jump_voided = False
+                        if offs == 0x3A705D:
+                            # print ("found addr 0x3A705D")
+
+                        # exit if the branch destination is somehow not in this bank
+                        if offs & 0xFF0000 != bank_as_upper_byte:
+                            raise Exception("illegal addr 0x%06x" % offs)
+
+                        # add this branch's label to the list of references the destination branch will receive
+                        dc = deepcopy(this_branch.referenced_by)
+                        if (
+                            "subroutine" not in this_branch.ref_label
+                            and this_branch.ref_label != ""
+                        ):
+                            dc.append(this_branch.ref_label)
+
+                        # separately, maintain an address<->references dict for easier lookup
+                        if offs not in references:
+                            references[offs] = []
+                        references[offs].append(this_branch.ref_label)
+                        references[offs] = list(set(references[offs]))
+
+                        destination_branch = Addr(
+                            offs, deepcopy(am), lbl, dc
+                        )
+
+                        # if the destination branch already exists, verify that we don't have an exact copy with the same amem
+                        for t in [t for t in branches if t.offset == offs]:
+                            same_amem_count = 0
+                            for a in important_amem_indexes:
+                                if set(t.amem[a]) == set(am[a]):
+                                    same_amem_count += 1
+                            if same_amem_count == len(important_amem_indexes):
+                                jump_voided = True
+                                break
+
+                        if not jump_voided:
+                            branches.append(destination_branch)
+                            # print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}')
+
+                        return destination_branch
+
+                    def create_object_queue(base_addr: int) -> int:
+                        temp_cursor_addr = base_addr
+                        length = 0
+                        for s in [s for s in oq_starts if s.addr == base_addr]:
+                            temp_cursor_addr = base_addr
+                            # print("          processing basic OQ starting at 0x%06x" % (temp_cursor_addr))
+                            tbl_ends_at = 0x10000
+                            temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
+                            i = 0
+                            length = 0
+                            ptrs: List[int] = []
+                            while temp_cursor_addr_short < tbl_ends_at:
+                                cursor_points_to = shortify(rom, temp_cursor_addr)
+                                known_addresses_covered[third_byte_as_string][temp_cursor_addr_short] = True
+                                known_addresses_covered[third_byte_as_string][temp_cursor_addr_short + 1] = True
+                                if cursor_points_to < tbl_ends_at:
+                                    tbl_ends_at = cursor_points_to
+                                # print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06X}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06X}")
+                                temp_cursor_addr += 2
+                                temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
+                                amem = deepcopy(INIT_AMEM)
+                                amem[0] = [i]
+                                label = ""
+                                if i in s.relevant_indexes:
+                                    amem = s.amem
+                                    label = s.label
+                                ref = bank_as_upper_byte + cursor_points_to
+                                validate_addr(ref, amem, label)
+                                ptrs.append(ref)
+                                i += 1
+                                length += 2
+                                if not (temp_cursor_addr_short < tbl_ends_at):
+                                    break
+                            s.length = length
+                            s.pointers = ptrs
+                        return length
+
+                    # Get the bytes for whatever command begins at current_addr.
+                    # Check first if this is the start of an OQ pointer table. Add branches if so, and mark table range as used.
+                    if cursor in [s.addr for s in oq_starts]:
+                        s = next((s for s in oq_starts if s.addr == cursor), None)
+                        if not s:
+                            raise ValueError("how did you get here?")
+                        # print("        THIS IS A ONE-TIER OQ")
+                        cursor += create_object_queue(cursor)
+                        continue
+                    elif cursor in [s.addr for s in oq_idx_starts]:
+                        # print("        THIS IS A TWO-TIER OQ")
+                        complex_oq = next((s for s in oq_idx_starts if s.addr == cursor), None)
+                        if not complex_oq:
+                            raise ValueError("how did you get here?")
+                        tbl_ends_at = 0x10000
+                        cursor_short = cursor & 0xFFFF
+                        i = 0
+                        if not hasattr(complex_oq, "pointers"):
+                            complex_oq.pointers = []
+                        length = 0
+                        while cursor_short < tbl_ends_at:
+                            length += 2
+                            # figure out where every basic OQ in the complex OQ starts
+                            # by iterating through short pointers until we hit the start of a basic OQ
+                            if i in complex_oq.relevant_indexes:
+                                # relevant indexes are ones that we know are actually referenced by a script
+                                # and therefore need to carry possible AMEM values and a label
+                                # other indexes are probably unused but we should know them if they are parts of OQs
+                                amem = complex_oq.amem
+                                label = complex_oq.label
+                            else:
+                                amem = deepcopy(INIT_AMEM)
+                                amem[0] = [i]
+                                label = ""
+                            # if this basic OQ is a lower pointer than any others, it's probably where the complex OQ table ends
+                            cursor_points_to = shortify(rom, cursor)
+                            if cursor_points_to < tbl_ends_at:
+                                tbl_ends_at = cursor_points_to
+                            # we know these bytes are used because they point to a basic OQ
+                            known_addresses_covered[third_byte_as_string][cursor_short] = True
+                            known_addresses_covered[third_byte_as_string][cursor_short + 1] = True
+                            # add a branch to the branch array for the basic OQ
+                            # relevant indexes based on the amem being passed in
+                            relevant_indexes = list(set([x for sub in amem for x in sub]))
+                            pointed_addr = bank_as_upper_byte + cursor_points_to
+                            ref = OQRef(pointed_addr, amem, relevant_indexes, label)
+                            oq_starts.append(ref)
+                            complex_oq.pointers.append(pointed_addr)
+                            # parse the basic OQ to add its branches
+                            # print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))  
+                            create_object_queue(pointed_addr)
+                            cursor += 2
+                            cursor_short = cursor & 0xFFFF
+                            i += 1
+                        complex_oq.length = length
+                        continue
+
+                    opcode = rom[cursor]
+                    length = command_lens[opcode]
+                    # print(f'            opcode: {opcode:02X}, length: {length}, data: {" ".join([f"0x{b:02X}" for b in rom[cursor:cursor+length]])}')
+                    if opcode == 0xC6:
+                        length = rom[cursor + 1] + 2
+                    elif opcode == 0xBA:    
+                        length = rom[cursor + 1] * 2 + 2
+                    command = rom[cursor : cursor + length]
+                    cvr_range = cursor & 0xFFFF
+
+                    if command == bytearray([0,0,0,0,0,0,0,0,0]):
+                        end_found = True
+                        break
                     # I have no idea why the branch array length is being compared to the script size length, but it worked before
                     # Here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
-                    if bank.has_pointers and (branch_index < len(script_sizes)):
-                        for c in range(
-                            cvr_range - bank_beginning_offset, cvr_range + length
+                    elif blocks.has_pointers and (branch_index < len(script_sizes)):
+                        for tok_output in range(
+                            cvr_range, cvr_range + length
                         ):
-                            known_addresses_covered[third_byte_as_string][c] = True
+                            known_addresses_covered[third_byte_as_string][tok_output] = True
                     else:
-                        for c in range(cvr_range, cvr_range + length):
-                            known_addresses_covered[third_byte_as_string][c] = True
+                        for tok_output in range(cvr_range, cvr_range + length):
+                            known_addresses_covered[third_byte_as_string][tok_output] = True
 
                     # If this is a command that changes AMEM $60-$6F, or COULD change them, we need to keep track of what its possible values could be in case an AMEM-based object queue comes up.
                     if opcode in [0x20, 0x21]:  # set amem 8 bit to...
@@ -2387,11 +2733,11 @@ class Command(BaseCommand):
                             for x in amem[index2]:
                                 for y in amem[index1]:
                                     consolidated.append(x + y)
-                            amem[index2] = List(set(consolidated))
+                            amem[index2] = list(set(consolidated))
                         elif (
                             command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
                         ):  # by const
-                            amem[command[1]] = List(
+                            amem[command[1]] = list(
                                 set(
                                     [
                                         (a + shortify(command, 2))
@@ -2407,11 +2753,11 @@ class Command(BaseCommand):
                             for x in amem[index2]:
                                 for y in amem[index1]:
                                     consolidated.append(max(0, x - y))
-                            amem[index2] = List(set(consolidated))
+                            amem[index2] = list(set(consolidated))
                         elif (
                             command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
                         ):  # by const
-                            amem[command[1]] = List(
+                            amem[command[1]] = list(
                                 set(
                                     [
                                         max(0, a - shortify(command, 2))
@@ -2420,13 +2766,13 @@ class Command(BaseCommand):
                                 )
                             )
                     elif opcode in [0x30, 0x31] and command[1] <= 0x0F:
-                        amem[command[1]] = List(set([a + 1 for a in amem[command[1]]]))
+                        amem[command[1]] = list(set([a + 1 for a in amem[command[1]]]))
                     elif opcode in [0x32, 0x33] and command[1] <= 0x0F:
-                        amem[command[1]] = List(set([a - 1 for a in amem[command[1]]]))
+                        amem[command[1]] = list(set([a - 1 for a in amem[command[1]]]))
                     elif opcode in [0x34, 0x35] and command[1] <= 0x0F:
                         amem[command[1]] = [0]
                     elif opcode in [0x6A, 0x6B] and command[1] <= 0x0F:
-                        amem[command[1]] = List(range(command[2]))
+                        amem[command[1]] = list(range(command[2]))
 
                     amem_was = deepcopy(amem)
 
@@ -2448,179 +2794,61 @@ class Command(BaseCommand):
                         # Only really tracking constants and other AMEM. Not really possible to track $7Exxxx and $7Fxxxx or OMEM
                         important_amem_indexes = [0]
 
-                        def validate_addr(offs: int, am: AMEM, lbl: str = ""):
-                            # ?
-                            jump_voided = False
-
-                            # exit if the branch destination is somehow not in this bank
-                            if offs & 0xFF0000 != bank_as_upper_byte:
-                                raise Exception("illegal addr 0x%06x" % offs)
-
-                            # add this branch's label to the list of references the destination branch will receive
-                            dc = deepcopy(this_branch.referenced_by)
-                            if (
-                                "subroutine" not in this_branch.ref_label
-                                and this_branch.ref_label != ""
-                            ):
-                                dc.append(this_branch.ref_label)
-
-                            # separately, maintain an address<->references dict for easier lookup
-                            if offs not in references:
-                                references[offs] = []
-                            references[offs].append(this_branch.ref_label)
-                            references[offs] = list(set(references[offs]))
-
-                            destination_branch = Addr(
-                                branch_addr, deepcopy(am), lbl, dc
-                            )
-
-                            # if the destination branch already exists, verify that we don't have an exact copy with the same amem
-                            for t in [t for t in branches if t.offset == branch_addr]:
-                                same_amem_count = 0
-                                for a in important_amem_indexes:
-                                    if set(t.amem[a]) == set(am[a]):
-                                        same_amem_count += 1
-                                if same_amem_count == len(important_amem_indexes):
-                                    jump_voided = True
-                                    break
-
-                            if not jump_voided:
-                                branches.append(destination_branch)
-
-                            return destination_branch
-
-                        def process_object_queue(opcode: int):
-                            if opcode == 0x64:
-                                pass
-                            # Running loop starting from addr of lowest ptr.
-                            # Once you reach lowest ptr, you have your ptr table.
-                            elif opcode == 0x68:
-                                pass
-                            # Running loop starting from addr of lowest ptr index.
-                            # ie 0x358499: bytes are "0x9B 0x84" indicating that the ptr table starts at 0x35849B
-                            # which is immediately after this. Suggests that there is only one ptr table.
-                            # If it was "0x9D 0x84" then there would probably be two ptr table header ptrs.
-                            # For each header ptr, process the pre table like for opcode 0x64 - keep going until you reach the code OR until you reach another ptr table 
-                            # (Which you'd know from figuring out how many ptr tables there are)
-                            
-                            pass
-
                         if opcode in [0x24, 0x25]:  # if amem =
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            var_type = (command[1] & 0xF0) >> 4
+                            if var_type == 0:
                                 amem[index1] = [shortify(command, 2)]
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
+                            elif var_type == 3:
+                                index2 = command[2] & 0x0F
                                 amem[index1] = amem[index2]
                         elif opcode in [0x26, 0x27]:  # if amem !=
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = [abs(shortify(command, 2) - 1)]
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = [abs(amem[index2] - 1)]
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            var_type = (command[1] & 0xF0) >> 4
+                            if var_type == 0:
+                                amem[index1] = [a for a in amem[index1] if a != shortify(command, 2)]
+                            elif var_type == 3:
+                                if amem[index1] == amem[command[2]]:
+                                    amem[index1] = []
                         elif opcode in [0x28, 0x29]:  # if amem <
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = [shortify(command, 2) - 1]
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = [amem[index2] - 1]
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            var_type = (command[1] & 0xF0) >> 4
+                            if var_type == 0:
+                                amem[index1] = [a for a in amem[index1] if a < shortify(command, 2)]
+                            elif var_type == 3:
+                                index2 = command[2] & 0x0F
+                                amem[index1] = [a for a in amem[index1] if a < max(amem[index2])]
                         elif opcode in [0x2A, 0x2B]:  # if amem >=
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            if command[1] & 0xF0 == 0:
-                                amem[index1] = [shortify(command, 2)]
-                            elif command[1] & 0xF0 == 3:
-                                index2 = command[2]
-                                amem[index1] = [amem[index2]]
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            var_type = (command[1] & 0xF0) >> 4
+                            if var_type == 0:
+                                amem[index1] = [a for a in amem[index1] if a >= shortify(command, 2)]
+                            elif var_type == 3:
+                                index2 = command[2] & 0x0F
+                                amem[index1] = [a for a in amem[index1] if a >= max(amem[index2])]
                         elif opcode == 0x38:  # if amem bits set
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            amem[index1] = [command[2]]
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            amem[index1] = [a for a in amem[index1] if a & command[2] == command[2]]
                         elif opcode == 0x39:  # if amem bits clear
-                            index1 = command[1]
-                            important_amem_indexes.append(index1 & 0x0F)
-                            amem[index1] = [~command[2]]
+                            index1 = command[1] & 0x0F
+                            important_amem_indexes.append(index1)
+                            amem[index1] = [a for a in amem[index1] if ~a & command[2] == command[2]]
                         elif opcode == 0x64:  # object queue, command index = amem 60
-                            temp_amem = [List(range(0, max(amem[0])))]
-                            target_addrs = [
-                                validate_addr(
-                                    (branch_addr & 0xFF0000)
-                                    + shortify(rom, branch_addr + a * 2),
-                                    [a] + amem[1:] if a in amem[0] else INIT_AMEM,
-                                    reference_label,
-                                )
-                                for a in temp_amem
-                            ]
-                            offsets = [t.offset for t in target_addrs]
-                            oq = next(
-                                (
-                                    obj
-                                    for obj in object_queues_begin
-                                    if obj.offset == branch_addr
-                                ),
-                                None,
-                            )
-                            if oq is None:
-                                object_queues_begin.append(
-                                    ObjectQueue(branch_addr, offsets)
-                                )
-                            else:
-                                oq.destination_offsets.extend(offsets)
-                                oq.destination_offsets = List(
-                                    set(oq.destination_offsets)
-                                )
+                            oq_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
                         elif (
                             opcode == 0x68
                         ):  # object queue, pointer table index = amem $60, command index is an arg
-                            if branch_addr in [0x356919, 0x356969]:
-                                branch_addr += 2
-                            temp_amem = [List(range(0, max(amem[0])))]
-                            dests: List[List[int]] = []
-                            for a in temp_amem:
-                                p = shortify(
-                                    rom,
-                                    (branch_addr & 0xFF0000)
-                                    + shortify(rom, branch_addr + a * 2),
-                                )
-                                dest_ptrs = [shortify(rom, p + command[3] * 2)]
+                            oq_idx_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
 
-                                target_addrs = [
-                                    validate_addr(
-                                        dpt,
-                                        [a] + amem[1:] if a in amem[0] else INIT_AMEM,
-                                        reference_label,
-                                    )
-                                    for dpt in dest_ptrs
-                                ]
-                                dests.append(dest_ptrs)
-                            oq = next(
-                                (
-                                    obj
-                                    for obj in object_queues_double_offset_begin
-                                    if obj.offset == branch_addr
-                                ),
-                                None,
-                            )
-                            if oq is None:
-                                object_queues_begin.append(
-                                    ObjectQueueWithIndex(branch_addr, dests)
-                                )
-                            else:
-                                for di, d in enumerate(dests):
-                                    if len(oq.destination_offsets) < di:
-                                        oq.destination_offsets = deepcopy(d)
-                                    else:
-                                        oq.destination_offsets[di].extend(d)
-                                    oq.destination_offsets = List(
-                                        set(oq.destination_offsets)
-                                    )
+                        if branch_addr == 0x3a7064:
+                            # print("yes 0x3a7064 was found")
 
-                        validate_addr(branch_addr, amem)
+                        validate_addr(branch_addr, amem, important_amem_indexes_raw=important_amem_indexes)
 
                         amem = deepcopy(amem_was)
 
@@ -2628,18 +2856,17 @@ class Command(BaseCommand):
                     if opcode in [0x09, 0x11, 0x07, 0x5E]:
                         end_found = True
                     elif (
-                        not is_subroutine
-                        and branch_index < len(script_sizes)
-                        and (current_addr + length >= addr + script_sizes[branch_index])
+                        branch_index < len(script_sizes)
+                        and (cursor + length >= absolute_offset + script_sizes[branch_index])
                     ):
                         end_found = True
-                    elif current_addr + length in SPECIAL_CASE_BREAKS:
+                    elif cursor + length in SPECIAL_CASE_BREAKS:
                         end_found = True
-                    elif 0x3A0000 <= current_addr + length < 0x3A60D0:
+                    elif 0x3A0000 <= cursor + length < 0x3A60D0:
                         end_found = True
 
                     # if not terminated, move on to the next command
-                    current_addr += length
+                    cursor += length
 
                 # move on to the next branch
                 branch_index += 1
@@ -2647,7 +2874,7 @@ class Command(BaseCommand):
                     break
                 this_branch = branches[branch_index]
 
-
+        # print("Done tracing branches, collecting data...")
         # Collect contiguous known bytes
         used: Dict[str, List[ContiguousBlock]] = {
             "02": [],
@@ -2655,112 +2882,56 @@ class Command(BaseCommand):
             "3A": [],
         }
         for bank_name, bank_contents in known_addresses_covered.items():
+            # bank_name: str (02, 35, 3A)
+            # bank_contents: List[bool] (0x10000 length)
             started: Optional[int] = None
             upper = (int(bank_name, 16)) << 16
+            # upper: 0x020000, 0x350000, 0x3A0000
             for index, value in enumerate(bank_contents):
+                # index: 4 digit ROM position
+                # value: used or not
                 if value and started is None:
                     started = index
-                if started is not None and not value:
-                    used[bank_name].append(ContiguousBlock(started + upper, bank_contents[started, index]))
+                    # started: 4 digit ROM position at which current block started
+                elif started is not None and not value:
+                    used[bank_name].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
+                    started = None
             if started is not None:
-                used[bank_name].append(ContiguousBlock(started + upper, bank_contents[started, 0x10000]))
-            
+                used[bank_name].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+0x10000)]))
 
-        for bank_name, bank in banks.items():
-            # Start converting processed command bytes into dicts (prototypes for command classes).
-            # TODO: This looks like it ONLY looks through bank definitions.
-            # Need to adjust so that it will look at fully covered code. 
-            # And redo bank design of pointers/commands being separate, like dialogs. Allows overlapping script content
-            if bank.has_pointers:
-                for branch_index in range(len(bank_pointer_addresses)):
-                    if (
-                        bank_name == "battle_events"
-                        and branch_index in BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE
-                    ):
-                        extra_offset = 2
-                    elif (
-                        bank_name == "battle_events"
-                        and branch_index
-                        in BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE
-                    ):
-                        extra_offset = 4
-                    else:
-                        extra_offset = 0
-                    this_script: List[ProtoCommand] = []
-                    if branch_index < len(bank_pointer_addresses) - 1:
-                        script_sizes.append(
-                            bank_pointer_addresses[branch_index + 1]
-                            - bank_pointer_addresses[branch_index]
-                        )
-                        script_content = tok(
-                            rom,
-                            bank_pointer_addresses[branch_index]
-                            + bank_beginning_offset
-                            + extra_offset,
-                            bank_pointer_addresses[branch_index + 1] - 1,
-                        )
-                    else:
-                        script_sizes.append(
-                            bank.end - bank_pointer_addresses[branch_index]
-                        )
-                        script_content = tok(
-                            rom,
-                            bank_pointer_addresses[branch_index]
-                            + bank_beginning_offset
-                            + extra_offset,
-                            bank.end,
-                        )
-                    offset_2 = 0
-                    for c in script_content:
-                        addr_ = (
-                            bank_pointer_addresses[branch_index]
-                            + bank_beginning_offset
-                            + extra_offset
-                            + offset_2
-                        )
-                        addr = hex(addr_)
-                        if addr in [o.offset for o in object_queues_begin + object_queues_double_offset_begin]:
-                            ider = "queuestart_%s" % addr
-                        else:
-                            ider = "command_%s" % (addr)
-                        this_script.append(
-                            ProtoCommand(ider, addr_, c[0])
-                        )
-                        offset_2 += len(c[0])
-
-                    scripts.append(script_content)
-                    data.append(this_script)
-            else:
-                this_script = []
-                script_content = tok(
-                    rom, bank.start, bank.start
+        # turn contiguous blocks into proto-commands
+        for bank_name, blocks in used.items():
+            for block in blocks:
+                # print(f'block.start, block.end: 0x{block.start:06X}, 0x{block.end:06X} (size {block.size})')
+                split_block = tok(
+                    rom, block.start, block.end, oq_starts, oq_idx_starts
                 )
-                offset_2 = 0
-                for c in script_content:
-                    addr_ = bank.start + offset_2
-                    addr = hex(addr_)
-                    if addr in [o.offset for o in object_queues_begin + object_queues_double_offset_begin]:
-                        ider = "queuestart_%s" % addr
-                    else:
-                        ider = "command_%s" % (addr)
-                    this_script.append(ProtoCommand(ider, addr_, c[0], len(c[0])))
-                    offset_2 += len(c[0])
-                scripts.append(script_content)
+                offset_within_block = 0
+                this_script: List[ProtoCommand] = []
+                for tok_output in split_block:
+                    # If 3A705D is the ending boundary, why is it being parsed as a command?
+                    absolute_offset = block.start + offset_within_block
+                    identifier = f"command_0x{absolute_offset:06X}"
+                    named_proto_command = ProtoCommand(identifier, absolute_offset, tok_output[0], tok_output[2], len(tok_output[0]))
+                    this_script.append(named_proto_command)
+                    # print(f'    parsed command {named_proto_command}')
+                    offset_within_block += len(tok_output[0])
                 data.append(this_script)
+            collective_data[bank_name].extend(data)
 
-            collective_data[third_byte_as_string].extend(data)
-            separated_data[bank_name] = data
-
-        for bank_name, bank in banks.items():
+        for bank_name, blocks in banks.items():
             add_refs = []
-            for addr in range(bank.start, bank.end):
-                if addr in references and len(references[addr]) > 0:
-                    add_refs.extend(references[addr])
+            for absolute_offset in range(blocks.start, blocks.end):
+                if absolute_offset in references and len(references[absolute_offset]) > 0:
+                    add_refs.extend(references[absolute_offset])
             add_refs = list(set(add_refs))
-            references_by_bank[bank.start] = deepcopy(
+            references_by_bank[blocks.start] = deepcopy(
                 [a for a in add_refs if a != ""]
             )
 
+        # Comprehensive parser seems to be working
+        # Now we need to re-do how the output files are written
+        # Also need to adjust how OQ command classes work. IDX type is just a pointer collection
         output_02collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
         output_35collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
         output_3Acollection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
@@ -2772,15 +2943,9 @@ class Command(BaseCommand):
         output_3Acollection_import = ""
         output_3Acollection_export = ""
 
-        for bank_name, bank in banks.items():
+        for bank_name, script in collective_data.items():
 
-            third_byte_as_string = "35"
-            if "subroutine" in bank_name:
-                third_byte_as_string = bank_name[-6:-4].upper()
-            elif bank_name == "battle_events":
-                third_byte_as_string = "3A"
-            elif bank_name in ["toad_tutorial", "flower_bonus"]:
-                third_byte_as_string = "02"
+            third_byte_as_string = get_third_byte_as_string(bank_name)
 
             # when reassembling battle scripts: before each script body, need to insert 2 bytes
             # that are a pointer to its own start
@@ -2789,75 +2954,58 @@ class Command(BaseCommand):
             # actual script 0 begins at 3A60D2
 
             # replace jump addresses with IDs if in the same bank
-            for index, script in enumerate(separated_data[bank_name]):
-                if bank_name == "battle_events":
-                    for search_script in collective_data[third_byte_as_string]:
-                        for search_command in search_script:
-                            for header_addr_index, header_addr in enumerate(
-                                scripts_with_headers["22"]
-                            ):
-                                if search_command["addr"] == header_addr:
-                                    scripts_with_headers["22"][header_addr_index] = (
-                                        search_command["id"]
-                                    )
-                                    jump_pointers.append(search_command["id"])
-                            for header_addr_index, header_addr in enumerate(
-                                scripts_with_headers["70"]
-                            ):
-                                if search_command["addr"] == header_addr:
-                                    scripts_with_headers["70"][header_addr_index] = (
-                                        search_command["id"]
-                                    )
-                                    jump_pointers.append(search_command["id"])
-                            for header_addr_index, header_addr in enumerate(
-                                scripts_with_headers["85"]
-                            ):
-                                if search_command["addr"] == header_addr:
-                                    scripts_with_headers["85"][header_addr_index] = (
-                                        search_command["id"]
-                                    )
-                                    jump_pointers.append(search_command["id"])
-
-                for cmd_index, command in enumerate(script):
-                    if (
-                        command.data[0] in jmp_cmds
-                        or command["data"][0] in jmp_cmds_1
+            for index, commands in enumerate(script):
+                for cmd_index, command in enumerate(commands):
+                    # print(command)
+                    # print(" ".join([f'0x{d:02X}' for d in command.raw_data]))
+                    address_data = None
+                    if command.oq:
+                        address_data = deepcopy(command.raw_data)
+                        del command.raw_data[0:]
+                        # print(1)
+                    elif (
+                        command.raw_data[0] in jmp_cmds_1
                     ):
-                        if command["data"][0] in jmp_cmds_1:
-                            address = command["data"][-3:-1]
-                        else:
-                            address = command["data"][-2:]
+                        address_data = command.raw_data[-3:-1]
+                        del command.raw_data[-3:-1]
+                        # print(3)
+                    elif (
+                        command.raw_data[0] in jmp_cmds
+                    ):
+                        address_data = command.raw_data[-2:]
+                        del command.raw_data[-2:]
+                        # print(2)
+                    # print(address_data)
 
-                        byte_string = [("0x%02x" % b) for b in address]
+                    if address_data is None:
+                        continue
+
+                    addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
+                    for address in addresses[::2]:
                         dest = (
-                            (command["addr"] & 0xFF0000)
-                            + (address[1] << 8)
-                            + address[0]
+                            (command.addr & 0xFF0000)
+                            + (int(address[1]) << 8)
+                            + int(address[0])
                         )
 
                         found = None
-                        for search_index, search_script in enumerate(
-                            collective_data[third_byte_as_string]
-                        ):
-                            for search_cmd_index, search_command in enumerate(
-                                search_script
-                            ):
-                                if search_command["addr"] == dest:
-                                    found = search_command["id"]
+                        for search_script in script:
+                            for search_command in search_script:
+                                # print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
+                                if search_command.addr == dest:
+                                    found = search_command.id
+                                    break
+                            if found is not None:
+                                break
                         if found is not None:
-                            if command["data"][0] in jmp_cmds_1:
-                                del command["data"][-3:-1]
-                                command["data"].insert(-1, found)
-                            else:
-                                del command["data"][-2:]
-                                command["data"].append(found)
+                            command.parsed_data.append(found)
                             jump_pointers.append(found)
+                        else:
+                            raise Exception("couldn't find jump target 0x%06x" % dest)
 
-                        separated_data[bank_name][index][cmd_index]["data"] = command[
-                            "data"
-                        ]
+                        script[index][cmd_index].raw_data = command.raw_data
 
-        for bank_name, bank in banks.items():
+        for bank_name, blocks in banks.items():
 
             third_byte_as_string = "35"
             if "subroutine" in bank_name:
@@ -3073,11 +3221,11 @@ class Command(BaseCommand):
             export_output += import_body
             export_output += "\n\nbank = AnimationScriptBank("
             export_output += "\n\tname = %s," % bank_name.upper()
-            export_output += "\n\tstart = 0x%06x," % bank["start"]
-            export_output += f"\n\tend = 0x{(int(bank["end"]) + 1):06x},"
-            if "pointers" in bank:
+            export_output += "\n\tstart = 0x%06x," % blocks.start
+            export_output += f"\n\tend = 0x{(int(blocks.end) + 1):06x},"
+            if "pointers" in blocks:
                 export_output += (
-                    "\n\tpointer_table_start = 0x%06x," % bank["pointers"]["start"]
+                    "\n\tpointer_table_start = 0x%06x," % blocks["pointers"]["start"]
                 )
             export_output += "\n\tscripts = ["
             export_output += export_body
@@ -3130,7 +3278,6 @@ def get_script(script, valid_identifiers):
             try:
                 arg_string = ", ".join(arg_strings)
             except:
-                print(arg_strings)
                 raise Exception(cls)
 
             if use_identifier:

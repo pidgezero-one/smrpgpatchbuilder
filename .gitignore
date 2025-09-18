@@ -3,3 +3,4 @@
 .pytest_cache
 src/disassembler_output
 src/assembler_output
+patchvenv

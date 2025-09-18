@@ -29,7 +29,7 @@ def hbyte(offset=0):
     return inner_hbyte
 
 
-def shortify(arr, dex):
+def shortify(arr: bytearray, dex: int) -> int:
     return arr[dex] + (arr[dex + 1] << 8)
 
 
