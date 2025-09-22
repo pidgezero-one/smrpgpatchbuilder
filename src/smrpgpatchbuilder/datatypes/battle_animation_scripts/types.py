@@ -162,6 +162,45 @@ class SubroutineOrBanklessScript(AnimationScript):
         return output
 
 
+class AnimationScriptBlock(AnimationScript):
+    """Covers a range of known animation data in the ROM."""
+    _expected_size: int = 0
+    _expected_beginning: int = 0
+
+    @property
+    def expected_size(self) -> int:
+        """The length of bytes that this script should ultimately equal when compiled.  
+        The base property should not be mutable."""
+        return self._expected_size
+
+    @property
+    def expected_beginning(self) -> int:
+        """The expected beginning address of this script in the ROM.  
+        The base property should not be mutable."""
+        return self._expected_beginning
+    
+    @property
+    def expected_end(self) -> int:
+        """The expected end address of this script in the ROM."""
+        return self._expected_beginning + self._expected_size
+
+    def __init__(
+        self,
+        expected_size: int,
+        expected_beginning: int,
+        commands: Optional[List[UsableAnimationScriptCommand]] = None,
+    ) -> None:
+        super().__init__(commands)
+        self._expected_size = expected_size
+        self._expected_beginning = expected_beginning
+
+    def render(self) -> bytearray:
+        output = super().render()
+        assert len(output) == self.expected_size
+        # Additional rendering logic for blocks can go here
+        return output
+
+
 class AnimationScriptBank(ScriptBank[AnimationScript]):
     """Base class for a collection of scripts that belong to the same bank (ie 0x##0000)
     and are separated by IDs."""

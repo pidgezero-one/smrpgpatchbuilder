@@ -4716,7 +4716,7 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
         return super().render(*self.destinations)
 
 
-class SpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Perform a set of script commands at the specified address on the specified field target.
 
     ## Lazy Shell command
@@ -4937,7 +4937,7 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
         return super().render(self.message_type)
 
 
-class ObjectQueueAtOffsetWithAMEM60Index(
+class UseObjectQueueAtOffsetWithAMEM60Index(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
     """Point to an object queue. The starting pointer is chosen by the current value of AMEM $60 (offset + AMEM $60 * 2)
@@ -4952,7 +4952,7 @@ class ObjectQueueAtOffsetWithAMEM60Index(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the `ObjectQueueHeader` to jump to.
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the `CreateObjectQueue` to jump to.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -4974,7 +4974,7 @@ class ObjectQueueAtOffsetWithAMEM60Index(
         return super().render(*self.destinations)
 
 
-class ObjectQueueAtOffsetWithAMEM60PointerOffset(
+class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
     """Point to an object queue. The pointer table reference is at (offset + AMEM $60 * 2) and then the starting pointer is at (reference pointer + index).
@@ -5026,12 +5026,13 @@ class ObjectQueueAtOffsetWithAMEM60PointerOffset(
         return super().render(*self.destinations, self.index)
 
 
-class ObjectQueueHeader(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """This structure holds object queue pointers. It needs to be targeted by `ObjectQueueAtOffsetWithAMEM60Index`.
+class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+    """This structure should only contain destinations.  
+    If destinations point to other object queues, then this should be targeted with `UseObjectQueueAtOffsetWithAMEM60PointerOffset`.
 
     Args:
         destinations (List[str]): The commands that this queue's indexes should start at, in order of index.
-        identifier (str): The label that an `ObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
+        identifier (str): The label that an `UseObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
     """
 
     @property
@@ -5049,64 +5050,6 @@ class ObjectQueueHeader(UsableAnimationScriptCommand, AnimationScriptCommandWith
 
     def render(self) -> bytearray:
         return super().render(*self.destinations)
-
-
-class ObjectQueueHeaderMultiTable(
-    UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
-):
-    """This structure holds object queue pointers. It needs to be targeted by `ObjectQueueAtOffsetWithAMEM60PointerOffset`.
-
-    Args:
-        index_destinations(List[str]): The commands that define a pointer index. Must be included in `destinations`.
-        destinations (List[str]): The commands that this queue's indexes should start at, in order of index.
-        identifier (str): The label that an `ObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
-    """
-
-    _index_destinations: List[str]
-
-    @property
-    def index_destinations(self) -> List[str]:
-        return self._index_destinations
-
-    def set_index_destinations(self, headers: List[str]) -> None:
-        excluded = [h for h in headers if h not in [d.label for d in self.destinations]]
-        if len(excluded) != 0:
-            raise InvalidCommandArgumentException(
-                "all index destinations need to be included in queue destinations"
-            )
-
-    @property
-    def size(self) -> int:
-        return len(self.destinations) * 2 + len(self.index_destinations) * 2
-
-    def __init__(
-        self, index_destinations: List[str], destinations: List[str], identifier: str
-    ) -> None:
-        if not index_destinations:
-            raise InvalidCommandArgumentException(
-                "object queue index_destinations needs at least one destination label"
-            )
-        if not destinations:
-            raise InvalidCommandArgumentException(
-                "object queue destinations needs at least one destination label"
-            )
-        if not identifier:
-            raise InvalidCommandArgumentException("object queues require an identifier")
-        super().__init__(destinations, identifier)
-        self.set_index_destinations(index_destinations)
-
-    def render(self) -> bytearray:
-        dest_bytes = super().render(*self.destinations)
-        # good lord this is jank
-        table_start = dest_bytes[0] + (dest_bytes[1] << 8)
-        header = bytearray()
-        for i in self.index_destinations:
-            index = next(
-                idx for idx, dest in enumerate(self.destinations) if dest.label == i
-            )
-            offset = table_start + index * 2
-            header += bytearray([offset & 0xFF, (offset & 0xFF00) >> 8])
-        return header + dest_bytes
 
 
 class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -8229,11 +8172,11 @@ commands = [
     PauseScriptUntilSpriteSequenceDone,
     JmpIfTargetDisabled,
     JmpIfTargetEnabled,
-    SpriteQueue,
+    UseSpriteQueue,
     ReturnSpriteQueue,
     DisplayMessageAtOMEM60As,
-    ObjectQueueAtOffsetWithAMEM60Index,
-    ObjectQueueAtOffsetWithAMEM60PointerOffset,
+    UseObjectQueueAtOffsetWithAMEM60Index,
+    UseObjectQueueAtOffsetWithAMEM60PointerOffset,
     SetOMEM60To072C,
     SetAMEMToRandomByte,
     SetAMEMToRandomShort,

@@ -6,6 +6,7 @@ from .types import (
     SubroutineOrBanklessScript,
     AnimationScriptBank,
     AnimationScriptBankCollection,
+    AnimationScriptBlock,
 )
 from .ids import *
 from .commands import * 

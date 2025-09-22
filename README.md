@@ -144,32 +144,7 @@ script = BattleAnimationScript(header=["command_0x3a647c"], script = [
 ])
 ```
 
-Subroutines go in their own files. Here's the first one, it will have annotations telling you which events use it:
-```python
-"""referenced by battle_events BE0067_AXEM_RANGERS_GROUP_FORMATION, battle_events BE0088_SMITHY_TRANSFORMS_INTO_MAGIC_HEAD, ..."""
-
-from randomizer.scripts.animation.script_imports import *
-
-script = SubroutineOrBanklessScript(
-    expected_size=33,
-    script=[
-        ClearAMEM8Bit(0x68, identifier="command_0x3a7531"),
-        Set7E1xToAMEM8Bit(0x7EE01C, 0x68),
-        Set7E1xToAMEM8Bit(0x7EE01D, 0x68),
-        Set7E1xToAMEM8Bit(0x7EE01E, 0x68),
-        Set7E1xToAMEM8Bit(0x7EE01F, 0x68),
-        ReturnSubroutine(),
-        SetAMEM8BitToAMEM(amem=0x60, source_amem=0xB0),
-        ClearAMEMBits(0x60, [6]),
-        SetAMEMToAMEM8Bit(dest_amem=0xB0, amem=0x60),
-        ReturnSubroutine(),
-        Db(bytearray(b"\xa0"), identifier="command_0x3a7550"),
-        ReturnObjectQueue(),
-    ],
-)
-```
-
-You might have noticed that this has much more code than the first subroutine in the Lazy Shell screenshot. This is because this script outputs files for contiguous code blocks and not individual subroutines. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
+You might notice that this outputs much more code sometimes than you will see in Lazy Shell. This is because this script outputs files for contiguous code blocks regardless of how they are pointed at. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
 
 Finally, the script outputs python files that import all of these disassembled SMRPG scripts. Here's a short one that contains flower bonus messages, Toad tutorials, and their associated subroutines, aka everything in the 0x02xxxx range:
 ```
@@ -190,7 +165,9 @@ collection = AnimationScriptBankCollection([
 Standalone, this will produce a series of files that represent all of the battle animation code your ROM currently uses that the script could find. The output folders will be inside `src`.
 
 Things to be careful about:
-- I had to hardcode a lot of the ROM ranges that this will check. This is because pointers in battle animations aren't static, an object queue for example can start in a different place depending on what the value of AMEM $60 is. Even though the script will attempt to recursively trace all of you subroutines and queues and track AMEM $60 as best as it can to do this accurately, this can't be done perfectly because of things like `SetAMEMToRandomByte`, so a bunch more ranges are included because I determined that they were accessible via Lazy Shell animation types in one way or another. If you've changed the start or end of unindexed animations like monster behaviours in your ROM, then this will not work correctly and you will need to modify the `banks` dict of animationdisassembler.py. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
+- This is very, very much in alpha. You'll find that this takes an extremely long time to complete, to the order of several days. That's because this script does its best to recursively trace as much code as the game touches (in an attempt to help you find potentially unused code), which includes tracking all possible AMEM values when GOTOing different addresses based on what AMEM is (i.e. jump if amem = some number, object queue with index at amem $60, etc). Even though the script will attempt to do this accurately, it can't be done perfectly because of things like `SetAMEMToRandomByte`. For this reason I recommend never changing the start address and max size of any script file as it is generated for you.
+- If you've changed the start or end of any top-level pointer tables in your ROM, then this will not work correctly and you will need to modify the `banks` dict of animationdisassembler.py. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
+- Object queues always assume that their pointers point only toward code that comes AFTER it. For example if you define an object queue at $3A1234 and the first pointer is `0x23 0x01`, it might compile correctly, but it will never decompile correctly after that. Be careful to avoid doing this.
 
 ### Assembling battle animations
 

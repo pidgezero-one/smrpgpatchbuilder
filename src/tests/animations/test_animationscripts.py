@@ -1294,7 +1294,7 @@ test_cases = [
     Case(
         label="SpriteQueue",
         commands_factory=lambda: [
-            SpriteQueue(
+            UseSpriteQueue(
                 field_object=4,
                 destinations=["queuestart_0x35C007"],
                 character_slot=True,
@@ -1312,17 +1312,17 @@ test_cases = [
         expected_bytes=[0x63, 0x01],
     ),
     Case(
-        label="ObjectQueueAtOffsetWithAMEM60Index",
+        label="UseObjectQueueAtOffsetWithAMEM60Index",
         commands_factory=lambda: [
-            ObjectQueueAtOffsetWithAMEM60Index(target_address=0x35C005),
+            UseObjectQueueAtOffsetWithAMEM60Index(target_address=0x35C005),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x64, 0x05, 0xC0, 0x11],
     ),
     Case(
-        label="ObjectQueueAtOffsetWithAMEM60PointerOffset",
+        label="UseObjectQueueAtOffsetWithAMEM60PointerOffset",
         commands_factory=lambda: [
-            ObjectQueueAtOffsetWithAMEM60PointerOffset(
+            UseObjectQueueAtOffsetWithAMEM60PointerOffset(
                 index=6, target_address=0x35C006
             ),
             ReturnSubroutine(identifier="jmp"),
