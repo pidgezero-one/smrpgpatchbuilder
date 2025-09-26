@@ -66,7 +66,7 @@ class AnimationScriptAMEM6XSoloCommand(AnimationScriptAMEMCommand):
         super().__init__(identifier)
         self.set_amem(amem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits())
 
 
@@ -202,7 +202,7 @@ class AnimationScriptUnknownJmp2X(AnimationScriptCommandWithJmps):
         self.set_param_1(param_1)
         self.set_param_2(param_2)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.param_1, self.param_2, *self.destinations)
 
 
@@ -302,7 +302,7 @@ class SetAMEMToXYZCoords(AnimationScriptCommand):
         self.set_do_set_y(set_y)
         self.set_do_set_z(set_z)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = (
             (self.origin << 4)
             + (self.do_set_x * 0x01)
@@ -315,7 +315,7 @@ class SetAMEMToXYZCoords(AnimationScriptCommand):
 class AnimationScriptFadeObject(AnimationScriptCommand):
     """Base class for commands that fade objects."""
 
-    _opcode: int = 0x85
+    _opcode = 0x85
     _size: int = 3
 
     _duration: UInt8
@@ -337,7 +337,7 @@ class AnimationScriptFadeObject(AnimationScriptCommand):
 class AnimationScriptShakeObject(AnimationScriptCommand):
     """Base class for commands that shake objects."""
 
-    _opcode: int = 0x86
+    _opcode = 0x86
     _size: int = 7
 
     _amount: UInt8
@@ -368,7 +368,8 @@ class AnimationScriptShakeObject(AnimationScriptCommand):
         self.set_amount(amount)
         self.set_speed(speed)
 
-    def render(self, header) -> bytearray:
+    def render(self, *args) -> bytearray:
+        header = args[0]
         return super().render(header, 0, 0, self.amount, self.speed)
 
 

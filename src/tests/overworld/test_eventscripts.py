@@ -2259,8 +2259,8 @@ test_cases = [
     ),
     Case(
         "Unknown command using an assigned opcode should fail",
-        commands_factory=lambda: [UnknownCommand(bytearray([0xC7, 0x90]))],
-        exception="do not use UnknownCommand for opcode 0xC7, there is already a class for it",
+        commands_factory=lambda: [UnknownCommand(bytearray([0xC6, 0x90]))],
+        exception="do not use UnknownCommand for opcode 0xC6, there is already a class for it",
         exception_type=InvalidCommandArgumentException,
     ),
     Case(

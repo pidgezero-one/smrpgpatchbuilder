@@ -18,9 +18,9 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		filepaths = [
-			"disassembler_output.battle_animation.collection_0x3Axxxx",
-			"disassembler_output.battle_animation.collection_0x35xxxx",
-			"disassembler_output.battle_animation.collection_0x02xxxx",
+			"disassembler_output.battle_animation.3A.export",
+			"disassembler_output.battle_animation.35.export",
+			"disassembler_output.battle_animation.02.export",
 		]
 		
 		outputToText = options["text"] or False
@@ -48,10 +48,10 @@ class Command(BaseCommand):
 
 		for module_path in filepaths:
 			module = importlib.import_module(module_path)
-			bank = module.collection
+			bank = module.bank
 			if bank:
 				output = bank.render()
-				for start, bytes_ in output.items():
+				for start, bytes_ in output:
 					if outputToBin:
 						with open(f'./src/assembler_output/battle_animations/bin/write_to_0x{start:06X}.img', 'wb') as f:
 							f.write(bytes_)

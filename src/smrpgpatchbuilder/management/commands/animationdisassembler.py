@@ -1875,41 +1875,41 @@ class Bank:
 
 banks: Dict[str, Bank] = {
 
-    # "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
-    # # # gap
-    # "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
-    # "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
-    # "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
-    # "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
-    # "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
-    # "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
-    # "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
-    # "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
-    # "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
-    # "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
-    # "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
-    # # gap
-    # "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
-    # # gap (2 bytes, ptr table header)
-    # "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
-    # # gap
-    # "weapon_wrapper_mario": Bank(0x358916, 0x358935),
-    # # gap
-    # "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
-    # # gap
-    # "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
-    # # gap
-    # "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
-    # # gap
-    # "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
-    # # gap
-    # "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
-    # # gap
-    # "ally_spells": Bank(
-    #     0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
-    # ),  # NOTE: Adjusted due to clone spells!
-    # # gap
-    # "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
+    "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
+    # gap
+    "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
+    "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
+    "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
+    "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
+    "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
+    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
+    "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
+    "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
+    "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
+    "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
+    "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
+    # gap
+    "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
+    # gap (2 bytes, ptr table header)
+    "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
+    # gap
+    "weapon_wrapper_mario": Bank(0x358916, 0x358935),
+    # gap
+    "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
+    # gap
+    "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
+    # gap
+    "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
+    # gap
+    "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
+    # gap
+    "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
+    # gap
+    "ally_spells": Bank(
+        0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
+    ),  # NOTE: Adjusted due to clone spells!
+    # gap
+    "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
     "battle_events": Bank(0x3A6000, 0x3A705C),
 
     #"battle_events": Bank(0x3A60D0, 0x3A705C, 0x3A6004, 0x3A60CF),
@@ -2464,7 +2464,7 @@ class Command(BaseCommand):
         references: Dict[int, List[str]] = {}
 
         for bank_id, blocks in banks.items():
-            print(f'Processing bank: {bank_id}')
+            #print(f'Processing bank: {bank_id}')
             third_byte_as_string = get_third_byte_as_string(bank_id)
             reference_label = bank_id
 
@@ -2495,7 +2495,7 @@ class Command(BaseCommand):
                         ),
                     )
                     bank_pointer_addresses.append(three_byte_pointer)
-                    print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06X}")
+                    #print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06X}")
                     branches.append(
                         Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
                     )
@@ -2509,7 +2509,7 @@ class Command(BaseCommand):
                     known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
                     if tertiary_points_to < tertiary_end:
                         tertiary_end = tertiary_points_to
-                    print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
+                    #print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
                     tertiary_cursor += 2
                     tertiary_cursor_short = tertiary_cursor & 0xFFFF
                     oq_idx_starts.append(
@@ -2531,13 +2531,13 @@ class Command(BaseCommand):
                     o
                 )
             else:
-                print(f"    adding {bank_id} 0x{blocks.start:06X}")
+                #print(f"    adding {bank_id} 0x{blocks.start:06X}")
                 branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
             # Now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06X}): {this_branch}')
+                #print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06X}): {this_branch}')
                 # AMEM can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
                 absolute_offset = this_branch.offset 
@@ -2553,7 +2553,7 @@ class Command(BaseCommand):
                 # Process every command in the script until we find a terminating byte.
                 end_found = False
                 while not end_found:
-                    print(f'        current_addr: 0x{cursor:06X}')
+                    #print(f'        current_addr: 0x{cursor:06X}')
                     def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
                         if important_amem_indexes_raw is None:
                             important_amem_indexes_raw = [0]
@@ -2598,7 +2598,7 @@ class Command(BaseCommand):
 
                         if not jump_voided:
                             branches.append(destination_branch)
-                            print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}: {destination_branch}')
+                            #print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}: {destination_branch}')
 
                         return destination_branch
 
@@ -2652,7 +2652,7 @@ class Command(BaseCommand):
                         cursor += create_object_queue(s.addr)
                         continue
                     elif cursor in [s.addr for s in oq_idx_starts]:
-                        print("        THIS IS A TWO-TIER OQ")
+                        #print("        THIS IS A TWO-TIER OQ")
                         complex_oq = next((s for s in oq_idx_starts if s.addr == cursor), None)
                         if not complex_oq:
                             raise ValueError("how did you get here?")
@@ -2697,7 +2697,7 @@ class Command(BaseCommand):
                                 label = SCRIPT_NAMES["battle_events"][battle_event_index]
                                 create_object_queue(pointed_addr, label_override=label)
                             elif this_branch.offset == UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:
-                                print(f"cursor: 0x{cursor:06X}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06X}")
+                                #print(f"cursor: 0x{cursor:06X}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06X}")
                                 label = f"unknown_battle_event_adjacent"
                                 create_object_queue(pointed_addr, label_override=label)
                             else:
@@ -2931,7 +2931,7 @@ class Command(BaseCommand):
                 offset_within_block = 0
                 this_script: List[ProtoCommand] = []
                 for tok_output in split_block:
-                    print(tok_output)
+                    #print(tok_output)
                     absolute_offset = block.start + offset_within_block
                     identifier = f"command_0x{absolute_offset:06X}"
                     possible_rename = [b.ref_label for b in branches if b.offset == absolute_offset and b.ref_label != ""]
@@ -2939,10 +2939,10 @@ class Command(BaseCommand):
                         identifier = f"{possible_rename[0].lower().replace(" ", "_").replace("-", "_")}_0x{absolute_offset:06X}"
                     named_proto_command = ProtoCommand(identifier, absolute_offset, tok_output[0], tok_output[2], len(tok_output[0]))
                     this_script.append(named_proto_command)
-                    print(f'    parsed command {named_proto_command}')
+                    #print(f'    parsed command {named_proto_command}')
                     offset_within_block += len(tok_output[0])
                 data.append(this_script)
-            print(data)
+            #print(data)
             collective_data[bank_id].extend(data)
 
         # associate jump pointers with command IDs
@@ -2962,7 +2962,7 @@ class Command(BaseCommand):
                     address_data = None
                     if command.oq:
                         address_data = deepcopy(command.raw_data)
-                        print([f"0x{b:02X}" for b in address_data])
+                        #print([f"0x{b:02X}" for b in address_data])
                         del command.raw_data[0:]
                     elif (
                         command.raw_data[0] in jmp_cmds_1
@@ -2981,10 +2981,10 @@ class Command(BaseCommand):
                         continue
 
                     addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
-                    print("")
-                    print(addresses)
+                    #print("")
+                    #print(addresses)
                     for address in addresses:
-                        print(address)
+                        #print(address)
                         dest = (
                             (command.addr & 0xFF0000)
                             + (int(address[1]) << 8)
@@ -3041,19 +3041,9 @@ class Command(BaseCommand):
         # TODO: Comprehensive parser seems to be working
         # Now we need to re-do how the output files are written
         # Also need to adjust how OQ command classes work. IDX type is just a pointer collection
-        output_02collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
-        output_35collection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
-        output_3Acollection = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection"
-
-        output_02collection_import = ""
-        output_02collection_export = ""
-        output_35collection_import = ""
-        output_35collection_export = ""
-        output_3Acollection_import = ""
-        output_3Acollection_export = ""
 
         for bank_id, blocks in collective_data.items():
-            print(f"Exporting {bank_id}...")
+            #print(f"Exporting {bank_id}...")
 
             third_byte_as_string = get_third_byte_as_string(bank_id)
 
@@ -3062,33 +3052,6 @@ class Command(BaseCommand):
 
             open(f"{export_dest}/__init__.py", "w")
             export_file = open("%s/export.py" % export_dest, "w")
-            if third_byte_as_string == "02":
-                output_02collection_import += (
-                    "\nfrom .%s.export import bank as %s"
-                    % (
-                        bank_id,
-                        bank_id,
-                    )
-                )
-                output_02collection_export += "\n\t%s," % bank_id
-            if third_byte_as_string == "35":
-                output_35collection_import += (
-                    "\nfrom .%s.export import bank as %s"
-                    % (
-                        bank_id,
-                        bank_id,
-                    )
-                )
-                output_35collection_export += "\n\t%s," % bank_id
-            if third_byte_as_string == "3A":
-                output_3Acollection_import += (
-                    "\nfrom .%s.export import bank as %s"
-                    % (
-                        bank_id,
-                        bank_id,
-                    )
-                )
-                output_3Acollection_export += "\n\t%s," % bank_id
 
             import_body = ""
             export_body = ""
@@ -3116,13 +3079,13 @@ class Command(BaseCommand):
 
                 size = sum([c.length for c in script])
 
-                output = "from smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
-                output += "\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
-                output += (
-                    "\nfrom smrpgpatchbuilder.datatypes.items.implementations import *"
+                output = (
+                    "from smrpgpatchbuilder.datatypes.items.implementations import *"
                 )
-
-                output += f"\n\nAnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"
+                output += "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
+                output += "\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
+                
+                output += f"\n\nscript = AnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"
 
                 contents = get_script(script, jump_pointers)
 
@@ -3134,42 +3097,15 @@ class Command(BaseCommand):
 
                 export_body += "\n\t\t%s," % script_alias
             export_output = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBank"
-            export_output += (
-                "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts.ids.bank_names import %s"
-                % (bank_id.upper())
-            )
             export_output += import_body
             export_output += "\n\nbank = AnimationScriptBank("
-            export_output += "\n\tname = %s," % bank_id.upper()
+            export_output += "\n\tname = \"0x%s\"," % bank_id.upper()
             export_output += "\n\tscripts = ["
             export_output += export_body
 
             export_output += "\n\t]"
             export_output += "\n)"
             writeline(export_file, export_output)
-
-        output_02collection += output_02collection_import
-        output_02collection += "\n\ncollection = AnimationScriptBankCollection(["
-        output_02collection += output_02collection_export
-        output_02collection += "\n])"
-        output_35collection += output_35collection_import
-        output_35collection += "\n\ncollection = AnimationScriptBankCollection(["
-        output_35collection += output_35collection_export
-        output_35collection += "\n])"
-        output_3Acollection += output_3Acollection_import
-        output_3Acollection += "\n\ncollection = AnimationScriptBankCollection(["
-        output_3Acollection += output_3Acollection_export
-        output_3Acollection += "\n])"
-
-        collection02_dest = f"{output_path}/collection_0x02xxxx.py"
-        collection02_file = open(collection02_dest, "w")
-        collection35_dest = f"{output_path}/collection_0x35xxxx.py"
-        collection35_file = open(collection35_dest, "w")
-        collection3A_dest = f"{output_path}/collection_0x3Axxxx.py"
-        collection3A_file = open(collection3A_dest, "w")
-        writeline(collection02_file, output_02collection)
-        writeline(collection35_file, output_35collection)
-        writeline(collection3A_file, output_3Acollection)
 
 
 def get_script(script, valid_identifiers):
@@ -3217,7 +3153,7 @@ def convert_event_script_command(command, valid_identifiers):
 
     if command.oq:
         args["destinations"] = '[%s]' %  ", ".join(f"\"{a}\"" for a in command.parsed_data)
-        return "DefineObjectQueue", args, use_identifier, False
+        return "DefineObjectQueue", args, True, False
 
     opcode = cmd[0]
 
@@ -4388,8 +4324,6 @@ def convert_event_script_command(command, valid_identifiers):
 
 
 # empty space filler: 0x11
-
-# man, i have no idea, i think im just gonna hard patch addresses
 
 # screen flash none = 2 bytes {0x8F 0x00}
 # screen flash none 0 frames = 3 bytes {0x8F 0x00 0x00}

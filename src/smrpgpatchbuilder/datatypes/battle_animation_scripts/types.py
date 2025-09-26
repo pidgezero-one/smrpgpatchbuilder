@@ -1,18 +1,25 @@
 """Base classes supporting battle animation script assembly."""
 
-from typing import List, Optional, Dict, Type, Union, cast
+from typing import List, Optional, Dict, Type, Union, Tuple
+
+from .commands.types.classes import (
+    UsableAnimationScriptCommand,
+)
+
+from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     IdentifierException,
     Script,
     ScriptBank,
     ScriptBankTooLongException,
-    TransformableIdentifier,
 )
-from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.types import (
     UsableAnimationScriptCommand,
+)
+from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.commands import (
+    ReturnSubroutine,
 )
 
 
@@ -90,78 +97,6 @@ class AnimationScript(Script[UsableAnimationScriptCommand]):
         return output
 
 
-class BattleAnimationScript(AnimationScript):
-    """Special base battle animation script class for battle event cutscenes."""
-
-    _header: List[TransformableIdentifier]
-
-    @property
-    def header(self) -> List[TransformableIdentifier]:
-        """A list of gotos that are important to this script."""
-        return self._header
-
-    @property
-    def header_size(self) -> int:
-        """The length of the header gotos, used for script rendering purposes."""
-        return len(self._header) * 2 + 2
-
-    def __init__(
-        self,
-        header: Optional[List[str]] = None,
-        script: Optional[List[UsableAnimationScriptCommand]] = None,
-    ) -> None:
-        if header is None:
-            header = []
-        self._header = [TransformableIdentifier(identifier) for identifier in header]
-        super().__init__(script)
-
-    @property
-    def length(self) -> int:
-        """The expected length of this script in bytes."""
-        return sum(cast(List[int], [c.size for c in self.contents])) + 2 * (
-            len(self._header) + 1
-        )
-
-    def render(self, position: Optional[int] = None) -> bytearray:
-        if position is None:
-            raise ValueError
-        true_address: bytearray = UInt16(
-            (position & 0xFFFF) + 2 * (len(self._header) + 1)
-        ).little_endian()
-        header: bytearray = bytearray()
-        for dest in self.header:
-            header += dest.render_address()
-        return true_address + header + super().render()
-
-
-class SubroutineOrBanklessScript(AnimationScript):
-    """Base class for scripts that don't belong to banks, where banks
-    typically consist of multiple scripts indicated by ID. This class is
-    appropriate for subroutines, or scripts without an ID-separated bank
-    such as monster behaviours or Toad tutorials."""
-
-    _expected_size: int = 0
-
-    @property
-    def expected_size(self) -> int:
-        """The length of bytes that this script should ultimately equal when compiled."""
-        return self._expected_size
-
-    def __init__(
-        self,
-        expected_size: int,
-        script: Optional[List[UsableAnimationScriptCommand]] = None,
-    ) -> None:
-        self._expected_size = expected_size
-        super().__init__(script)
-
-    def render(self) -> bytearray:
-        output = super().render()
-        # These HAVE to match the original size. We can't fuck around with subroutines too much
-        assert len(output) == self.expected_size
-        return output
-
-
 class AnimationScriptBlock(AnimationScript):
     """Covers a range of known animation data in the ROM."""
     _expected_size: int = 0
@@ -188,16 +123,24 @@ class AnimationScriptBlock(AnimationScript):
         self,
         expected_size: int,
         expected_beginning: int,
-        commands: Optional[List[UsableAnimationScriptCommand]] = None,
+        script: Optional[List[UsableAnimationScriptCommand]] = None,
     ) -> None:
-        super().__init__(commands)
+        super().__init__(script)
         self._expected_size = expected_size
         self._expected_beginning = expected_beginning
 
-    def render(self) -> bytearray:
-        output = super().render()
-        assert len(output) == self.expected_size
-        # Additional rendering logic for blocks can go here
+    def render(self, _: Optional[int] = None) -> bytearray:
+        output = super().render(_)
+        # fill empty bytes
+        if len(output) == self.expected_size:
+            return output
+        if len(output) > self.expected_size:
+            raise ScriptBankTooLongException(
+                f"action script output too long: got {len(output)} expected {self.expected_size}"
+            )
+        buffer: List[UsableAnimationScriptCommand] = [ReturnSubroutine()] * (self.expected_size - len(output))
+        self.set_contents(self.contents + buffer)
+        output = super().render(_)
         return output
 
 
@@ -205,49 +148,11 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
     """Base class for a collection of scripts that belong to the same bank (ie 0x##0000)
     and are separated by IDs."""
 
-    _scripts: List[Union[AnimationScript, BattleAnimationScript]]
-    _pointer_table_start: int
-    _start: int
-    _end: int
+    _scripts: List[Union[AnimationScript, AnimationScriptBlock]]
     _name: str
 
     @property
-    def pointer_table_start(self) -> int:
-        """Address where this bank's pointer table starts. The pointer table
-        contains a list of 2-byte little endian pointers that indicate where
-        individual scripts start. i.e. the pointer at index 2 in this table
-        corresponds to the start of the script having ID 2 (0-based indexing)."""
-        return self._pointer_table_start
-
-    def set_pointer_table_start(self, pointer_table_start: int) -> None:
-        """Sets the address where this bank's pointer table starts."""
-        self._pointer_table_start = pointer_table_start
-
-    @property
-    def start(self) -> int:
-        return self._start
-
-    def set_start(self, start: int) -> None:
-        """Sets the address where rendered scripts should start writing to."""
-        self._start = start
-
-    @property
-    def end(self) -> int:
-        return self._end
-
-    def set_end(self, end: int) -> None:
-        """The total length of rendered scripts should not exceed this address."""
-        self._end = end
-
-    @property
-    def script_count(self) -> UInt16:
-        """The number of scripts that the pointer table's size accommodates."""
-        if self.pointer_table_start == 0:
-            return UInt16(1)
-        return UInt16((self.start - self.pointer_table_start) // 2)
-
-    @property
-    def scripts(self) -> List[Union[AnimationScript, BattleAnimationScript]]:
+    def scripts(self) -> List[Union[AnimationScript, AnimationScriptBlock]]:
         return self._scripts
 
     @property
@@ -265,13 +170,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         """Overwrite the entire list of scripts belonging to this bank."""
         if scripts is None:
             scripts = []
-        assert len(scripts) == self.script_count
         super().set_contents(scripts)
-
-    def replace_script(self, index: int, script: AnimationScript) -> None:
-        """Overwrite the contents of the script at index n."""
-        assert 0 <= index < self.script_count
-        super().replace_script(index, script)
 
     def get_command_by_name(self, identifier: str) -> UsableAnimationScriptCommand:
         """Return a single command whose unique identifier matches the name provided."""
@@ -300,18 +199,12 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
     def __init__(
         self,
         name: str,
-        start: int,
-        end: int,
-        pointer_table_start: int = 0,
         scripts: Optional[List[AnimationScript]] = None,
     ) -> None:
-        self.set_pointer_table_start(pointer_table_start)
-        self.set_start(start)
-        self.set_end(end)
         self.set_name(name)
         super().__init__(scripts)
 
-    def associate_address(
+    def _associate_address(
         self, command: UsableAnimationScriptCommand, position: int
     ) -> int:
         """Associates an identifier and an address as a key-value pair in the addresses dict."""
@@ -319,108 +212,29 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         if key in self.addresses:
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position
-        # verify that this command isn't trying to go after the end of the bank
-        if position >= self.end:
-            print(f"{self.start:06x} {position:06x} {self.end:06x}")
-            raise IdentifierException(
-                f"can't add command at bank end: {key} @ {position:06x}"
-            )
-
         position += command.size
-
-        # verify that adding this command won't make the bank exceed its size
-        if position > self.end:
-            print(f"{self.start:06x} {position:06x} {self.end:06x}")
-            raise IdentifierException(
-                f"command exceeded max bank size of {self.end:06X}: {key} @ {position:06x}"
-            )
         return position
-
-    def render(self) -> bytearray:
+    
+    def render(self) -> List[Tuple[int, bytearray]]:
         """Generate the bytes representing the current state of this bank to be written
         to the ROM."""
-        position: int = self._start
 
-        script: Union[AnimationScript, BattleAnimationScript]
+        scripts: List[AnimationScriptBlock] = [
+            s for s in self.scripts if isinstance(s, AnimationScriptBlock)
+        ]
+
+        # build command name : address table
+        for script in scripts:
+            position: int = script.expected_beginning
+            self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
+            for command in script.contents:
+                position = self._associate_address(command, position)
 
         # replace jump placeholders with addresses
-        for script in self.scripts:
+        for script in scripts:
             self._populate_jumps(script)
-            if isinstance(script, BattleAnimationScript):
-                self._set_identifier_addresses(script.header)
 
-        # finalize bytes
-        for script in self.scripts:
-            if isinstance(script, BattleAnimationScript):
-                rendered_script = script.render(position)
-                position += len(rendered_script)
-                self.script_bytes.extend(rendered_script)
-            else:
-                rendered_script = script.render()
-                position += len(rendered_script)
-                self.script_bytes.extend(rendered_script)
-
-        # fill empty bytes
-        expected_length: int = self.end - self.start
-        final_length: int = len(self.script_bytes)
-        if final_length > expected_length:
-            raise ScriptBankTooLongException(
-                f"action script output too long: got {final_length} expected {expected_length}"
-            )
-        buffer: List[int] = [0xFF] * (expected_length - final_length)
-        self.script_bytes.extend(buffer)
-
-        if self.pointer_table_start != 0 and self.start - self.pointer_table_start >= 2:
-            return self.pointer_bytes + self.script_bytes
-        return self.script_bytes
-
-
-class AnimationScriptBankCollection:
-    """The container for all battle animation script banks, and bankless scripts, to be used in
-    this seed."""
-
-    _banks: List[AnimationScriptBank]
-
-    @property
-    def banks(self) -> List[AnimationScriptBank]:
-        """Returns all the banks in the collection."""
-        return self._banks
-
-    def get_bank(self, name: str) -> AnimationScriptBank:
-        """Get a bank by a unique string identifier."""
-        return next(bank for bank in self.banks if bank.name == name)
-
-    def render(self) -> Dict[int, bytearray]:
-        """Returns a dict where the keys correspond to the bank names, and the values
-        are the bytes rendered of their current state to be written to the ROM."""
-        script_bank: AnimationScriptBank
-        merged_dicts: Dict[str, int] = {}
-        output: Dict[int, bytearray] = {}
-
-        for script_bank in self.banks:
-
-            position: int = script_bank.start
-
-            script: Union[AnimationScript, BattleAnimationScript]
-            command: UsableAnimationScriptCommand
-
-            # build command name : address table for ENTIRE bank
-            for i, script in enumerate(script_bank.scripts):
-                if script_bank.pointer_table_start != 0:
-                    script_bank.pointer_bytes.extend(
-                        UInt16(position & 0xFFFF).little_endian()
-                    )
-                if isinstance(script, BattleAnimationScript):
-                    position += script.header_size
-                for command in script.contents:
-                    position = script_bank.associate_address(command, position)
-                merged_dicts.update(script_bank.addresses)
-
-        for script_bank in self.banks:
-            script_bank.set_addresses(merged_dicts)
-            output[script_bank.start] = script_bank.render()
-
-        return output
-
-    def __init__(self, banks: List[AnimationScriptBank]) -> None:
-        self._banks = banks
+        return [
+            (script.expected_beginning, script.render())
+            for script in scripts
+        ]

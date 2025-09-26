@@ -97,7 +97,7 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x00
+    _opcode = 0x00
     _size: int = 9
 
     _sprite_id: UInt16 = UInt16(0)
@@ -265,7 +265,7 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_behind_all_sprites(behind_all_sprites)
         self.set_overlap_all_sprites(overlap_all_sprites)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = (
             (self.overwrite_vram * 0x01)
             + (self.behind_all_sprites * 0x40)
@@ -311,7 +311,7 @@ class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x01
+    _opcode = 0x01
 
 
 class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -336,7 +336,7 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
     """
 
     _size: int = 6
-    _opcode: int = 0x03
+    _opcode = 0x03
 
     _sprite_id: UInt16
     _sequence: UInt4
@@ -430,7 +430,7 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         self.set_behind_all_sprites(behind_all_sprites)
         self.set_overlap_all_sprites(overlap_all_sprites)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = (
             self.store_to_vram * 0x01
             + self.behind_all_sprites * 0x40
@@ -470,25 +470,11 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def set_condition(self, condition: Union[int, PauseUntil, bytearray]) -> None:
         """Set the condition that ends the pause."""
-        if condition in [
-            SPRITE_SHIFT_COMPLETE,
-            BUTTON_PRESSED,
-            FRAMES_ELAPSED,
-            UNKNOWN_PAUSE_7,
-            UNKNOWN_PAUSE_1,
-            UNKNOWN_PAUSE_2,
-            UNKNOWN_PAUSE_4,
-        ]:
+        if isinstance(condition, PauseUntil):
             self._size = 4
             self._opcode = 0x04
-            self._condition = PauseUntil(condition)
-        elif condition in [
-            SEQ_4BPP_COMPLETE,
-            SEQ_2BPP_COMPLETE,
-            FADE_IN_COMPLETE,
-            FADE_4BPP_COMPLETE,
-            FADE_2BPP_COMPLETE,
-        ]:
+            self._condition = condition
+        elif isinstance(condition, bytearray):
             self._size = 3
             self._opcode = 0x74
             self._condition = condition
@@ -519,7 +505,7 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_frames(frames)
         self.set_condition(condition)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.opcode == 0x04:
             return super().render(self.condition, self.frames)
         if self.opcode == 0x74:
@@ -543,7 +529,7 @@ class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x05
+    _opcode = 0x05
 
 
 class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -562,7 +548,7 @@ class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x07
+    _opcode = 0x07
 
 
 class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -590,7 +576,7 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x08
+    _opcode = 0x08
     _size: int = 8
 
     _speed: Int16
@@ -708,7 +694,7 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_should_set_end_position(should_set_end_position)
         self.set_should_set_speed(should_set_speed)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = (
             (self.apply_to_z * 0x01)
             + (self.apply_to_y * 0x02)
@@ -742,10 +728,10 @@ class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x09
+    _opcode = 0x09
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -765,7 +751,7 @@ class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0A
+    _opcode = 0x0A
 
 
 class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
@@ -791,7 +777,7 @@ class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0B
+    _opcode = 0x0B
 
 
 class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -813,7 +799,7 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0C
+    _opcode = 0x0C
     _size: int = 6
 
     _shift_type: ShiftType
@@ -861,7 +847,7 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_speed(speed)
         self.set_arch_height(arch_height)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.shift_type, self.speed, self.arch_height)
 
 
@@ -883,7 +869,7 @@ class ResetTargetMappingMemory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0E
+    _opcode = 0x0E
 
 
 class ResetObjectMappingMemory(
@@ -904,7 +890,7 @@ class ResetObjectMappingMemory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0F
+    _opcode = 0x0F
 
 
 class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
@@ -924,10 +910,10 @@ class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x10
+    _opcode = 0x10
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -947,7 +933,7 @@ class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x11
+    _opcode = 0x11
 
 
 class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -966,7 +952,7 @@ class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: bytearray = bytearray([0x1A, 0x01])
+    _opcode = bytearray([0x1A, 0x01])
 
 
 class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -985,7 +971,7 @@ class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: bytearray = bytearray([0x1B, 0x01])
+    _opcode = bytearray([0x1B, 0x01])
 
 
 class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
@@ -1006,14 +992,14 @@ class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(self, amem: int, value: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
 
 
@@ -1035,7 +1021,7 @@ class SetAMEM16BitToConst(SetAMEM8BitToConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class JmpIfAMEM8BitEqualsConst(
@@ -1061,7 +1047,7 @@ class JmpIfAMEM8BitEqualsConst(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -1075,7 +1061,7 @@ class JmpIfAMEM8BitEqualsConst(
         self.set_amem(amem)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value, *self.destinations)
 
 
@@ -1098,7 +1084,7 @@ class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
@@ -1120,7 +1106,7 @@ class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
@@ -1142,7 +1128,7 @@ class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
@@ -1164,7 +1150,7 @@ class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
@@ -1186,7 +1172,7 @@ class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
@@ -1208,7 +1194,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
@@ -1230,7 +1216,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
@@ -1251,14 +1237,14 @@ class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(self, amem: int, value: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
 
 
@@ -1280,7 +1266,7 @@ class IncAMEM16BitByConst(IncAMEM8BitByConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitByConst(IncAMEM8BitByConst):
@@ -1301,7 +1287,7 @@ class DecAMEM8BitByConst(IncAMEM8BitByConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitByConst(IncAMEM8BitByConst):
@@ -1322,7 +1308,7 @@ class DecAMEM16BitByConst(IncAMEM8BitByConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
@@ -1343,7 +1329,7 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -1352,7 +1338,7 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
 
@@ -1375,7 +1361,7 @@ class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
@@ -1396,7 +1382,7 @@ class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(
         self, address: int, amem: int, identifier: Optional[str] = None
@@ -1422,7 +1408,7 @@ class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEquals7E1x(
@@ -1448,7 +1434,7 @@ class JmpIfAMEM8BitEquals7E1x(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -1462,7 +1448,7 @@ class JmpIfAMEM8BitEquals7E1x(
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr, *self.destinations)
 
@@ -1486,7 +1472,7 @@ class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1508,7 +1494,7 @@ class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1530,7 +1516,7 @@ class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1552,7 +1538,7 @@ class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1574,7 +1560,7 @@ class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1596,7 +1582,7 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
@@ -1618,7 +1604,7 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
@@ -1639,7 +1625,7 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -1648,7 +1634,7 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
 
@@ -1671,7 +1657,7 @@ class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
@@ -1692,7 +1678,7 @@ class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
@@ -1713,7 +1699,7 @@ class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
@@ -1734,7 +1720,7 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -1743,7 +1729,7 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
 
@@ -1766,7 +1752,7 @@ class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
@@ -1787,7 +1773,7 @@ class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(
         self, address: int, amem: int, identifier: Optional[str] = None
@@ -1813,7 +1799,7 @@ class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEquals7F(
@@ -1839,7 +1825,7 @@ class JmpIfAMEM8BitEquals7F(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -1853,7 +1839,7 @@ class JmpIfAMEM8BitEquals7F(
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr, *self.destinations)
 
@@ -1877,7 +1863,7 @@ class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
@@ -1899,7 +1885,7 @@ class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
@@ -1921,7 +1907,7 @@ class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
@@ -1943,7 +1929,7 @@ class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
@@ -1965,7 +1951,7 @@ class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
@@ -1987,7 +1973,7 @@ class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
@@ -2009,7 +1995,7 @@ class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
@@ -2030,7 +2016,7 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -2039,7 +2025,7 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
 
@@ -2062,7 +2048,7 @@ class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
@@ -2083,7 +2069,7 @@ class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
@@ -2104,7 +2090,7 @@ class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
@@ -2126,7 +2112,7 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(
         self,
@@ -2140,7 +2126,7 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         self.set_source_amem(source_amem)
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
@@ -2165,7 +2151,7 @@ class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
@@ -2187,7 +2173,7 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(
         self,
@@ -2201,7 +2187,7 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         self.set_source_amem(dest_amem)  # i don't like this naming
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
@@ -2226,7 +2212,7 @@ class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEqualsAMEM(
@@ -2253,7 +2239,7 @@ class JmpIfAMEM8BitEqualsAMEM(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -2269,7 +2255,7 @@ class JmpIfAMEM8BitEqualsAMEM(
         self.set_source_amem(source_amem)
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x30 + self._amem_bits(),
             UInt16((self.source_amem & 0x0F) + self.upper),
@@ -2297,7 +2283,7 @@ class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2320,7 +2306,7 @@ class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2343,7 +2329,7 @@ class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2366,7 +2352,7 @@ class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2389,7 +2375,7 @@ class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2412,7 +2398,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
@@ -2435,7 +2421,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
@@ -2457,7 +2443,7 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(
         self,
@@ -2471,7 +2457,7 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         self.set_source_amem(source_amem)
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
@@ -2496,7 +2482,7 @@ class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
@@ -2518,7 +2504,7 @@ class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
@@ -2540,7 +2526,7 @@ class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitToOMEMCurrent(
@@ -2563,14 +2549,14 @@ class SetAMEM8BitToOMEMCurrent(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
 
 
@@ -2592,7 +2578,7 @@ class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
@@ -2613,7 +2599,7 @@ class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(self, omem: int, amem: int, identifier: Optional[str] = None) -> None:
         super().__init__(amem, omem, identifier)
@@ -2637,7 +2623,7 @@ class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEqualsOMEMCurrent(
@@ -2663,7 +2649,7 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -2677,7 +2663,7 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x40 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
@@ -2702,7 +2688,7 @@ class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2724,7 +2710,7 @@ class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2746,7 +2732,7 @@ class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2768,7 +2754,7 @@ class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2790,7 +2776,7 @@ class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2812,7 +2798,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
@@ -2834,7 +2820,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitByOMEMCurrent(
@@ -2857,14 +2843,14 @@ class IncAMEM8BitByOMEMCurrent(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
 
 
@@ -2886,7 +2872,7 @@ class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
@@ -2907,7 +2893,7 @@ class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
@@ -2928,7 +2914,7 @@ class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
@@ -2949,7 +2935,7 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -2958,7 +2944,7 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
 
@@ -2981,7 +2967,7 @@ class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
@@ -3002,7 +2988,7 @@ class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(
         self, address: int, amem: int, identifier: Optional[str] = None
@@ -3028,7 +3014,7 @@ class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEquals7E5x(
@@ -3054,7 +3040,7 @@ class JmpIfAMEM8BitEquals7E5x(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -3068,7 +3054,7 @@ class JmpIfAMEM8BitEquals7E5x(
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr, *self.destinations)
 
@@ -3092,7 +3078,7 @@ class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3114,7 +3100,7 @@ class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3136,7 +3122,7 @@ class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3158,7 +3144,7 @@ class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3180,7 +3166,7 @@ class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3202,7 +3188,7 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
@@ -3224,7 +3210,7 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
@@ -3245,7 +3231,7 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(
         self, amem: int, address: int, identifier: Optional[str] = None
@@ -3254,7 +3240,7 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         self.set_amem(amem)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
 
@@ -3277,7 +3263,7 @@ class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
@@ -3298,7 +3284,7 @@ class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
@@ -3319,7 +3305,7 @@ class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
 class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
@@ -3340,14 +3326,14 @@ class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
 
     def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
 
 
@@ -3369,7 +3355,7 @@ class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
@@ -3390,7 +3376,7 @@ class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
     def __init__(self, omem: int, amem: int, identifier: Optional[str] = None) -> None:
         super().__init__(amem, omem, identifier)
@@ -3414,7 +3400,7 @@ class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEqualsOMEMMain(
@@ -3440,7 +3426,7 @@ class JmpIfAMEM8BitEqualsOMEMMain(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
 
     def __init__(
@@ -3454,7 +3440,7 @@ class JmpIfAMEM8BitEqualsOMEMMain(
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             0x60 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
@@ -3479,7 +3465,7 @@ class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3501,7 +3487,7 @@ class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3523,7 +3509,7 @@ class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3545,7 +3531,7 @@ class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3567,7 +3553,7 @@ class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3589,7 +3575,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
@@ -3611,7 +3597,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
@@ -3632,14 +3618,14 @@ class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
 
     def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
 
 
@@ -3661,7 +3647,7 @@ class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
 
 
 class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
@@ -3682,7 +3668,7 @@ class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
 
 
 class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
@@ -3703,10 +3689,10 @@ class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
 
 
-class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
+class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Set 8bit AMEM $60-6F to the given value of the given type
 
     ## Lazy Shell command
@@ -3725,7 +3711,7 @@ class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x20
+    _opcode = 0x20
     _type: int
 
     @property
@@ -3743,7 +3729,7 @@ class SetAMEM8BitToUnknownShort(AnimationScriptAMEMAndConst):
         self.set_value(value)
         self.set_type(type)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
 
@@ -3766,10 +3752,10 @@ class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
-class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
+class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScriptCommand):
     """Set variable type 0x7-0xB to AMEM 8 bit
 
     ## Lazy Shell command
@@ -3788,7 +3774,7 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
     _type: int
 
     @property
@@ -3806,7 +3792,7 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst):
         self.set_value(value)
         self.set_type(type)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
 
@@ -3829,7 +3815,7 @@ class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x23
+    _opcode = 0x23
 
 
 class JmpIfAMEM8BitEqualsUnknownShort(
@@ -3856,7 +3842,7 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x24
+    _opcode = 0x24
     _size: int = 6
     _type: int
 
@@ -3880,7 +3866,7 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         self.set_value(value)
         self.set_type(type)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self._amem_bits() + (self.type << 4), self.value, *self.destinations
         )
@@ -3906,7 +3892,7 @@ class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x25
+    _opcode = 0x25
 
 
 class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
@@ -3929,7 +3915,7 @@ class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x26
+    _opcode = 0x26
 
 
 class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
@@ -3952,7 +3938,7 @@ class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x27
+    _opcode = 0x27
 
 
 class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
@@ -3975,7 +3961,7 @@ class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x28
+    _opcode = 0x28
 
 
 class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
@@ -3998,7 +3984,7 @@ class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x29
+    _opcode = 0x29
 
 
 class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
@@ -4021,7 +4007,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShor
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
@@ -4044,7 +4030,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownSho
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2B
+    _opcode = 0x2B
 
 
 class IncAMEM8BitByUnknownShort(
@@ -4068,7 +4054,7 @@ class IncAMEM8BitByUnknownShort(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2C
+    _opcode = 0x2C
     _type: int
 
     @property
@@ -4086,7 +4072,7 @@ class IncAMEM8BitByUnknownShort(
         self.set_type(type)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
 
@@ -4109,7 +4095,7 @@ class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2D
+    _opcode = 0x2D
     _type: int
 
 
@@ -4132,7 +4118,7 @@ class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2E
+    _opcode = 0x2E
     _type: int
 
 
@@ -4155,7 +4141,7 @@ class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2F
+    _opcode = 0x2F
     _type: int
 
 
@@ -4176,7 +4162,7 @@ class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x30
+    _opcode = 0x30
 
 
 class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
@@ -4196,7 +4182,7 @@ class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x31
+    _opcode = 0x31
 
 
 class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
@@ -4216,7 +4202,7 @@ class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x32
+    _opcode = 0x32
 
 
 class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
@@ -4236,7 +4222,7 @@ class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x33
+    _opcode = 0x33
 
 
 class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
@@ -4256,7 +4242,7 @@ class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComma
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x34
+    _opcode = 0x34
 
 
 class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
@@ -4276,7 +4262,7 @@ class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x35
+    _opcode = 0x35
 
 
 class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
@@ -4297,7 +4283,7 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x36
+    _opcode = 0x36
     _size: int = 3
 
     @property
@@ -4316,7 +4302,7 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
         self.set_amem(amem)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
 
@@ -4339,7 +4325,7 @@ class ClearAMEMBits(SetAMEMBits):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x37
+    _opcode = 0x37
 
 
 class JmpIfAMEMBitsSet(
@@ -4365,7 +4351,7 @@ class JmpIfAMEMBitsSet(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x38
+    _opcode = 0x38
     _size: int = 5
 
     @property
@@ -4390,7 +4376,7 @@ class JmpIfAMEMBitsSet(
         self.set_amem(amem)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags, *self.destinations)
 
@@ -4414,7 +4400,7 @@ class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x39
+    _opcode = 0x39
 
 
 class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
@@ -4433,7 +4419,7 @@ class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3A
+    _opcode = 0x3A
 
 
 class PauseScriptUntilAMEMBitsSet(
@@ -4456,7 +4442,7 @@ class PauseScriptUntilAMEMBitsSet(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x40
+    _opcode = 0x40
     _size: int = 3
 
     @property
@@ -4475,7 +4461,7 @@ class PauseScriptUntilAMEMBitsSet(
         self.set_amem(amem)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
 
@@ -4498,7 +4484,7 @@ class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x41
+    _opcode = 0x41
 
 
 class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -4522,7 +4508,7 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x43
+    _opcode = 0x43
     _size: int = 2
 
     _sequence: UInt4
@@ -4592,7 +4578,7 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bit_6(bit_6)
         self.set_mirror(mirror)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = self.sequence + (
             (
                 self.looping_on
@@ -4623,7 +4609,7 @@ class SetAMEM60ToCurrentTarget(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x45
+    _opcode = 0x45
 
 
 class GameOverIfNoAlliesStanding(
@@ -4644,7 +4630,7 @@ class GameOverIfNoAlliesStanding(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x46
+    _opcode = 0x46
 
 
 class PauseScriptUntilSpriteSequenceDone(
@@ -4665,7 +4651,7 @@ class PauseScriptUntilSpriteSequenceDone(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4E
+    _opcode = 0x4E
 
 
 class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
@@ -4685,10 +4671,10 @@ class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x50
+    _opcode = 0x50
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -4709,10 +4695,10 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x51
+    _opcode = 0x51
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -4742,7 +4728,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5D
+    _opcode = 0x5D
     _size: int = 5
 
     _field_object: UInt4
@@ -4863,7 +4849,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         self.set_current_target(current_target)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = bools_to_int(
             self.bit_0,
             self.bit_1,
@@ -4893,7 +4879,7 @@ class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5E
+    _opcode = 0x5E
 
 
 class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -4913,7 +4899,7 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x63
+    _opcode = 0x63
     _size: int = 2
 
     _message_type: MessageType
@@ -4933,7 +4919,7 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
         super().__init__(identifier)
         self.set_message_type(message_type)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.message_type)
 
 
@@ -4956,7 +4942,7 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x64
+    _opcode = 0x64
     _size: int = 3
 
     def __init__(
@@ -4970,7 +4956,7 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
             )
         super().__init__(destinations, identifier)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -4995,7 +4981,7 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x68
+    _opcode = 0x68
     _size: int = 4
 
     _index: UInt8 = UInt8(0)
@@ -5022,7 +5008,7 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
         super().__init__(destinations, identifier)
         self.set_index(index)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations, self.index)
 
 
@@ -5048,7 +5034,7 @@ class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWith
             raise InvalidCommandArgumentException("object queues require an identifier")
         super().__init__(destinations, identifier)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -5068,7 +5054,7 @@ class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x69
+    _opcode = 0x69
 
 
 class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
@@ -5089,7 +5075,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6A
+    _opcode = 0x6A
     _size: int = 3
 
     _upper_bound: UInt8
@@ -5110,7 +5096,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
         self.set_amem(amem)
         self.set_upper_bound(upper_bound)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
 
 
@@ -5132,7 +5118,7 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6B
+    _opcode = 0x6B
     _size: int = 4
 
     _upper_bound: UInt16
@@ -5153,7 +5139,7 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
         self.set_amem(amem)
         self.set_upper_bound(upper_bound)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
 
 
@@ -5175,7 +5161,7 @@ class EnableSpritesOnSubscreen(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x70
+    _opcode = 0x70
 
 
 class DisableSpritesOnSubscreen(
@@ -5196,7 +5182,7 @@ class DisableSpritesOnSubscreen(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x71
+    _opcode = 0x71
 
 
 class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5220,7 +5206,7 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x72
+    _opcode = 0x72
     _size: int = 3
 
     _effect: UInt8
@@ -5291,7 +5277,7 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_looping_off(looping_off)
         self.set_bit_3(bit_3)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = bools_to_int(
             self.looping_on,
             self.playback_off,
@@ -5317,7 +5303,7 @@ class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x73
+    _opcode = 0x73
 
 
 class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5337,7 +5323,7 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x75
+    _opcode = 0x75
     _size: int = 3
 
     _bits: UInt16
@@ -5355,7 +5341,7 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
         super().__init__(identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.bits)
 
 
@@ -5375,7 +5361,7 @@ class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x76
+    _opcode = 0x76
 
 
 class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5399,7 +5385,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x77
+    _opcode = 0x77
     _size: int = 2
 
     _prop: LayerPriorityType
@@ -5469,7 +5455,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bpp2(bpp2)
         self.set_invisible(invisible)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = bools_to_int(self.bit_0, self.bpp4, self.bpp2, self.invisible) + (
             self.prop << 4
         )
@@ -5492,7 +5478,7 @@ class Layer3Off(Layer3On):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x78
+    _opcode = 0x78
 
 
 class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5513,7 +5499,7 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7A
+    _opcode = 0x7A
     _size: int = 3
 
     _type: MessageType
@@ -5547,7 +5533,7 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_type(message_type)
         self.set_dialog_id(dialog_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.message_type, self.dialog_id)
 
 
@@ -5569,7 +5555,7 @@ class PauseScriptUntilDialogClosed(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7B
+    _opcode = 0x7B
 
 
 class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5589,7 +5575,7 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7E
+    _opcode = 0x7E
     _size: int = 2
     _duration: UInt8
 
@@ -5606,7 +5592,7 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_duration(duration)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration)
 
 
@@ -5626,7 +5612,7 @@ class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNo
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7F
+    _opcode = 0x7F
 
 
 class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5650,7 +5636,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x80
+    _opcode = 0x80
     _size: int = 4
 
     _colour_count: UInt4
@@ -5730,7 +5716,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_glow_duration(glow_duration)
         self.set_direction(east, west)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.west,
             self.colour_count + (self.starting_colour_index << 4),
@@ -5755,7 +5741,7 @@ class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0, self.duration)
 
 
@@ -5776,7 +5762,7 @@ class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x10, self.duration)
 
 
@@ -5797,7 +5783,7 @@ class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x20, self.duration)
 
 
@@ -5818,7 +5804,7 @@ class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(2, self.duration)
 
 
@@ -5839,7 +5825,7 @@ class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x12, self.duration)
 
 
@@ -5860,7 +5846,7 @@ class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x22, self.duration)
 
 
@@ -5882,7 +5868,7 @@ class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(1)
 
 
@@ -5904,7 +5890,7 @@ class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(2)
 
 
@@ -5926,7 +5912,7 @@ class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeOb
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(4)
 
 
@@ -5946,7 +5932,7 @@ class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x87
+    _opcode = 0x87
 
 
 class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -5968,7 +5954,7 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x8E
+    _opcode = 0x8E
     _size: int = 3
 
     _colour: FlashColour
@@ -6015,7 +6001,7 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
         self.set_duration(duration)
         self.set_unknown_upper(unknown_upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour, self.duration)
 
 
@@ -6037,7 +6023,7 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x8F
+    _opcode = 0x8F
     _size: int = 2
 
     _colour: FlashColour
@@ -6072,7 +6058,7 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_colour(colour)
         self.set_unknown_upper(unknown_upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour)
 
 
@@ -6094,7 +6080,7 @@ class InitializeBonusMessageSequence(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x95
+    _opcode = 0x95
 
 
 class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -6116,7 +6102,7 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x96
+    _opcode = 0x96
     _size: int = 5
 
     _message: BonusMessage
@@ -6158,7 +6144,7 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_x(x)
         self.set_y(y)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0, self.message, self.x, self.y)
 
 
@@ -6180,7 +6166,7 @@ class PauseScriptUntilBonusMessageComplete(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x97
+    _opcode = 0x97
 
 
 class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -6208,7 +6194,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9C
+    _opcode = 0x9C
     _size: int = 9
 
     _layer: WaveEffectLayer = WAVE_LAYER_BATTLEFIELD
@@ -6294,7 +6280,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self._bit_5 = bit_5
 
     @property
-    def byte_1(self) -> bool:
+    def byte_1(self) -> UInt8:
         """(unknown)"""
         return self._byte_1
 
@@ -6326,7 +6312,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bit_5(bit_5)
         self.set_byte_1(byte_1)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = (
             bits_to_int([self.layer])
             + bits_to_int([self.direction + 6])
@@ -6357,7 +6343,7 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9D
+    _opcode = 0x9D
     _size: int = 2
 
     _bit_7: bool = False
@@ -6375,7 +6361,7 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(2 + (self.bit_7 << 7))
 
 
@@ -6396,7 +6382,7 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA3
+    _opcode = 0xA3
     _size: int = 2
 
     _effect: UInt8
@@ -6415,7 +6401,7 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_effect(effect)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.effect)
 
 
@@ -6439,10 +6425,10 @@ class JmpIfTimedHitSuccess(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA7
+    _opcode = 0xA7
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -6502,7 +6488,7 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_sound(sound)
         self.set_channel(channel)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound)
 
 
@@ -6523,7 +6509,7 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB0
+    _opcode = 0xB0
     _size: int = 2
 
     _music: UInt8
@@ -6542,7 +6528,7 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
         super().__init__(identifier)
         self.set_music(music)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music)
 
 
@@ -6564,7 +6550,7 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB1
+    _opcode = 0xB1
     _size: int = 4
 
     _music: UInt8
@@ -6595,7 +6581,7 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_music(music)
         self.set_volume(volume)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music, self.volume)
 
 
@@ -6617,7 +6603,7 @@ class StopCurrentSoundEffect(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB2
+    _opcode = 0xB2
 
 
 class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -6638,7 +6624,7 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB6
+    _opcode = 0xB6
     _size: int = 3
 
     _speed: UInt8
@@ -6669,7 +6655,7 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
         self.set_speed(speed)
         self.set_volume(volume)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.speed, self.volume)
 
 
@@ -6690,7 +6676,7 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBB
+    _opcode = 0xBB
     _size: int = 2
 
     _target: BattleTarget
@@ -6708,7 +6694,7 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
 
 
@@ -6731,9 +6717,9 @@ class AddItemToStandardInventory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBC
+    _opcode = 0xBC
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
 
 
@@ -6756,9 +6742,9 @@ class RemoveItemFromStandardInventory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBC
+    _opcode = 0xBC
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
 
 
@@ -6781,9 +6767,9 @@ class AddItemToKeyItemInventory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBD
+    _opcode = 0xBD
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
 
 
@@ -6806,9 +6792,9 @@ class RemoveItemFromKeyItemInventory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBD
+    _opcode = 0xBD
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
 
 
@@ -6830,7 +6816,7 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
     """
 
     _size: int = 3
-    _opcode: int = 0xBE
+    _opcode = 0xBE
 
     _amount: UInt16
 
@@ -6847,7 +6833,7 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_amount(amount)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.amount)
 
 
@@ -6869,7 +6855,7 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
     """
 
     _size: int = 2
-    _opcode: int = 0xBF
+    _opcode = 0xBF
 
     _amount: UInt8
 
@@ -6886,7 +6872,7 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
         super().__init__(identifier)
         self.set_amount(amount)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.amount)
 
 
@@ -6909,7 +6895,7 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """
 
     _size: int = 2
-    _opcode: int = 0xC3
+    _opcode = 0xC3
 
     _effect: MaskEffect
     _unknown_upper: UInt8
@@ -6943,7 +6929,7 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_effect(effect)
         self.set_unknown_upper(unknown_upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.effect)
 
 
@@ -6966,10 +6952,10 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """
 
     _count: int = 0
-    _opcode: int = 0xC6
+    _opcode = 0xC6
 
     _points: List[MaskPoint]
-    _extra_byte: Optional[UInt8] = None
+    _extra_byte: Optional[Int8] = None
 
     @property
     def points(self) -> List[MaskPoint]:
@@ -6985,11 +6971,11 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         return len(self.points) * 2 + 2 + (1 if self.extra_byte is not None else 0)
 
     @property
-    def extra_byte(self) -> Optional[UInt8]:
+    def extra_byte(self) -> Optional[Int8]:
         return self._extra_byte
 
     def set_extra_byte(self, extra_byte: int) -> None:
-        self._extra_byte = UInt8(extra_byte)
+        self._extra_byte = Int8(extra_byte)
 
     def __init__(
         self,
@@ -7002,7 +6988,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         if extra_byte is not None:
             self.set_extra_byte(extra_byte)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         points = [num for tup in self.points for num in tup]
         count = len(self.points) * 2
         if self.extra_byte is not None:
@@ -7032,7 +7018,7 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
     """
 
     _size: int = 2
-    _opcode: int = 0xCB
+    _opcode = 0xCB
 
     _speed: UInt4
 
@@ -7049,7 +7035,7 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_speed(speed)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.speed)
 
 
@@ -7071,7 +7057,7 @@ class StartTrackingAllyButtonInputs(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCC
+    _opcode = 0xCC
 
 
 class EndTrackingAllyButtonInputs(
@@ -7092,7 +7078,7 @@ class EndTrackingAllyButtonInputs(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCD
+    _opcode = 0xCD
 
 
 class TimingForOneTieredButtonPress(
@@ -7119,7 +7105,7 @@ class TimingForOneTieredButtonPress(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCE
+    _opcode = 0xCE
     _size: int = 8
 
     _start_accepting_input: UInt8
@@ -7232,7 +7218,7 @@ class TimingForOneTieredButtonPress(
             perfect_end,
         )
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.end_accepting_input,
             self.start_accepting_input,
@@ -7265,7 +7251,7 @@ class TimingForOneBinaryButtonPress(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCF
+    _opcode = 0xCF
     _size: int = 6
 
     _start_accepting_input: UInt8
@@ -7332,7 +7318,7 @@ class TimingForOneBinaryButtonPress(
             start_accepting_input, end_accepting_input, timed_hit_ends
         )
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.end_accepting_input,
             self.start_accepting_input,
@@ -7361,7 +7347,7 @@ class TimingForMultipleButtonPresses(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD0
+    _opcode = 0xD0
     _size: int = 4
 
     _start_accepting_input: UInt8
@@ -7384,7 +7370,7 @@ class TimingForMultipleButtonPresses(
         super().__init__(destinations, identifier)
         self.set_start_accepting_input(start_accepting_input)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.start_accepting_input, *self.destinations)
 
 
@@ -7406,7 +7392,7 @@ class TimingForButtonMashUnknown(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD1
+    _opcode = 0xD1
 
 
 class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -7426,7 +7412,7 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD2
+    _opcode = 0xD2
     _size: int = 2
 
     _max_presses: UInt8
@@ -7444,7 +7430,7 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
         super().__init__(identifier)
         self.set_max_presses(max_presses)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.max_presses)
 
 
@@ -7467,7 +7453,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD3
+    _opcode = 0xD3
     _size: int = 4
 
     _start_accepting_input: UInt8
@@ -7528,7 +7514,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         self.set_input_windows(start_accepting_input, end_accepting_input)
         self.set_max_presses(max_presses)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.end_accepting_input, self.start_accepting_input, self.max_presses
         )
@@ -7555,7 +7541,7 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD4
+    _opcode = 0xD4
     _size: int = 6
 
     _charge_level_1_end: UInt8
@@ -7670,7 +7656,7 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
             overcharge_end,
         )
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.charge_level_1_end,
             self.charge_level_2_end,
@@ -7706,7 +7692,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD5
+    _opcode = 0xD5
     _size: int = 4
 
     _monster: Type["Enemy"]
@@ -7837,7 +7823,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_bit_6(bit_6)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1: int = bools_to_int(
             self.bit_0,
             self.bit_1,
@@ -7868,10 +7854,10 @@ class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD8
+    _opcode = 0xD8
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -7891,7 +7877,7 @@ class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandN
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD9
+    _opcode = 0xD9
 
 
 class StoreOMEM60ToItemInventory(
@@ -7912,7 +7898,7 @@ class StoreOMEM60ToItemInventory(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE0
+    _opcode = 0xE0
 
 
 class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -7933,7 +7919,7 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE1
+    _opcode = 0xE1
     _size: int = 4
 
     _script_id: UInt16
@@ -7965,7 +7951,7 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
         self.set_script_id(script_id)
         self.set_offset(offset)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.script_id, self.offset)
 
 
@@ -8006,7 +7992,7 @@ class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
         super().__init__(identifier)
         self.set_contents(contents)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
 

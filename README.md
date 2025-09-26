@@ -248,7 +248,7 @@ script = MonsterScript([
 ])
 ```
 
-I didn't bother adding indents to the disassembled output because, well... python.
+I didn't bother matching Lazy Shell UI indents to the disassembled output because, well... python.
 
 You will also get a folder in the root of the monster_ai folder, monster_scripts.py, which imports all 256 battle scripts into a `MonsterScriptBank`. If you're using these scripts in your own code, you can import the `MonsterScriptBank` and run its `.render()` method, which will retur a tuple of **two bytearrays**. The first is meant to be patched at `0x3930AA` (where monster AI goes in the original game) and the second is meant to be patched to `0x39F400` (in case your scripts are very long and need some overflow room, the block at `0x39F400` is empty in the original game).
 

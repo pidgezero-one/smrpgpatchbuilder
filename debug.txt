@@ -1,0 +1,965 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.6.0 -- /mnt/c/Users/pidge/code/smrpgpatchbuilder/patchvenv/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/c/Users/pidge/code/smrpgpatchbuilder
+configfile: pyproject.toml
+plugins: sugar-1.0.0
+collecting ... collected 777 items
+
+src/tests/animations/test_animationscripts.py::test_add[attack timer begins] PASSED
+src/tests/animations/test_animationscripts.py::test_add[NewSpriteAtCoords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM32ToXYZCoords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DrawSpriteAtAMEM32Coords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntil] PASSED
+src/tests/animations/test_animationscripts.py::test_add[RemoveObject] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ReturnObjectQueue] PASSED
+src/tests/animations/test_animationscripts.py::test_add[MoveObject] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Jmp] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Pause1Frame] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM40ToXYZCoords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[MoveSpriteToCoords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ResetTargetMappingMemory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ResetObjectMappingMemory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[RunSubroutine] PASSED
+src/tests/animations/test_animationscripts.py::test_add[VisibilityOn] PASSED
+src/tests/animations/test_animationscripts.py::test_add[VisibilityOff] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitToConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitToConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEqualsConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEqualsConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEqualsConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEqualsConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThanConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThanConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThanConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThanConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitByConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitByConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitByConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitByConst] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitTo7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitTo7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7E1xToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7E1xToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEquals7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEquals7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEquals7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEquals7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThan7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThan7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThan7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThan7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitBy7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitBy7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitBy7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitBy7E1x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitTo7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitTo7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7FToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7FToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEquals7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEquals7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEquals7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEquals7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThan7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThan7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThan7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThan7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitBy7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitBy7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitBy7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitBy7F] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitToAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitToAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEMToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEMToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEqualsAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEqualsAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEqualsAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEqualsAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThanAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThanAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThanAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThanAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitByAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitByAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitByAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitByAMEM] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitToOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitToOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetOMEMCurrentToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetOMEMCurrentToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEqualsOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEqualsOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEqualsOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEqualsOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThanOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThanOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitByOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitByOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitByOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitByOMEMCurrent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitTo7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitTo7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7E5xToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Set7E5xToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEquals7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEquals7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEquals7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEquals7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThan7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThan7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThan7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThan7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitBy7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitBy7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitBy7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitBy7E5x] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitToOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitToOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetOMEMMainToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetOMEMMainToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEqualsOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEqualsOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEqualsOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEqualsOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThanOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThanOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThanOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThanOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitByOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitByOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitByOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitByOMEMMain] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM8BitToUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM16BitToUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetUnknownShortToAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetUnknownShortToAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitEqualsUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitEqualsUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitNotEqualsUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitNotEqualsUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitLessThanUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitLessThanUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM8BitGreaterOrEqualThanUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEM16BitGreaterOrEqualThanUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8BitByUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16BitByUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8BitByUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16BitByUnknownShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[IncAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DecAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ClearAMEM8Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ClearAMEM16Bit] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEMBits] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ClearAMEMBits] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEMBitsSet] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfAMEMBitsClear] PASSED
+src/tests/animations/test_animationscripts.py::test_add[AttackTimerBegins] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilAMEMBitsSet] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilAMEMBitsClear] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SpriteSequence] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEM60ToCurrentTarget] PASSED
+src/tests/animations/test_animationscripts.py::test_add[GameOverIfNoAlliesStanding] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilSpriteSequenceDone] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfTargetDisabled] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfTargetEnabled] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SpriteQueue] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DisplayMessageAtOMEM60As] PASSED
+src/tests/animations/test_animationscripts.py::test_add[UseObjectQueueAtOffsetWithAMEM60Index] FAILED
+src/tests/animations/test_animationscripts.py::test_add[UseObjectQueueAtOffsetWithAMEM60PointerOffset] FAILED
+src/tests/animations/test_animationscripts.py::test_add[SetOMEM60To072C] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEMToRandomByte] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetAMEMToRandomShort] PASSED
+src/tests/animations/test_animationscripts.py::test_add[EnableSpritesOnSubscreen] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DisableSpritesOnSubscreen] PASSED
+src/tests/animations/test_animationscripts.py::test_add[NewEffectObject] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Pause2Frames] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilBitsClear] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ClearEffectIndex] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Layer3On] PASSED
+src/tests/animations/test_animationscripts.py::test_add[Layer3Off] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DisplayMessage] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilDialogClosed] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeOutObject] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ResetSpriteSequence] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ShineEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeOutEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeOutSprite] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeOutScreen] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeInEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeInSprite] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeInScreen] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ShakeScreen] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ShakeSprites] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ShakeScreenAndSprites] PASSED
+src/tests/animations/test_animationscripts.py::test_add[StopShakingObject] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ScreenFlashWithDuration] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ScreenFlash] PASSED
+src/tests/animations/test_animationscripts.py::test_add[InitializeBonusMessageSequence] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DisplayBonusMessage] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PauseScriptUntilBonusMessageComplete] PASSED
+src/tests/animations/test_animationscripts.py::test_add[WaveEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[StopWaveEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[ScreenEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[JmpIfTimedHitSuccess] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PlaySound] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PlayMusicAtCurrentVolume] PASSED
+src/tests/animations/test_animationscripts.py::test_add[PlayMusicAtVolume] PASSED
+src/tests/animations/test_animationscripts.py::test_add[StopCurrentSoundEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[FadeCurrentMusicToVolume] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetTarget] PASSED
+src/tests/animations/test_animationscripts.py::test_add[AddItemToStandardInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[RemoveItemFromStandardInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[AddItemToKeyItemInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[RemoveItemFromKeyItemInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[AddCoins] PASSED
+src/tests/animations/test_animationscripts.py::test_add[AddYoshiCookiesToInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DoMaskEffect] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetMaskCoords] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SetSequenceSpeed] PASSED
+src/tests/animations/test_animationscripts.py::test_add[StartTrackingAllyButtonInputs] PASSED
+src/tests/animations/test_animationscripts.py::test_add[EndTrackingAllyButtonInputs] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForOneTieredButtonPress] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForOneBinaryButtonPress] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForMultipleButtonPresses] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForButtonMashUnknown] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForButtonMashCount] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForRotationCount] PASSED
+src/tests/animations/test_animationscripts.py::test_add[TimingForChargePress] PASSED
+src/tests/animations/test_animationscripts.py::test_add[SummonMonster] PASSED
+src/tests/animations/test_animationscripts.py::test_add[MuteTimingJmp] PASSED
+src/tests/animations/test_animationscripts.py::test_add[DisplayCantRunDialog] PASSED
+src/tests/animations/test_animationscripts.py::test_add[StoreOMEM60ToItemInventory] PASSED
+src/tests/animations/test_animationscripts.py::test_add[RunBattleEvent] PASSED
+src/tests/animations/test_animationscripts.py::test_add[UnknownCommand] PASSED
+src/tests/animations/test_animationscripts.py::test_add[should fill in expected length when not long enough] FAILED
+src/tests/animations/test_animationscripts.py::test_add[should error if expected size is wrong] FAILED
+src/tests/monsters/test_ai.py::test_add[Attack] PASSED
+src/tests/monsters/test_ai.py::test_add[Attack x3] PASSED
+src/tests/monsters/test_ai.py::test_add[SetTarget] PASSED
+src/tests/monsters/test_ai.py::test_add[RunBattleDialog] PASSED
+src/tests/monsters/test_ai.py::test_add[RunBattleEvent] PASSED
+src/tests/monsters/test_ai.py::test_add[IncreaseVarBy1] PASSED
+src/tests/monsters/test_ai.py::test_add[DecreaseVarBy1] PASSED
+src/tests/monsters/test_ai.py::test_add[SetVarBits] PASSED
+src/tests/monsters/test_ai.py::test_add[ClearVarBits] PASSED
+src/tests/monsters/test_ai.py::test_add[ClearVar] PASSED
+src/tests/monsters/test_ai.py::test_add[RemoveTarget] PASSED
+src/tests/monsters/test_ai.py::test_add[CallTarget] PASSED
+src/tests/monsters/test_ai.py::test_add[MakeInvulnerable] PASSED
+src/tests/monsters/test_ai.py::test_add[MakeVulnerable] PASSED
+src/tests/monsters/test_ai.py::test_add[ExitBattle] PASSED
+src/tests/monsters/test_ai.py::test_add[Set7EE005ToRandomNumber] PASSED
+src/tests/monsters/test_ai.py::test_add[CastSpell] PASSED
+src/tests/monsters/test_ai.py::test_add[CastSpell x3] PASSED
+src/tests/monsters/test_ai.py::test_add[RunObjectSequence] PASSED
+src/tests/monsters/test_ai.py::test_add[SetUntargetable] PASSED
+src/tests/monsters/test_ai.py::test_add[SetTargetable] PASSED
+src/tests/monsters/test_ai.py::test_add[EnableCommand] PASSED
+src/tests/monsters/test_ai.py::test_add[DisableCommand] PASSED
+src/tests/monsters/test_ai.py::test_add[RemoveAllInventory] PASSED
+src/tests/monsters/test_ai.py::test_add[RestoreInventory] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByCommand] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByCommand should fail if too many commands] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedBySpell] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedBySpell should fail if too many commands] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByItem] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByItem should fail if too many items] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByElement0] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByElement1] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetedByRegularAttack] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetHPBelow] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetHPBelow should fail if not a multiple of 16] PASSED
+src/tests/monsters/test_ai.py::test_add[IfHPBelow] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetAfflictedBy] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetNotAfflictedBy] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTurnCounterEquals] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarLessThan] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarEqualOrGreaterThan] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetAlive] PASSED
+src/tests/monsters/test_ai.py::test_add[IfTargetKOed] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarBitsSet] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarBitsSet should fail with invalid bits] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarBitsClear] PASSED
+src/tests/monsters/test_ai.py::test_add[IfVarBitsClear should fail with invalid var] PASSED
+src/tests/monsters/test_ai.py::test_add[IfCurrentlyInFormationID] PASSED
+src/tests/monsters/test_ai.py::test_add[IfLastMonsterStanding] PASSED
+src/tests/monsters/test_ai.py::test_add[Wait1Turn] PASSED
+src/tests/monsters/test_ai.py::test_add[Wait1TurnandRestartScript] PASSED
+src/tests/monsters/test_ai.py::test_add[StartCounterCommands] PASSED
+src/tests/monsters/test_ai.py::test_add[UnknownCommand] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jump to script] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Loop] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Pausing (max)] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Pausing (min)] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jump to start] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Visibility & prop reset] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Overwrite solidity] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set solidity] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Clear solidity] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set movement bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set VRAM priority] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set VRAM priority should fail if trying to set it to an invalid layer] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set priority] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set priority should fail if trying to set it to an invalid layer] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Shadows] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Floating] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set object memory bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set object memory bits should fail with bad arg] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set object memory bits should fail with bad bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory set bit] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory set bit should fail with bad arg] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory set bit should fail with bad bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory set bit should fail with no bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with bad arg] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with bad bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with no bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory modify bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory modify bit should fail with bad arg] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with bad set bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with no set bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with bad clear bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Object memory clear bit should fail with no clear bits] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set bit] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Clear bit] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[704x-700C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Set var to const] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Should fail if you try to use the wrong const size for a byte var] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[add const to var] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Walk xx steps east] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SequencePlaybackOn] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SequencePlaybackOff] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SequenceLoopingOn] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SequenceLoopingOff] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FixedFCoordOn] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FixedFCoordOff] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ResetProperties] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShadowOn-On] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShadowOn-Off] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FloatingOn] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FloatingOff] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy_upper] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy (1)] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EmbeddedAnimationRoutine-26] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EmbeddedAnimationRoutine-27] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EmbeddedAnimationRoutine-28] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EmbeddedAnimationRoutine invalid header] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EmbeddedAnimationRoutine invalid length] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepEast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepSoutheast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepSouth] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepSouthwest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepWest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepNorthwest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepNorth] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepNortheast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Walk1StepFDirection] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_AddZCoord1Step] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_DecZCoord1Step] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkF20Steps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZUp20Steps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZDown20Steps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkFDirection16Pixels0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceEast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceEast7C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceSoutheast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceSouth] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceSouthwest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceSouthwest7D] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceWest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceNorthwest] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceNorth] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceNortheast] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FaceMario] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TurnClockwise45Degrees] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TurnRandomDirection] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_AddConstToVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Inc] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Dec] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CopyVarToVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CopyVarToVar should fail when both vars are bytes that aren't 0x700C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CompareVarToConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Compare700CToVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_StopSound] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EndLoop] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ReturnQueue] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ReturnAll] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow1] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow2] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow3] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow4] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow5] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow6] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow7] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow8] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow9] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow10] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow11] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow12] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow13] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow14] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetPaletteRow15] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy1] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_IncPaletteRowBy2] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetVarToRandom] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_AddVarTo700C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_DecVarFrom700C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SwapVars] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Move70107015To7016701B] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Move7016701BTo70107015] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700CAndConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700CAndVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700COrConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700COrVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700CXorConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Mem700CXorVar] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_VarShiftLeft] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_LoadMemory] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetSpriteSequence] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetSequenceSpeed] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetWalkingSpeed] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SetAllSpeeds] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_MaximizeSequenceSpeed] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_MaximizeSequenceSpeed86] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Set700CToCurrentLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Set700CToPressedButton] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_BPL262728] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_BMI262728] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_BPL2627] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SummonObjectToSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_SummonObjectAt70A8ToCurrentLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_RemoveObjectFromSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_RemoveObjectAt70A8FromCurrentLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EnableObjectTriggerInSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_EnableTriggerOfObjectAt70A8InCurrentLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_DisableObjectTriggerInSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_DisableTriggerOfObjectAt70A8InCurrentLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkEastSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSoutheastSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSouthSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSouthwestSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkWestSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNorthwestSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNorthSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNortheastSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkFDirectionSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZUpSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZDownSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkEastPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSoutheastPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSouthPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkSouthwestPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkWestPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNorthwestPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNorthPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkNortheastPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkFDirectionPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkFDirection16Pixels1] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZUpPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftZDownPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TurnClockwise45DegreesNTimes] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JumpToHeight] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkToXYCoords] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkXYSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftToXYCoords] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftXYSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_ShiftXYPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferToObjectXY] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferToObjectXYZ] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_RunAwayShift] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferTo70167018] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferTo70167018701A] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkTo70167018] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_WalkTo70167018701A] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_BounceToXYWithHeight] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_BounceXYStepsWithHeight] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferToXYZF] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferXYZFSteps] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_TransferXYZFPixels] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Set700CToObjectCoord] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_Set700CToObjectCoord should fail if both types are specified] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_PlaySound] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_PlaySound should fail with invalid channel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_PlaySoundBalance] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_FadeOutSoundToVolume] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Basic GOTO] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Should fail if GOTO destination doesn't match anything] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Should fail if GOTO finds multiple matches] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jump to subroutine] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jump if bit set] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfComparisonResultIsGreaterOrEqual] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfComparisonResultIsLesser] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jump if bit clear] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Jmp if 704x-700C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[If object A & B < (x,y) steps apart...] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfVarEqualsConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfVarNotEqualsConst] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIf700CAllBitsClear] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIf700CAnyBitsSet] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfRandom2of3] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfRandom1of2] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfLoadedMemoryIs0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfLoadedMemoryIsAboveOrEqual0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfLoadedMemoryIsBelow0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfLoadedMemoryIsNot0] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfObjectWithinRange] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfObjectWithinRangeSameZ] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CreatePacketAtObjectCoords] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CreatePacketAt7010] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_CreatePacketAt7010WithEvent] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfObjectInSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfObjectNotInSpecificLevel] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfObjectInAir] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_UnknownJmp3C] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[A_JmpIfMarioInAir] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Valid unknown command] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Unknown command with wrong length should fail] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Unknown command using an assigned opcode should fail] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Valid unknown command (FD)] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Unknown command with wrong length should fail (FD)] PASSED
+src/tests/overworld/test_actionscripts.py::test_add[Unknown command using an assigned opcode should fail (FD)] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Loop 10 frames] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StartLoopNTimes] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EndLoop] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MoveScriptToMainThread] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MoveScriptToBackgroundThread1] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MoveScriptToBackgroundThread2] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Pause] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RememberLastObject] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResumeBackgroundEvent] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunBackgroundEvent] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunBackgroundEventWithPause] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunBackgroundEventWithPauseReturnOnExit] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunEventAtReturn] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunEventAsSubroutine] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopAllBackgroundEvents] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopBackgroundEvent] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Return] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ReturnAll] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ReturnFD] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetMem704XAt7000Bit] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ClearMem704XAt7000Bit] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Move70107015To7016701B] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Move7016701BTo70107015] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetVarToConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ReadFromAddress] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000To7FMemVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetBit] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ClearBit] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set0158Bit3Offset] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set0158Bit7Offset] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Clear0158Bit7Offset] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CopyVarToVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreBytesTo0335And0556] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store00To0248] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store00To0334] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store01To0248] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store01To0335] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store02To0248] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreFFTo0335] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToMinecartTimer] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreSetBits] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SwapVars] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AddConstToVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Inc] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Dec] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AddVarTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DecVarFrom7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[GenerateRandomNumFromRangeVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetVarToRandom] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CompareVarToConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Compare7000ToVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000AndConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000AndVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000OrConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000OrVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000XorConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Mem7000XorVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[VarShiftLeft] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetAsyncActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetSyncActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetTempAsyncActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetTempSyncActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[UnsyncActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SummonObjectToSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SummonObjectToCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SummonObjectToCurrentLevelAtMariosCoords] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SummonObjectAt70A8ToCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RemoveObjectFromSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RemoveObjectFromCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RemoveObjectAt70A8FromCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PauseActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResumeActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnableObjectTrigger] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DisableObjectTrigger] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnableObjectTriggerInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DisableObjectTriggerInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnableTriggerOfObjectAt70A8InCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DisableTriggerOfObjectAt70A8InCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopEmbeddedActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResetCoords] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FreezeAllNPCsUntilReturn] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[UnfreezeAllNPCs] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FreezeCamera] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[UnfreezeCamera] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ReactivateObject70A8TriggerIfMarioOnTopOfIt] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToObjectCoord] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set70107015ToObjectXYZ] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7016701BToObjectXYZ] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetObjectMemoryToVar] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnableControls] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnableControlsUntilReturn] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToPressedButton] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToTappedButton] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AddCoins] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Dec7000FromCoins] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AddFrogCoins] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Dec7000FromFrogCoins] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Add7000ToCurrentFP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Dec7000FromCurrentFP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Add7000ToMaxFP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Dec7000FromCurrentHP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EquipItemToCharacter] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[IncEXPByPacket] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CharacterJoinsParty] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CharacterLeavesParty] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Store70A7ToEquipsInventory] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AddToInventory] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RemoveOneOfItemFromInventory] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RestoreAllFP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RestoreAllHP] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SetEXPPacketTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToIDOfMemberInSlot] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToPartySize] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreItemAt70A7QuantityTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreCharacterEquipmentTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreCurrentFPTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreEmptyItemInventorySlotCountTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreCoinCountTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreItemAmountTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StoreFrogCoinCountTo7000] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MarioGlows] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[MarioStopsGlowing] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PaletteSet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PaletteSetMorphs] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PauseScriptUntilEffectDone] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PixelateLayers] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PrioritySet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResetPrioritySet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ScreenFlashesWithColour] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[TintLayers] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CircleMaskExpandFromScreenCenter] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CircleMaskShrinkToScreenCenter] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CircleMaskShrinkToObject] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StarMaskExpandFromScreenCenter] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StarMaskShrinkToScreenCenter] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeInFromBlack] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeInFromColour] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutToBlack] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutToColour] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[InitiateBattleMask] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SlowDownMusicTempoBy] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SpeedUpMusicTempoBy] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ReduceMusicPitchBy] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[IncreaseMusicPitchBy] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DeactivateSoundChannels] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeInMusic] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutMusic] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutMusicFDA3] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutMusicToVolume] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[FadeOutSoundToVolume] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlayMusic] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlayMusicAtCurrentVolume] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlayMusicAtDefaultVolume] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlaySound] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlaySoundBalance] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PlaySoundBalanceFD9D] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SlowDownMusic] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[SpeedUpMusicToDefault] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusic] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusicFD9F] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusicFDA0] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusicFDA1] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusicFDA2] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopMusicFDA6] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StopSound] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[AppendDialogAt7000ToCurrentDialog] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CloseDialog] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PauseScriptResumeOnNextDialogPageA] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PauseScriptResumeOnNextDialogPageB] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunDialog] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunDialogForDuration] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[UnsyncDialog] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[EnterArea] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ApplyTileModToLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ApplySolidityModToLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ExitToWorldMap] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Set7000ToCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[DisplayIntroTitleText] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ExorCrashesIntoKeep] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunMenuOrEventSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[OpenSaveMenu] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[OpenShop] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[PauseScriptIfMenuOpen] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResetAndChooseGame] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ResetGame] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunEndingCredits] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunEventSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunLevelupBonusSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunMenuTutorial] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunMolevilleMountainIntroSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunMolevilleMountainSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[RunStarPieceSequence] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StartBattleAtBattlefield] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StartBattleWithPackAt700E] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Basic GOTO] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Should fail if GOTO destination doesn't match anything] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Should fail if GOTO finds multiple matches] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Should not fail if GOTO destination uses illegal override format] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[If0210Bits012ClearDoNotJump] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpToEvent] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpToStartOfThisScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpToStartOfThisScriptFA] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpToSubroutine] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIf316DIs3] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIf7000AllBitsClear] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIf7000AnyBitsSet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfBitClear] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfBitSet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfLoadedMemoryIs0] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfLoadedMemoryIsAboveOrEqual0] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfLoadedMemoryIsBelow0] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfLoadedMemoryIsNot0] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfMem704XAt7000BitSet] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfMem704XAt7000BitClear] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfRandom2of3] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfRandom1of2] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfComparisonResultIsGreaterOrEqual] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfComparisonResultIsLesser] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfVarEqualsConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfVarNotEqualsConst] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CreatePacketAtObjectCoords] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CreatePacketAt7010] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[CreatePacketAt7010WithEvent] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfMarioOnObject] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfMarioOnAnObjectOrNot] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectInAir] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectInCurrentLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectNotInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectTriggerEnabledInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectTriggerDisabledInSpecificLevel] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectIsUnderwater] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectActionScriptIsRunning] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectsAreLessThanXYStepsApart] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfObjectsAreLessThanXYStepsApartSameZCoord] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfMarioInAir] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfAudioMemoryIsAtLeast] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfAudioMemoryEquals] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfDialogOptionBSelected] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[JmpIfDialogOptionBOrCSelected] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ActionQueueSync] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[ActionQueueAsync] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StartSyncEmbeddedActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[StartAsyncEmbeddedActionScript] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[NEAQ already in desired position] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[NEAQ is too early, inserts dummy commands to make up the difference] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[NEAQ should fail if it would be rendered after required offset] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[background thread] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Valid unknown command] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Unknown command with wrong length should fail] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Unknown command using an assigned opcode should fail] FAILED
+src/tests/overworld/test_eventscripts.py::test_add[Valid unknown command (FD)] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Unknown command with wrong length should fail (FD)] PASSED
+src/tests/overworld/test_eventscripts.py::test_add[Unknown command using an assigned opcode should fail (FD)] PASSED
+
+=================================== FAILURES ===================================
+_______________ test_add[UseObjectQueueAtOffsetWithAMEM60Index] ________________
+
+case = Case(label='UseObjectQueueAtOffsetWithAMEM60Index', commands_factory=<function <lambda> at 0x7187cd379da0>, expected_bytes=[4, 192, 7, 100, 2, 192, 17], exception=None, exception_type=None, expected_length=None)
+
+    @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
+    def test_add(case: Case):
+        if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+            return
+        if case.exception or case.exception_type:
+            with pytest.raises(case.exception_type) as exc_info:
+                commands = case.commands_factory()
+                script = AnimationScriptBlock(expected_size=1000, expected_beginning=0x35C002, script=commands)
+                bank = AnimationScriptBank(
+                    name=case.label,
+                    scripts=[script],
+                )
+                bank.render()
+            if case.exception:
+                assert case.exception in str(exc_info.value)
+        elif case.expected_bytes is not None:
+            commands = case.commands_factory()
+            script = AnimationScript(commands)
+            expected_bytes = bytearray(case.expected_bytes)
+            script = AnimationScriptBlock(expected_size=len(case.expected_bytes), expected_beginning=0x35C002, script=commands)
+            bank = AnimationScriptBank(
+                name=case.label,
+                scripts=[script],
+            )
+>           comp = bank.render()
+
+src/tests/animations/test_animationscripts.py:1825: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/smrpgpatchbuilder/datatypes/battle_animation_scripts/types.py:236: in render
+    (script.expected_beginning, script.render())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <smrpgpatchbuilder.datatypes.battle_animation_scripts.types.AnimationScriptBlock object at 0x7187ccb4d4c0>
+_ = None
+
+    def render(self, _: Optional[int] = None) -> bytearray:
+        output = super().render(_)
+        # fill empty bytes
+        if len(output) > self.expected_size:
+>           raise ScriptBankTooLongException(
+                f"action script output too long: got {len(output)} expected {self.expected_size}"
+            )
+E           smrpgpatchbuilder.datatypes.scripts_common.classes.ScriptBankTooLongException: action script output too long: got 8 expected 7
+
+src/smrpgpatchbuilder/datatypes/battle_animation_scripts/types.py:136: ScriptBankTooLongException
+___________ test_add[UseObjectQueueAtOffsetWithAMEM60PointerOffset] ____________
+
+case = Case(label='UseObjectQueueAtOffsetWithAMEM60PointerOffset', commands_factory=<function <lambda> at 0x7187cd379e40>, ex...6, 192, 8, 192, 10, 192, 11, 192, 7, 7, 104, 2, 192, 1, 17], exception=None, exception_type=None, expected_length=None)
+
+    @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
+    def test_add(case: Case):
+        if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+            return
+        if case.exception or case.exception_type:
+            with pytest.raises(case.exception_type) as exc_info:
+                commands = case.commands_factory()
+                script = AnimationScriptBlock(expected_size=1000, expected_beginning=0x35C002, script=commands)
+                bank = AnimationScriptBank(
+                    name=case.label,
+                    scripts=[script],
+                )
+                bank.render()
+            if case.exception:
+                assert case.exception in str(exc_info.value)
+        elif case.expected_bytes is not None:
+            commands = case.commands_factory()
+            script = AnimationScript(commands)
+            expected_bytes = bytearray(case.expected_bytes)
+            script = AnimationScriptBlock(expected_size=len(case.expected_bytes), expected_beginning=0x35C002, script=commands)
+            bank = AnimationScriptBank(
+                name=case.label,
+                scripts=[script],
+            )
+>           comp = bank.render()
+
+src/tests/animations/test_animationscripts.py:1825: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/smrpgpatchbuilder/datatypes/battle_animation_scripts/types.py:233: in render
+    self._populate_jumps(script)
+src/smrpgpatchbuilder/datatypes/scripts_common/classes.py:569: in _populate_jumps
+    self._set_identifier_addresses(command.destinations)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <smrpgpatchbuilder.datatypes.battle_animation_scripts.types.AnimationScriptBank object at 0x7187ccba6450>
+identifiers = [<smrpgpatchbuilder.datatypes.scripts_common.classes.TransformableIdentifier object at 0x7187ccba5dc0>, <smrpgpatchbuilder.datatypes.scripts_common.classes.TransformableIdentifier object at 0x7187ccba63f0>]
+
+    def _set_identifier_addresses(
+        self, identifiers: List[TransformableIdentifier]
+    ) -> None:
+        destination: TransformableIdentifier
+        for destination in identifiers:
+            key: str = destination.label
+            if key not in self.addresses:
+                if "ILLEGAL_JUMP_" in key:
+                    destination.set_address((int(key[-4:], 16) & 0xFFFF))
+                    return
+                else:
+>                   raise IdentifierException(f"couldn't find destination {key}")
+E                   smrpgpatchbuilder.datatypes.scripts_common.classes.IdentifierException: couldn't find destination oq_2
+
+src/smrpgpatchbuilder/datatypes/scripts_common/classes.py:561: IdentifierException
+________ test_add[should fill in expected length when not long enough] _________
+
+case = Case(label='should fill in expected length when not long enough', commands_factory=<function <lambda> at 0x7187cd3cc7c0>, expected_bytes=[224, 17, 17, 17], exception=None, exception_type=None, expected_length=5)
+
+    @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
+    def test_add(case: Case):
+        if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+            return
+        if case.exception or case.exception_type:
+            with pytest.raises(case.exception_type) as exc_info:
+                commands = case.commands_factory()
+                script = AnimationScriptBlock(expected_size=1000, expected_beginning=0x35C002, script=commands)
+                bank = AnimationScriptBank(
+                    name=case.label,
+                    scripts=[script],
+                )
+                bank.render()
+            if case.exception:
+                assert case.exception in str(exc_info.value)
+        elif case.expected_bytes is not None:
+            commands = case.commands_factory()
+            script = AnimationScript(commands)
+            expected_bytes = bytearray(case.expected_bytes)
+            script = AnimationScriptBlock(expected_size=len(case.expected_bytes), expected_beginning=0x35C002, script=commands)
+            bank = AnimationScriptBank(
+                name=case.label,
+                scripts=[script],
+            )
+            comp = bank.render()
+>           assert comp[0][1] == expected_bytes
+E           AssertionError: assert bytearray(b'\xe0') == bytearray(b'\xe0\x11\x11\x11')
+E             
+E             Right contains 3 more items, first extra item: 17
+E             
+E             Full diff:
+E             - bytearray(b'\xe0\x11\x11\x11')
+E             ?                 ------------
+E             + bytearray(b'\xe0')
+
+src/tests/animations/test_animationscripts.py:1826: AssertionError
+_______________ test_add[should error if expected size is wrong] _______________
+
+case = Case(label='should error if expected size is wrong', commands_factory=<function <lambda> at 0x7187cd3cc860>, expected_...eption_type=<class 'smrpgpatchbuilder.datatypes.scripts_common.classes.ScriptBankTooLongException'>, expected_length=1)
+
+    @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
+    def test_add(case: Case):
+        if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+            return
+        if case.exception or case.exception_type:
+>           with pytest.raises(case.exception_type) as exc_info:
+E           Failed: DID NOT RAISE <class 'smrpgpatchbuilder.datatypes.scripts_common.classes.ScriptBankTooLongException'>
+
+src/tests/animations/test_animationscripts.py:1806: Failed
+________ test_add[Unknown command using an assigned opcode should fail] ________
+
+case = Case(label='Unknown command using an assigned opcode should fail', commands_factory=<function <lambda> at 0x7187ccba39...s for it', exception_type=<class 'smrpgpatchbuilder.datatypes.scripts_common.classes.InvalidCommandArgumentException'>)
+
+    @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
+    def test_add(case: Case):
+        if case.expected_bytes is not None and len(case.expected_bytes) == 0:
+            return
+        if case.exception or case.exception_type:
+>           with pytest.raises(case.exception_type) as exc_info:
+E           Failed: DID NOT RAISE <class 'smrpgpatchbuilder.datatypes.scripts_common.classes.InvalidCommandArgumentException'>
+
+src/tests/overworld/test_eventscripts.py:2295: Failed
+=========================== short test summary info ============================
+FAILED src/tests/animations/test_animationscripts.py::test_add[UseObjectQueueAtOffsetWithAMEM60Index]
+FAILED src/tests/animations/test_animationscripts.py::test_add[UseObjectQueueAtOffsetWithAMEM60PointerOffset]
+FAILED src/tests/animations/test_animationscripts.py::test_add[should fill in expected length when not long enough]
+FAILED src/tests/animations/test_animationscripts.py::test_add[should error if expected size is wrong]
+FAILED src/tests/overworld/test_eventscripts.py::test_add[Unknown command using an assigned opcode should fail]
+======================== 5 failed, 772 passed in 4.82s =========================

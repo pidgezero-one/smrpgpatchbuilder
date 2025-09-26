@@ -22,6 +22,7 @@ class Case:
     expected_bytes: Optional[List[int]] = None
     exception: Optional[str] = None
     exception_type: Optional[Type] = None
+    expected_length: Optional[int] = None
 
 
 test_cases = [
@@ -1314,20 +1315,29 @@ test_cases = [
     Case(
         label="UseObjectQueueAtOffsetWithAMEM60Index",
         commands_factory=lambda: [
-            UseObjectQueueAtOffsetWithAMEM60Index(target_address=0x35C005),
-            ReturnSubroutine(identifier="jmp"),
+            DefineObjectQueue(["destination_1"], identifier="objqueue"),
+            ReturnObjectQueue(identifier="destination_1"),
+            UseObjectQueueAtOffsetWithAMEM60Index(
+                destinations=["objqueue"]
+            ),
+            ReturnSubroutine(),
         ],
-        expected_bytes=[0x64, 0x05, 0xC0, 0x11],
+        expected_bytes=[0x04, 0xC0, 0x07, 0x64, 0x02, 0xC0, 0x11],
     ),
     Case(
         label="UseObjectQueueAtOffsetWithAMEM60PointerOffset",
         commands_factory=lambda: [
+            DefineObjectQueue(["oq_1", "oq_2"], identifier="objqueue"),
+            DefineObjectQueue(["destination_1"], identifier="oq_1"),
+            DefineObjectQueue(["destination_2"], identifier="oq_2"),
+            ReturnObjectQueue(identifier="destination_1"),
+            ReturnObjectQueue(identifier="destination_2"),
             UseObjectQueueAtOffsetWithAMEM60PointerOffset(
-                index=6, target_address=0x35C006
+                index=1, destinations=["objqueue"]
             ),
-            ReturnSubroutine(identifier="jmp"),
+            ReturnSubroutine(),
         ],
-        expected_bytes=[0x68, 0x06, 0xC0, 0x06, 0x11],
+        expected_bytes=[0x06, 0xC0, 0x08, 0xC0, 0x0A, 0xC0, 0x0B, 0xC0, 0x07, 0x07, 0x68, 0x02, 0xC0, 0x01, 0x11],
     ),
     Case(
         label="SetOMEM60To072C",
@@ -1772,6 +1782,19 @@ test_cases = [
         commands_factory=lambda: [UnknownCommand(bytearray(b"\x16"))],
         expected_bytes=[0x16],
     ),
+    Case(
+        label="should fill in expected length when not long enough",
+        commands_factory=lambda: [StoreOMEM60ToItemInventory()],
+        expected_bytes=[0xE0, 0x11, 0x11, 0x11],
+        expected_length=4
+    ),
+    Case(
+        label="should error if expected size is wrong",
+        commands_factory=lambda: [StoreOMEM60ToItemInventory(), StoreOMEM60ToItemInventory()],
+        expected_length=1,
+        exception="action script output too long: got 2 expected 1",
+        exception_type=ScriptBankTooLongException,
+    ),
 ]
 
 
@@ -1782,31 +1805,30 @@ def test_add(case: Case):
     if case.exception or case.exception_type:
         with pytest.raises(case.exception_type) as exc_info:
             commands = case.commands_factory()
-            script = AnimationScript(commands)
+            expected_size=1000
+            if case.expected_length is not None:
+                expected_size=case.expected_length
+            script = AnimationScriptBlock(expected_size=expected_size, expected_beginning=0x35C002, script=commands)
             bank = AnimationScriptBank(
                 name=case.label,
-                pointer_table_start=0x35C000,
-                start=0x35C002,
-                end=0x35CFFF,
                 scripts=[script],
             )
-            c = AnimationScriptBankCollection([bank])
-            c.render()
+            bank.render()
         if case.exception:
             assert case.exception in str(exc_info.value)
     elif case.expected_bytes is not None:
         commands = case.commands_factory()
         script = AnimationScript(commands)
         expected_bytes = bytearray(case.expected_bytes)
+        expected_size=len(case.expected_bytes)
+        if case.expected_length is not None:
+            expected_size=case.expected_length
+        script = AnimationScriptBlock(expected_size=expected_size, expected_beginning=0x35C002, script=commands)
         bank = AnimationScriptBank(
             name=case.label,
-            pointer_table_start=0x35C000,
-            start=0x35C002,
-            end=0x35C002 + len(expected_bytes),
             scripts=[script],
         )
-        c = AnimationScriptBankCollection([bank])
-        comp = c.render()
-        assert comp[bank.start] == bytearray([0x02, 0xC0]) + expected_bytes
+        comp = bank.render()
+        assert comp[0][1] == expected_bytes
     else:
-        raise "At least one of exception or expected_bytes needs to be set"
+        raise ValueError("At least one of exception or expected_bytes needs to be set")
