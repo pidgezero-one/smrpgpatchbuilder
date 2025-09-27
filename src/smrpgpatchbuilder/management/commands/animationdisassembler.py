@@ -14,6 +14,10 @@ from typing import List, Tuple, Dict, Optional, Union
 from dataclasses import dataclass, field
 import numpy as np
 
+# TODO: this game is hellbent on ruining my life
+# ally run away animation has a jump that targets partway through another command (0x35053C)
+# need to do something like specify an optional mid-command offset for jump targets
+
 ORIGINS = [
     "ABSOLUTE_POSITION",
     "CASTER_INITIAL_POSITION",
@@ -2992,14 +2996,17 @@ class Command(BaseCommand):
                         )
 
                         found = None
-                        for search_script in script:
-                            for search_command in search_script:
-                                # print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
-                                if search_command.addr == dest:
-                                    found = search_command.id
+                        if dest in [0x35053C]:
+                            found = f"ILLEGAL_JUMP_{(dest & 0xFFFF):04X}"
+                        else:
+                            for search_script in script:
+                                for search_command in search_script:
+                                    # print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
+                                    if search_command.addr == dest:
+                                        found = search_command.id
+                                        break
+                                if found is not None:
                                     break
-                            if found is not None:
-                                break
                         if found is not None:
                             command.parsed_data.append(found)
                             jump_pointers.append(found)
