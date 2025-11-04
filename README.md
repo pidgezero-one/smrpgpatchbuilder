@@ -90,6 +90,7 @@ These instructions are for bash terminals, aka mac/linux only (no powershell). I
 - Install required packages: `pip install -r requirements.txt`
 
 Everything you do beyond this point must be in your venv. You'll know you're in your venv when your terminal prompts have your venv name in them, like this if you use vscode:
+
 ```
 (MyVirtualEnvironmentNameWhateverIWant) stefkischak@Stefs-MBP smrpgpatchbuilder %
 ```
@@ -101,7 +102,9 @@ In your venv:
 
 ### Disassembling battle animations
 
-Run this **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all battle animations and convert them into Python code. For example:
+This library allows you to edit battle animations with almost as much freedom as the event script editor in Lazy Shell offers you. You can move commands around, add them, and delete them, without needing to match your replacements byte-by-byte, as long as you stay within the size guidelines given by the script files generated for you. This is because while editing scripts, pointers (including those used for object queues and sprite queues) have names instead of being tied to exact addresses, and their addresses are calculated when you build your ROM patch.
+
+To get your script files, run this **in the root directory of this project** against an SMRPG rom file (vanilla or not). It will read all battle animations it can find and convert them into Python code. For example:
 
 ```bash
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom" 
@@ -144,10 +147,11 @@ script = BattleAnimationScript(header=["command_0x3a647c"], script = [
 ])
 ```
 
-You might notice that this outputs much more code sometimes than you will see in Lazy Shell. This is because this script outputs files for contiguous code blocks regardless of how they are pointed at. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file for as much continuous relevant code as it can find.
+This outputs much more code sometimes than you will see in Lazy Shell. This is because this script outputs files for contiguous code blocks regardless of how they are pointed at. So if it finds a subroutine at `0x3a7531` that ends at `0x3a7543` (inclusive) but also finds a subroutine that begins at `0x3a7544`, it will just write one file with both subroutines in it.
 
 Finally, the script outputs python files that import all of these disassembled SMRPG scripts. Here's a short one that contains flower bonus messages, Toad tutorials, and their associated subroutines, aka everything in the 0x02xxxx range:
-```
+
+```python
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBankCollection
 from .flower_bonus.export import bank as flower_bonus
 from .toad_tutorial.export import bank as toad_tutorial
@@ -165,16 +169,16 @@ collection = AnimationScriptBankCollection([
 Standalone, this will produce a series of files that represent all of the battle animation code your ROM currently uses that the script could find. The output folders will be inside `src`.
 
 Things to be careful about:
-- Try your best not to move commands around in a way that makes 0x35053C refer to something different than in the original ROM (this is part of the ally run away animation). There's a very annoying jump that targets partway through another command that I don't have a lenient way of dealing with yet.
-- This is very, very much in alpha. You'll find that this takes an extremely long time to complete, to the order of several days. That's because this script does its best to recursively trace as much code as the game touches (in an attempt to help you find potentially unused code), which includes tracking all possible AMEM values when GOTOing different addresses based on what AMEM is (i.e. jump if amem = some number, object queue with index at amem $60, etc). Even though the script will attempt to do this accurately, it can't be done perfectly because of things like `SetAMEMToRandomByte`. For this reason I recommend never changing the start address and max size of any script file as it is generated for you.
+- This is very, very much in alpha. You'll find that this takes an extremely long time to complete, to the order of several hours. That's because this script does its best to recursively trace as much code as the game touches, which includes tracking all possible AMEM values when GOTOing different addresses based on what AMEM is (i.e. jump if amem = some number, object queue with index at amem $60, etc). Even though the script will attempt to do this accurately, it can't be done perfectly because of things like `SetAMEMToRandomByte`. For this reason I recommend never changing the start address and expected size of any script file as it is generated for you.
 - If you've changed the start or end of any top-level pointer tables in your ROM, then this will not work correctly and you will need to modify the `banks` dict of animationdisassembler.py. (If you're doing this, note the `end` address of a bank dict entry is **inclusive**, not exclusive. Don't ask me why I did it that way because I don't remember).
 - Object queues always assume that their pointers point only toward code that comes AFTER it. For example if you define an object queue at $3A1234 and the first pointer is `0x23 0x01`, it might compile correctly, but it will never decompile correctly after that. Be careful to avoid doing this.
+- There are some commands in here that are experimental (as in I have a hypothesis about what they do but have not corroborated it against its asm as proof). These commands have "EXPERIMENTAL" in their class names in all caps. These are primarily relevant for the "Ally tries to run" animation, which in the original game includes a pointer to an address that lies halfway through another command. The disassembler attempts to change this destination without breaking the original script's functionality.
 
 ### Assembling battle animations
 
 After you've changed the files produced by the disassembler to do whatever you want, you can use this:
 
-```
+```bash
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationassembler -r /path/to/rom/you/want/to/patch -t -b
 ```
 
@@ -186,10 +190,10 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationassembler -r /pat
 The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls each script bank's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on `AnimationScriptBank`s in your own project, it will return bytearrays that you can do whatever you want with.
 
 Things to be careful about:
-- Battle animations are finnicky and largely unindexed, and worse yet, GOTO targets can be changed depending on the value of AMEM $60. To keep everything stable, some commands in your script files will have labels like `queuestart_0xsomeaddress`. **Do not change these particular labels.** When your scripts are being assembled, if it determines that a queue doesn't start where its `queuestart` label indicates, the task will fail.
-- Similarly, the disassembler identifies how long a subroutine is supposed to be, so you'll see an `expected_size` argument in those scripts. **Don't change these lengths.** It can throw off where sprite queues end up. 
-  - If you want to change subroutines or break a subroutine block into multiple subroutines or delete some commands, you are more than free to do that, just make sure that the `SubroutineOrBanklessScript` still comes to a length that matches its `expected_size`. You can fill space with useless bytes to make sure that the expected starts/lengths are still respected. There are a few ways you can do this. 
-  - Example: At the end of your subroutine, if you have 3 or more bytes left, you can give your return statement an identifier and put a `Jmp` before it that jumps to your return statement. Then you can fill all the remaining space between `Jmp` and your return statement with useless bytes. Useless bytes could be things like repeating a bunch of  `StopShakingObject()` commands when no object is shaking or `StopCurrentSoundEffect()` when there are no sound effects (both of these are single-byte commands and you can use them repeatedly to fill any space) or use `AddCoins(0)` for three filler bytes, etc.
+- There are a lot of things we don't know about battle animations. Less than half of the opcodes in this script type have been documented. I've done my best to prevent this, but it's possible that some raw byte arrays contain hardcoded pointers, which means if things shift around too much it would break. If this happens, let me know and I'll see if you might have discovered an opcode that uses a pointer, and will integrate it into this code.
+- Your script files will be generated with an `expected_size` argument in those scripts. **Don't change these lengths ever.** It gives you a guideline on how long your script can be before you run the risk of overwriting code it doesn't know about. 
+- If your modified script is shorter than `expected_size`, that's also okay, the assembler will insert empty code to make up for it.
+
 
 ### Disassembling monster AI
 
@@ -410,12 +414,11 @@ The `pos` property determines where the dialog should actually start. In the fir
 
 You'll also see that some special characters I've represented with directives like `[await]` and `[pause]` etc, just so that it's easier for you to understand what's actually happening in the dialog. These are single bytes in the game as well and they will be assembled as such.
 
-
 ### Assembling dialogs
 
 After you've changed the dialog data files output by the disassembler, including changing your compression table in dialogs.py if you like, you can run:
 
-```
+```bash
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/to/rom/you/want/to/patch -t -b
 ```
 
@@ -425,3 +428,57 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/t
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
 The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls the dialog collection's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `DialogCollection` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+
+### Disassembling sprites
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py graphicsdisassembler --rom /mnt/d/smrpg.sfc
+```
+
+I don't recommend doing very much with this unless you're trying to extract a sprite from a modified rom and insert it into whatever python project you're working on. NPC sprites disassembled look like this:
+
+```python
+from smrpgpatchbuilder.datatypes.graphics.classes import CompleteSprite, AnimationPack, AnimationPackProperties, AnimationSequence, AnimationSequenceFrame, Mold, Tile, Clone
+sprite = CompleteSprite(
+    animation=AnimationPack(0, length=31, unknown=0x0002,
+        properties=AnimationPackProperties(vram_size=2048,
+            molds=[
+                Mold(0, gridplane=False,
+                    tiles=[
+                        Tile(mirror=False, invert=False, format=0, length=7, subtile_bytes=[
+                            bytearray(b'\xff\xf0\xff\xc0\xff\x80\xff\x80\xff\x00\xff\x00\xff\x00\xff\x00\x0f\xff?\xff\x7f\xff~\xfe\xfe\xfe\xfe\xfe\xfe\xfe\xe0\xe0'),
+                            bytearray(b'\xff\x0f\xff\x03\xff\x01\xff\x01\xff\x00\xff\x00\xff\x00\xff\x00\xf0\xff\xfc\xff\xfe\xff~\x7f\x7f\x7f\x7f\x7f\x7f\x7f\x07\x07'),
+                            bytearray(b'\xff\x00\xff\x00\xff\x00\xff\x00\xff\x80\xff\x80\xff\xc0\xff\xf0\xe0\xe0\xfe\xfe\xfe\xfe\xfe\xfe~\xfe\x7f\xff?\xff\x0f\xff'),
+                            bytearray(b'\xff\x00\xff\x00\xff\x00\xff\x00\xff\x01\xff\x01\xff\x03\xff\x0f\x07\x07\x7f\x7f\x7f\x7f\x7f\x7f~\x7f\xfe\xff\xfc\xff\xf0\xff'),
+                        ], is_16bit=False, y_plus=0, y_minus=0, x=120, y=120),
+                    ]
+                ),
+            ],
+            sequences=[
+                AnimationSequence(
+                    frames=[
+                        AnimationSequenceFrame(duration=16, mold_id=0),
+                    ]
+                ),
+            ]
+        )
+    ),
+    palette_id=0,
+    palette_offset=0,
+    unknown_num=8
+)
+```
+
+That looks like a lot of gibberish. It's a (mostly) complete text representation of a sprite, including its image properties and animation properties (instead of referencing by ID).
+
+Disassembly will produce a `SpriteCollection` with all of the NPC sprites in your ROM broken down like this.
+
+Palettes are not yet supported as part of this.
+
+### Assembling sprites
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py graphicsassembler --rom /mnt/d/smrpg.sfc -t -b
+```
+
+The assembler will loop through every sprite in your `SpriteCollection` and figure out which sprites use similar tile data, animation data, etc. It will attempt to arrange your sprites in such a way that duplicate tiles are minimized and as much empty space for extra tiles is opened up for you as much as possible. Image properties and animation properties are created on the fly based on this. Because of how this works, if you disassemble a ROM's sprites and then assemble the output and then patch it onto the same ROM, the bytes will not be identical to how they were before. The sprites should look exactly the same in lazy shell, the bytes are just rearranged.
