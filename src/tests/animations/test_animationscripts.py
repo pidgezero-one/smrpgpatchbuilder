@@ -214,13 +214,13 @@ test_cases = [
     ),
     Case(
         label="VisibilityOn",
-        commands_factory=lambda: [VisibilityOn()],
+        commands_factory=lambda: [VisibilityOn(0x01)],
         expected_bytes=[0x1A, 0x01],
     ),
     Case(
         label="VisibilityOff",
-        commands_factory=lambda: [VisibilityOff()],
-        expected_bytes=[0x1B, 0x01],
+        commands_factory=lambda: [VisibilityOff(0x10)],
+        expected_bytes=[0x1B, 0x10],
     ),
     Case(
         label="SetAMEM8BitToConst",
@@ -1792,7 +1792,7 @@ test_cases = [
         label="should error if expected size is wrong",
         commands_factory=lambda: [StoreOMEM60ToItemInventory(), StoreOMEM60ToItemInventory()],
         expected_length=1,
-        exception="action script output too long: got 2 expected 1",
+        exception="animation script output too long: got 2 expected 1",
         exception_type=ScriptBankTooLongException,
     ),
 ]

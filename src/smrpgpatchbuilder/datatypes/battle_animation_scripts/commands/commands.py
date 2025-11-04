@@ -332,6 +332,7 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         store_to_vram (bool): (unknown).
         looping (bool): Decides if the sprite sequence should loop.
         store_palette (bool): (unknown).
+        bit_4 (bool): (unknown).
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -345,6 +346,8 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
     _store_palette: bool
     _behind_all_sprites: bool
     _overlap_all_sprites: bool
+    _bit_4: bool
+    _bit_7: bool
 
     @property
     def sprite_id(self) -> UInt16:
@@ -410,6 +413,24 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         """(unknown)."""
         self._store_palette = store_palette
 
+    @property
+    def bit_4(self) -> bool:
+        """(unknown)."""
+        return self._bit_4
+
+    def set_bit_4(self, bit_4: bool) -> None:
+        """(unknown)."""
+        self._bit_4 = bit_4
+
+    @property
+    def bit_7(self) -> bool:
+        """(unknown)."""
+        return self._bit_7
+
+    def set_bit_7(self, bit_7: bool) -> None:
+        """(unknown)."""
+        self._bit_7 = bit_7
+
     def __init__(
         self,
         sprite_id: int,
@@ -419,6 +440,8 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         store_palette: bool = False,
         behind_all_sprites: bool = False,
         overlap_all_sprites: bool = False,
+        bit_4: bool = False,
+        bit_7: bool = False,
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)
@@ -429,6 +452,8 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         self.set_store_palette(store_palette)
         self.set_behind_all_sprites(behind_all_sprites)
         self.set_overlap_all_sprites(overlap_all_sprites)
+        self.set_bit_4(bit_4)
+        self.set_bit_7(bit_7)
 
     def render(self, *args) -> bytearray:
         byte1 = (
@@ -436,8 +461,13 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
             + self.behind_all_sprites * 0x40
             + self.overlap_all_sprites * 0x80
         )
-        byte2 = (self.looping * 0x08) + (self.store_palette * 0x20)
-        return super().render(byte1, byte2, self.sprite_id, self.sequence)
+        byte2 = (
+            (self.looping * 0x08)
+            + (self.store_palette * 0x20)
+            + (self.bit_4 * 0x10)
+            
+        )
+        return super().render(byte1, byte2, self.sprite_id, self.sequence + (self.bit_7 * 0x80))
 
 
 class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
@@ -936,42 +966,82 @@ class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
     _opcode = 0x11
 
 
-class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
+class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object visible.
 
     ## Lazy Shell command
         `Visibility on`
 
     ## Opcode
-        `0x1A 0x01`
+        `0x1A`
 
     ## Size
         2 bytes
 
     Args:
+        unknown_byte (int): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode = bytearray([0x1A, 0x01])
+    _opcode = 0x1A
+    _size: int = 2
+
+    _unknown_byte: UInt8
+
+    @property
+    def unknown_byte(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_byte
+
+    def set_unknown_byte(self, unknown_byte: int) -> None:
+        """(unknown)"""
+        self._unknown_byte = UInt8(unknown_byte)
+
+    def __init__(self, unknown_byte: int = 0, identifier: Optional[str] = None) -> None:
+        super().__init__(identifier)
+        self.set_unknown_byte(unknown_byte)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.unknown_byte)
 
 
-class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
+class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object invisible.
 
     ## Lazy Shell command
         `Visibility off`
 
     ## Opcode
-        `0x1B 0x01`
+        `0x1B`
 
     ## Size
         2 bytes
 
     Args:
+        unknown_byte (int): (unknown)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode = bytearray([0x1B, 0x01])
+    _opcode = 0x1B
+    _size: int = 2
+
+    _unknown_byte: UInt8
+
+    @property
+    def unknown_byte(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_byte
+
+    def set_unknown_byte(self, unknown_byte: int) -> None:
+        """(unknown)"""
+        self._unknown_byte = UInt8(unknown_byte)
+
+    def __init__(self, unknown_byte: int = 0, identifier: Optional[str] = None) -> None:
+        super().__init__(identifier)
+        self.set_unknown_byte(unknown_byte)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.unknown_byte)
 
 
 class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
@@ -7996,6 +8066,66 @@ class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
         return super().render(self.contents)
 
 
+class ActorExitBattleEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
+    """Run opcode 0x02, which is only used in animations where an actor is leaving the battle (escape, deaths, etc).
+    Unsure what this actually does. Treating it as a terminating byte to see if it solves any animation code mysteries.
+
+    ## Opcode
+        `0x02`
+
+    ## Size
+        1 byte
+
+    Args:
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+    
+    _opcode = 0x02
+
+
+class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+    """Run opcode 0x47. Treating it as a sprite queue pointer to see if it solves any animation code mysteries.
+
+    ## Opcode
+        `0x47`
+
+    ## Size
+        4 bytes
+
+    Args:   
+        unknown_byte (int): (unknown)
+        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
+        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+    """
+    
+    _opcode = 0x47
+    _size: int = 4
+
+    _unknown_byte: UInt8
+
+    @property
+    def unknown_byte(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_byte
+
+    def set_unknown_byte(self, unknown_byte: int) -> None:
+        """(unknown)"""
+        self._unknown_byte = UInt8(unknown_byte)
+
+    def __init__(
+        self,
+        unknown_byte: int,
+        destinations: List[str],
+        identifier: Optional[str] = None,
+    ) -> None:
+        super().__init__(destinations, identifier)
+        self.set_destinations(destinations)
+        self.set_unknown_byte(unknown_byte)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.unknown_byte, *self.destinations)
+
+
 commands = [
     NewSpriteAtCoords,
     SetAMEM32ToXYZCoords,
@@ -8227,4 +8357,6 @@ commands = [
     StopWaveEffect,
     JmpIfTimedHitSuccess,
     UnknownCommand,
+    ActorExitBattleEXPERIMENTAL,
+    SpriteQueueReferenceEXPERIMENTAL
 ]

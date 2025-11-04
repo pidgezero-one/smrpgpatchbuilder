@@ -119,6 +119,17 @@ class AnimationScriptBlock(AnimationScript):
         """The expected end address of this script in the ROM."""
         return self._expected_beginning + self._expected_size
 
+    def __repr__(self) -> str:
+        """Representation showing expected_size (base 10) and expected_beginning (base 16)."""
+        return (
+            f"<AnimationScriptBlock expected_size={self.expected_size} "
+            f"expected_beginning=0x{self.expected_beginning:06X}>"
+        )
+
+    def __str__(self) -> str:
+        """Same as repr() but used by print()."""
+        return self.__repr__()
+
     def __init__(
         self,
         expected_size: int,
@@ -135,8 +146,9 @@ class AnimationScriptBlock(AnimationScript):
         if len(output) == self.expected_size:
             return output
         if len(output) > self.expected_size:
+            print(self)
             raise ScriptBankTooLongException(
-                f"action script output too long: got {len(output)} expected {self.expected_size}"
+                f"animation script output too long: got {len(output)} expected {self.expected_size}"
             )
         buffer: List[UsableAnimationScriptCommand] = [ReturnSubroutine()] * (self.expected_size - len(output))
         self.set_contents(self.contents + buffer)

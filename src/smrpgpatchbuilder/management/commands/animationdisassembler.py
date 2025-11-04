@@ -2264,6 +2264,8 @@ def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_sta
         else:
             cmd = rom[dex]
             l = command_lens[cmd]
+            if cmd == 0x02 or cmd == 0x47:
+                print("Warning: encountered 0x02 or 0x47 command at 0x%06X" % dex)
             if cmd == 0xC6 and l == 0:
                 l = 2 + rom[dex + 1]
             elif cmd == 0xBA and l == 0:
@@ -2286,6 +2288,7 @@ jmp_cmds = [
     0x2B,
     0x38,
     0x39,
+    0x47, # EXPERIMENTAL
     0x50,
     0x51,
     0x5D,
@@ -2299,6 +2302,10 @@ jmp_cmds = [
 ]
 
 jmp_cmds_1 = [0x68]
+
+TERMINATING_OPCODES = [0x09, 0x11, 0x07, 0x5E,
+                       0x02 # EXPERIMENTAL
+                       ]
 
 SPECIAL_CASE_BREAKS = [
     0x356076,
@@ -2468,7 +2475,7 @@ class Command(BaseCommand):
         references: Dict[int, List[str]] = {}
 
         for bank_id, blocks in banks.items():
-            #print(f'Processing bank: {bank_id}')
+            print(f'Processing bank: {bank_id}')
             third_byte_as_string = get_third_byte_as_string(bank_id)
             reference_label = bank_id
 
@@ -2499,7 +2506,7 @@ class Command(BaseCommand):
                         ),
                     )
                     bank_pointer_addresses.append(three_byte_pointer)
-                    #print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06X}")
+                    print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06X}")
                     branches.append(
                         Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
                     )
@@ -2513,7 +2520,7 @@ class Command(BaseCommand):
                     known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
                     if tertiary_points_to < tertiary_end:
                         tertiary_end = tertiary_points_to
-                    #print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
+                    print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
                     tertiary_cursor += 2
                     tertiary_cursor_short = tertiary_cursor & 0xFFFF
                     oq_idx_starts.append(
@@ -2535,13 +2542,13 @@ class Command(BaseCommand):
                     o
                 )
             else:
-                #print(f"    adding {bank_id} 0x{blocks.start:06X}")
+                print(f"    adding {bank_id} 0x{blocks.start:06X}")
                 branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
             # Now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                #print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06X}): {this_branch}')
+                print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06X}): {this_branch}')
                 # AMEM can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
                 absolute_offset = this_branch.offset 
@@ -2557,7 +2564,7 @@ class Command(BaseCommand):
                 # Process every command in the script until we find a terminating byte.
                 end_found = False
                 while not end_found:
-                    #print(f'        current_addr: 0x{cursor:06X}')
+                    print(f'        current_addr: 0x{cursor:06X}')
                     def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
                         if important_amem_indexes_raw is None:
                             important_amem_indexes_raw = [0]
@@ -2602,7 +2609,7 @@ class Command(BaseCommand):
 
                         if not jump_voided:
                             branches.append(destination_branch)
-                            #print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}: {destination_branch}')
+                            print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}: {destination_branch}')
 
                         return destination_branch
 
@@ -2624,7 +2631,7 @@ class Command(BaseCommand):
                                 known_addresses_covered[third_byte_as_string][temp_cursor_addr_short + 1] = True
                                 if cursor_points_to < tbl_ends_at:
                                     tbl_ends_at = cursor_points_to
-                                # print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06X}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06X}")
+                                print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06X}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06X}")
                                 temp_cursor_addr += 2
                                 temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
                                 amem = deepcopy(INIT_AMEM)
@@ -2652,11 +2659,11 @@ class Command(BaseCommand):
                         s = next((s for s in oq_starts if s.addr == cursor), None)
                         if not s:
                             raise ValueError("how did you get here?")
-                        # print("        THIS IS A ONE-TIER OQ")
+                        print("        THIS IS A ONE-TIER OQ")
                         cursor += create_object_queue(s.addr)
                         continue
                     elif cursor in [s.addr for s in oq_idx_starts]:
-                        #print("        THIS IS A TWO-TIER OQ")
+                        print("        THIS IS A TWO-TIER OQ")
                         complex_oq = next((s for s in oq_idx_starts if s.addr == cursor), None)
                         if not complex_oq:
                             raise ValueError("how did you get here?")
@@ -2695,13 +2702,13 @@ class Command(BaseCommand):
                             oq_starts.append(ref)
                             complex_oq.pointers.append(pointed_addr)
                             # parse the basic OQ to add its branches
-                            # print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))  
+                            print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))  
                             if this_branch.offset == BATTLE_EVENT_INDEXES_START_AT:
                                 battle_event_index = (cursor - BATTLE_EVENT_INDEXES_START_AT) // 2
                                 label = SCRIPT_NAMES["battle_events"][battle_event_index]
                                 create_object_queue(pointed_addr, label_override=label)
                             elif this_branch.offset == UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:
-                                #print(f"cursor: 0x{cursor:06X}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06X}")
+                                print(f"cursor: 0x{cursor:06X}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06X}")
                                 label = f"unknown_battle_event_adjacent"
                                 create_object_queue(pointed_addr, label_override=label)
                             else:
@@ -2714,7 +2721,7 @@ class Command(BaseCommand):
 
                     opcode = rom[cursor]
                     length = command_lens[opcode]
-                    # print(f'            opcode: {opcode:02X}, length: {length}, data: {" ".join([f"0x{b:02X}" for b in rom[cursor:cursor+length]])}')
+                    print(f'            opcode: {opcode:02X}, cursor: 0x{cursor:06X}, length: {length}, data: {" ".join([f"0x{b:02X}" for b in rom[cursor:cursor+length]])}, {this_branch.ref_label} ({this_branch.referenced_by})')
                     if opcode == 0xC6:
                         length = rom[cursor + 1] + 2
                     elif opcode == 0xBA:    
@@ -2815,6 +2822,12 @@ class Command(BaseCommand):
                             + address_byte[0]
                         )
 
+                        if branch_addr == 0x35053C:
+                            # EXPERIMENTAL: Reroute jump that goes to partway through command in the original game
+                            # and change it to point to another instance of 0x02 instead
+                            # which is treated as terminating
+                            branch_addr = 0x350532
+
                         # Which of AMEM $60-$6F are part of the branch condition? ie if AMEM $64 bit 1 = ... then ...
                         # Clean up what the AMEMs can be at the target branch, and then add it to the array.
                         # Only really tracking constants and other AMEM. Not really possible to track $7Exxxx and $7Fxxxx or OMEM
@@ -2865,7 +2878,7 @@ class Command(BaseCommand):
                             index1 = command[1] & 0x0F
                             important_amem_indexes.append(index1)
                             amem[index1] = [a for a in amem[index1] if ~a & command[2] == command[2]]
-                        elif opcode == 0x64:  # object queue, command index = amem 60
+                        elif opcode == 0x64 or opcode == 0x47:  # object queue, command index = amem 60 OR EXPERIMENTAL
                             oq_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
                         elif (
                             opcode == 0x68
@@ -2878,7 +2891,7 @@ class Command(BaseCommand):
                         amem = deepcopy(amem_was)
 
                     # terminating conditions
-                    if opcode in [0x09, 0x11, 0x07, 0x5E]:
+                    if opcode in TERMINATING_OPCODES:
                         end_found = True
                     elif (
                         branch_index < len(script_sizes)
@@ -2886,6 +2899,7 @@ class Command(BaseCommand):
                     ):
                         end_found = True
                     elif cursor + length in SPECIAL_CASE_BREAKS:
+                        print(f"        hit special case break at 0x{cursor + length:06X}")
                         end_found = True
                     elif 0x3A0000 <= cursor + length < 0x3A60D0:
                         end_found = True
@@ -2899,7 +2913,7 @@ class Command(BaseCommand):
                     break
                 this_branch = branches[branch_index]
 
-        # print("Done tracing branches, collecting data...")
+        print("Done tracing branches, collecting data...")
         # Collect contiguous known bytes
         used: Dict[str, List[ContiguousBlock]] = {
             "02": [],
@@ -2928,14 +2942,14 @@ class Command(BaseCommand):
         for bank_id, blocks in used.items():
             data: List[List[ProtoCommand]] = []
             for block in blocks:
-                # print(f'block.start, block.end: 0x{block.start:06X}, 0x{block.end:06X} (size {block.size})')
+                print(f'block.start, block.end: 0x{block.start:06X}, 0x{block.end:06X} (size {block.size})')
                 split_block = tok(
                     rom, block.start, block.end, oq_starts, oq_idx_starts
                 )
                 offset_within_block = 0
                 this_script: List[ProtoCommand] = []
                 for tok_output in split_block:
-                    #print(tok_output)
+                    print(tok_output)
                     absolute_offset = block.start + offset_within_block
                     identifier = f"command_0x{absolute_offset:06X}"
                     possible_rename = [b.ref_label for b in branches if b.offset == absolute_offset and b.ref_label != ""]
@@ -2943,10 +2957,10 @@ class Command(BaseCommand):
                         identifier = f"{possible_rename[0].lower().replace(" ", "_").replace("-", "_")}_0x{absolute_offset:06X}"
                     named_proto_command = ProtoCommand(identifier, absolute_offset, tok_output[0], tok_output[2], len(tok_output[0]))
                     this_script.append(named_proto_command)
-                    #print(f'    parsed command {named_proto_command}')
+                    print(f'    parsed command {named_proto_command}')
                     offset_within_block += len(tok_output[0])
                 data.append(this_script)
-            #print(data)
+            print(data)
             collective_data[bank_id].extend(data)
 
         # associate jump pointers with command IDs
@@ -2966,7 +2980,7 @@ class Command(BaseCommand):
                     address_data = None
                     if command.oq:
                         address_data = deepcopy(command.raw_data)
-                        #print([f"0x{b:02X}" for b in address_data])
+                        print([f"0x{b:02X}" for b in address_data])
                         del command.raw_data[0:]
                     elif (
                         command.raw_data[0] in jmp_cmds_1
@@ -2978,17 +2992,17 @@ class Command(BaseCommand):
                     ):
                         address_data = command.raw_data[-2:]
                         del command.raw_data[-2:]
-                        # print(2)
-                    # print(address_data)
+                        print(2)
+                    print(address_data)
 
                     if address_data is None:
                         continue
 
                     addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
-                    #print("")
-                    #print(addresses)
+                    print("")
+                    print(addresses)
                     for address in addresses:
-                        #print(address)
+                        print(address)
                         dest = (
                             (command.addr & 0xFF0000)
                             + (int(address[1]) << 8)
@@ -2996,17 +3010,19 @@ class Command(BaseCommand):
                         )
 
                         found = None
-                        if dest in [0x35053C]:
-                            found = f"ILLEGAL_JUMP_{(dest & 0xFFFF):04X}"
-                        else:
-                            for search_script in script:
-                                for search_command in search_script:
-                                    # print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
-                                    if search_command.addr == dest:
-                                        found = search_command.id
-                                        break
-                                if found is not None:
+                        # experiment
+                        if dest == 0x35053C:
+                            address[0] = 0x32
+                            address[1] = 0x05
+                            dest = 0x350532
+                        for search_script in script:
+                            for search_command in search_script:
+                                print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
+                                if search_command.addr == dest:
+                                    found = search_command.id
                                     break
+                            if found is not None:
+                                break
                         if found is not None:
                             command.parsed_data.append(found)
                             jump_pointers.append(found)
@@ -3021,7 +3037,7 @@ class Command(BaseCommand):
             if not blocks.has_pointers:
                 continue
             this_script: List[ProtoCommand] = []
-            makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, 0)
+            makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, blocks.pointer_table_end - blocks.pointer_table_start + 1)  # type: ignore - these can never be None if has_pointers is True
             third_byte_as_string = get_third_byte_as_string(bank_id)
             for pointer_table_index, pointer in enumerate(
                 range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be None if has_pointers is True
@@ -3030,7 +3046,7 @@ class Command(BaseCommand):
                     shortify(rom, pointer) + (int(third_byte_as_string, 16) << 16)
                 )
                 found = None
-                for search_script in collective_data[bank_id]:
+                for search_script in collective_data[third_byte_as_string]:
                     for search_command in search_script:
                         if search_command.addr == three_byte_pointer:
                             found = search_command.id
@@ -3043,14 +3059,14 @@ class Command(BaseCommand):
                 else:
                     raise Exception("couldn't find pointer target 0x%06x" % three_byte_pointer)
             this_script.append(makeshift_oq)
-            collective_data[bank_id].insert(0, this_script)
+            collective_data[third_byte_as_string].insert(0, this_script)
 
         # TODO: Comprehensive parser seems to be working
         # Now we need to re-do how the output files are written
         # Also need to adjust how OQ command classes work. IDX type is just a pointer collection
 
         for bank_id, blocks in collective_data.items():
-            #print(f"Exporting {bank_id}...")
+            print(f"Exporting {bank_id}...")
 
             third_byte_as_string = get_third_byte_as_string(bank_id)
 
@@ -3202,6 +3218,8 @@ def convert_event_script_command(command, valid_identifiers):
             args["set_y"] = "True"
         if (cmd[1] & 0x04) == 0x04:
             args["set_z"] = "True"
+    elif opcode == 0x02:
+        cls = "ActorExitBattleEXPERIMENTAL"
     elif opcode == 0x03:
         cls = "DrawSpriteAtAMEM32Coords"
         args["sprite_id"] = get_sprite_name(shortify(cmd, 3) & 0x3FF)
@@ -3216,6 +3234,10 @@ def convert_event_script_command(command, valid_identifiers):
             args["behind_all_sprites"] = "True"
         if (cmd[1] & 0x80) == 0x80:
             args["overlap_all_sprites"] = "True"
+        if (cmd[2] & 0x10) == 0x10:
+            args["bit_4"] = "True"
+        if (cmd[5] & 0x80) == 0x80:
+            args["bit_7"] = "True"
     elif opcode == 0x04:
         cls = "PauseScriptUntil"
         if cmd[1] == 6:
@@ -3284,8 +3306,10 @@ def convert_event_script_command(command, valid_identifiers):
         cls = "ReturnSubroutine"
     elif opcode == 0x1A:
         cls = "VisibilityOn"
+        args["unknown_byte"] = f"0x{cmd[1]:02X}"
     elif opcode == 0x1B:
         cls = "VisibilityOff"
+        args["unknown_byte"] = f"0x{cmd[1]:02X}"
     elif (
         opcode
         in [
@@ -3943,6 +3967,10 @@ def convert_event_script_command(command, valid_identifiers):
         cls = "SetAMEM60ToCurrentTarget"
     elif opcode == 0x46:
         cls = "GameOverIfNoAlliesStanding"
+    elif opcode == 0x47:
+        cls = "SpriteQueueReferenceEXPERIMENTAL"
+        args["unknown_byte"] = str(cmd[1])
+        args["destinations"] = '["%s"]' % command.parsed_data[0]
     elif opcode == 0x4E:
         cls = "PauseScriptUntilSpriteSequenceDone"
     elif opcode == 0x50:
@@ -4068,7 +4096,7 @@ def convert_event_script_command(command, valid_identifiers):
         if cmd[1] & 0x02 == 0x02:
             args["bpp4"] = "True"
         if cmd[1] & 0x04 == 0x04:
-            args["bpp4"] = "True"
+            args["bpp2"] = "True"
         if cmd[1] & 0x08 == 0x08:
             args["invisible"] = "True"
     elif opcode == 0x7A and 0 <= cmd[1] <= 2:

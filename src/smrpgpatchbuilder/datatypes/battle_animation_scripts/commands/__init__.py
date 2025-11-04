@@ -235,4 +235,6 @@ from .commands import (
     GameOverIfNoAlliesStanding,
     SetUnknownShortToAMEM8Bit,
     SetUnknownShortToAMEM16Bit,
+    ActorExitBattleEXPERIMENTAL,
+    SpriteQueueReferenceEXPERIMENTAL
 )
