@@ -67,9 +67,9 @@ This repo allows you to parse, modify, and rebuild:
 - Battle animations ([disassemble](#disassembling-battle-animations) | [assemble](#assembling-battle-animations))
 - Monster AI ([disassemble](#disassembling-monster-ai) | [assemble](#assembling-monster-ai))
 - Event scripts and overworld NPC animations  ([disassemble](#disassembling-overworld-scripts) | [assemble](assembling-overworld-scripts))
-- Overworld dialogs ([disassemble](#disassembling-dialogs) | [assemble](assembling-dialogs))
+- Overworld dialogs ([disassemble](#disassembling-dialogs) | [assemble](#assembling-dialogs))
 - Battle dialogs (not implemented yet)
-- Overworld sprites ([disassemble](#disassembling-sprites) | [assemble](assembling-sprites))
+- Overworld sprites ([disassemble](#disassembling-sprites) | [assemble](#assembling-sprites))
 
 ## Developing and changing your scripts
 
