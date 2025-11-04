@@ -499,14 +499,33 @@ def assemble_from_tables_(sprites: list[Sprite], images: list[ImagePack], animat
     animation_pointers: list[int] = []
 
     animation_data_banks = [
+        AnimationBank(0x019570, 0x019D60),
+        AnimationBank(0x02F9B0, 0x030000),
+        AnimationBank(0x03E260, 0x03F000), # change to 0x30000 if this is an issue
+        AnimationBank(0x03FC40, 0x040000),
+        AnimationBank(0x0AF440, 0x0B0000),
+        AnimationBank(0x0BF8F0, 0x0C0000),
+        AnimationBank(0x0CF9B0, 0x0D0000),
+        AnimationBank(0x0DF7A0, 0x0E0000),
+        AnimationBank(0x0FF7A0, 0x100000),
+        AnimationBank(0x1A4DA0, 0x1A8000),
+        AnimationBank(0x1DB190, 0x1DB800),
+        AnimationBank(0x1DC600, 0x1DDE00),
+        AnimationBank(0x21BAE0, 0x21C000),
+        AnimationBank(0x24EDE0, 0x250000),
         AnimationBank(0x259000, 0x260000),
         AnimationBank(0x260000, 0x270000),
         AnimationBank(0x270000, 0x280000),
-        AnimationBank(0x364000, 0x370000),
-        AnimationBank(0x379A00, 0x37A000),
+        AnimationBank(0x3799F0, 0x37A000),
         AnimationBank(0x387CC0, 0x388000),
+        AnimationBank(0x39260A, 0x392AA0),
+        AnimationBank(0x39BC60, 0x39C000),
+        AnimationBank(0x39F400, 0x3A0000),
+        AnimationBank(0x3A1EA0, 0x3A20F0),
+        AnimationBank(0x3A55F0, 0x3A6000),
         AnimationBank(0x3DB5E0, 0x3DC000),
         AnimationBank(0x3DD800, 0x3DF000),
+        #AnimationBank(0x364000, 0x370000),
     ]
 
     def place_bytes(these_bytes: bytearray) -> int:
@@ -518,7 +537,7 @@ def assemble_from_tables_(sprites: list[Sprite], images: list[ImagePack], animat
                 highest_space = b.remaining_space
                 index = b_index
         if len(these_bytes) > animation_data_banks[index].remaining_space:
-            raise Exception("could not place bytes into a bank with space")
+            raise Exception("could not place bytes into an animation bank with space")
         offset = animation_data_banks[index].current_offset
         animation_data_banks[index].tiles += these_bytes
         return offset
@@ -788,7 +807,7 @@ def assemble_from_tables(sprites: list[CompleteSprite], insert_whitespace=False)
 
     unique_tiles_length = 0
 
-    animation_banks = [
+    uncompressed_tile_banks = [
         AnimationBank(UNCOMPRESSED_GFX_START, 0x290000),
         AnimationBank(0x290000, 0x2A0000),
         AnimationBank(0x2A0000, 0x2B0000),
@@ -801,21 +820,22 @@ def assemble_from_tables(sprites: list[CompleteSprite], insert_whitespace=False)
         AnimationBank(0x310000, 0x320000),
         AnimationBank(0x320000, UNCOMPRESSED_GFX_END),
         #AnimationBank(0x330000, UNCOMPRESSED_GFX_END),
-        AnimationBank(0x360000, 0x364000)
+        #AnimationBank(0x360000, 0x364000)
+        AnimationBank(0x360000, 0x370000)
     ]
 
     def place_bytes(these_bytes: bytearray) -> int:
         # find bank with most space
         highest_space: int = 0
         index: int = 0
-        for b_index, b in enumerate(animation_banks):
-            if highest_space < b.remaining_space:
+        for b_index, b in enumerate(uncompressed_tile_banks):
+            if highest_space < b.remaining_space and b.remaining_space >= len(these_bytes):
                 highest_space = b.remaining_space
                 index = b_index
-        if len(these_bytes) > animation_banks[index].remaining_space:
-            raise Exception("could not place bytes into a bank with space")
-        offset = animation_banks[index].current_offset
-        animation_banks[index].tiles += these_bytes
+        if len(these_bytes) > uncompressed_tile_banks[index].remaining_space:
+            raise Exception("could not place bytes into a tile bank with space")
+        offset = uncompressed_tile_banks[index].current_offset
+        uncompressed_tile_banks[index].tiles += these_bytes
         return offset
 
     # collect unique subtiles and group sprites by graphic similarity
@@ -1026,16 +1046,16 @@ def assemble_from_tables(sprites: list[CompleteSprite], insert_whitespace=False)
     
 
     output_tile_ranges: list[tuple[int, bytearray]] = []
-    final_offset = animation_banks[0].start
-    for bank_index, b in enumerate(animation_banks):
+    final_offset = uncompressed_tile_banks[0].start
+    for bank_index, b in enumerate(uncompressed_tile_banks):
         final_offset = b.start + len(b.tiles)
-        animation_banks[bank_index].tiles += bytearray([0] * (b.end - b.start - len(b.tiles)))
+        uncompressed_tile_banks[bank_index].tiles += bytearray([0] * (b.end - b.start - len(b.tiles)))
         if b.end <= UNCOMPRESSED_GFX_END:
-            output_tiles += animation_banks[bank_index].tiles
+            output_tiles += uncompressed_tile_banks[bank_index].tiles
             if b.end == UNCOMPRESSED_GFX_END:
                 output_tile_ranges.append((0x280000, output_tiles))
         else:
-            output_tile_ranges.append((b.start, animation_banks[bank_index].tiles))
+            output_tile_ranges.append((b.start, uncompressed_tile_banks[bank_index].tiles))
     
     if len(complete_images) > 512:
         raise ValueError("too many images: %i" % len(complete_images))

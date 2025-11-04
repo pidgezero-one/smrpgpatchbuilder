@@ -782,264 +782,264 @@ MASKS = [
 ]
 
 ENEMIES = [
-    "Terrapin",
-    "Spikey",
-    "Skytroopa",
-    "MadMallet",
-    "Shaman",
-    "Crook",
-    "Goomba",
-    "PiranhaPlant",
-    "Amanita",
-    "Goby",
-    "Bloober",
-    "BandanaRed",
-    "Lakitu",
-    "Birdy",
-    "Pinwheel",
-    "Ratfunk",
-    "K9",
-    "Magmite",
-    "TheBigBoo",
-    "DryBones",
-    "Greaper",
-    "Sparky",
-    "Chomp",
-    "Pandorite",
-    "ShyRanger",
+    "Terrapin", # 0
+    "Spikey", # 1
+    "Skytroopa", # 2
+    "MadMallet", # 3
+    "Shaman", # 4
+    "Crook", # 5
+    "Goomba", # 6
+    "PiranhaPlant", # 7
+    "Amanita", # 8
+    "Goby", # 9
+    "Bloober", # 10
+    "BandanaRed", # 11
+    "Lakitu", # 12
+    "Birdy", # 13
+    "Pinwheel", # 14
+    "Ratfunk", # 15
+    "K9", # 16
+    "Magmite", # 17
+    "TheBigBoo", # 18
+    "DryBones", # 19
+    "Greaper", # 20
+    "Sparky", # 21
+    "Chomp", # 22
+    "Pandorite", # 23
+    "ShyRanger", # 24
     # "BobombHenchman", # TODO rando shold reaplce all of these Bobombs
-    "Bobomb",
-    "Spookum",
-    "HammerBro",
-    "Buzzer",
-    "Ameboid",
-    "Gecko",
-    "Wiggler",
-    "Crusty",
-    "Magikoopa",
-    "Leuko",
-    "Jawful",
-    "Enigma",
-    "Blaster",
-    "Guerrilla",
-    "Babayaga",
-    "Hobgoblin",
-    "Reacher",
-    "Shogun",
-    "Orbuser",
-    "HeavyTroopa",
-    "Shadow",
-    "Cluster",
+    "Bobomb", # 25
+    "Spookum", # 26
+    "HammerBro", # 27
+    "Buzzer", # 28
+    "Ameboid", # 29
+    "Gecko", # 30
+    "Wiggler", # 31
+    "Crusty", # 32
+    "Magikoopa", # 33
+    "Leuko", # 34
+    "Jawful", # 35
+    "Enigma", # 36
+    "Blaster", # 37
+    "Guerrilla", # 38
+    "Babayaga", # 39
+    "Hobgoblin", # 40
+    "Reacher", # 41
+    "Shogun", # 42
+    "Orbuser", # 43
+    "HeavyTroopa", # 44
+    "Shadow", # 45
+    "Cluster", # 46
     # "BahamuttMagikoopa",
     "Bahamutt",  # same as bobombhenchman
-    "Octolot",
-    "Frogog",
-    "Clerk",
-    "Gunyolk",
-    "Boomer",
-    "Remocon",
-    "Snapdragon",
-    "Stumpet",
-    "Dodo",
-    "Jester",
-    "Artichoker",
-    "Arachne",
-    "Carriboscis",
-    "Hippopo",
-    "Mastadoom",
-    "Corkpedite",
-    "Terracotta",
-    "Spikester",
-    "Malakoopa",
-    "Pounder",
-    "Poundette",
-    "Sackit",
-    "GuGoomba",
-    "Chewy",
-    "Fireball",
-    "CrookHenchman",
-    "MrKipper",
-    "FactoryChief",
-    "BandanaBlue",
-    "Manager",
-    "Bluebird",
-    "AlleyRat",
-    "Chow",
-    "Magmus",
-    "LilBoo",
-    "Vomer",
-    "GlumReaper",
-    "Pyrosphere",
-    "ChompChomp",
-    "Hidon",
-    "SlingShy",
-    "Robomb",
-    "ShyGuy",
-    "Ninja",
-    "Stinger",
-    "Goombette",
-    "Geckit",
-    "Jabit",
-    "Starcruster",
-    "Merlin",
-    "Muckle",
-    "Forkies",
-    "Gorgon",
-    "BigBertha",
-    "ChainedKong",
-    "Fautso",
-    "Strawhead",
-    "Juju",
-    "ArmoredAnt",
-    "Orbison",
-    "TuboTroopa",
-    "Doppel",
-    "Pulsar",
-    "Bobomb",
-    "Octovader",
-    "Ribbite",
-    "Director",
-    "SnifitHenchman",
-    "None",
-    "Puppox",
-    "FinkFlower",
-    "Lumbler",
-    "Springer",
-    "Harlequin",
-    "Kriffid",
-    "Spinthra",
-    "Radish",
-    "Crippo",
-    "MastaBlasta",
-    "Piledriver",
-    "Apprentice",
-    "ApprenticeHenchman",
-    "BandanaRedHenchman",
-    "PiranhaPlantHenchman",
-    "None",
-    "MadMalletHenchman",
-    "BoxBoy",
-    "Shelly",
-    "Superspike",
-    "DodoSolo",
-    "Oerlikon",
-    "Chester",
-    "CorkpediteBody",
-    "BluebirdHenchman",
-    "Torte",
-    "Shyaway",
-    "JinxClone",
-    "MachineMadeShyster",
-    "MachineMadeDrillBit",
-    "Formless",
-    "Mokura",
-    "FireCrystal",
-    "WaterCrystal",
-    "EarthCrystal",
-    "WindCrystal",
-    "MarioClone",
-    "PeachClone",
-    "BowserClone",
-    "GenoClone",
-    "MallowClone",
-    "Shyster",
-    "Kinklink",
-    "BirdyHenchman",
-    "HanginShy",
-    "Smelter",
-    "MachineMadeMack",
-    "MachineMadeBowyer",
-    "MachineMadeYaridovich",
-    "MachineMadeAxemPink",
-    "MachineMadeAxemBlack",
-    "MachineMadeAxemRed",
-    "MachineMadeAxemYellow",
-    "MachineMadeAxemGreen",
-    "BahamuttChester",
-    "BlooberHenchman",
-    "MachineMadeAxemBlackHenchman",
-    "MachineMadeAxemPinkHenchman",
-    "AeroSmithy",
-    "Starslap",
-    "Mukumuku",
-    "Zeostar",
-    "Jagger",
-    "EmptyEnemy",
-    "Smithy2TankHead",
-    "Smithy2SafeHead",
-    "PyrosphereHenchman",
-    "Microbomb",
-    "ShyGuyHenchman",
-    "Grit",
-    "Neosquid",
-    "YaridovichMirage",
-    "Helio",
-    "RightEye",
-    "LeftEye",
-    "KnifeGuy",
-    "GrateGuy",
-    "Bundt",
-    "Jinx1",
-    "Jinx2",
-    "CountDown",
-    "DingALing",
-    "Belome1",
-    "Belome2",
-    "MachineMadeAxemRedHenchman",
-    "Smilax",
-    "Thrax",
-    "Megasmilax",
-    "Birdo",
-    "Eggbert",
-    "AxemYellow",
-    "Punchinello",
-    "TentaclesRight",
-    "AxemRed",
-    "AxemGreen",
-    "KingBomb",
-    "MezzoBomb",
-    "MachineMadeShysterHenchman",
-    "Raspberry",
-    "KingCalamari",
-    "TentaclesLeft",
-    "Jinx3",
-    "Zombone",
-    "CzarDragon",
-    "Cloaker",
-    "Domino",
-    "MadAdder",
-    "Mack",
-    "Bodyguard",
-    "Yaridovich",
-    "DrillBit",
-    "AxemPink",
-    "AxemBlack",
-    "Bowyer",
-    "AeroBowyer",
-    "MachineMadeAxemGreenHenchman",
-    "Exor",
-    "Smithy1",
-    "Shyper",
-    "Smithy2Body",
-    "Smithy2Head",
-    "Smithy2MageHead",
-    "Smithy2ChestHead",
-    "Croco1",
-    "Croco2",
-    "MachineMadeAxemYellowHenchman",
-    "Earthlink",
-    "YaridovichDrillBit",
-    "AxemRangers",
-    "Booster",
-    "Booster2",
-    "Snifit",
-    "Johnny",
-    "JohnnySolo",
-    "Valentina",
-    "Cloaker2",
-    "Domino2",
-    "Candle",
-    "Culex",
+    "Octolot", # 48
+    "Frogog", # 49
+    "Clerk", # 50
+    "Gunyolk", # 51
+    "Boomer", # 52
+    "Remocon", # 53
+    "Snapdragon", # 54
+    "Stumpet", # 55
+    "Dodo", # 56
+    "Jester", # 57
+    "Artichoker", # 58
+    "Arachne", # 59
+    "Carriboscis", # 60
+    "Hippopo", # 61
+    "Mastadoom", # 62
+    "Corkpedite", # 63
+    "Terracotta", # 64
+    "Spikester", # 65
+    "Malakoopa", # 66
+    "Pounder", # 67
+    "Poundette", # 68
+    "Sackit", # 69
+    "GuGoomba", # 70
+    "Chewy", # 71
+    "Fireball", # 72
+    "MrKipper", # 73
+    "FactoryChief", # 74
+    "BandanaBlue", # 75
+    "Manager", # 76
+    "Bluebird", # 77
+    "None", # 78
+    "AlleyRat", # 79
+    "Chow", # 80
+    "Magmus", # 81
+    "LilBoo", # 82
+    "Vomer", # 83
+    "GlumReaper", # 84
+    "Pyrosphere", # 85
+    "ChompChomp", # 86
+    "Hidon", # 87
+    "SlingShy", # 88
+    "Robomb", # 89
+    "ShyGuy", # 90
+    "Ninja", # 91
+    "Stinger", # 92
+    "Goombette", # 93
+    "Geckit", # 94
+    "Jabit", # 95
+    "Starcruster", # 96
+    "Merlin", # 97
+    "Muckle", # 98
+    "Forkies", # 99
+    "Gorgon", # 100
+    "BigBertha", # 101
+    "ChainedKong", # 102
+    "Fautso", # 103
+    "Strawhead", # 104
+    "Juju", # 105
+    "ArmoredAnt", # 106
+    "Orbison", # 107
+    "TuboTroopa", # 108
+    "Doppel", # 109
+    "Pulsar", # 110
+    "Bobomb", # 111
+    "Octovader", # 112
+    "Ribbite", # 113
+    "Director", # 114
+    "SnifitHenchman", # 115
+    "None", # 116
+    "Puppox", # 117
+    "FinkFlower", # 118
+    "Lumbler", # 119
+    "Springer", # 120
+    "Harlequin", # 121
+    "Kriffid", # 122
+    "Spinthra", # 123
+    "Radish", # 124
+    "Crippo", # 125
+    "MastaBlasta", # 126
+    "Piledriver", # 127
+    "Apprentice", # 128
+    "ApprenticeHenchman", # 129
+    "BandanaRedHenchman", # 130
+    "PiranhaPlantHenchman", # 131
+    "None", # 132
+    "MadMalletHenchman", # 133
+    "BoxBoy", # 134
+    "Shelly", # 135
+    "Superspike", # 136
+    "DodoSolo", # 137
+    "Oerlikon", # 138
+    "Chester", # 139
+    "CorkpediteBody", # 140
+    "BluebirdHenchman", # 141
+    "Torte", # 142
+    "Shyaway", # 143
+    "JinxClone", # 144
+    "MachineMadeShyster", # 145
+    "MachineMadeDrillBit", # 146
+    "Formless", # 147
+    "Mokura", # 148
+    "FireCrystal", # 149
+    "WaterCrystal", # 150
+    "EarthCrystal", # 151
+    "WindCrystal", # 152
+    "MarioClone", # 153
+    "PeachClone", # 154
+    "BowserClone", # 155
+    "GenoClone", # 156
+    "MallowClone", # 157
+    "Shyster", # 158
+    "Kinklink", # 159
+    "BirdyHenchman", # 160
+    "HanginShy", # 161
+    "Smelter", # 162
+    "MachineMadeMack", # 163
+    "MachineMadeBowyer", # 164
+    "MachineMadeYaridovich", # 165
+    "MachineMadeAxemPink", # 166
+    "MachineMadeAxemBlack", # 167
+    "MachineMadeAxemRed", # 168
+    "MachineMadeAxemYellow", # 169
+    "MachineMadeAxemGreen", # 170
+    "BahamuttChester", # 171
+    "BlooberHenchman", # 172
+    "MachineMadeAxemBlackHenchman", # 173
+    "MachineMadeAxemPinkHenchman", # 174
+    "AeroSmithy", # 175
+    "Starslap", # 176
+    "Mukumuku", # 177
+    "Zeostar", # 178
+    "Jagger", # 179
+    "EmptyEnemy", # 180
+    "Smithy2TankHead", # 181
+    "Smithy2SafeHead", # 182
+    "PyrosphereHenchman", # 183
+    "Microbomb", # 184
+    "ShyGuyHenchman", # 185
+    "Grit", # 186
+    "Neosquid", # 187
+    "YaridovichMirage", # 188
+    "Helio", # 189
+    "RightEye", # 190
+    "LeftEye", # 191
+    "KnifeGuy", # 192
+    "GrateGuy", # 193
+    "Bundt", # 194
+    "Jinx1", # 195
+    "Jinx2", # 196
+    "CountDown", # 197
+    "DingALing", # 198
+    "Belome1", # 199
+    "Belome2", # 200
+    "MachineMadeAxemRedHenchman", # 201
+    "Smilax", # 202
+    "Thrax", # 203
+    "Megasmilax", # 204
+    "Birdo", # 205
+    "Eggbert", # 206
+    "AxemYellow", # 207
+    "Punchinello", # 208
+    "TentaclesRight", # 209
+    "AxemRed", # 210
+    "AxemGreen", # 211
+    "KingBomb", # 212
+    "MezzoBomb", # 213
+    "MachineMadeShysterHenchman", # 214
+    "Raspberry", # 215
+    "KingCalamari", # 216
+    "TentaclesLeft", # 217
+    "Jinx3", # 218
+    "Zombone", # 219
+    "CzarDragon", # 220
+    "Cloaker", # 221
+    "Domino", # 222
+    "MadAdder", # 223
+    "Mack", # 224
+    "Bodyguard", # 225
+    "Yaridovich", # 226
+    "DrillBit", # 227
+    "AxemPink", # 228
+    "AxemBlack", # 229
+    "Bowyer", # 230
+    "AeroBowyer", # 231
+    "MachineMadeAxemGreenHenchman", # 232
+    "Exor", # 233
+    "Smithy1", # 234
+    "Shyper", # 235
+    "Smithy2Body", # 236
+    "Smithy2Head", # 237
+    "Smithy2MageHead", # 238
+    "Smithy2ChestHead", # 239
+    "Croco1", # 240
+    "Croco2", # 241
+    "MachineMadeAxemYellowHenchman", # 242
+    "Earthlink", # 243
+    "YaridovichDrillBit", # 244
+    "AxemRangers", # 245
+    "Booster", # 246
+    "Booster2", # 247
+    "Snifit", # 248
+    "Johnny", # 249
+    "JohnnySolo", # 250
+    "Valentina", # 251
+    "Cloaker2", # 252
+    "Domino2", # 253
+    "Candle", # 254
+    "Culex", # 255
 ]
 
 SCRIPT_NAMES = {

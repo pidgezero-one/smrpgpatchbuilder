@@ -1065,7 +1065,7 @@ class ShyRanger(Enemy):
 class Bobomb(Enemy):
     """Bobomb enemy class"""
 
-    _monster_id: int = 111
+    _monster_id: int = 25
 
     # vital status
     _hp: int = 90

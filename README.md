@@ -475,6 +475,8 @@ Disassembly will produce a `SpriteCollection` with all of the NPC sprites in you
 
 Palettes are not yet supported as part of this.
 
+This only really works with a vanilla rom. I would welcome a PR that allows a user to input custom ROM ranges to read sprite data from.
+
 ### Assembling sprites
 
 ```bash
@@ -482,3 +484,7 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py graphicsassembler --rom /m
 ```
 
 The assembler will loop through every sprite in your `SpriteCollection` and figure out which sprites use similar tile data, animation data, etc. It will attempt to arrange your sprites in such a way that duplicate tiles are minimized and as much empty space for extra tiles is opened up for you as much as possible. Image properties and animation properties are created on the fly based on this. Because of how this works, if you disassemble a ROM's sprites and then assemble the output and then patch it onto the same ROM, the bytes will not be identical to how they were before. The sprites should look exactly the same in lazy shell, the bytes are just rearranged.
+
+This is accomplished by moving some of the animation data in 0x364000-0x370000 into other blank areas of the ROM (since animation pointers use 3 bytes), which opens up more space for tiles. Be aware that any tile data written to an address higher than 0x330000 will not render correctly in Lazy Shell but should work in game.
+
+This only really works with a vanilla rom because it assumes that certain sections of the ROM are empty. I would welcome a PR that allows a user to input custom ROM ranges to write sprite data to.

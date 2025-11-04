@@ -104,18 +104,6 @@ class Command(BaseCommand):
             elif i not in anim_subtiles[0] and i not in anim_subtiles[1] and i in anim_subtiles[2]:
                 anim3_only.append(i)
 
-        print(anim_subtiles[2])
-        print(anim1_and_anim3, len(anim1_and_anim3))
-        print(anim_all, len(anim_all))
-
-        # print(anim1_only, len(anim1_only))
-        # print(anim1_and_anim2_only, len(anim1_and_anim2_only))
-        # print(anim2_only, len(anim2_only))
-        # print(anim1_and_anim3, len(anim1_and_anim3))
-        # print(anim_all, len(anim_all))
-        # print(anim2_and_anim3, len(anim2_and_anim3))
-        # print(anim3_only, len(anim3_only))
-
 
         def replace_subtile(anim_index, old_ind, new_ind):
             for mold_index, a in enumerate(animations[anim_index].properties.molds):
