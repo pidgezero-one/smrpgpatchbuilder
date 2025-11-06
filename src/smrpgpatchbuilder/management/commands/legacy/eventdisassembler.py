@@ -2050,7 +2050,7 @@ names[0xC7] = named(
     "set_7010_to_object_xyz", byte(prefix="AreaObjects", table=area_object_table)
 )
 names[0xC8] = named(
-    "set_7016_to_object_xyz", byte(prefix="AreaObjects", table=area_object_table)
+    "set_7016_to_object_xyz", byte_int()
 )
 names[0xC9] = parse_object_coord(0xC9)
 names[0xCA] = named("set_7000_to_pressed_button")

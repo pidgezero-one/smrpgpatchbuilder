@@ -100,6 +100,8 @@ Everything you do beyond this point must be in your venv. You'll know you're in 
 In your venv:
 `PYTHONPATH=src pytest src/tests`
 
+## Battle animations
+
 ### Disassembling battle animations
 
 This library allows you to edit battle animations with almost as much freedom as the event script editor in Lazy Shell offers you. You can move commands around, add them, and delete them, without needing to match your replacements byte-by-byte, as long as you stay within the size guidelines given by the script files generated for you. This is because while editing scripts, pointers (including those used for object queues and sprite queues) have names instead of being tied to exact addresses, and their addresses are calculated when you build your ROM patch.
@@ -429,6 +431,24 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/t
 
 The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls the dialog collection's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `DialogCollection` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
 
+## NPC Sprites
+
+NPC sprites use uncompressed tiles, an image pack, an animation pack, and a container that references all three of those things. These all exist in different parts of the ROM. 
+
+If you're disassembling a ROM where you haven't moved any of this info to a different part of the ROM, you can just copy and paste the config files from the config.example folder. If you're disassembling a romhack that has moved any of this data, you can define the ranges in the config files.
+
+- tiles_read.input - uncompressed tiles (accepts multiple ranges)
+- imagepack_read.input - image packs (only accepts one range)
+- animationpack_read.input - animation packs (accepts multiple ranges, but hasn't been tested with more than one)
+- toplevelsprite_read.input - containers (only accepts one range)
+
+When assembling sprites, you can specify where you want them to be written:
+- tiles_write.input - uncompressed tiles (accepts multiple ranges, but be sure to break them up by upper byte so that pointers work correctly, see example file)
+- animationdata_write.input - animation pack data (accepts multiple ranges)
+- Image packs and animation data pointers will be written to the same place it reads from, starting at the address you specify in imagepack_read.input
+- Containers also will be written to the same place specified in toplevelsprite_read.input
+
+
 ### Disassembling sprites
 
 ```bash
@@ -474,8 +494,6 @@ That looks like a lot of gibberish. It's a (mostly) complete text representation
 Disassembly will produce a `SpriteCollection` with all of the NPC sprites in your ROM broken down like this.
 
 Palettes are not yet supported as part of this.
-
-This only really works with a vanilla rom. I would welcome a PR that allows a user to input custom ROM ranges to read sprite data from.
 
 ### Assembling sprites
 

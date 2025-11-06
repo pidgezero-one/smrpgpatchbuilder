@@ -5,3 +5,4 @@ src/disassembler_output
 src/assembler_output
 patchvenv
 debug.log
+config/** 

@@ -6,6 +6,7 @@ from smrpgpatchbuilder.datatypes.graphics.classes import (
     AnimationPackProperties,
     AnimationSequence,
     AnimationSequenceFrame,
+    AnimationBank,
     Mold,
     Tile,
     Clone,
@@ -15,18 +16,6 @@ from smrpgpatchbuilder.utils.disassembler_common import (
     writeline,
 )
 import string, random, shutil, os
-
-TOP_LEVEL_SPRITE_OFFSET = 0x250000
-TOP_LEVEL_SPRITE_LENGTH = 0x1000
-
-IMAGE_PACK_INFO_OFFSET = 0x251800
-IMAGE_PACK_INFO_LENGTH = 0x800
-
-ANIMATION_PACK_POINTERS_OFFSET = 0x252000
-ANIMATION_PACK_POINTERS_LENGTH = 0xC00
-
-TILES_START = 0x280000
-TILES_END = 0x330000
 
 PALETTE_OFFSET = 0x253000
 
@@ -40,6 +29,42 @@ alphabet = string.ascii_lowercase + string.digits
 
 def random_tile_id():
     return "".join(random.choices(alphabet, k=8))
+
+
+def load_animation_banks(filename: str) -> list[AnimationBank]:
+    animation_banks = []
+    with open(filename, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                start_str, end_str = line.split()
+                start_addr = int(start_str, 16)
+                end_addr = int(end_str, 16)
+                animation_banks.append(AnimationBank(start_addr, end_addr))
+            except ValueError:
+                print(f"Skipping malformed line: {line}")
+
+    return animation_banks
+
+
+def load_tuples(filename: str) -> list[tuple[int, int]]:
+    tuples: list[tuple[int, int]] = []
+    with open(filename, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                start_str, end_str = line.split()
+                start_addr = int(start_str, 16)
+                end_addr = int(end_str, 16)
+                tuples.append((start_addr, end_addr))
+            except ValueError:
+                print(f"Skipping malformed line: {line}")
+
+    return tuples
 
 
 class Command(BaseCommand):
@@ -65,6 +90,14 @@ class Command(BaseCommand):
         os.makedirs(f"{output_path}/objects", exist_ok=True)
         open(f"{output_path}/objects/__init__.py", "w")
 
+        tile_write_banks = load_animation_banks("./config/tiles_write.input")
+        animation_write_banks = load_animation_banks("./config/animationdata_write.input")
+
+        tile_read_banks = load_tuples("./config/tiles_read.input")
+        animation_read_banks = load_tuples("./config/animationpack_read.input")
+        toplevelsprite_read = load_tuples("./config/toplevelsprite_read.input")
+        imagepack_read = load_tuples("./config/imagepack_read.input")
+
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
 
@@ -74,22 +107,23 @@ class Command(BaseCommand):
         all_tiles = []
         tile_ids = []
 
-        for _, offset in enumerate(range(TILES_START, TILES_END, 0x20)):
-            tile = rom[offset : offset + 0x20]
-            dupe = False
-            for t in all_tiles:
-                if t[1] == tile:
-                    dupe = True
-            if not dupe:
-                tile_id = random_tile_id()
-                while tile_id in tile_ids:
+        for _, (bank_start, bank_end) in enumerate(tile_read_banks):
+            for _, offset in enumerate(range(bank_start, bank_end, 0x20)):
+                tile = rom[offset : offset + 0x20]
+                dupe = False
+                for t in all_tiles:
+                    if t[1] == tile:
+                        dupe = True
+                if not dupe:
                     tile_id = random_tile_id()
-                all_tiles.append((tile_id, tile))
+                    while tile_id in tile_ids:
+                        tile_id = random_tile_id()
+                    all_tiles.append((tile_id, tile))
 
         for index, offset in enumerate(
             range(
-                TOP_LEVEL_SPRITE_OFFSET,
-                TOP_LEVEL_SPRITE_OFFSET + TOP_LEVEL_SPRITE_LENGTH,
+                toplevelsprite_read[0][0],
+                toplevelsprite_read[0][1],
                 4,
             )
         ):
@@ -104,8 +138,8 @@ class Command(BaseCommand):
 
         for index, offset in enumerate(
             range(
-                IMAGE_PACK_INFO_OFFSET,
-                IMAGE_PACK_INFO_OFFSET + IMAGE_PACK_INFO_LENGTH,
+                imagepack_read[0][0],
+                imagepack_read[0][1],
                 4,
             )
         ):
@@ -116,371 +150,249 @@ class Command(BaseCommand):
                 ImagePack(index, gfx_ptr, 0x250000 + shortify(rom, offset + 2))
             )
 
-        for index, property_offset_ptr_offset in enumerate(
-            range(
-                ANIMATION_PACK_POINTERS_OFFSET,
-                ANIMATION_PACK_POINTERS_OFFSET + ANIMATION_PACK_POINTERS_LENGTH,
-                3,
-            )
-        ):
-            # if index > 316:
-            if index > 465:
-                break
-            property_offset_ptr_offset = ANIMATION_PACK_POINTERS_OFFSET + (index * 3)
-            property_offset = get_animation_pack_data_offset_from_third_byte(
-                shortify(rom, property_offset_ptr_offset),
-                rom[property_offset_ptr_offset + 2],
-            )
-            if property_offset == -0xC00000:
-                continue
-
-            molds = []
-            sequences = []
-
-            length = shortify(rom, property_offset)
-            sequence_packet_ptr_relative_offset = shortify(rom, property_offset + 2)
-            mold_packet_ptr_relative_offset = shortify(rom, property_offset + 4)
-            sequence_count = rom[property_offset + 6]
-            mold_count = rom[property_offset + 7]
-            vram_size = shortify(rom, property_offset + 8) << 8
-            unknown = shortify(rom, property_offset + 10)
-
-            for i in range(0, sequence_count):
-                sequence_offset = (
-                    property_offset + sequence_packet_ptr_relative_offset + i * 2
+        for _, (bank_start, bank_end) in enumerate(animation_read_banks):
+            for index, property_offset_ptr_offset in enumerate(
+                range(
+                    bank_start,
+                    bank_end,
+                    3,
                 )
-                frames = []
-                if shortify(rom, sequence_offset) != 0xFFFF:
-                    relative_offset = shortify(rom, sequence_offset) & 0x7FFF
-                    offset = relative_offset + property_offset
-                    while rom[offset] != 0 and relative_offset != 0x7FFF:
-                        frames.append(
-                            AnimationSequenceFrame(rom[offset], rom[offset + 1])
-                        )
-                        relative_offset += 2
-                        offset = relative_offset + property_offset
-                sequences.append(AnimationSequence(frames))
+            ):
+                # if index > 316:
+                if index > 465:
+                    break
+                property_offset_ptr_offset = bank_start + (index * 3)
+                property_offset = get_animation_pack_data_offset_from_third_byte(
+                    shortify(rom, property_offset_ptr_offset),
+                    rom[property_offset_ptr_offset + 2],
+                )
+                if property_offset == -0xC00000:
+                    continue
 
-            for i in range(0, mold_count):
-                mold_offset = property_offset + mold_packet_ptr_relative_offset + i * 2
-                relative_offset = mold_offset
-                if shortify(rom, relative_offset) != 0xFFFF:
-                    gridplane = (rom[relative_offset + 1] & 0x80) == 0x80
-                    tile_packet_pointer = shortify(rom, relative_offset) & 0x7FFF
-                    relative_offset = tile_packet_pointer + property_offset
-                    if gridplane:
-                        tile_length = 0
-                        format = rom[relative_offset]
-                        relative_offset += 1
-                        is_16bit = (format & 0x08) == 0x08
-                        y_plus = 1 if (format & 0x10) == 0x10 else 0
-                        y_minus = 1 if (format & 0x20) == 0x20 else 0
-                        mirror = (format & 0x40) == 0x40
-                        invert = (format & 0x80) == 0x80
-                        tile_length += 1
-                        format &= 3
-                        if is_16bit:
-                            subtiles_16bit = shortify(rom, relative_offset)
-                            relative_offset += 2
-                            tile_length += 2
-                        else:
-                            subtiles_16bit = 0
-                        copy_length = 9
-                        if format == 1 or format == 2:
-                            copy_length = 12
-                        elif format == 3:
-                            copy_length = 16
-                        tile_length += copy_length
-                        subtile_bytes = [1] * copy_length
-                        subtile_bytes[0:copy_length] = rom[
-                            relative_offset : relative_offset + copy_length
-                        ]
-                        if is_16bit:
-                            for j in range(0, copy_length):
-                                if (subtiles_16bit & (2**j)) == (2**j):
-                                    subtile_bytes[j] += 0x100
-                        molds.append(
-                            Mold(
-                                i,
-                                gridplane,
-                                [
-                                    Tile(
-                                        mirror=mirror,
-                                        invert=invert,
-                                        format=format,
-                                        length=tile_length,
-                                        subtile_bytes=subtile_bytes,
-                                        is_16bit=is_16bit,
-                                        y_plus=y_plus,
-                                        y_minus=y_minus,
-                                        is_clone=False,
-                                    )
-                                ],
+                molds = []
+                sequences = []
+
+                length = shortify(rom, property_offset)
+                sequence_packet_ptr_relative_offset = shortify(rom, property_offset + 2)
+                mold_packet_ptr_relative_offset = shortify(rom, property_offset + 4)
+                sequence_count = rom[property_offset + 6]
+                mold_count = rom[property_offset + 7]
+                vram_size = shortify(rom, property_offset + 8) << 8
+                unknown = shortify(rom, property_offset + 10)
+
+                for i in range(0, sequence_count):
+                    sequence_offset = (
+                        property_offset + sequence_packet_ptr_relative_offset + i * 2
+                    )
+                    frames = []
+                    if shortify(rom, sequence_offset) != 0xFFFF:
+                        relative_offset = shortify(rom, sequence_offset) & 0x7FFF
+                        offset = relative_offset + property_offset
+                        while rom[offset] != 0 and relative_offset != 0x7FFF:
+                            frames.append(
+                                AnimationSequenceFrame(rom[offset], rom[offset + 1])
                             )
-                        )
-                    else:
-                        tiles = []
-                        while rom[relative_offset] != 0:
-                            temp_offset = relative_offset
-                            is_clone = False
-                            if (rom[relative_offset] & 0x03) == 2:
-                                is_clone = True
-                                y = rom[relative_offset + 1]
-                                x = rom[relative_offset + 2]
-                                mirror = (rom[relative_offset] & 0x04) == 0x04
-                                invert = (rom[relative_offset] & 0x08) == 0x08
-                                within_buffer_offset = shortify(
-                                    rom, relative_offset + 3
-                                )
-                                if within_buffer_offset >= 0x7FFF:
-                                    raise Exception(
-                                        "bad mold offset at %06x, mold %i of animation %i"
-                                        % (relative_offset, i, index)
-                                    )
-                                relative_offset = within_buffer_offset + property_offset
-                                clone_tiles = []
-                                for _ in range(0, rom[temp_offset] >> 4):
-                                    if within_buffer_offset > length:
-                                        raise Exception(
-                                            "bad data at %06x, mold %i of animation %i: 0x%04x is larger than length %i"
-                                            % (
-                                                relative_offset,
-                                                i,
-                                                index,
-                                                relative_offset - property_offset,
-                                                length,
-                                            )
+                            relative_offset += 2
+                            offset = relative_offset + property_offset
+                    sequences.append(AnimationSequence(frames))
+
+                for i in range(0, mold_count):
+                    mold_offset = property_offset + mold_packet_ptr_relative_offset + i * 2
+                    relative_offset = mold_offset
+                    if shortify(rom, relative_offset) != 0xFFFF:
+                        gridplane = (rom[relative_offset + 1] & 0x80) == 0x80
+                        tile_packet_pointer = shortify(rom, relative_offset) & 0x7FFF
+                        relative_offset = tile_packet_pointer + property_offset
+                        if gridplane:
+                            tile_length = 0
+                            format = rom[relative_offset]
+                            relative_offset += 1
+                            is_16bit = (format & 0x08) == 0x08
+                            y_plus = 1 if (format & 0x10) == 0x10 else 0
+                            y_minus = 1 if (format & 0x20) == 0x20 else 0
+                            mirror = (format & 0x40) == 0x40
+                            invert = (format & 0x80) == 0x80
+                            tile_length += 1
+                            format &= 3
+                            if is_16bit:
+                                subtiles_16bit = shortify(rom, relative_offset)
+                                relative_offset += 2
+                                tile_length += 2
+                            else:
+                                subtiles_16bit = 0
+                            copy_length = 9
+                            if format == 1 or format == 2:
+                                copy_length = 12
+                            elif format == 3:
+                                copy_length = 16
+                            tile_length += copy_length
+                            subtile_bytes = [1] * copy_length
+                            subtile_bytes[0:copy_length] = rom[
+                                relative_offset : relative_offset + copy_length
+                            ]
+                            if is_16bit:
+                                for j in range(0, copy_length):
+                                    if (subtiles_16bit & (2**j)) == (2**j):
+                                        subtile_bytes[j] += 0x100
+                            molds.append(
+                                Mold(
+                                    i,
+                                    gridplane,
+                                    [
+                                        Tile(
+                                            mirror=mirror,
+                                            invert=invert,
+                                            format=format,
+                                            length=tile_length,
+                                            subtile_bytes=subtile_bytes,
+                                            is_16bit=is_16bit,
+                                            y_plus=y_plus,
+                                            y_minus=y_minus,
+                                            is_clone=False,
                                         )
-                                    tile_length = 0
-                                    if (rom[relative_offset] & 0x03) == 2:
+                                    ],
+                                )
+                            )
+                        else:
+                            tiles = []
+                            while rom[relative_offset] != 0:
+                                temp_offset = relative_offset
+                                is_clone = False
+                                if (rom[relative_offset] & 0x03) == 2:
+                                    is_clone = True
+                                    y = rom[relative_offset + 1]
+                                    x = rom[relative_offset + 2]
+                                    mirror = (rom[relative_offset] & 0x04) == 0x04
+                                    invert = (rom[relative_offset] & 0x08) == 0x08
+                                    within_buffer_offset = shortify(
+                                        rom, relative_offset + 3
+                                    )
+                                    if within_buffer_offset >= 0x7FFF:
                                         raise Exception(
-                                            "bad tile data at %06x, mold %i of animation %i"
+                                            "bad mold offset at %06x, mold %i of animation %i"
                                             % (relative_offset, i, index)
                                         )
-                                    else:
-                                        temp_offset_2 = relative_offset
-                                        format = rom[relative_offset] & 0x0F
-                                        mi = (format & 0x04) == 0x04
-                                        inv = (format & 0x08) == 0x08
-                                        format &= 3
-                                        quadrants = [False] * 4
-                                        for j in range(0, 4):
-                                            div = 128 // (2**j)
-                                            quadrants[j] = (
-                                                rom[relative_offset] & div
-                                            ) == div
-                                        relative_offset += 1
-                                        tile_length += 1
-                                        tile_y = rom[relative_offset] ^ 0x80  # + y
-                                        relative_offset += 1
-                                        tile_length += 1
-                                        tile_x = rom[relative_offset] ^ 0x80  # + x
-                                        relative_offset += 1
-                                        tile_length += 1
-                                        subtile_bytes = [0] * 4
-                                        for j in range(0, 4):
-                                            if quadrants[j]:
-                                                if format == 1:
-                                                    subtile_bytes[j] = (
-                                                        shortify(rom, relative_offset)
-                                                        & 0x1FF
-                                                    )
-                                                    relative_offset += 1
-                                                    tile_length += 1
-                                                else:
-                                                    subtile_bytes[j] = rom[
-                                                        relative_offset
-                                                    ]
-                                                relative_offset += 1
-                                                tile_length += 1
-                                        relative_offset = temp_offset_2 + tile_length
-                                        clone_tiles.append(
-                                            Tile(
-                                                mirror=mi,
-                                                invert=inv,
-                                                format=format,
-                                                length=tile_length,
-                                                subtile_bytes=subtile_bytes,
-                                                x=tile_x,
-                                                y=tile_y,
-                                                is_clone=is_clone,
+                                    relative_offset = within_buffer_offset + property_offset
+                                    clone_tiles = []
+                                    for _ in range(0, rom[temp_offset] >> 4):
+                                        if within_buffer_offset > length:
+                                            raise Exception(
+                                                "bad data at %06x, mold %i of animation %i: 0x%04x is larger than length %i"
+                                                % (
+                                                    relative_offset,
+                                                    i,
+                                                    index,
+                                                    relative_offset - property_offset,
+                                                    length,
+                                                )
                                             )
-                                        )
-                                tiles.append(Clone(x, y, mirror, invert, clone_tiles))
-                                relative_offset = temp_offset + 5
-                            else:
-                                tile_length = 0
-                                format = rom[relative_offset] & 0x0F
-                                mirror = (format & 0x04) == 0x04
-                                invert = (format & 0x08) == 0x08
-                                format &= 3
-                                quadrants = [False] * 4
-                                for j in range(0, 4):
-                                    quadrants[j] = (
-                                        rom[relative_offset] & (128 // (2**j))
-                                    ) == (128 // (2**j))
-                                relative_offset += 1
-                                tile_length += 1
-                                tile_y = rom[relative_offset] ^ 0x80
-                                relative_offset += 1
-                                tile_length += 1
-                                tile_x = rom[relative_offset] ^ 0x80
-                                relative_offset += 1
-                                tile_length += 1
-                                subtile_bytes = [0] * 4
-                                for j in range(0, 4):
-                                    if quadrants[j]:
-                                        if format == 1:
-                                            subtile_bytes[j] = (
-                                                shortify(rom, relative_offset) & 0x1FF
+                                        tile_length = 0
+                                        if (rom[relative_offset] & 0x03) == 2:
+                                            raise Exception(
+                                                "bad tile data at %06x, mold %i of animation %i"
+                                                % (relative_offset, i, index)
                                             )
+                                        else:
+                                            temp_offset_2 = relative_offset
+                                            format = rom[relative_offset] & 0x0F
+                                            mi = (format & 0x04) == 0x04
+                                            inv = (format & 0x08) == 0x08
+                                            format &= 3
+                                            quadrants = [False] * 4
+                                            for j in range(0, 4):
+                                                div = 128 // (2**j)
+                                                quadrants[j] = (
+                                                    rom[relative_offset] & div
+                                                ) == div
                                             relative_offset += 1
                                             tile_length += 1
-                                        else:
-                                            subtile_bytes[j] = rom[relative_offset]
-                                        relative_offset += 1
-                                        tile_length += 1
-                                tiles.append(
-                                    Tile(
-                                        mirror=mirror,
-                                        invert=invert,
-                                        format=format,
-                                        length=tile_length,
-                                        subtile_bytes=subtile_bytes,
-                                        x=tile_x,
-                                        y=tile_y,
-                                        is_clone=is_clone,
+                                            tile_y = rom[relative_offset] ^ 0x80  # + y
+                                            relative_offset += 1
+                                            tile_length += 1
+                                            tile_x = rom[relative_offset] ^ 0x80  # + x
+                                            relative_offset += 1
+                                            tile_length += 1
+                                            subtile_bytes = [0] * 4
+                                            for j in range(0, 4):
+                                                if quadrants[j]:
+                                                    if format == 1:
+                                                        subtile_bytes[j] = (
+                                                            shortify(rom, relative_offset)
+                                                            & 0x1FF
+                                                        )
+                                                        relative_offset += 1
+                                                        tile_length += 1
+                                                    else:
+                                                        subtile_bytes[j] = rom[
+                                                            relative_offset
+                                                        ]
+                                                    relative_offset += 1
+                                                    tile_length += 1
+                                            relative_offset = temp_offset_2 + tile_length
+                                            clone_tiles.append(
+                                                Tile(
+                                                    mirror=mi,
+                                                    invert=inv,
+                                                    format=format,
+                                                    length=tile_length,
+                                                    subtile_bytes=subtile_bytes,
+                                                    x=tile_x,
+                                                    y=tile_y,
+                                                    is_clone=is_clone,
+                                                )
+                                            )
+                                    tiles.append(Clone(x, y, mirror, invert, clone_tiles))
+                                    relative_offset = temp_offset + 5
+                                else:
+                                    tile_length = 0
+                                    format = rom[relative_offset] & 0x0F
+                                    mirror = (format & 0x04) == 0x04
+                                    invert = (format & 0x08) == 0x08
+                                    format &= 3
+                                    quadrants = [False] * 4
+                                    for j in range(0, 4):
+                                        quadrants[j] = (
+                                            rom[relative_offset] & (128 // (2**j))
+                                        ) == (128 // (2**j))
+                                    relative_offset += 1
+                                    tile_length += 1
+                                    tile_y = rom[relative_offset] ^ 0x80
+                                    relative_offset += 1
+                                    tile_length += 1
+                                    tile_x = rom[relative_offset] ^ 0x80
+                                    relative_offset += 1
+                                    tile_length += 1
+                                    subtile_bytes = [0] * 4
+                                    for j in range(0, 4):
+                                        if quadrants[j]:
+                                            if format == 1:
+                                                subtile_bytes[j] = (
+                                                    shortify(rom, relative_offset) & 0x1FF
+                                                )
+                                                relative_offset += 1
+                                                tile_length += 1
+                                            else:
+                                                subtile_bytes[j] = rom[relative_offset]
+                                            relative_offset += 1
+                                            tile_length += 1
+                                    tiles.append(
+                                        Tile(
+                                            mirror=mirror,
+                                            invert=invert,
+                                            format=format,
+                                            length=tile_length,
+                                            subtile_bytes=subtile_bytes,
+                                            x=tile_x,
+                                            y=tile_y,
+                                            is_clone=is_clone,
+                                        )
                                     )
-                                )
-                                relative_offset = temp_offset + tile_length
-                        molds.append(Mold(i, gridplane, tiles))
-                else:
-                    molds.append(Mold(i, False, []))
+                                    relative_offset = temp_offset + tile_length
+                            molds.append(Mold(i, gridplane, tiles))
+                    else:
+                        molds.append(Mold(i, False, []))
 
-            packs.append(AnimationPack(index, AnimationPackProperties(sequences, molds, vram_size), length, unknown))
-
-        # write
-        # dest = f"{output_path}/tiles.py"
-        # file = open(dest, "w")
-        # writeline(file, "tiles = [")
-        # for t in all_tiles:
-        #     writeline(file, """    ("%s", %r),""" % (t[0], t[1]))
-        # writeline(file, "]\n\n")
-        # file.close()
-
-        # dest = f"{output_path}/sprite_containers.py"
-        # file = open(dest, "w")
-        # writeline(file, "from smrpgpatchbuilder.datatypes.graphics.classes import Sprite")
-        # writeline(file, "sprites = [")
-        # for s in sprites:
-        #     writeline(
-        #         file,
-        #         "    Sprite(%i, image_num=%i, animation_num=%i, palette_offset=%i, unknown=%i),"
-        #         % (s.index, s.image_num, s.animation_num, s.palette_offset, s.unknown),
-        #     )
-        # writeline(file, "]\n\n")
-        # file.close()
-
-        # dest = f"{output_path}/image_packs.py"
-        # file = open(dest, "w")
-        # writeline(file, "from smrpgpatchbuilder.datatypes.graphics.classes import ImagePack")
-        # writeline(file, "images = [")
-        # for i in images:
-        #     writeline(
-        #         file,
-        #         "    ImagePack(%i, graphics_pointer=0x%06x, palette_pointer=0x%06x),"
-        #         % (i.index, i.graphics_pointer, i.palette_pointer),
-        #     )
-        # writeline(file, "]\n\n")
-        # file.close()
-
-        # dest = f"{output_path}/animation_packs.py"
-        # file = open(dest, "w")
-        # writeline(
-        #     file,
-        #     "from smrpgpatchbuilder.datatypes.graphics.classes import AnimationPack, AnimationPackProperties, AnimationSequence, AnimationSequenceFrame, Mold, Tile, Clone",
-        # )
-        # writeline(file, "animations= [")
-        # for p in packs:
-        #     writeline(
-        #         file,
-        #         "    AnimationPack(%i, length=%i, unknown=0x%04x,"
-        #         % (p.index, p.length, p.unknown),
-        #     )
-        #     writeline(
-        #         file,
-        #         "        properties=AnimationPackProperties(vram_size=%i,"
-        #         % p.properties.vram_size,
-        #     )
-        #     writeline(file, "            molds=[")
-        #     for m in p.properties.molds:
-        #         writeline(
-        #             file,
-        #             "                Mold(%i, gridplane=%r," % (m.index, m.gridplane),
-        #         )
-        #         writeline(file, "                    tiles=[")
-        #         for t in m.tiles:
-        #             if not t.is_clone:
-        #                 writeline(
-        #                     file,
-        #                     "                        Tile(mirror=%r, invert=%r, format=%i, length=%i, subtile_bytes=%r, is_16bit=%r, y_plus=%i, y_minus=%i, x=%i, y=%i),"
-        #                     % (
-        #                         t.mirror,
-        #                         t.invert,
-        #                         t.format,
-        #                         t.length,
-        #                         t.subtile_bytes,
-        #                         t.is_16bit,
-        #                         t.y_plus,
-        #                         t.y_minus,
-        #                         t.x,
-        #                         t.y,
-        #                     ),
-        #                 )
-        #             else:
-        #                 writeline(
-        #                     file,
-        #                     "                        Clone(mirror=%r, invert=%r, x=%i, y=%i, tiles=["
-        #                     % (t.mirror, t.invert, t.x, t.y),
-        #                 )
-        #                 for ct in t.tiles:
-        #                     writeline(
-        #                         file,
-        #                         "                            Tile(mirror=%r, invert=%r, format=%i, length=%i, subtile_bytes=%r, is_16bit=%r, y_plus=%i, y_minus=%i, x=%i, y=%i),"
-        #                         % (
-        #                             ct.mirror,
-        #                             ct.invert,
-        #                             ct.format,
-        #                             ct.length,
-        #                             ct.subtile_bytes,
-        #                             ct.is_16bit,
-        #                             ct.y_plus,
-        #                             ct.y_minus,
-        #                             ct.x,
-        #                             ct.y,
-        #                         ),
-        #                     )
-        #                 writeline(file, "                        ]),")
-        #         writeline(file, "                    ]")
-        #         writeline(file, "                ),")
-        #     writeline(file, "            ],")
-        #     writeline(file, "            sequences=[")
-        #     for s in p.properties.sequences:
-        #         writeline(file, "                AnimationSequence(")
-        #         writeline(file, "                    frames=[")
-        #         for f in s.frames:
-        #             writeline(
-        #                 file,
-        #                 "                        AnimationSequenceFrame(duration=%i, mold_id=%i),"
-        #                 % (f.duration, f.mold_id),
-        #             )
-        #         writeline(file, "                    ]")
-        #         writeline(file, "                ),")
-        #     writeline(file, "            ]")
-        #     writeline(file, "        )")
-        #     writeline(file, "    ),")
-        # writeline(file, "]")
-        # file.close()
+                packs.append(AnimationPack(index, AnimationPackProperties(sequences, molds, vram_size), length, unknown))
 
         used_images = [False] * 512
         used_packs = [False] * 1024
@@ -494,7 +406,7 @@ class Command(BaseCommand):
                 break
             p = packs[s.animation_num]
 
-            palette_id_original = (i.palette_pointer - 0x253000) // 30
+            palette_id_original = (i.palette_pointer - PALETTE_OFFSET) // 30
             palette_id = palette_id_original + palette_offset
             used_palettes[palette_id] = True
 
@@ -605,7 +517,7 @@ class Command(BaseCommand):
         file = open(f"{output_path}/sprites.py", "w", encoding="utf-8")
         writeline(
             file,
-            "from smrpgpatchbuilder.datatypes.graphics.classes import SpriteCollection",
+            "from smrpgpatchbuilder.datatypes.graphics.classes import SpriteCollection, AnimationBank",
         )
         for i in range(len(sprites)):
             writeline(
@@ -618,7 +530,9 @@ class Command(BaseCommand):
         for i in range(len(sprites)):
             writeline(file, "        sprite_%i," % (i))
         writeline(file, "    ],")
-        writeline(file, f"    sprite_data_begins=0x{TOP_LEVEL_SPRITE_OFFSET:06x},")
-        writeline(file, f"    image_and_animation_data_begins=0x{IMAGE_PACK_INFO_OFFSET:06x}")
+        writeline(file, f"    animation_data_banks=[{", ".join(f"AnimationBank(0x{bank.start:06x}, 0x{bank.end:06x})" for bank in animation_write_banks)}],")
+        writeline(file, f"    uncompressed_tile_banks=[{", ".join(f"AnimationBank(0x{bank.start:06x}, 0x{bank.end:06x})" for bank in tile_write_banks)}],")
+        writeline(file, f"    sprite_data_begins=0x{toplevelsprite_read[0][0]:06x},")
+        writeline(file, f"    image_and_animation_data_begins=0x{imagepack_read[0][0]:06x}")
         writeline(file, ")")
         file.close()

@@ -6020,7 +6020,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_7010_to_object_xyz":
         try:
             cls = "Set70107015ToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
+            args["target"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
             if cmdargs[0] & 0x40 == 0x40:
                 args["bit_6"] = "True"
             if cmdargs[0] & 0x80 == 0x80:
@@ -6031,7 +6031,7 @@ def convert_event_script_command(cmd, valid_identifiers):
     elif cmd["command"] == "set_7016_to_object_xyz":
         try:
             cls = "Set7016701BToObjectXYZ"
-            args["object"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
+            args["target"] = AREA_OBJECTS[cmdargs[0] & 0x3F]
             if cmdargs[0] & 0x40 == 0x40:
                 args["bit_6"] = "True"
             if cmdargs[0] & 0x80 == 0x80:
@@ -6039,7 +6039,6 @@ def convert_event_script_command(cmd, valid_identifiers):
         except:
             cls = "UnknownCommand"
             args["args"] = "%r" % bytearray([0xC8, cmdargs[0]])
-        include_argnames = False
     elif cmd["command"] == "set_experience_packet_7000":
         cls = "SetEXPPacketTo7000"
     elif cmd["command"] == "set_object_memory_to":

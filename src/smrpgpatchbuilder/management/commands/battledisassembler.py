@@ -1745,7 +1745,7 @@ def pythonize(command):
                 case 0x13:
                     cls = "IfCurrentlyInFormationID"
                     include_argnames = False
-                    args["formation_id"] = str(command[2])
+                    args["formation_id"] = str(command[2] + (command[3] << 8))
                 case 0x14:
                     cls = "IfLastMonsterStanding"
                 case _:

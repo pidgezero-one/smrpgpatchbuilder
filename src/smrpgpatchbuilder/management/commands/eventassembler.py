@@ -44,7 +44,7 @@ class Command(BaseCommand):
         if collection:
             for bank in collection.banks:
                 bytes_ = bank.render()
-                start = bank.start
+                start = bank.pointer_table_start
                 if outputToBin:
                     with open(f'./src/assembler_output/overworld_scripts/bin/write_to_0x{start:06X}.img', 'wb') as f:
                         f.write(bytes_)
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         bank = module.actions
         if bank:
             bytes_ = bank.render()
-            start = bank.start
+            start = bank.pointer_table_start
             if outputToBin:
                 with open(f'./src/assembler_output/overworld_scripts/bin/write_to_0x{start:06X}.img', 'wb') as f:
                     f.write(bytes_)
@@ -77,5 +77,5 @@ class Command(BaseCommand):
         if outputToPatch:
             blocksize = (len(original_rom) + len(rom)) // 1000000 + 1
             iterable = diff_bytearrays(blocksize, bytes(original_rom), bytes(rom))
-            with open(f'./src/assembler_output/dialogs/bps/smrpg-{datetime.now().strftime("%Y%m%d%H%M%S")}.bps', 'wb') as f:
+            with open(f'./src/assembler_output/overworld_scripts/bps/smrpg-{datetime.now().strftime("%Y%m%d%H%M%S")}.bps', 'wb') as f:
                 write_bps(bps_progress(iterable), f)

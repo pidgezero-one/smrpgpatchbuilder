@@ -180,6 +180,7 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
             # reuse pointers where possible, i.e. two enemies use the same script
             # (henchmen and non-henchmen)
             rendered_script = script.render()
+            rendered_script.append(0xFF)  # terminator byte
             if rendered_script in already_rendered:
                 existing_script_index = already_rendered.index(rendered_script)
                 ptr = already_rendered_ptrs[existing_script_index]
