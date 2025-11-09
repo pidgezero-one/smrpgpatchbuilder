@@ -9,6 +9,11 @@ BATTLE_DIALOG_POINTER_ADDRESS = 0x396554
 BATTLE_DIALOG_DATA_START = 0x396755
 BATTLE_DIALOG_DATA_END = 0x3992D0
 
+# Battle message addresses
+BATTLE_MESSAGE_POINTER_ADDRESS = 0x3A26F1
+BATTLE_MESSAGE_DATA_START = 0x3A274D
+BATTLE_MESSAGE_DATA_END = 0x3A29FF
+
 
 class Command(BaseCommand):
 
@@ -70,11 +75,48 @@ class Command(BaseCommand):
 
             battle_dialogs.append(message)
 
-        # Write battle dialogs to file
+        # Read battle messages (46 entries)
+        # Calculate number of pointers: (0x3A274C - 0x3A26F1 + 1) / 2 = 46
+        pointer_table_size = BATTLE_MESSAGE_POINTER_ADDRESS + 92  # 46 pointers * 2 bytes
+        message_pointer_bytes = rom[BATTLE_MESSAGE_POINTER_ADDRESS:pointer_table_size]
+
+        battle_messages = []
+
+        for i in range(46):
+            # Get the pointer (little-endian 16-bit)
+            ptr_offset = i * 2
+            pointer = message_pointer_bytes[ptr_offset] + (message_pointer_bytes[ptr_offset + 1] << 8)
+
+            # Calculate absolute address (pointers are relative to bank 0x3A)
+            absolute_addr = 0x3A0000 + pointer
+
+            # Read message bytes until we hit 0x00 terminator (exclude the 0x00)
+            message_bytes = bytearray()
+            cursor = absolute_addr
+            while cursor <= BATTLE_MESSAGE_DATA_END:
+                byte = rom[cursor]
+                if byte == 0x00:
+                    break
+                message_bytes.append(byte)
+                cursor += 1
+
+            # Decompress the message
+            if len(message_bytes) > 0:
+                message = decompress(message_bytes, battle_compression_table)
+            else:
+                message = ""
+
+            battle_messages.append(message)
+
+        # Write battle dialogs and messages to file
         file = open(f"{dest}/battle_dialogs.py", "wb")
         file.write(f"battle_dialogs = [\"\"]*{len(battle_dialogs)}\n".encode("utf8"))
         for i, message in enumerate(battle_dialogs):
             file.write(f"battle_dialogs[{i}] = {repr(message)}\n".encode("utf8"))
+        file.write(f"\n".encode("utf8"))
+        file.write(f"battle_messages = [\"\"]*{len(battle_messages)}\n".encode("utf8"))
+        for i, message in enumerate(battle_messages):
+            file.write(f"battle_messages[{i}] = {repr(message)}\n".encode("utf8"))
         file.close()
 
         self.stdout.write(

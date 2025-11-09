@@ -445,7 +445,7 @@ The assembler script is really just a glorified wrapper that looks for files in 
 
 ### Disassembling battle dialogs
 
-You can disassemble all 256 battle dialog entries from the ROM into editable text.
+You can disassemble all 256 battle dialog entries and 46 battle messages from the ROM into editable text.
 
 Run this in the root directory of this project against an SMRPG ROM file. For example:
 
@@ -457,8 +457,13 @@ This will output to `./src/disassembler_output/battle_dialogs/battle_dialogs.py`
 
 ```python
 battle_dialogs = [""]*256
-battle_dialogs[0] = 'First battle dialog...'
-battle_dialogs[1] = 'Second battle dialog...'
+battle_dialogs[0] = ' Suffering from shock![await]'
+battle_dialogs[1] = 'CROCO: Yeouch![await]'
+...
+battle_dialogs = [""]*46
+battle_messages[0] = ' Exp. up \x1c0 point(s)!'
+battle_messages[1] = ' Got a(n) \x1c1!'
+...
 ```
 
 I've added a few special tags like like `[pause]`, `[delay]`, and `[await]` which compile back into respective single bytes when assembled.
