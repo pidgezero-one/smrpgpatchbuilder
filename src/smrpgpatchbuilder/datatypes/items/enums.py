@@ -75,3 +75,4 @@ class ItemPrefix(enum.IntEnum):
     DOT = 0x2E
     BOMB = 0x3B
     QUESTION = 0x3F
+    STAR = 0x40

@@ -6,3 +6,5 @@ src/assembler_output
 patchvenv
 debug.log
 config/** 
+.claude
+.vscode

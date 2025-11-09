@@ -257,7 +257,7 @@ class ScriptCommandShortMem(ScriptCommand):
         super().__init__(identifier)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.address.to_byte())
 
 
@@ -321,7 +321,7 @@ class ScriptCommandBasicShortOperation(ScriptCommand):
         super().__init__(identifier)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.value)
 
 

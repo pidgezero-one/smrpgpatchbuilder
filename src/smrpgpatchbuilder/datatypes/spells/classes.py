@@ -1,15 +1,20 @@
 """Base classes fors spells."""
 
 from copy import deepcopy
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
+from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
+from smrpgpatchbuilder.datatypes.items.classes import encode_item_description
 
 
 from .arguments.types.classes import DamageModifiers, TimingProperties
 from .ids.misc import (
     SPELL_BASE_ADDRESS,
     SPELL_BASE_NAME_ADDRESS,
+    SPELL_BASE_DESC_POINTER_ADDRESS,
+    SPELL_BASE_DESC_DATA_START,
+    SPELL_BASE_DESC_DATA_END,
     SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS,
     SPELL_TIMING_MODIFIERS_BASE_ADDRESS,
 )
@@ -33,13 +38,11 @@ class Spell:
     _hit_rate: int = 0
 
     _title: str = ""
-
-    _anim_ptr: int = 0
-    _desc_ptr: int = 0
+    _prefix: Optional[ItemPrefix] = None
 
     _spell_type: SpellType = SpellType.DAMAGE
-    _effect_type: EffectType
-    _inflict: InflictFunction
+    _effect_type: Optional[EffectType] = None
+    _inflict: Optional[InflictFunction] = None
     _element = Element.NONE
 
     _check_stats: bool = False
@@ -99,15 +102,13 @@ class Spell:
         return self._title
 
     @property
-    def anim_ptr(self) -> int:
-        """the pointer for where the spell's animation begins.
-        (deprecate this)"""
-        return self._anim_ptr
+    def prefix(self) -> Optional[ItemPrefix]:
+        """The icon prefix that appears before the spell name."""
+        return self._prefix
 
-    @property
-    def desc_ptr(self) -> int:
-        """The pointer for where the spell's description begins."""
-        return self._desc_ptr
+    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+        """Set the icon prefix for this spell."""
+        self._prefix = prefix
 
     @property
     def spell_type(self) -> SpellType:
@@ -119,20 +120,20 @@ class Spell:
         self._spell_type = spell_type
 
     @property
-    def effect_type(self) -> EffectType:
+    def effect_type(self) -> Optional[EffectType]:
         """Inflict vs. nullify."""
         return self._effect_type
 
-    def set_effect_type(self, effect_type: EffectType) -> None:
+    def set_effect_type(self, effect_type: Optional[EffectType]) -> None:
         """Inflict vs. nullify."""
         self._effect_type = effect_type
 
     @property
-    def inflict(self) -> InflictFunction:
+    def inflict(self) -> Optional[InflictFunction]:
         """A special property of the spell on contact, i.e. jump counter."""
         return self._inflict
 
-    def set_inflict(self, inflict: InflictFunction) -> None:
+    def set_inflict(self, inflict: Optional[InflictFunction]) -> None:
         """A special property of the spell on contact, i.e. jump counter."""
         self._inflict = inflict
 
@@ -293,53 +294,68 @@ class Spell:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch: Dict[int, bytearray] = {}
 
+        # Build spell name with prefix
+        name_bytes = bytearray()
+        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
+            name_bytes.append(self._prefix)
+
+        # Add the title
+        if self.title:
+            name_bytes.extend(self.title.encode('latin-1'))
+
+        # Pad to 15 bytes with spaces
+        while len(name_bytes) < 15:
+            name_bytes.append(0x20)
+
+        patch[SPELL_BASE_NAME_ADDRESS + self.index * 15] = name_bytes
+
         # fp is byte 3, power is byte 6, hit rate is byte 7.  each spell is 12 bytes.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
-        patch[base_addr] = (
+        patch[base_addr] = bytearray([
             (self.check_stats * 0x01)
             + (self.ignore_defense * 0x02)
             + (self.check_ohko * 0x20)
             + (self.usable_outside_of_battle * 0x80)
-        )
+        ])
 
         spell_type: int = 0
         effect_type: int = 0
         element: int = 0
-        inflict_value: int = 0
+        inflict_value: int = 0xFF  # Default to 0xFF (no inflict function)
 
         if self.spell_type is not None:
             spell_type = self.spell_type.value
         if self.effect_type is not None:
             effect_type = self.effect_type.value
         if self.element is not None:
-            element = self.element.value.spell_value
+            element = self.element.spell_value
         if self.inflict is not None:
-            inflict_value = self.inflict.value
-        patch[base_addr + 1] = spell_type + effect_type + (self.quad9s * 0x08)
+            inflict_value = self.inflict.value  # Use actual value if inflict is set
+        patch[base_addr + 1] = bytearray([spell_type + effect_type + (self.quad9s * 0x08)])
         patch[base_addr + 2] = ByteField(self.fp).as_bytes()
-        patch[base_addr + 3] = (
+        patch[base_addr + 3] = bytearray([
             (self.target_others * 0x02)
             + (self.target_enemies * 0x04)
             + (self.target_party * 0x10)
             + (self.target_wounded * 0x20)
             + (self.target_one_party * 0x40)
-            + (self.target_not_self * 0x80),
-        )
+            + (self.target_not_self * 0x80)
+        ])
 
-        patch[base_addr + 4] = element
+        patch[base_addr + 4] = bytearray([element])
         data = ByteField(self.power).as_bytes()
         data += ByteField(self.hit_rate).as_bytes()
         patch[base_addr + 5] = data
         effects = 0
         for index in self.status_effects:
             effects += 2**index.spell_value
-        patch[base_addr + 7] = effects
+        patch[base_addr + 7] = bytearray([effects])
         buffs = 0
         for boost in self.boosts:
             buffs += 2**boost
-        patch[base_addr + 8] = buffs
-        patch[base_addr + 10] = inflict_value
-        patch[base_addr + 11] = self.hide_num * 0x04
+        patch[base_addr + 8] = bytearray([buffs])
+        patch[base_addr + 10] = bytearray([inflict_value])
+        patch[base_addr + 11] = bytearray([self.hide_num * 0x04])
 
         return patch
 
@@ -348,6 +364,8 @@ class CharacterSpell(Spell):
     """Grouping class for character-specific spells."""
 
     base_title: str = ""
+    _prefix = ItemPrefix.STAR
+    _description: str = ""
 
     _timing_modifiers: TimingProperties = TimingProperties(0)
     _damage_modifiers: DamageModifiers = DamageModifiers(0)
@@ -370,13 +388,19 @@ class CharacterSpell(Spell):
         """(unknown)"""
         self._damage_modifiers = damage_modifiers
 
+    @property
+    def description(self) -> str:
+        """The description as it appears in the in-game menu"""
+        return self._description
+
+    def set_description(self, description: str) -> None:
+        """Update the description as it appears in the in-game menu"""
+        self._description = description
+
     def render(self) -> Dict[int, bytearray]:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch = super().render()
 
-        name_bytes = "\x40" + self.title
-        name_bytes += " " * (15 - len(name_bytes))
-        patch[SPELL_BASE_NAME_ADDRESS + self.index * 15] = name_bytes
         if self.timing_modifiers != 0:
             patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
                 self.timing_modifiers
@@ -396,13 +420,85 @@ class EnemySpell(Spell):
     def title(self) -> str:
         return self.__class__.__name__
 
-    def render(self) -> Dict[int, bytearray]:
-        """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
-        patch = super().render()
 
-        # add status effects for enemy attacks, if any.
-        base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
-        data = BitMapSet(1, self.status_effects).as_bytes()
-        patch[base_addr + 7] = data
+class SpellCollection:
+    """Collection of spells with rendering support for character spell descriptions."""
+
+    def __init__(self, spells: List[Spell]):
+        """Initialize the collection with a list of spells.
+
+        Args:
+            spells: list of Spell objects (can include both CharacterSpell and EnemySpell)
+
+        Raises:
+            ValueError: if there aren't exactly 27 character spells
+        """
+        self.spells = spells
+
+        # Count character spells
+        character_spells = [s for s in spells if isinstance(s, CharacterSpell)]
+        if len(character_spells) != 27:
+            raise ValueError(
+                f"SpellCollection must contain exactly 27 CharacterSpell instances for descriptions, "
+                f"but {len(character_spells)} were found."
+            )
+
+    def render(self) -> Dict[int, bytearray]:
+        """Render all spells including character spell descriptions and pointer table.
+
+        Returns:
+            dictionary mapping ROM addresses to bytearrays
+        """
+        patch: Dict[int, bytearray] = {}
+
+        # First, render each spell individually (stats, names, etc.)
+        for spell in self.spells:
+            spell_patch = spell.render()
+            patch.update(spell_patch)
+
+        # Now handle descriptions for character spells only
+        character_spells = [s for s in self.spells if isinstance(s, CharacterSpell)]
+
+        current_desc_addr = SPELL_BASE_DESC_DATA_START
+        desc_pointer_table = bytearray()
+        total_desc_bytes = 0
+
+        for spell in character_spells:
+            # Get the description
+            desc = spell.description if spell.description else ""
+
+            # Encode description using item description character mapping
+            desc_bytes = bytearray()
+            if desc:
+                desc_bytes.extend(encode_item_description(desc))
+            # Add terminating 0x00
+            desc_bytes.append(0x00)
+
+            total_desc_bytes += len(desc_bytes)
+
+            # Calculate pointer value (16-bit address within bank 0x3A)
+            pointer_value = current_desc_addr & 0xFFFF
+
+            # Add pointer to pointer table (little-endian)
+            desc_pointer_table.append(pointer_value & 0xFF)
+            desc_pointer_table.append((pointer_value >> 8) & 0xFF)
+
+            # Write description to ROM
+            patch[current_desc_addr] = desc_bytes
+
+            # Move to next description address
+            current_desc_addr += len(desc_bytes)
+
+        # Check if total description data exceeds available space
+        max_desc_size = SPELL_BASE_DESC_DATA_END - SPELL_BASE_DESC_DATA_START + 1
+        if total_desc_bytes > max_desc_size:
+            raise ValueError(
+                f"Spell descriptions total {total_desc_bytes} bytes, "
+                f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
+                f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
+            )
+
+        # Write the pointer table (27 pointers * 2 bytes = 54 bytes)
+        patch[SPELL_BASE_DESC_POINTER_ADDRESS] = desc_pointer_table
 
         return patch

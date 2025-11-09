@@ -1,9 +1,10 @@
 """Helper classes defining constants used in monster scripts"""
 
-from typing import List
+from typing import Dict, List, Optional
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, UInt4, ByteField, BitMapSet
 from smrpgpatchbuilder.datatypes.spells.enums import TempStatBuff, Status
-from .constants import ENEMY_ATTACK_BASE_ADDRESS
+from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
+from .constants import ENEMY_ATTACK_BASE_ADDRESS, ENEMY_ATTACK_NAME_ADDRESS, ENEMY_ATTACK_NAME_LENGTH
 
 
 class Target(int):
@@ -24,12 +25,19 @@ class CommandType(int):
         return super(CommandType, cls).__new__(cls, num)
 
 
+class DoNothing:
+    """Placeholder class representing a do-nothing action (index 0xFB)."""
+
+    index = 0xFB
+
 
 class EnemyAttack:
     """Class representing an enemy attack."""
 
     # default instance attributes.
     _index: int = 0
+    _name: str = ""
+    _prefix: Optional[ItemPrefix] = None
     _attack_level: int = 0
     _ohko: bool = False
     _damageless_flag_1: bool = False
@@ -44,6 +52,24 @@ class EnemyAttack:
         """The enemy attack's unique index."""
         assert 0 <= self._index <= 128 or self._index == 251
         return UInt8(self._index)
+
+    @property
+    def attack_name(self) -> str:
+        """The name of this attack as it appears in-game."""
+        return self._name
+
+    def set_attack_name(self, name: str) -> None:
+        """Set the name of this attack."""
+        self._name = name
+
+    @property
+    def prefix(self) -> Optional[ItemPrefix]:
+        """The icon prefix that appears before the attack name."""
+        return self._prefix
+
+    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+        """Set the icon prefix for this attack."""
+        self._prefix = prefix
 
     @property
     def attack_level(self) -> UInt4:
@@ -134,9 +160,14 @@ class EnemyAttack:
         """Attack's default name"""
         return self.__class__.__name__
 
-    def toBytes(self) -> bytearray:
-        base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
+    def render(self) -> Dict[int, bytearray]:
+        """Return attack stats and name as bytearrays with their ROM addresses.
 
+        Returns:
+            Dict[int, bytearray]: {stats_addr: stats_data, name_addr: name_data}
+        """
+        # Attack stats data
+        base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
         data = bytearray()
 
         # first byte is attack level + damage type flags in a bitmap.
@@ -153,7 +184,38 @@ class EnemyAttack:
 
         # other bytes are hit rate, status effects, and buffs.
         data += ByteField(self.hit_rate).as_bytes()
-        data += BitMapSet(1, self.status_effects).as_bytes()
-        data += BitMapSet(1, self.buffs).as_bytes()
 
-        return base_addr, data
+        # Convert status effects to their spell_value integers
+        status_bits = [status.spell_value for status in self.status_effects]
+        data += BitMapSet(1, status_bits).as_bytes()
+
+        # Convert buffs to their integer values
+        buff_bits = [int(buff) for buff in self.buffs]
+        data += BitMapSet(1, buff_bits).as_bytes()
+
+        # Attack name data (13 bytes: optional prefix + name + padding with 0x20)
+        name_addr = ENEMY_ATTACK_NAME_ADDRESS + (self.index * ENEMY_ATTACK_NAME_LENGTH)
+        name_bytes = bytearray()
+
+        # Add prefix byte if present
+        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
+            name_bytes.append(self._prefix)
+
+        # Encode the name
+        if self._name:
+            # Replace & with \x9c before encoding
+            encoded_name = self._name.replace('&', '\x9c')
+            name_bytes.extend(encoded_name.encode('latin-1'))
+
+        # Pad to ENEMY_ATTACK_NAME_LENGTH bytes with spaces
+        while len(name_bytes) < ENEMY_ATTACK_NAME_LENGTH:
+            name_bytes.append(0x20)
+
+        # Truncate if too long
+        if len(name_bytes) > ENEMY_ATTACK_NAME_LENGTH:
+            name_bytes = name_bytes[:ENEMY_ATTACK_NAME_LENGTH]
+
+        return {
+            base_addr: data,
+            name_addr: name_bytes
+        }
