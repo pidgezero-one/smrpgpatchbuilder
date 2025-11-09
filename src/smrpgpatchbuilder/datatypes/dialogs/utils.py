@@ -53,22 +53,6 @@ COMPRESSION_TABLE: list[tuple[str, bytes]] = [
     ("&", b"\x9C"),
 ]
 
-DEFAULT_COMPRESSION_TABLE = [
-    ("Booster", b"\x18"),
-    ("Booster", b"\x19"),
-    ("Mario", b"\x13"),
-    (" and ", b"\x15"),
-    (" to ", b"\x11"),
-    (" I ", b"\x14"),
-    (" the", b"\x0E"),
-    (" you", b"\x0F"),
-    ("in", b"\x10"),
-    ("’s ", b"\x12"),
-    ("'s ", b"\x12"),
-    ("is ", b"\x16"),
-    (" so", b"\x17")
-]
-
 
 def compress(string: str, compression_table: List[tuple[str, bytes]]) -> bytearray:
     """Turns a dialog string into bytes."""
@@ -90,11 +74,13 @@ def compress(string: str, compression_table: List[tuple[str, bytes]]) -> bytearr
             output += bytearray([0x0D, delay])
             cursor += len(token)
             continue
+        # Find the LONGEST matching key, not just the first one
         cursor_key = None
+        max_length = 0
         for key in tbl:
-            if string[cursor:].startswith(key):
+            if string[cursor:].startswith(key) and len(key) > max_length:
                 cursor_key = key
-                break
+                max_length = len(key)
         if cursor_key:
             tmp = tbl[cursor_key]
             output += tmp
@@ -105,10 +91,11 @@ def compress(string: str, compression_table: List[tuple[str, bytes]]) -> bytearr
     last_byte = output[len(output) - 1]
     if last_byte not in [0x00, 0x06]:
         output.append(0x00)  # Null terminate strings.
+    
     return output
 
 
-def decompress(b, compression_table: List[tuple[str, bytearray]]) -> str:
+def decompress(b, compression_table: List[tuple[str, bytearray]]) -> str: 
     output = ''
     tbl = dict(compression_table) 
     cursor = 0

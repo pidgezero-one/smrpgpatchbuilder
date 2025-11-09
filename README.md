@@ -70,7 +70,7 @@ This repo allows you to parse, modify, and rebuild:
 - Overworld dialogs ([disassemble](#disassembling-dialogs) | [assemble](#assembling-dialogs))
 - Items ([disassemble](#disassembling-items) | [assemble](#assembling-items))
 - Enemies ([disassemble](#disassembling-enemies) | [assemble](#assembling-enemies))
-- Battle dialogs (not implemented yet)
+- Battle dialogs ([disassemble](#disassembling-battle-dialogs) | [assemble](#assembling-battle-dialogs))
 - Overworld sprites ([disassemble](#disassembling-sprites) | [assemble](#assembling-sprites))
 
 ## Developing and changing your scripts
@@ -370,7 +370,9 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py eventassembler -r /path/to
 
 This will assemble event scripts **and** standalone NPC action scripts.
 
-### Disassembling dialogs
+## Dialogs
+
+### Disassembling overworld dialogs
 
 Dialogs in SMRPG are split into banks 0x22xxxx, 0x23xxxx, 0x24xxxx. You can disassemble dialog info into files that you can more or less edit as text.
 
@@ -420,7 +422,7 @@ The pointer table is what you'll need to make your dialogs work. Don't change th
 The `index` property corresponds to which entry in the data file you want. So in the above example, dialog 793 references data entry 315 (in the 0x22 file, as indicated by the `bank` property), which is the "Thanks a million, Mario!" dialog. To use this in your romhack, you'd run dialog ID 793 in your event scripts to get a NPC to say that.
 The `pos` property determines where the dialog should actually start. In the first example, `pos=22` means that the dialog will actually start after 22 characters. So if you run dialog 793 in your event script, the NPC will actually start talking at "Say... were my treasures OK?"
 
-"But wait, there's more than 22 characters before that!" Yes - this script accommodates **compression tables**. The string "in" is actually represented by a single byte, 0x10. By default, SMRPG has space for twelve of these compressions and they use bytes 0x0E to 0x19 inclusive. The disassembler will parse the compression table in your rom and include it in the output dialogs.py file.
+"But wait, there's more than 22 characters before that!" Yes - this script also reads your ROM's **compression table**. The string "in" is represented by a single byte, 0x10. SMRPG has space for twelve such compressions that use bytes 0x0E through 0x19 inclusive. The disassembler will parse the compression table in your rom and include it in the output dialogs.py file. Because the text is disassembled in full, you have the freedom to change your compression table if you like, and it will be applied to your text when you patch.
 
 You'll also see that some special characters I've represented with directives like `[await]` and `[pause]` etc, just so that it's easier for you to understand what's actually happening in the dialog. These are single bytes in the game as well and they will be assembled as such.
 
@@ -438,6 +440,41 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/t
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
 The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls the dialog collection's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `DialogCollection` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+
+## Battle Dialogs
+
+### Disassembling battle dialogs
+
+You can disassemble all 256 battle dialog entries from the ROM into editable text.
+
+Run this in the root directory of this project against an SMRPG ROM file. For example:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py battledialogdisassembler --rom "path/to/your/smrpg/rom"
+```
+
+This will output to `./src/disassembler_output/battle_dialogs/battle_dialogs.py`. The file contains a list of 256 battle dialog strings that you can edit directly:
+
+```python
+battle_dialogs = [""]*256
+battle_dialogs[0] = 'First battle dialog...'
+battle_dialogs[1] = 'Second battle dialog...'
+```
+
+I've added a few special tags like like `[pause]`, `[delay]`, and `[await]` which compile back into respective single bytes when assembled.
+
+### Assembling battle dialogs
+
+After editing the battle dialog file, you can assemble it back into ROM data:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py battledialogassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used.
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the battle dialog data.
+- If you include `-t`, it will output plain text files with your assembled bytes for debugging.
+- If you include `-b`, it will output binary files that you can paste over sections of your ROM using FlexHEX.
 
 ## Items
 

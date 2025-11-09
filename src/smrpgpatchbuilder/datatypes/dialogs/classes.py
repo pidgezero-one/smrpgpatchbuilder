@@ -17,7 +17,7 @@ from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
 from .ids.types.classes import DialogBankID
-from .utils import compress, COMPRESSION_TABLE, DEFAULT_COMPRESSION_TABLE
+from .utils import compress, COMPRESSION_TABLE
 
 
 class Dialog:
@@ -111,7 +111,7 @@ class DialogCollection:
         self,
         dialogs: List[Dialog],
         raw_data: List[list[str]],
-        compression_table: List[tuple[str, bytearray]] = DEFAULT_COMPRESSION_TABLE,
+        compression_table: List[tuple[str, bytearray]],
         dialog_bank_22_begins=DIALOG_BANK_22_BEGINS,
         dialog_bank_22_ends=DIALOG_BANK_22_ENDS,
         dialog_bank_23_begins=DIALOG_BANK_23_BEGINS,
@@ -245,10 +245,71 @@ class DialogCollection:
             assembled_pointers.append(val & 0xFF)
             assembled_pointers.append(val >> 8)
 
+        # compression table
+        # Extract the DEFAULT_COMPRESSION_TABLE portion (bytes 0x0E-0x19)
+        default_compression = [
+            item for item in self.compression_table
+            if item not in COMPRESSION_TABLE
+        ]
+
+        # Build compression table strings
+        compression_strings = bytearray()
+        compression_pointers = bytearray()
+        # Track seen strings to avoid duplicates: {word: pointer_offset}
+        seen_strings = {}
+
+        for word, _ in default_compression:
+            # Check if we've already written this string
+            if word in seen_strings:
+                # Reuse the existing pointer
+                pointer = seen_strings[word]
+                compression_pointers.append(pointer & 0xFF)
+                compression_pointers.append(pointer >> 8)
+            else:
+                # Store pointer to this string (relative to 0x249100)
+                pointer = len(compression_strings)
+                compression_pointers.append(pointer & 0xFF)
+                compression_pointers.append(pointer >> 8)
+
+                # Mark this string as seen
+                seen_strings[word] = pointer
+
+                # Compress the word using COMPRESSION_TABLE
+                for char in word:
+                    found = False
+                    for tbl_char, tbl_byte in COMPRESSION_TABLE:
+                        if char == tbl_char:
+                            compression_strings += tbl_byte
+                            found = True
+                            break
+                    if not found:
+                        compression_strings.append(ord(char))
+
+                # Null terminate
+                compression_strings.append(0x00)
+
+        # Pad compression pointers to 256 bytes
+        while len(compression_pointers) < 256:
+            compression_pointers.append(0x00)
+
+        # Combine pointers and strings
+        assembled_compression_table = compression_pointers + compression_strings
+
+        # Pad to match original size (0x249000 to 0x24EDE0 is available space)
+        # Original compression table area is at least 0x14A bytes (to 0x249149)
+        # Pad to reasonable boundary to avoid issues
+        max_compression_size = 0x14A  # 330 bytes minimum
+        if len(assembled_compression_table) < max_compression_size:
+            assembled_compression_table += bytearray(max_compression_size - len(assembled_compression_table))
+        elif len(assembled_compression_table) > max_compression_size:
+            print(f"Warning: Compression table is {len(assembled_compression_table)} bytes, expected max {max_compression_size}")
+
+        print(f"  Total after padding: {len(assembled_compression_table)}")
+
         return {
             0x37E000: assembled_pointers,
             0x220000: assembled_dialog_data[0],
             0x230000: assembled_dialog_data[1],
             0x240000: assembled_dialog_data[2],
+            0x249000: assembled_compression_table,
         }
-        # todo: add compression table

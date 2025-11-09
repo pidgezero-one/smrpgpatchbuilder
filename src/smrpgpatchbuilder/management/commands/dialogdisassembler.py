@@ -47,6 +47,36 @@ class Command(BaseCommand):
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
 
+        # Read compression table from ROM first
+        # Pointer table is 256 bytes (0x249000-0x249100)
+        # String data starts at 0x249100
+        compression_table = []
+        comp_ptrs = rom[0x249000:0x249100]  # Read full 256-byte pointer table
+
+        # Only process first 12 pointers (many are unused)
+        comp_offsets = []
+        for i in range(0, 24, 2):  # 12 pointers = 24 bytes
+            comp_offsets.append(0x249100 + comp_ptrs[i] + ((comp_ptrs[i + 1]) << 8))
+
+        for index, offset in enumerate(comp_offsets):
+            word = ""
+            while True:
+                # Don't read past 0x249149
+                if offset > 0x249149 or rom[offset] == 0x00:
+                    break
+                b = rom[offset]
+                s = chr(b)
+                for tb in COMPRESSION_TABLE:
+                    if bytes([b]) == tb[1]:
+                        s = tb[0]
+                        break
+                word += s
+                offset += 1
+            byte = f"{(14+index):02x}"
+
+            byte_string = bytearray.fromhex(byte)
+            compression_table.append((word, byte_string))
+
         pointers = []
         pointers_relative = []
 
@@ -138,10 +168,11 @@ class Command(BaseCommand):
             if len(string) > 0:
                 raw_data.append(string)
 
-            file.write(("dialog_data = [None]*%i\n" % len(raw_data)).encode("utf8"))
+            file.write(("dialog_data = [\"\"]*%i\n" % len(raw_data)).encode("utf8"))
+
 
             for i in range(len(raw_data)):
-                s = decompress(raw_data[i], COMPRESSION_TABLE)
+                s = decompress(raw_data[i], COMPRESSION_TABLE + compression_table)
                 file.write(("dialog_data[%i] = '''%s'''\n" % (i, s)).encode("utf8"))
                 # why do the pointers reset at 0x400???
 
@@ -165,6 +196,20 @@ class Command(BaseCommand):
                 )
         file.close()
 
+        # Write compression table to file
+        file = open("%s/contents/compression_table.py" % dest, "wb")
+        file.write("compression_table = [\n".encode("utf8"))
+        for word, byte_val in compression_table:
+            file.write(f"    ({repr(word)}, {repr(byte_val)}),\n".encode("utf8"))
+        file.write("]\n\n".encode("utf8"))
+
+        # Save the original ROM compression table bytes for reference/debugging
+        original_comp_table_bytes = rom[0x249000:0x24914A]
+        file.write(f"# Original ROM compression table bytes (0x249000-0x249149):\n".encode("utf8"))
+        file.write(f"# {original_comp_table_bytes.hex()}\n".encode("utf8"))
+        file.write(f"original_compression_table_size = {len(original_comp_table_bytes)}\n".encode("utf8"))
+        file.close()
+
         file = open("%s/dialogs.py" % dest, "wb")
         file.write(
             "from smrpgpatchbuilder.datatypes.dialogs.classes import DialogCollection\n".encode(
@@ -172,29 +217,7 @@ class Command(BaseCommand):
             )
         )
         file.write("from .contents.dialog_pointers import pointers\n".encode("utf8"))
-
-        compression_table = []
-        comp_ptrs = rom[0x249000:0x249018]
-        comp_offsets = []
-        for i in range(0, len(comp_ptrs), 2):
-            comp_offsets.append(0x249100 + comp_ptrs[i] + ((comp_ptrs[i + 1]) << 8))
-        for index, offset in enumerate(comp_offsets):
-            word = ""
-            while True:  # bad
-                if rom[offset] == 0x00:
-                    break
-                b = rom[offset]
-                s = chr(b)
-                for tb in COMPRESSION_TABLE:
-                    if bytes([b]) == tb[1]:
-                        s = tb[0]
-                        break
-                word += s
-                offset += 1
-            byte = f"{(14+index):02x}"  # '10'
-
-            byte_string = bytes.fromhex(byte)  # b'\x10'
-            compression_table.append((word, byte_string))
+        file.write("from .contents.compression_table import compression_table\n".encode("utf8"))
 
         args = []
         for index, bank in enumerate(banks):
@@ -205,7 +228,7 @@ class Command(BaseCommand):
             )
             args.append(f"data_{index}")
         file.write(
-            f"\ndata = DialogCollection(pointers, [{", ".join(args)}], compression_table={compression_table})".encode(
+            f"\ndata = DialogCollection(pointers, [{", ".join(args)}], compression_table=compression_table)".encode(
                 "utf8"
             )
         )

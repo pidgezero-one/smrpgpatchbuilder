@@ -2716,7 +2716,7 @@ class Command(BaseCommand):
                             dest = 0x350532
                         for search_script in script:
                             for search_command in search_script:
-                                print (f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
+                                # print(f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
                                 if search_command.addr == dest:
                                     found = search_command.id
                                     break
