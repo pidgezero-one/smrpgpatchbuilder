@@ -1,7 +1,7 @@
 """Base classes for enemies encountered in battle and their overworld representations."""
 
 from copy import deepcopy
-from typing import List, Optional, Type, Dict
+from typing import List, Type, Dict, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     BitMapSet,
@@ -18,7 +18,28 @@ from .constants import (
     BASE_REWARD_ADDRESS,
     FLOWER_BONUS_BASE_ADDRESS,
 )
-from .enums import ApproachSound, HitSound, FlowerBonusType
+
+# enemy pointer table address
+ENEMY_POINTER_TABLE_ADDRESS = 0x390026
+
+# reward pointer table address
+REWARD_POINTER_TABLE_ADDRESS = 0x39142A
+REWARD_DATA_BANK = 0x390000  # bank for reward data pointers
+
+# psychopath message addresses
+PSYCHOPATH_POINTER_ADDRESS = 0x399FD1
+PSYCHOPATH_DATA_START = 0x39A1D1
+PSYCHOPATH_DATA_END = 0x39B643
+
+# enemy name base address
+ENEMY_NAME_BASE_ADDRESS = 0x3992D1
+from .enums import (
+    ApproachSound,
+    HitSound,
+    FlowerBonusType,
+    CoinSprite,
+    EntranceStyle,
+)
 
 
 class Enemy:
@@ -27,6 +48,7 @@ class Enemy:
     # properties in lazy shell
 
     _monster_id: int = 0
+    _name: str = ""
 
     # vital status
     _hp: int = 0
@@ -51,9 +73,9 @@ class Enemy:
     # rewards
     _xp: int = 0
     _coins: int = 0
-    _rare_item_drop_id: Optional[int] = None
-    _common_item_drop_id: Optional[int] = None
-    _yoshi_cookie_item: Type[Item] = Mushroom
+    _rare_item_drop: Optional[Type[RegularItem]] = None
+    _common_item_drop: Optional[Type[RegularItem]] = None
+    _yoshi_cookie_item: Type[RegularItem]
 
     # flower bonus
     _flower_bonus_type: FlowerBonusType = FlowerBonusType.NONE
@@ -63,10 +85,19 @@ class Enemy:
     _morph_chance: float = 0
     _sound_on_hit: HitSound = HitSound.BITE
     _sound_on_approach: ApproachSound = ApproachSound.NONE
+    _coin_sprite: CoinSprite = CoinSprite.NONE
+    _entrance_style: EntranceStyle = EntranceStyle.NONE
+    _monster_behaviour: str
+    _elevate: int = 0
 
     # special status
     _invincible: bool = False
     _ohko_immune: bool = False
+    _disable_auto_death: bool = False
+    _share_palette: bool = False
+
+    # psychopath
+    _psychopath_message: str = ""
 
     @property
     def monster_id(self) -> UInt8:
@@ -207,7 +238,7 @@ class Enemy:
         return deepcopy(self._resistances)
 
     def set_resistances(self, resistances: List[Element]) -> None:
-        """Overwrite the list of elements which will have their damage to the enemy reduced
+        """overwrite the list of elements which will have their damage to the enemy reduced
         by 50%."""
         self._resistances = deepcopy(resistances)
 
@@ -217,19 +248,19 @@ class Enemy:
             self._resistances.append(element)
 
     def remove_resistance(self, element: Element) -> None:
-        """Remove an element from the list that will have their damage to the enemy
+        """remove an element from the list that will have their damage to the enemy
         reduced by 50%."""
         if element in self._resistances:
             self._resistances.remove(element)
 
     @property
     def xp(self) -> UInt16:
-        """The amount of EXP awarded by the enemy. This number is divided by the number of
+        """the amount of exp awarded by the enemy. this number is divided by the number of
         active party members you have at the start of the battle."""
         return UInt16(self._xp)
 
     def set_xp(self, xp: int) -> None:
-        """Set the amount of EXP awarded by the enemy. This number is divided by the number of
+        """set the amount of exp awarded by the enemy. this number is divided by the number of
         active party members you have at the start of the battle."""
         assert 0 <= xp <= 9999
         self._xp = xp
@@ -245,22 +276,22 @@ class Enemy:
         self._coins = coins
 
     @property
-    def rare_item_drop_id(self) -> Optional[int]:
+    def rare_item_drop(self) -> Optional[Type[RegularItem]]:
         """A single item that the enemy has a very small chance of dropping."""
-        return self._rare_item_drop_id
+        return self._rare_item_drop
 
-    def set_rare_item_drop_id(self, rare_item_drop_id: Optional[int]) -> None:
+    def set_rare_item_drop(self, rare_item_drop: Optional[Type[RegularItem]]) -> None:
         """Set the single item that the enemy has a very small chance of dropping."""
-        self._rare_item_drop_id = rare_item_drop_id
+        self._rare_item_drop = rare_item_drop
 
     @property
-    def common_item_drop_id(self) -> Optional[int]:
+    def common_item_drop(self) -> Optional[Type[RegularItem]]:
         """A single item that the enemy has a high chance of dropping."""
-        return self._common_item_drop_id
+        return self._common_item_drop
 
-    def set_common_item_drop_id(self, common_item_drop_id: int) -> None:
+    def set_common_item_drop(self, common_item_drop: Optional[Type[RegularItem]]) -> None:
         """Set the single item that the enemy has a high chance of dropping."""
-        self._common_item_drop_id = common_item_drop_id
+        self._common_item_drop = common_item_drop
 
     @property
     def yoshi_cookie_item(self) -> Type[RegularItem]:
@@ -292,12 +323,12 @@ class Enemy:
 
     @property
     def morph_chance(self) -> float:
-        """The percent success rate that the enemy is affected by a Yoshi Cookie, Lamb's Lure,
+        """the percent success rate that the enemy is affected by a yoshi cookie, lamb's lure,
         or Sheep Attack. Valid values are 0, 25, 75, or 100."""
         return self._morph_chance
 
     def set_morph_chance(self, morph_chance: float) -> None:
-        """Set the percent success rate that the enemy is affected by a Yoshi Cookie, Lamb's Lure,
+        """set the percent success rate that the enemy is affected by a yoshi cookie, lamb's lure,
         or Sheep Attack. Valid values are 0, 25, 75, or 100."""
         assert morph_chance in [0, 25, 75, 100]
         self._morph_chance = morph_chance
@@ -339,6 +370,70 @@ class Enemy:
         self._ohko_immune = ohko_immune
 
     @property
+    def coin_sprite(self) -> CoinSprite:
+        """The type of coin sprite displayed when enemy is defeated."""
+        return self._coin_sprite
+
+    def set_coin_sprite(self, coin_sprite: CoinSprite) -> None:
+        """Set the type of coin sprite displayed when enemy is defeated."""
+        self._coin_sprite = coin_sprite
+
+    @property
+    def entrance_style(self) -> EntranceStyle:
+        """The entrance animation style of the enemy."""
+        return self._entrance_style
+
+    def set_entrance_style(self, entrance_style: EntranceStyle) -> None:
+        """Set the entrance animation style of the enemy."""
+        self._entrance_style = entrance_style
+
+    @property
+    def monster_behaviour(self) -> str:
+        """The monster behaviour collection setting."""
+        return self._monster_behaviour
+
+    def set_monster_behaviour(self, monster_behaviour: str) -> None:
+        """Set the monster behaviour collection setting."""
+        self._monster_behaviour = monster_behaviour
+
+    @property
+    def elevate(self) -> int:
+        """The elevation level of the enemy (0-3)."""
+        return self._elevate
+
+    def set_elevate(self, elevate: int) -> None:
+        """Set the elevation level of the enemy (must be 0, 1, 2, or 3)."""
+        assert elevate in [0, 1, 2, 3], "elevate must be 0, 1, 2, or 3"
+        self._elevate = elevate
+
+    @property
+    def disable_auto_death(self) -> bool:
+        """If true, disable automatic death."""
+        return self._disable_auto_death
+
+    def set_disable_auto_death(self, disable_auto_death: bool) -> None:
+        """Set whether to disable automatic death."""
+        self._disable_auto_death = disable_auto_death
+
+    @property
+    def share_palette(self) -> bool:
+        """If true, share palette with another sprite."""
+        return self._share_palette
+
+    def set_share_palette(self, share_palette: bool) -> None:
+        """Set whether to share palette with another sprite."""
+        self._share_palette = share_palette
+
+    @property
+    def psychopath_message(self) -> str:
+        """The psychopath message for this enemy."""
+        return self._psychopath_message
+
+    def set_psychopath_message(self, psychopath_message: str) -> None:
+        """Set the psychopath message for this enemy."""
+        self._psychopath_message = psychopath_message
+
+    @property
     def address(self):
         """The ROM address at which to begin writing properties to for this enemy."""
         return BASE_ENEMY_ADDRESS + self.monster_id * 16
@@ -361,14 +456,43 @@ class Enemy:
 
     @property
     def name(self) -> str:
-        """Enemy's default name"""
+        """Human readable enemy name"""
+        if self._name != "":
+            return self._name
         return self.__class__.__name__
 
-    def render(self) -> Dict[int, bytearray]:
-        """Get data for this enemy in `{0x123456: bytearray([0x00])}` format."""
+    def set_name(self, name: str) -> None:
+        """set the enemy's display name (must be latin-1 encodable and max 13 characters).
+
+        args:
+            name: the enemy name (max 13 characters)
+
+        raises:
+            valueerror: if name contains non-latin-1 characters or is too long
+        """
+        if len(name) > 13:
+            raise ValueError(f"Enemy name must be 13 characters or less, got {len(name)}")
+        try:
+            name.encode('latin-1')
+        except UnicodeEncodeError:
+            raise ValueError("name contains characters not encodable in latin-1")
+        self._name = name
+
+    def render(self, animation_pointers: dict[str, int], enemy_address: Optional[int] = None, reward_address: Optional[int] = None) -> Dict[int, bytearray]:
+        """get data for this enemy in `{0x123456: bytearray([0x00])}` format.
+
+        args:
+            animation_pointers: dictionary mapping animation behavior names to addresses
+            enemy_address: optional override for where to write enemy data (defaults to self.address)
+            reward_address: optional override for where to write reward data (defaults to self.reward_address)
+        """
         patch: Dict[int, bytearray] = {}
 
-        # Main stats.
+        # use provided addresses or calculate from monster_id
+        addr = enemy_address if enemy_address is not None else self.address
+        reward_addr = reward_address if reward_address is not None else self.reward_address
+
+        # main stats.
         data = bytearray()
         data += ByteField(self.hp).as_bytes()
         data += ByteField(self.speed).as_bytes()
@@ -379,9 +503,10 @@ class Enemy:
         data += ByteField(self.fp).as_bytes()
         data += ByteField(self.evade).as_bytes()
         data += ByteField(self.magic_evade).as_bytes()
-        patch[self.address] = data
+        data += ByteField(self.disable_auto_death * 1 + self.share_palette * 2).as_bytes()
+        patch[addr] = data
 
-        # Special defense bits, sound on hit is top half.
+        # special defense bits, sound on hit is top half.
         data = bytearray()
         hit_special_defense = 1 if self.invincible else 0
         hit_special_defense |= (1 if self.ohko_immune else 0) << 1
@@ -396,45 +521,204 @@ class Enemy:
         hit_special_defense |= self.sound_on_hit << 4
         data.append(hit_special_defense)
 
-        # Elemental resistances.
+        # elemental resistances.
         data += BitMapSet(
             1, [resistance.stat_value for resistance in self.resistances]
         ).as_bytes()
 
-        # Elemental weaknesses byte (top half), sound on approach is bottom half.
+        # elemental weaknesses byte (top half), sound on approach is bottom half.
         weaknesses_approach = self.sound_on_approach
         for weakness in self.weaknesses:
             weaknesses_approach |= 1 << weakness.stat_value
         data.append(weaknesses_approach)
 
-        # Status immunities.
+        # status immunities.
         data += BitMapSet(
             1, [immunity.stat_value for immunity in self.status_immunities]
         ).as_bytes()
 
-        patch[self.address + 11] = data
+        patch[addr + 11] = data
 
-        # Flower bonus.
+        # other properties
+        data = bytearray()
+        data += ByteField((self.entrance_style & 0x0F) + ((self.elevate & 0x03) << 4) + (self.coin_sprite << 6)).as_bytes()
+        patch[addr + 12] = data
+
+        # flower bonus.
         bonus_addr = FLOWER_BONUS_BASE_ADDRESS + self.monster_id
         bonus = (self.flower_bonus_chance // 10) << 4
         bonus |= self.flower_bonus_type
         patch[bonus_addr] = ByteField(bonus).as_bytes()
 
-        yoshi_cookie_item_id = self.yoshi_cookie_item.item_id
-        common_item = 0xFF
-        if self.common_item_drop_id is not None:
-            common_item = self.common_item_drop_id
-        rare_item = 0xFF
-        if self.rare_item_drop_id is not None:
-            rare_item = self.rare_item_drop_id
+        yoshi_cookie_item_id = self.yoshi_cookie_item().item_id
+        common_item = self.common_item_drop().item_id if self.common_item_drop else 0xFF
+        rare_item = self.rare_item_drop().item_id if self.rare_item_drop else 0xFF
 
-        # Build reward data patch.
+        # build reward data patch.
         data = bytearray()
         data += ByteField(self.xp).as_bytes()
         data += ByteField(self.coins).as_bytes()
         data += ByteField(yoshi_cookie_item_id).as_bytes()
         data += ByteField(common_item).as_bytes()
         data += ByteField(rare_item).as_bytes()
-        patch[self.reward_address] = data
+        patch[reward_addr] = data
+
+        # name (13 bytes: name + padding with 0x20)
+        name_addr = ENEMY_NAME_BASE_ADDRESS + (self.monster_id * 13)
+        name_bytes = bytearray()
+
+        # encode the name with special character replacements
+        if self._name:
+            for char in self._name[:13]:
+                if char == '-':
+                    name_bytes.append(0x7D)  # hyphen -> 0x7d
+                elif char == '\u2019':  # closing quote (u+2019: ')
+                    name_bytes.append(0x7E)  # closing quote -> 0x7e
+                else:
+                    try:
+                        # encode regular latin-1 characters
+                        name_bytes.extend(char.encode('latin-1'))
+                    except UnicodeEncodeError:
+                        # if character can't be encoded, use '?'
+                        name_bytes.append(0x3F)
+
+        # pad with spaces (0x20) to fill all 13 bytes
+        while len(name_bytes) < 13:
+            name_bytes.append(0x20)
+        patch[name_addr] = name_bytes
+
+        # sprite behaviour
+        behaviour_pointer = animation_pointers.get(
+            self._monster_behaviour, 0x000000
+        )
+        if behaviour_pointer == 0x000000:
+            raise ValueError(
+                f"{self._monster_behaviour} not found in animation pointers"
+            )
+        patch[0x350202 + self.monster_id * 2] = bytearray([behaviour_pointer & 0xFF, (behaviour_pointer >> 8) & 0xFF])
+
+        return patch
+
+
+class EnemyCollection:
+    """Collection of enemies with rendering support for psychopath messages and pointer tables."""
+
+    def __init__(self, enemies: List[Enemy]):
+        """initialize the collection with a list of enemies.
+
+        args:
+            enemies: list of enemy objects (should be up to 256 enemies, indexed by monster_id)
+
+        raises:
+            valueerror: if the collection contains more than 256 enemies
+        """
+        if len(enemies) > 256:
+            raise ValueError(
+                f"EnemyCollection can contain at most 256 enemies, but {len(enemies)} were provided."
+            )
+        self.enemies = enemies
+
+    def render(self, animation_pointers: dict[str, int]) -> Dict[int, bytearray]:
+        """render all enemies including their psychopath messages and pointer table.
+
+        args:
+            animation_pointers: dictionary mapping animation behavior names to addresses
+
+        returns:
+            dictionary mapping rom addresses to bytearrays
+        """
+        patch: Dict[int, bytearray] = {}
+
+        # build enemy pointer table and write enemy data sequentially
+        enemy_pointer_table = bytearray()
+        reward_pointer_table = bytearray()
+        current_enemy_addr = BASE_ENEMY_ADDRESS
+        current_reward_addr = BASE_REWARD_ADDRESS
+
+        for enemy in self.enemies:
+            # calculate enemy pointer value (16-bit relative to bank)
+            enemy_pointer_value = current_enemy_addr & 0xFFFF
+
+            # add enemy pointer to table (little-endian)
+            enemy_pointer_table.append(enemy_pointer_value & 0xFF)
+            enemy_pointer_table.append((enemy_pointer_value >> 8) & 0xFF)
+
+            # calculate reward pointer value (16-bit relative to bank)
+            reward_pointer_value = current_reward_addr & 0xFFFF
+
+            # add reward pointer to table (little-endian)
+            reward_pointer_table.append(reward_pointer_value & 0xFF)
+            reward_pointer_table.append((reward_pointer_value >> 8) & 0xFF)
+
+            # render enemy data at current addresses
+            enemy_patch = enemy.render(
+                animation_pointers,
+                enemy_address=current_enemy_addr,
+                reward_address=current_reward_addr
+            )
+            patch.update(enemy_patch)
+
+            # move to next enemy slot (16 bytes for main data)
+            current_enemy_addr += 16
+
+            # move to next reward slot (6 bytes for reward data)
+            current_reward_addr += 6
+
+        # write the enemy pointer table
+        patch[ENEMY_POINTER_TABLE_ADDRESS] = enemy_pointer_table
+
+        # write the reward pointer table
+        patch[REWARD_POINTER_TABLE_ADDRESS] = reward_pointer_table
+
+        # now handle psychopath messages
+        # import compression utilities
+        from smrpgpatchbuilder.datatypes.dialogs.utils import compress, COMPRESSION_TABLE
+
+        # use compression table from entry with byte 0x22 onward (index 17)
+        psychopath_compression_table = [("\n", b"\x01"), ("[await]", b"\x02")] + COMPRESSION_TABLE[17:]
+
+        current_data_addr = PSYCHOPATH_DATA_START
+        pointer_table = bytearray()
+        total_message_bytes = 0
+
+        for enemy in self.enemies:
+            # get the psychopath message
+            message = enemy.psychopath_message if enemy.psychopath_message else ""
+
+            # encode message using compression
+            message_bytes = bytearray()
+            if message:
+                # compress() automatically adds 0x00 terminator
+                message_bytes.extend(compress(message, psychopath_compression_table))
+            else:
+                # empty message, just the terminator
+                message_bytes.append(0x00)
+
+            total_message_bytes += len(message_bytes)
+
+            # calculate pointer value (16-bit address)
+            pointer_value = current_data_addr & 0xFFFF
+
+            # add pointer to pointer table (little-endian)
+            pointer_table.append(pointer_value & 0xFF)
+            pointer_table.append((pointer_value >> 8) & 0xFF)
+
+            # write message to rom
+            patch[current_data_addr] = message_bytes
+
+            # move to next message address
+            current_data_addr += len(message_bytes)
+
+        # check if total message data exceeds available space
+        max_message_size = PSYCHOPATH_DATA_END - PSYCHOPATH_DATA_START
+        if total_message_bytes > max_message_size:
+            raise ValueError(
+                f"Psychopath messages total {total_message_bytes} bytes, "
+                f"which exceeds the maximum allowed size of {max_message_size} bytes. "
+                f"Reduce message lengths by {total_message_bytes - max_message_size} bytes."
+            )
+
+        # write the pointer table
+        patch[PSYCHOPATH_POINTER_ADDRESS] = pointer_table
 
         return patch

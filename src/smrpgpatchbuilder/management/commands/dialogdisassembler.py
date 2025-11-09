@@ -131,7 +131,7 @@ class Command(BaseCommand):
                 elif rom[cursor] in [
                     0x00,
                     0x06,
-                ]:  # do NOT terminate if they immediately follow 1C, 0B, or 0D
+                ]:  # do not terminate if they immediately follow 1c, 0b, or 0d
                     raw_data.append(string)
                     string = bytearray([])
                 cursor += 1
@@ -210,3 +210,9 @@ class Command(BaseCommand):
             )
         )
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled dialog data to ./src/disassembler_output/dialogs/"
+            )
+        )

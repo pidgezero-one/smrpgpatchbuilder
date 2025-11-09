@@ -1148,7 +1148,7 @@ test_cases = [
         label="A_SummonObjectToSpecificLevel",
         commands_factory=lambda: [
             A_SummonObjectToSpecificLevel(
-                target_npc=NPC_4, level_id=R020_MUSHROOM_KINGDOM_CASTLE_TOADSTOOLS_ROOM
+                target_npc=NPC_4, level_id=20
             )
         ],
         expected_bytes=[0xF2, 0x14, 0xB0],
@@ -1162,7 +1162,7 @@ test_cases = [
         label="A_RemoveObjectFromSpecificLevel",
         commands_factory=lambda: [
             A_RemoveObjectFromSpecificLevel(
-                target_npc=NPC_1, level_id=R076_BANDITS_WAY_AREA_01
+                target_npc=NPC_1, level_id=76
             )
         ],
         expected_bytes=[0xF2, 0x4C, 0x2A],
@@ -1176,7 +1176,7 @@ test_cases = [
         label="A_EnableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
             A_EnableObjectTriggerInSpecificLevel(
-                target_npc=NPC_3, level_id=R311_SEASIDE_TOWN_HEALTH_FOOD_STORE
+                target_npc=NPC_3, level_id=311
             )
         ],
         expected_bytes=[0xF3, 0x37, 0xAF],
@@ -1190,7 +1190,7 @@ test_cases = [
         label="A_DisableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
             A_DisableObjectTriggerInSpecificLevel(
-                target_npc=NPC_6, level_id=R509_FACTORY_GROUNDS_SMITHYS_PAD
+                target_npc=NPC_6, level_id=509
             )
         ],
         expected_bytes=[0xF3, 0xFD, 0x35],
@@ -1456,19 +1456,19 @@ test_cases = [
     Case(
         label="A_PlaySound",
         commands_factory=lambda: [
-            A_PlaySound(sound=SO091_TUMBLING_BOULDERS, channel=4),
-            A_PlaySound(sound=SO010_TRAMPOLINE, channel=6),
+            A_PlaySound(sound=91, channel=4),
+            A_PlaySound(sound=10, channel=6),
         ],
         expected_bytes=[0xFD, 0x9E, 0x5B, 0x9C, 0x0A],
     ),
     Case(
         label="A_PlaySound should fail with invalid channel",
-        commands_factory=lambda: [A_PlaySound(sound=SO009_GREEN_SWITCH, channel=2)],
+        commands_factory=lambda: [A_PlaySound(sound=9, channel=2)],
         exception_type=AssertionError,
     ),
     Case(
         label="A_PlaySoundBalance",
-        commands_factory=lambda: [A_PlaySoundBalance(sound=SO014_FLOWER, balance=10)],
+        commands_factory=lambda: [A_PlaySoundBalance(sound=14, balance=10)],
         expected_bytes=[0x9D, 0x0E, 0x0A],
     ),
     Case(
@@ -1753,7 +1753,9 @@ test_cases = [
         label="A_CreatePacketAtObjectCoords",
         commands_factory=lambda: [
             A_CreatePacketAtObjectCoords(
-                packet=P032_BLUE_CLOUD,
+                packet=Packet(
+                    packet_id=32,
+                ),
                 target_npc=DUMMY_0X07,
                 destinations=["end_here"],
             ),
@@ -1765,7 +1767,9 @@ test_cases = [
         label="A_CreatePacketAt7010",
         commands_factory=lambda: [
             A_CreatePacketAt7010(
-                packet=P024_REGULAR_SOUND_EXPLOSION, destinations=["end_here"]
+                packet=Packet(
+                    packet_id=24,
+                ), destinations=["end_here"]
             ),
             A_ReturnQueue(identifier="end_here"),
         ],
@@ -1775,8 +1779,10 @@ test_cases = [
         label="A_CreatePacketAt7010WithEvent",
         commands_factory=lambda: [
             A_CreatePacketAt7010WithEvent(
-                packet=P028_MUSHROOM_THROWN_SOUTHWEST,
-                event_id=E3077_SHIP_PUZZLE_MUSHROOM,
+                packet=Packet(
+                    packet_id=28,
+                ),
+                event_id=3077,
                 destinations=["end_here"],
             ),
             A_ReturnQueue(identifier="end_here"),
@@ -1787,7 +1793,7 @@ test_cases = [
         label="A_JmpIfObjectInSpecificLevel",
         commands_factory=lambda: [
             A_JmpIfObjectInSpecificLevel(
-                NPC_6, R251_BEAN_VALLEY_PIRANHA_PIPE_AREA, ["end_here"]
+                NPC_6, 251, ["end_here"]
             ),
             A_ReturnQueue(identifier="end_here"),
         ],
@@ -1797,7 +1803,7 @@ test_cases = [
         label="A_JmpIfObjectNotInSpecificLevel",
         commands_factory=lambda: [
             A_JmpIfObjectNotInSpecificLevel(
-                NPC_2, R043_BOOSTER_TOWER_1F_AREA_01_MAIN_ROOM, ["end_here"]
+                NPC_2, 43, ["end_here"]
             ),
             A_ReturnQueue(identifier="end_here"),
         ],

@@ -251,4 +251,4 @@ class DialogCollection:
             0x230000: assembled_dialog_data[1],
             0x240000: assembled_dialog_data[2],
         }
-        # TODO: add compression table
+        # todo: add compression table

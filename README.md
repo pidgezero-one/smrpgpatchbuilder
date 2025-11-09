@@ -68,6 +68,8 @@ This repo allows you to parse, modify, and rebuild:
 - Monster AI ([disassemble](#disassembling-monster-ai) | [assemble](#assembling-monster-ai))
 - Event scripts and overworld NPC animations  ([disassemble](#disassembling-overworld-scripts) | [assemble](assembling-overworld-scripts))
 - Overworld dialogs ([disassemble](#disassembling-dialogs) | [assemble](#assembling-dialogs))
+- Items ([disassemble](#disassembling-items) | [assemble](#assembling-items))
+- Enemies ([disassemble](#disassembling-enemies) | [assemble](#assembling-enemies))
 - Battle dialogs (not implemented yet)
 - Overworld sprites ([disassemble](#disassembling-sprites) | [assemble](#assembling-sprites))
 
@@ -99,6 +101,12 @@ Everything you do beyond this point must be in your venv. You'll know you're in 
 
 In your venv:
 `PYTHONPATH=src pytest src/tests`
+
+## Do this first
+
+Copy all of the files from the `config.example` folder into the `config` folder. These files are meant for you to give contextual names to certain things in the game, such as rooms, scripts, in-game variables, etc. That way, when disassembling your event scripts into Python files, for example, instead of seeing `EnterArea(5, ...)` you would see `EnterArea(MARRYMORE_OUTSIDE_DURING_BOOSTER, ...)`. The files in config.example default to SMRPG Randomizer's values (TODO: change to original smrpg), you can change them to suit whatever's in your ROM and/or mod. (You also don't need to use the A###_SOME_UPPERCASE_WORD format, you can put whatever text you want and it'll automatically be converted.)
+
+Run PYTHONPATH=src python src/smrpgpatchbuilder/manage.py variableparser, and it will create Python files inside `./src/disassembler_output/variables`. Every other disassembler will read from these and your resulting scripts will import them.
 
 ## Battle animations
 
@@ -430,6 +438,158 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py dialogassembler -r /path/t
 - If you include `-b`, it will output binary files (split up according to the address the byte string starts at) that you can paste over sections of your rom using FlexHEX.
 
 The assembler script is really just a glorified wrapper that looks for files in the disassembler output directory and then calls the dialog collection's `.render()` method and writes the raw output to a file. If you're using the `.render()` method on a `DialogCollection` in your own project, it will return 2 bytearrays that you can do whatever you want with (see previous section)
+
+## Items
+
+### Disassembling items
+
+You can disassemble all 256 items from the ROM, including their stats, names, descriptions, and properties.
+
+Run this in the root directory of this project against an SMRPG ROM file (vanilla or not). For example:
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py itemdisassembler --rom "path/to/your/smrpg/rom/or/modified/smrpg/rom"
+```
+
+This will output to `./src/disassembler_output/items/items.py` by default.
+
+The disassembler will generate Python classes for each item. For example, here's what the Hammer item looks like:
+
+```python
+class Hammer(Weapon):
+    """Hammer item class"""
+    _item_name: str = "Hammer"
+    _prefix = ItemPrefix.HAMMER
+
+    _item_id: int = 5
+    _description: str = " Pounds enemies"
+    _equip_chars: List[PartyCharacter] = [MARIO]
+    _attack: int = 10
+    _variance: int = 1
+    _price: int = 70
+    _hide_damage: bool = True
+    _half_time_window_begins = UInt8(8)
+    _perfect_window_begins = UInt8(14)
+    _perfect_window_ends = UInt8(20)
+    _half_time_window_ends = UInt8(38)
+```
+
+It is assumed (for now) that the item subclass ranges are as follows:
+- **Items 0-36**: weapons
+- **Items 37-73**: armor
+- **Items 74-95**: accessory
+- **Items 96-255**: regular items
+
+**Item Prefixes:**
+
+The symbol that (optionally) appears at the beginning of your item name is stored as an item property. If your ROM is modified such that any of the symbols are different from the original game, you can define them in `config/item_prefixes.input`.
+
+**ItemCollection:**
+
+The disassembler creates an `ItemCollection` containing all 256 items:
+
+```python
+ALL_ITEMS = ItemCollection([
+    DummyWeapon(),
+    DummyArmor(),
+    DummyAccessory(),
+    ...
+])
+```
+
+If you're using this in your own Python project, you can use `ItemCollection().render()` to get a `Dict[int, bytearray]` where the int is the ROM address to patch the bytearray at.
+
+### Assembling items
+
+After editing the generated item classes, you can assemble them back into ROM data. The assembler reads from the disassembler output directory.
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py itemassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used.
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the contents of your items.
+- If you include `-t`, it will output plain text files with your assembled bytes for debugging.
+- If you include `-b`, it will output binary files that you can paste over sections of your ROM using FlexHEX.
+
+## Enemies
+
+### Disassembling enemies
+
+Before disassembling enemies, you must first disassemble items and battle animations. This is because enemy classes need to know what items to drop and where the pointers for sprite behaviours are.
+
+Run this in the root directory of this project against an SMRPG ROM file (vanilla or not). For example:
+
+```bash
+# First, disassemble items (if you haven't already)
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py itemdisassembler --rom "path/to/your/smrpg/rom"
+
+# Next, disassemble battle animations (if you haven't already)
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom"
+
+# Finally, disassemble enemies
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py enemydisassembler --rom "path/to/your/smrpg/rom"
+```
+
+By default, this outputs to `./src/disassembler_output/enemies/enemies.py`. You can specify a different animation bank file with the `-a` flag if needed.
+
+The disassembler generates Python classes for each enemy. For example, here's what the Goomba enemy looks like:
+
+```python
+class GOOMBA(Enemy):
+    """GOOMBA enemy class"""
+    _monster_id: int = 6
+    _name: str = "GOOMBA"
+
+    _hp: int = 16
+    _fp: int = 100
+    _attack: int = 3
+    _defense: int = 3
+    _magic_attack: int = 1
+    _magic_defense: int = 1
+    _speed: int = 13
+    _evade: int = 0
+    _magic_evade: int = 0
+    _weaknesses: List[Element] = [Element.FIRE]
+    _xp: int = 1
+    _coins: int = 0
+    _yoshi_cookie_item = Mushroom
+    _flower_bonus_type: FlowerBonusType = FlowerBonusType.HP_MAX
+    _flower_bonus_chance: int = 30
+    _morph_chance: float = 100
+    _sound_on_hit: HitSound = HitSound.BITE
+    _sound_on_approach: ApproachSound = ApproachSound.SPARKY_GOOMBA_BIRDY
+    _coin_sprite: CoinSprite = CoinSprite.NONE
+    _entrance_style: EntranceStyle = EntranceStyle.LONG_JUMP
+    _monster_behaviour: str = "monster_behaviours_1_pointer_table"
+    _psychopath_message: str = " Goomba gumba...phew![await]"
+```
+
+The disassembler creates an `EnemyCollection` containing all 256 enemies:
+
+```python
+ALL_ENEMIES = EnemyCollection([
+    Goomba(),
+    Spikey(),
+    ...
+])
+```
+
+If you're using this in your own Python project, you can use `EnemyCollection().render(animation_pointers)` to get a `Dict[int, bytearray]` where the int is the ROM address to patch the bytearray at.
+
+### Assembling enemies
+
+After editing the generated enemy classes, you can assemble them back into ROM data. The assembler reads from the disassembler output directory and once again requires the animation bank for behavior pointers.
+
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py enemyassembler -r /path/to/rom/you/want/to/patch -t -b
+```
+
+- `-r`, `-t`, and `-b` are individually optional, but at least one needs to be used.
+- If you include `-r /path/to/rom/you/want/to/patch`, it will output a bps patch file with the enemy data.
+- If you include `-t`, it will output plain text files with your assembled bytes for debugging.
+- If you include `-b`, it will output binary files that you can paste over sections of your ROM using FlexHEX.
+- Use `-a` to specify a custom animation bank path (default: `src/disassembler_output/battle_animation/35/export.py`)
 
 ## NPC Sprites
 

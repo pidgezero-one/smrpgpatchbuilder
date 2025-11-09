@@ -226,10 +226,18 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         self.addresses[key] = position
         position += command.size
         return position
-    
-    def render(self) -> List[Tuple[int, bytearray]]:
-        """Generate the bytes representing the current state of this bank to be written
-        to the ROM."""
+
+    def build_command_address_mapping(self) -> Dict[str, int]:
+        """Build and return the command identifier to address mapping.
+
+        This method populates the internal addresses dict and pointer_bytes
+        by iterating through all AnimationScriptBlock instances in this bank.
+
+        Returns:
+            Dict[str, int]: Mapping of command identifiers to their ROM addresses.
+        """
+        self.addresses.clear()
+        self._pointer_bytes = bytearray()
 
         scripts: List[AnimationScriptBlock] = [
             s for s in self.scripts if isinstance(s, AnimationScriptBlock)
@@ -241,6 +249,19 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
             self.pointer_bytes.extend(UInt16(position & 0xFFFF).little_endian())
             for command in script.contents:
                 position = self._associate_address(command, position)
+
+        return self.addresses
+
+    def render(self) -> List[Tuple[int, bytearray]]:
+        """generate the bytes representing the current state of this bank to be written
+        to the ROM."""
+
+        scripts: List[AnimationScriptBlock] = [
+            s for s in self.scripts if isinstance(s, AnimationScriptBlock)
+        ]
+
+        # build command name : address table
+        self.build_command_address_mapping()
 
         # replace jump placeholders with addresses
         for script in scripts:

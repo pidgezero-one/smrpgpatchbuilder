@@ -57,7 +57,7 @@ class AnimationScriptAMEMCommand(AnimationScriptCommand):
 
 
 class AnimationScriptAMEM6XSoloCommand(AnimationScriptAMEMCommand):
-    """Base class of animation script command classes that target AMEM $6X
+    """base class of animation script command classes that target amem $6x
     and take no other arguments."""
 
     _size: int = 2
@@ -124,7 +124,7 @@ class AnimationScriptAMEMAnd7F(AnimationScriptAMEM6XCommand):
 
 
 class AnimationScriptAMEMAndAMEM(AnimationScriptAMEM6XCommand):
-    """Perform an AND operation between an AMEM in range $60-$6F
+    """perform an and operation between an amem in range $60-$6f
     and another AMEM in range $60-$6F."""
 
     _source_amem: UInt8
@@ -151,7 +151,7 @@ class AnimationScriptAMEMAndAMEM(AnimationScriptAMEM6XCommand):
 
 
 class AnimationScriptAMEMAndOMEM(AnimationScriptAMEM6XCommand):
-    """Perform an AND operation between an AMEM in range $60-$6F
+    """perform an and operation between an amem in range $60-$6f
     and the value at an OMEM address."""
 
     _omem: UInt8
@@ -396,5 +396,5 @@ class AnimationScriptCommandInventory(AnimationScriptCommand):
 
 
 class UsableAnimationScriptCommand(AnimationScriptCommand):
-    """Subclass for commands that can actually be used in a script
+    """subclass for commands that can actually be used in a script
     (no prototypes)."""

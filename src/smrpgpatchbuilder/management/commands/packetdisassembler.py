@@ -61,3 +61,9 @@ class Command(BaseCommand):
             ctr += 1
 
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled packet data to randomizer/data/packets.py"
+            )
+        )

@@ -4,7 +4,7 @@ from randomizer.helpers.npcmodeltables import sprite_name_table, vram_store_tabl
 
 
 start = 0x1DB800
-# end = 0x1DC5FF
+# end = 0x1dc5ff
 end = 0x1DDDFF
 
 
@@ -100,3 +100,9 @@ class Command(BaseCommand):
             ctr += 1
 
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled NPC models to randomizer/data/npcmodels.py"
+            )
+        )

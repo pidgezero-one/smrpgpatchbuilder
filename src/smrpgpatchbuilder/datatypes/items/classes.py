@@ -15,12 +15,78 @@ from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, ByteField, BitMap
 # target .enums specifically to prevent cyclic import
 from smrpgpatchbuilder.datatypes.spells.enums import Status, Element, TempStatBuff
 
-from .enums import ItemTypeValue, EffectType, InflictFunction, OverworldMenuBehaviour
+from .enums import ItemTypeValue, EffectType, InflictFunction, OverworldMenuBehaviour, ItemPrefix
 from .constants import (
     ITEMS_BASE_ADDRESS,
     ITEMS_BASE_PRICE_ADDRESS,
     ITEMS_BASE_TIMING_ADDRESS,
+    ITEMS_BASE_NAME_ADDRESS,
+    ITEMS_BASE_DESC_POINTER_ADDRESS,
+    ITEMS_DESC_DATA_POINTER_OFFSET,
+    ITEMS_BASE_DESC_DATA_ADDRESSES,
 )
+
+
+# item description character mapping (byte -> string)
+ITEM_DESC_BYTE_TO_STR = {
+    0x01: '\n',
+    0x7E: "’",
+    0x7D: '-',
+    0x9C: '&',
+    0x22: '“',
+    0x23: '”',
+}
+
+# item description character mapping (string -> byte)
+ITEM_DESC_STR_TO_BYTE = {
+    '\n': 0x01,
+    "’": 0x7E,
+    '-': 0x7D,
+    '&': 0x9C,
+    '“': 0x22,
+    '”': 0x23,
+}
+
+
+def encode_item_description(desc: str) -> bytearray:
+    """encode a description string to bytes using item description character mapping.
+
+    args:
+        desc: description string with special characters
+
+    returns:
+        bytearray with encoded description
+    """
+    result = bytearray()
+    for char in desc:
+        if char in ITEM_DESC_STR_TO_BYTE:
+            result.append(ITEM_DESC_STR_TO_BYTE[char])
+        else:
+            # use latin-1 encoding for regular characters
+            result.extend(char.encode('latin-1'))
+    return result
+
+
+def decode_item_description(data: bytes) -> str:
+    """decode description bytes to string using item description character mapping.
+
+    args:
+        data: bytearray or bytes with encoded description
+
+    returns:
+        decoded description string
+    """
+    result = []
+    for byte in data:
+        if byte in ITEM_DESC_BYTE_TO_STR:
+            result.append(ITEM_DESC_BYTE_TO_STR[byte])
+        else:
+            # use latin-1 decoding for regular characters
+            try:
+                result.append(bytes([byte]).decode('latin-1'))
+            except:
+                result.append('?')
+    return ''.join(result)
 
 
 class Item:
@@ -29,6 +95,7 @@ class Item:
     _item_id: int = 0
 
     _item_name: str = ""
+    _prefix: Optional[ItemPrefix] = None
     _description: str = ""
 
     _price: int = 0
@@ -42,9 +109,9 @@ class Item:
     _magic_defense: int = 0
 
     _type_value: ItemTypeValue = ItemTypeValue.ITEM
-    _effect_type: Optional[EffectType]
-    _inflict_type: Optional[InflictFunction]
-    _inflict_element: Optional[Element]
+    _effect_type: Optional[EffectType] = None
+    _inflict_type: Optional[InflictFunction] = None
+    _inflict_element: Optional[Element] = None
 
     _equip_chars: List[PartyCharacter] = []
     _elemental_immunities: List[Element] = []
@@ -97,11 +164,6 @@ class Item:
         self._description = description
 
     @property
-    def consumable(self) -> bool:
-        """Consumable items are single-use, like mushrooms and syrups."""
-        return self._consumable
-
-    @property
     def equip_chars(self) -> List[PartyCharacter]:
         """A list of which characters can equip this item"""
         return self._equip_chars
@@ -151,11 +213,6 @@ class Item:
     def variance(self) -> UInt8:
         """The range of randomness applied to weapon output."""
         return self._variance
-
-    @property
-    def prevent_ko(self) -> bool:
-        """If true, OHKO moves like Shaker and Magnum have no effect on the wearer."""
-        return self._prevent_ko
 
     @property
     def elemental_immunities(self) -> List[Element]:
@@ -362,6 +419,15 @@ class Item:
     def _set_frog_coin_item(self, frog_coin_item: bool) -> None:
         self._frog_coin_item = frog_coin_item
 
+    @property
+    def prefix(self) -> Optional[ItemPrefix]:
+        """The icon prefix that appears before the item name."""
+        return self._prefix
+
+    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+        """Set the icon prefix for this item."""
+        self._prefix = prefix
+
     def __init__(self):
         if len(self.equip_chars) == 0:
             self.set_equip_chars([])
@@ -386,29 +452,14 @@ class Item:
 
     def __repr__(self):
         return str(self)
-
-    def become_frog_coin_item(self) -> None:
-        """Makes it so that item is only purchasable in frog coin shops,
-        and sets price accordingly."""
-        if self.frog_coin_item:
-            return
-
-        price: int = max(math.ceil(self.rank_value / 5), 1)
-
-        self.set_price(price)
-        self._set_frog_coin_item(True)
-
-    def unbecome_frog_coin_item(self) -> None:
-        """Makes it so that item is only purchasable in regular coin shops,
-        and sets price accordingly."""
-        if not self.frog_coin_item:
-            return
-
-        factor = float(random.randint(50, random.randint(50, 100)))
-        price = int(round(self.price * factor))
-
-        self.set_price(min(price, 9999))
-        self._set_frog_coin_item(False)
+    
+    def set_name(self, name: str) -> None:
+        """Set the item's display name (must be latin-1 encodable)."""
+        try:
+            name.encode('latin-1')
+        except UnicodeEncodeError:
+            raise ValueError("name contains characters not encodable in latin-1")
+        self._item_name = name
 
     def render(self) -> Dict[int, bytearray]:
         """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
@@ -417,7 +468,7 @@ class Item:
             return patch
         base_addr = ITEMS_BASE_ADDRESS + (self.item_id * 18)
 
-        # Stats and special properties.
+        # stats and special properties.
         data = bytearray()
         val = self.type_value
         if self.usable_battle:
@@ -457,7 +508,7 @@ class Item:
         data += ByteField(target).as_bytes()
 
         if self.inflict_element is not None:
-            data += ByteField(self.inflict_element[2]).as_bytes()
+            data += ByteField(self.inflict_element.spell_value).as_bytes()
         else:
             data += ByteField(0).as_bytes()
 
@@ -491,9 +542,28 @@ class Item:
 
         patch[base_addr] = data
 
-        # Price
+        # price
         price_addr = ITEMS_BASE_PRICE_ADDRESS + (self.item_id * 2)
         patch[price_addr] = ByteField(self.price, num_bytes=2).as_bytes()
+
+        # name (15 bytes: optional prefix byte + name + padding with 0x20)
+        name_addr = ITEMS_BASE_NAME_ADDRESS + (self.item_id * 15)
+        name_bytes = bytearray()
+
+        # add prefix byte if present
+        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
+            name_bytes.append(self._prefix)
+
+        # encode the name
+        if self._item_name:
+            max_name_length = 15 - len(name_bytes)
+            encoded_name = self._item_name.encode('latin-1')[:max_name_length]
+            name_bytes.extend(encoded_name)
+
+        # pad with spaces (0x20) to fill all 15 bytes
+        while len(name_bytes) < 15:
+            name_bytes.append(0x20)
+        patch[name_addr] = name_bytes
 
         return patch
 
@@ -577,16 +647,16 @@ class Equipment(Item):
 
 
 class Weapon(Equipment):
-    """Base class for all weapons.
+    """base class for all weapons.
     Also provides the weapon ID for unarmed attack animations."""
 
     _item_id: int = 0
     _type_value: ItemTypeValue = ItemTypeValue.WEAPON
 
-    _half_time_window_begins: UInt8 = 0
-    _perfect_window_begins: UInt8 = 0
-    _perfect_window_ends: UInt8 = 0
-    _half_time_window_ends: UInt8 = 0
+    _half_time_window_begins: UInt8 = UInt8(0)
+    _perfect_window_begins: UInt8 = UInt8(0)
+    _perfect_window_ends: UInt8 = UInt8(0)
+    _half_time_window_ends: UInt8 = UInt8(0)
 
     def set_variance(self, variance: int) -> None:
         """Sets the variance range on this weapon's damage RNG."""
@@ -637,6 +707,7 @@ class Weapon(Equipment):
             return patch
         base_addr = ITEMS_BASE_TIMING_ADDRESS + (self.item_id * 4)
 
+        data = bytearray()
         data += ByteField(self.half_time_window_begins).as_bytes()
         data += ByteField(self.perfect_window_begins).as_bytes()
         data += ByteField(self.perfect_window_ends).as_bytes()
@@ -669,3 +740,86 @@ class RegularItem(Item):
     @property
     def consumable(self) -> bool:
         return self._reusable == False
+
+
+class ItemCollection:
+    """Collection of items with rendering support for descriptions and pointer tables."""
+
+    def __init__(self, items: List[Item]):
+        """initialize the collection with a list of items.
+
+        args:
+            items: list of item objects (should be 256 items, indexed by item_id)
+
+        raises:
+            valueerror: if the collection contains more than 256 items
+        """
+        if len(items) > 256:
+            raise ValueError(
+                f"ItemCollection can contain at most 256 items, but {len(items)} were provided."
+            )
+        self.items = items
+
+    def render(self) -> Dict[int, bytearray]:
+        """render all items including their descriptions and pointer table.
+
+        returns:
+            dictionary mapping rom addresses to bytearrays
+        """
+        patch: Dict[int, bytearray] = {}
+
+        # first, render each item individually (stats, prices, names, etc.)
+        for item in self.items:
+            item_patch = item.render()
+            patch.update(item_patch)
+
+        # now handle descriptions
+        # start writing descriptions at the first available address
+        current_desc_addr = ITEMS_BASE_DESC_DATA_ADDRESSES[0][0]
+        desc_pointer_table = bytearray()
+        total_desc_bytes = 0  # track total description data size
+
+        for item in self.items:
+            # get the description
+            desc = item.description if item.description else ""
+
+            # encode description using special character mapping
+            desc_bytes = bytearray()
+            if desc:
+                desc_bytes.extend(encode_item_description(desc))
+            # add terminating 0x00
+            desc_bytes.append(0x00)
+
+            total_desc_bytes += len(desc_bytes)
+
+            # calculate pointer value (subtract offset to get the value to store)
+            pointer_value = current_desc_addr - ITEMS_DESC_DATA_POINTER_OFFSET
+
+            # add pointer to pointer table (little-endian)
+            desc_pointer_table.append(pointer_value & 0xFF)
+            desc_pointer_table.append((pointer_value >> 8) & 0xFF)
+
+            # write description to rom
+            patch[current_desc_addr] = desc_bytes
+
+            # move to next description address
+            current_desc_addr += len(desc_bytes)
+
+            # check if we need to move to the second description data region
+            if current_desc_addr > ITEMS_BASE_DESC_DATA_ADDRESSES[0][1]:
+                if current_desc_addr < ITEMS_BASE_DESC_DATA_ADDRESSES[1][0]:
+                    current_desc_addr = ITEMS_BASE_DESC_DATA_ADDRESSES[1][0]
+
+        # check if total description data exceeds available space
+        max_desc_size = 0x3A40F2 - 0x3A3120  # 4050 bytes
+        if total_desc_bytes > max_desc_size:
+            raise ValueError(
+                f"Item descriptions total {total_desc_bytes} bytes, "
+                f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
+                f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
+            )
+
+        # write the pointer table
+        patch[ITEMS_BASE_DESC_POINTER_ADDRESS] = desc_pointer_table
+
+        return patch

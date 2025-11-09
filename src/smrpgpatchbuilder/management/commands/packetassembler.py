@@ -11,3 +11,5 @@ class Command(BaseCommand):
 
         f.write(b)
         f.close()
+
+        self.stdout.write(self.style.SUCCESS("successfully assembled packet data to write_to_0x1db000.img"))

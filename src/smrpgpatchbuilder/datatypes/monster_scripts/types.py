@@ -153,7 +153,7 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         super().__init__(scripts)
 
     def render(self) -> Tuple[bytearray, bytearray]:
-        """Return this script as two bytearrays
+        """return this script as two bytearrays
         (one per range, the first including the pointer table)
         which are to be included in the ROM patch."""
 

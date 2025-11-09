@@ -26,7 +26,7 @@ from .enums import (
 class Spell:
     """Class representing a magic spell to be randomized."""
 
-    # Default per-spell attributes.
+    # default per-spell attributes.
     _index: int = 0
     _fp: int = 0
     _power: int = 0
@@ -100,7 +100,7 @@ class Spell:
 
     @property
     def anim_ptr(self) -> int:
-        """The pointer for where the spell's animation begins.
+        """the pointer for where the spell's animation begins.
         (deprecate this)"""
         return self._anim_ptr
 
@@ -293,7 +293,7 @@ class Spell:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch: Dict[int, bytearray] = {}
 
-        # FP is byte 3, power is byte 6, hit rate is byte 7.  Each spell is 12 bytes.
+        # fp is byte 3, power is byte 6, hit rate is byte 7.  each spell is 12 bytes.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
         patch[base_addr] = (
             (self.check_stats * 0x01)
@@ -400,7 +400,7 @@ class EnemySpell(Spell):
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch = super().render()
 
-        # Add status effects for enemy attacks, if any.
+        # add status effects for enemy attacks, if any.
         base_addr = SPELL_BASE_ADDRESS + (self.index * 12)
         data = BitMapSet(1, self.status_effects).as_bytes()
         patch[base_addr + 7] = data

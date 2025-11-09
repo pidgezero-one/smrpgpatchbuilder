@@ -149,3 +149,9 @@ class Command(BaseCommand):
             writeline(file, "    \n\n")
 
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled 128 spells to randomizer/data/spells_list.py"
+            )
+        )

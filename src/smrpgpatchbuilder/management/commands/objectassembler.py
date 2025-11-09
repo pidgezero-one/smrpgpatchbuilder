@@ -31,3 +31,5 @@ class Command(BaseCommand):
         f = open(f'write_to_0x1DDE00.img', 'wb')
         f.write(partitions)
         f.close()
+
+        self.stdout.write(self.style.SUCCESS("successfully assembled room objects"))

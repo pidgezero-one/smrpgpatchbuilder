@@ -4,7 +4,7 @@ from typing import List
 import re
 
 
-COMPRESSION_TABLE = [
+COMPRESSION_TABLE: list[tuple[str, bytes]] = [
     ("[0x7000]", b"\x1C\x00"),
     ("[0x7024]", b"\x1C\x01"),
     ("[0x7000timer]", b"\x1C\x02"),
@@ -70,7 +70,7 @@ DEFAULT_COMPRESSION_TABLE = [
 ]
 
 
-def compress(string: str, compression_table: List[tuple[str, bytearray]]) -> bytearray:
+def compress(string: str, compression_table: List[tuple[str, bytes]]) -> bytearray:
     """Turns a dialog string into bytes."""
     output = bytearray()
     tbl = dict(compression_table)
@@ -108,7 +108,7 @@ def compress(string: str, compression_table: List[tuple[str, bytearray]]) -> byt
     return output
 
 
-def decompress(b, compression_table: List[tuple[str, bytearray]]) -> bytearray:
+def decompress(b, compression_table: List[tuple[str, bytearray]]) -> str:
     output = ''
     tbl = dict(compression_table) 
     cursor = 0

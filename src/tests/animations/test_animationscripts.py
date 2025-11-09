@@ -39,7 +39,7 @@ test_cases = [
         label="NewSpriteAtCoords",
         commands_factory=lambda: [
             NewSpriteAtCoords(
-                sprite_id=SPR0519_DRAIN_EXPLOSION,
+                sprite_id=519,
                 sequence=0,
                 priority=3,
                 vram_address=0x6200,
@@ -70,7 +70,7 @@ test_cases = [
         label="DrawSpriteAtAMEM32Coords",
         commands_factory=lambda: [
             DrawSpriteAtAMEM32Coords(
-                sprite_id=SPR0491_SHYPER,
+                sprite_id=491,
                 sequence=3,
                 store_to_vram=True,
                 store_palette=True,
@@ -1369,7 +1369,7 @@ test_cases = [
     Case(
         label="NewEffectObject",
         commands_factory=lambda: [
-            NewEffectObject(effect=EF0102_SLEDGE, playback_off=True),
+            NewEffectObject(effect=102, playback_off=True),
         ],
         expected_bytes=[0x72, 0x02, 0x66],
     ),
@@ -1555,7 +1555,7 @@ test_cases = [
     ),
     Case(
         label="ScreenEffect",
-        commands_factory=lambda: [ScreenEffect(SEF0006_SCREEN_FLASHES_WHITE)],
+        commands_factory=lambda: [ScreenEffect(6)],
         expected_bytes=[0xA3, 0x06],
     ),
     Case(
@@ -1570,7 +1570,7 @@ test_cases = [
         label="PlaySound",
         commands_factory=lambda: [
             PlaySound(
-                sound=S0089_COMMON_MONSTER_EXPLOSION, identifier="command_0x3505e8"
+                sound=89, identifier="command_0x3505e8"
             ),
         ],
         expected_bytes=[0xAB, 0x59],
@@ -1578,14 +1578,14 @@ test_cases = [
     Case(
         label="PlayMusicAtCurrentVolume",
         commands_factory=lambda: [
-            PlayMusicAtCurrentVolume(M0021_SADSONG),
+            PlayMusicAtCurrentVolume(21),
         ],
         expected_bytes=[0xB0, 0x15],
     ),
     Case(
         label="PlayMusicAtVolume",
         commands_factory=lambda: [
-            PlayMusicAtVolume(M0069_FIGHTAGAINSTSMITHY2, 61456),
+            PlayMusicAtVolume(69, 61456),
         ],
         expected_bytes=[0xB1, 0x45, 0x10, 0xF0],
     ),

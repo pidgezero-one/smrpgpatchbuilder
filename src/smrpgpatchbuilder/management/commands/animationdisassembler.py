@@ -13,10 +13,10 @@ from copy import deepcopy
 from typing import List, Tuple, Dict, Optional, Union
 from dataclasses import dataclass, field
 import numpy as np
+import importlib
+from pathlib import Path
+from .input_file_parser import parse_input_files
 
-# TODO: this game is hellbent on ruining my life
-# ally run away animation has a jump that targets partway through another command (0x35053C)
-# need to do something like specify an optional mid-command offset for jump targets
 
 ORIGINS = [
     "ABSOLUTE_POSITION",
@@ -25,136 +25,8 @@ ORIGINS = [
     "CASTER_CURRENT_POSITION",
 ]
 
-EFFECTS = [
-    "EF0000____DUMMY",
-    "EF0001____DUMMY",
-    "EF0002_THUNDERSHOCK",
-    "EF0003_THUNDERSHOCK__BG_MASK_",
-    "EF0004_CRUSHER",
-    "EF0005_METEOR_BLAST",
-    "EF0006_BOLT",
-    "EF0007_STAR_RAIN",
-    "EF0008_FLAME__FIRE_ENGULF_",
-    "EF0009_MUTE__BALLOON_",
-    "EF0010_FLAME_STONE",
-    "EF0011_BOWSER_CRUSH",
-    "EF0012_SPELL_CAST_SPADE",
-    "EF0013_SPELL_CAST_HEART",
-    "EF0014_SPELL_CAST_CLUB",
-    "EF0015_SPELL_CAST_DIAMOND",
-    "EF0016_SPELL_CAST_STAR",
-    "EF0017_TERRORIZE",
-    "EF0018_SNOWY__SNOW_BG__4BPP_",
-    "EF0019_SNOWY__SNOW_FG__2BPP_",
-    "EF0020_ENDOBUBBLE__BLACK_BALL_ORB_",
-    "EF0021____DUMMY",
-    "EF0022_SOLIDIFY",
-    "EF0023____DUMMY",
-    "EF0024____DUMMY",
-    "EF0025_PSYCH_BOMB__BG_",
-    "EF0026____DUMMY",
-    "EF0027_DARK_STAR",
-    "EF0028_WILLY_WISP__BLUE_ORB_BALL_BG_",
-    "EF0029____DUMMY",
-    "EF0030____DUMMY",
-    "EF0031____DUMMY",
-    "EF0032_GENO_WHIRL",
-    "EF0033____DUMMY",
-    "EF0034____DUMMY",
-    "EF0035____DUMMY",
-    "EF0036_BLANK_WHITE_FLASH__2BPP_",
-    "EF0037_BLANK_WHITE_FLASH__4BPP_",
-    "EF0038_BOULDER",
-    "EF0039_BLACK_BALL_ORB",
-    "EF0040_BLANK_BLUE_FLASH__2BPP_",
-    "EF0041_BLANK_RED_FLASH__2BPP_",
-    "EF0042_BLANK_BLUE_FLASH__4BPP_",
-    "EF0043_BLANK_RED_FLASH__4BPP_",
-    "EF0044____DUMMY",
-    "EF0045_BLANK_DARK_BLUE_FLASH__2BPP_",
-    "EF0046_BLANK_DARK_BLUE_FLASH__4BPP_",
-    "EF0047_METEOR_SHOWER__SNOW_CONFETTI_",
-    "EF0048_PURPLE_VIOLET_FLASH__4BPP_",
-    "EF0049_BROWN_FLASH__4BPP_",
-    "EF0050_DARK_RED_BLAST",
-    "EF0051_DARK_BLUE_BLAST",
-    "EF0052_SNOW_CONFETTI__GREEN",
-    "EF0053_LIGHT_BLUE_BLAST",
-    "EF0054_BLACK_BALL_ORB",
-    "EF0055_RED_BALL_ORB",
-    "EF0056_GREEN_BALL_ORB",
-    "EF0057_SNOW_CONFETTI__SLATE_GREEN",
-    "EF0058_SNOW_CONFETTI__RED",
-    "EF0059_ORANGE_RED_BLAST__FIRE_BOMB_",
-    "EF0060_ICE_BOMB_SOLIDIFY_BG__BLUE_FREEZE_",
-    "EF0061_STATIC_E___ELECTRIC_BLAST_",
-    "EF0062_GREEN_STAR_BUNCHES",
-    "EF0063_BLUE_STAR_BUNCHES",
-    "EF0064_PINK_STAR_BUNCHES",
-    "EF0065_YELLOW_STAR_BUNCHES",
-    "EF0066_AURORA_FLASH",
-    "EF0067_STORM",
-    "EF0068_ELECTROSHOCK",
-    "EF0069_SMITHY_TREASURE_HEAD_SPELL__RED",
-    "EF0070_SMITHY_TREASURE_HEAD_SPELL__GREEN",
-    "EF0071_SMITHY_TREASURE_HEAD_SPELL__BLUE",
-    "EF0072_SMITHY_TREASURE_HEAD_SPELL__YELLOW",
-    "EF0073____DUMMY",
-    "EF0074____DUMMY",
-    "EF0075____DUMMY",
-    "EF0076_FLAME_WALL__ORANGE_RED_FIRE_",
-    "EF0077_PETAL_BLAST_1",
-    "EF0078_PETAL_BLAST_2",
-    "EF0079_DRAIN_BEAM_BG__4BPP_",
-    "EF0080_DRAIN_BEAM_FG__2BPP_",
-    "EF0081____DUMMY",
-    "EF0082_ELECTRIC_BOLT",
-    "EF0083_SAND_STORM_BG__2BPP_",
-    "EF0084____DUMMY",
-    "EF0085_POLLEN_NAP__YELLOW_POLLEN_",
-    "EF0086_GENO_BEAM__BLUE",
-    "EF0087_GENO_BEAM__RED",
-    "EF0088_GENO_BEAM__GOLD",
-    "EF0089_GENO_BEAM__YELLOW",
-    "EF0090_GENO_BEAM__GREEN",
-    "EF0091_THUNDERBOLT",
-    "EF0092_LIGHT_BEAM",
-    "EF0093_METEOR_SHOWER",
-    "EF0094_S__CROW_DUST__PURPLE_POLLEN_",
-    "EF0095_HP_RAIN_BG",
-    "EF0096_HP_RAIN_FG",
-    "EF0097_WAVY_DARK_BLUE_LINES",
-    "EF0098_WAVY_BLUE_LINES",
-    "EF0099_WAVY_RED_LINES",
-    "EF0100_WAVY_BROWN_LINES",
-    "EF0101_SAND_STORM_FG__4BPP_",
-    "EF0102_SLEDGE",
-    "EF0103_ARROW_RAIN",
-    "EF0104_SPEAR_RAIN",
-    "EF0105_SWORD_RAIN",
-    "EF0106_LIGHTNING_ORB__BG_WAVES_",
-    "EF0107_ECHOFINDER",
-    "EF0108_POISON_GAS_FG_1",
-    "EF0109_POISON_GAS_FG_2",
-    "EF0110_POISON_GAS_BG",
-    "EF0111_SMITHY_TRANSFORMS__BEAM_EFFECT_",
-    "EF0112_SMELTER__S_MOLTEN_METAL",
-    "EF0113____DUMMY",
-    "EF0114____DUMMY",
-    "EF0115____DUMMY",
-    "EF0116____DUMMY",
-    "EF0117____DUMMY",
-    "EF0118____DUMMY",
-    "EF0119____DUMMY",
-    "EF0120____DUMMY",
-    "EF0121____DUMMY",
-    "EF0122____DUMMY",
-    "EF0123____DUMMY",
-    "EF0124____DUMMY",
-    "EF0125____DUMMY",
-    "EF0126____DUMMY",
-    "EF0127____DUMMY",
-]
+# effects will be populated from battle_effect_names.input
+EFFECTS: List[str] = []
 
 FLASH_COLOURS = ["NO_COLOUR", "RED", "GREEN", "YELLOW", "BLUE", "PINK", "AQUA", "WHITE"]
 
@@ -168,319 +40,13 @@ BONUS_MESSAGES = [
     "BM_LUCKY",
 ]
 
-SCREEN_EFFECTS = [
-    "SEF0000_GENO_FLASH",
-    "SEF0001_SNOWY",
-    "SEF0002_TERRORIZE",
-    "SEF0003_SHOCKER",
-    "SEF0004_UNKNOWN",
-    "SEF0005_SLASH_INSTANT_DEATH",
-    "SEF0006_SCREEN_FLASHES_WHITE",
-    "SEF0007_CHANGE_BATTLEFIELD",
-    "SEF0008_COME_BACK",
-    "SEF0009_GENO_BEAM",
-    "SEF0010_GENO_BLAST",
-    "SEF0011_HOWL",
-    "SEF0012_WIN_BATTLE_WINDOW",
-    "SEF0013_SET_BATTLEFIELD_COORDS",
-    "SEF0014_SQUASH_BIG_STAR",
-    "SEF0015_UNKNOWN",
-    "SEF0016_UNKNOWN",
-    "SEF0017_CORONA",
-    "SEF0018_MEGA_DRAIN",
-    "SEF0019_UNKNOWN",
-    "SEF0020_UNKNOWN",
-]
+# screen_effects will be populated from screen_effect_names.input
+SCREEN_EFFECTS: List[str] = []
 
-SOUNDS = [
-    "S0000_SILENCE",
-    "S0001_MENU_SELECT",
-    "S0002_MENU_CANCEL",
-    "S0003_MENU_SCROLL",
-    "S0004_JUMP",
-    "S0005_BIRDIE_TWEET",
-    "S0006_BONUS_FLOWER_STATUS_UP",
-    "S0007_ERROR_INCORRECT_ANSWER",
-    "S0008_GET_DIZZY",
-    "S0009_ARROW_SLING",
-    "S0010_MALLOW_PUNCH_1",
-    "S0011_SWOOSH_RUN_AWAY",
-    "S0012_BOMB_EXPLOSION",
-    "S0013_COIN",
-    "S0014_ITEM_GET",
-    "S0015_SPIKE_STING",
-    "S0016_BITE",
-    "S0017_STAR_GUN_SHOOT",
-    "S0018_SUPER_JUMP_HIT_1",
-    "S0019_DRAIN_BEAM",
-    "S0020_AURORA_FLASH",
-    "S0021_SCARECROW_BIRDIES",
-    "S0022_CORONA_DESCENDS",
-    "S0023_SMALL_LASER",
-    "S0024_NULL",
-    "S0025_SLAP_BIG",
-    "S0026_FLAME_WALL",
-    "S0027_ITEM_1_UP",
-    "S0028_FLAME",
-    "S0029_FIRE_SHOOT",
-    "S0030_FIRE_THROW",
-    "S0031_FIRE_HIT",
-    "S0032_FIRE_BURN",
-    "S0033_INSERT",
-    "S0034_",
-    "S0035_SPELL_POWER_UP",
-    "S0036_SNOW",
-    "S0037_MONSTER_ITEM_TOSS",
-    "S0038_FRYING_PAN_HIT_2",
-    "S0039_CLAW",
-    "S0040_PIERCE",
-    "S0041_SUPER_JUMP_HIT_4",
-    "S0042_BLADE",
-    "S0043_COIN_SHOWERS_INTO_FOUNTAIN",
-    "S0044_BOLT",
-    "S0045_HP_RAIN_CLOUD",
-    "S0046_PLASMA_BOUNCE",
-    "S0047_DRY_CLUNK",
-    "S0048_MALLOW_PUNCH_2",
-    "S0049_CYMBAL_CRASH",
-    "S0050_SUPER_JUMP_HIT_5",
-    "S0051_FIRE_THROW_BIG",
-    "S0052_FINGER_SHOT_BULLETS",
-    "S0053_THWOMP_HIT_GROUND",
-    "S0054_HAMMER_HIT_1",
-    "S0055_HAMMER_HIT_2",
-    "S0056_SUPER_JUMP_HIT_1_UP",
-    "S0057_FIRE_SPOUT",
-    "S0058_SUPER_JUMP_HIT_2",
-    "S0059_SUPER_JUMP_HIT_3",
-    "S0060_CYMBAL_RESONANCE",
-    "S0061_ITEM_USE",
-    "S0062_MONSTER_RUN_AWAY",
-    "S0063_GENO_BLAST_IGNITION",
-    "S0064_EGG_HATCH",
-    "S0065_YOSHI_CANT_MAKE_COOKIE",
-    "S0066_RECOVER_HP",
-    "S0067_RECOVER_FP",
-    "S0068_RECOVER_DRINK",
-    "S0069_GENO_POWER_UP",
-    "S0070_GENO_BEAM",
-    "S0071_PSYCHOPATH_DRUM_ROLL",
-    "S0072_PSYCHOPATH_CLOUD_APPEARS",
-    "S0073_SPELL_NAME",
-    "S0074_QUACK",
-    "S0075_YOSHI_TALK",
-    "S0076_STAT_BOOST_SINGLE",
-    "S0077_STAT_BOOST_MULTI",
-    "S0078_TIMED_STAT_BOOST",
-    "S0079_RUMBLE_SINGLE",
-    "S0080_WALLOP_1",
-    "S0081_WALLOP_2",
-    "S0082_WALLOP_3",
-    "S0083_FRYING_PAN_HIT_1",
-    "S0084_WALLOP_4",
-    "S0085_WALLOP_5",
-    "S0086_LONG_FALL",
-    "S0087_BIG_BOUNCE",
-    "S0088_TICKING_BOMB",
-    "S0089_COMMON_MONSTER_EXPLOSION",
-    "S0090_BIRDIE_CALL",
-    "S0091_NULL",
-    "S0092_SPEAR_RAIN_SINGLE",
-    "S0093_BOWYER_ARROW_LOCK_BUTTON",
-    "S0094_SHOCKER",
-    "S0095_BOWSERS_CRUSHER",
-    "S0096_RUMBLE_MULTI",
-    "S0097_PLASMA_TOSS",
-    "S0098_CLICK",
-    "S0099_WILLY_WISP",
-    "S0100_ELECTROSHOCK_SPARKS",
-    "S0101_STENCH",
-    "S0102_STATIC_E",
-    "S0103_CRYSTAL_HITS",
-    "S0104_BLIZZARD",
-    "S0105_ROCK_CANDY",
-    "S0106_LIGHT_BEAM",
-    "S0107_BUBBLE_POP",
-    "S0108_HOWL",
-    "S0109_GENO_HAND_CANNON_SHOOT",
-    "S0110_HUGE_EXPLOSION",
-    "S0111_SLEDGE",
-    "S0112_SWING",
-    "S0113_GENO_FINGER_SHOT_HIT",
-    "S0114_SPIKEY_ATTACK",
-    "S0115_TRANSFORM",
-    "S0116_TERRAPIN_SWING",
-    "S0117_STING",
-    "S0118_GENO_BLAST_END",
-    "S0119_METEOR_SWARM",
-    "S0120_DEEP_SWALLOW",
-    "S0121_BIG_SWING",
-    "S0122_POISONED",
-    "S0123_CHOMP_BITE",
-    "S0124_GOOMBA_ROLL",
-    "S0125_SPIKE_SHOT",
-    "S0126_FLOPPING_HIT",
-    "S0127_LIQUID_DROPLET",
-    "S0128_AMANITA_CURLS",
-    "S0129_THROW",
-    "S0130_VALOR_UP_VIGOR_UP",
-    "S0131_ECHOING_BUBBLE",
-    "S0132_STINGER_POISON",
-    "S0133_LULLABY_SAD_SONG",
-    "S0134_BOO_DISAPPEARS",
-    "S0135_BOO_APPEARS",
-    "S0136_BOO_APPROACHES",
-    "S0137_BOWSER_CRUSH_STOMP",
-    "S0138_ENDOBUBBLE",
-    "S0139_GUITAR_STRING",
-    "S0140_S_CROW_BELL",
-    "S0141_LULLABY_MARIO_THEME",
-    "S0142_DRY_BONES_ATTACK",
-    "S0143_TOSS",
-    "S0144_LIGHTNING_ORB",
-    "S0145_ARTICHOKER_SPINES",
-    "S0146_SLAP",
-    "S0147_NULL",
-    "S0148_SMITHY_BULLET_FINGERS",
-    "S0149_ENEMY_JUMPS_HIGH",
-    "S0150_ENEMY_TAUNTS_THEN_HITS",
-    "S0151_SPORES",
-    "S0152_HIT",
-    "S0153_GUERRILLA_THINKS",
-    "S0154_BUZZING_BEE",
-    "S0155_SPARKY_HIT",
-    "S0156_CHOMP_BITE",
-    "S0157_ENIGMA_SCATTERS",
-    "S0158_YELP",
-    "S0159_BIG_DEEP_HIT",
-    "S0160_SLAP",
-    "S0161_SPORE_CHIMES_DOOM_REVERB",
-    "S0162_NULL",
-    "S0163_NULL",
-    "S0164_CARROBOSCIS_ATTACK",
-    "S0165_SKY_TROOPA_FLAPS",
-    "S0166_TAPPING_FEET",
-    "S0167_BELOME_EATS",
-    "S0168_TERRAPIN_ATTACK",
-    "S0169_TELEPORT_ATTACK",
-    "S0170_SUBMERGED_UNDER",
-    "S0171_SLAP_POWERFUL",
-    "S0172_WEAPON_TIMING",
-    "S0173_TERRORIZE",
-    "S0174_SOLIDIFY",
-    "S0175_DEATHSICKLE",
-    "S0176_BOSS_FADE_OUT_DEATH",
-    "S0177_POISON_GAS_1",
-    "S0178_POISON_GAS_2",
-    "S0179_SLEEPY_BOMB",
-    "S0180_SLEEPY_TIME_TIMED",
-    "S0181_LAMB_S_LURE_SINGLE",
-    "S0182_SHEEP_ATTACK_1",
-    "S0183_FLOATING_LAMB",
-    "S0184_SHEEP_ATTACK_2_MULTI",
-    "S0185_GENO_FLASH_SHOOT",
-    "S0186_GENO_FLASH_EXPLOSION",
-    "S0187_MUTE_BALLOON_RISES",
-    "S0188_PETAL_BLAST",
-    "S0189_POLLEN_NAP",
-    "S0190_COME_BACK",
-    "S0191_MUTE_BALLOON_FAILS",
-    "S0192_BIG_SHELL_KICK",
-    "S0193_BIG_SHELL_HIT_1",
-    "S0194_BIG_SHELL_HIT_2",
-    "S0195_EXPLOSIVE_HIT",
-    "S0196_GENO_FLASH_TRANSFORMATION",
-    "S0197_GENO_STAR_GUN_HIT",
-    "S0198_ICE_ROCK",
-    "S0199_ARROW_RAIN",
-    "S0200_SPEAR_RAIN_MULTI",
-    "S0201_SWORD_RAIN",
-    "S0202_CORONA_FLASH",
-    "S0203_MEGA_DRAIN_SINGLE",
-    "S0204_CHOMPING",
-    "S0205_JINXED",
-    "S0206_MONSTER_SWING",
-    "S0207_MONSTER_TAUNT",
-    "S0208_SMITHY_FORM_1_LIGHT_UP",
-    "S0209_SMITHY_FORM_1_TRANSFORM",
-    "S0210_BOOSTER_EXPRESS_TRAIN_HORN",
-]
-MUSIC = [
-    "M0000_CURRENT",
-    "M0001_DODO_SCOMING",
-    "M0002_MUSHROOMKINGDOM",
-    "M0003_FIGHTAGAINSTSTRONGERMONSTER",
-    "M0004_YO_STERISLAND",
-    "M0005_SEASIDETOWN",
-    "M0006_FIGHTAGAINSTMONSTERS",
-    "M0007_PIPEVAULT",
-    "M0008_INVINCIBLESTAR",
-    "M0009_VICTORY",
-    "M0010_INTHEFLOWERGARDEN",
-    "M0011_BOWSER_SCASTLE_1STTIME",
-    "M0012_FIGHTAGAINSTBOWSER",
-    "M0013_ROADISFULLOFDANGERS",
-    "M0014_MARIO_SPAD",
-    "M0015_HERE_SSOMEWEAPONS",
-    "M0016_LET_SRACE",
-    "M0017_TADPOLEPOND",
-    "M0018_ROSETOWN",
-    "M0019_RACETRAINING",
-    "M0020_SHOCK",
-    "M0021_SADSONG",
-    "M0022_MIDASRIVER",
-    "M0023_GOTASTARPIECE_PART1",
-    "M0024_GOTASTARPIECE_PART2",
-    "M0025_FIGHTAGAINSTANARMEDBOSS",
-    "M0026_FORESTMAZE",
-    "M0027_DUNGEONISFULLOFMONSTERS",
-    "M0028_LET_SPLAYGENO",
-    "M0029_STARTSLOTMENU",
-    "M0030_LONGLONGAGO",
-    "M0031_BOOSTER_STOWER",
-    "M0032_ANDMYNAME_SBOOSTER",
-    "M0033_MOLEVILLE",
-    "M0034_STARHILL",
-    "M0035_MOUNTAINRAILROAD",
-    "M0036_EXPLANATION",
-    "M0037_BOOSTERHILL_START",
-    "M0038_BOOSTERHILL",
-    "M0039_MARRYMORE",
-    "M0040_NEWPARTNER",
-    "M0041_SUNKENSHIP",
-    "M0042_STILLTHEROADISFULLOFMONSTERS",
-    "M0043_SILENCE",
-    "M0044_SEA",
-    "M0045_HEARTBEATINGALITTLEFASTER_PART1",
-    "M0046_HEARTBEATINGALITTLEFASTER_PART2",
-    "M0047_GRATEGUY_SCASINO",
-    "M0048_GENOAWAKENS",
-    "M0049_CELEBRATIONAL",
-    "M0050_NIMBUSLAND",
-    "M0051_MONSTROTOWN",
-    "M0052_TOADOFSKY",
-    "M0053_SILENCE",
-    "M0054_HAPPYADVENTURE_DELIGHFULADVENTURE",
-    "M0055_WORLDMAP",
-    "M0056_FACTORY",
-    "M0057_SWORDCRASHESANDSTARSSCATTER",
-    "M0058_CONVERSATIONWITHCULEX",
-    "M0059_FIGHTAGAINSTCULEX",
-    "M0060_VICTORYAGAINSTCULEX",
-    "M0061_VALENTINA",
-    "M0062_BARRELVOLCANO",
-    "M0063_AXEMRANGERSDROPIN",
-    "M0064_THEEND",
-    "M0065_GATE",
-    "M0066_BOWSER_SCASTLE_2NDTIME",
-    "M0067_WEAPONSFACTORY",
-    "M0068_FIGHTAGAINSTSMITHY1",
-    "M0069_FIGHTAGAINSTSMITHY2",
-    "M0070_ENDINGPART1",
-    "M0071_ENDINGPART2",
-    "M0072_ENDINGPART3",
-    "M0073_ENDINGPART4",
-]
+# sounds will be populated from battle_sfx_names.input
+SOUNDS: List[str] = []
+# music will be populated from music_names.input
+MUSIC: List[str] = []
 
 TARGETS = [
     "MARIO",
@@ -807,7 +373,7 @@ ENEMIES = [
     "Chomp", # 22
     "Pandorite", # 23
     "ShyRanger", # 24
-    # "BobombHenchman", # TODO rando shold reaplce all of these Bobombs
+    # "bobombhenchman", # todo rando shold reaplce all of these bobombs
     "Bobomb", # 25
     "Spookum", # 26
     "HammerBro", # 27
@@ -830,7 +396,7 @@ ENEMIES = [
     "HeavyTroopa", # 44
     "Shadow", # 45
     "Cluster", # 46
-    # "BahamuttMagikoopa",
+    # "bahamuttmagikoopa",
     "Bahamutt",  # same as bobombhenchman
     "Octolot", # 48
     "Frogog", # 49
@@ -1814,14 +1380,14 @@ def get_sprite_name(id):
     return get_var_name_string(id, "SPR")
 
 
-# Monster behaviours are pretty much just object queues.
-# The "Sprite behaviour" dropdown is a pointer to an object queue.
+# monster behaviours are pretty much just object queues.
+# the "sprite behaviour" dropdown is a pointer to an object queue.
 # 0x350202 + (enemy index * 2) = at this address you will find the address of the object queue the monster uses
 monster_behaviour_oq_offsets = [
-    0x35058A,  # no movement for "Escape"
+    0x35058A,  # no movement for "escape"
     0x350596,  # slide backward when hit
-    0x3505A2,  # Bowser Clone sprite
-    0x3505AE,  # Mario Clone sprite
+    0x3505A2,  # bowser clone sprite
+    0x3505AE,  # mario clone sprite
     0x3505BA,  # no reaction when hit
     0x350898,  # sprite shadow
     0x350985,  # floating, sprite shadow
@@ -1831,11 +1397,15 @@ monster_behaviour_oq_offsets = [
     0x350AEB,  # fade out death, floating
     0x350CF2,  # fade out death
     0x350CFE,  # fade out death
-    0x350D0A,  # fade out death, Smithy spell cast
-    0x350D16,  # fade out death, no "Escape" movement
-    0x350E60,  # fade out death, no "Escape" transition
+    0x350D0A,  # fade out death, smithy spell cast
+    0x350D16,  # fade out death, no "escape" movement
+    0x350E60,  # fade out death, no "escape" transition
     0x350E6C,  # (normal)
     0x350E78,  # no reaction when hit
+]
+
+monster_entrance_offsets = [
+    0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC
 ]
 
 
@@ -1911,12 +1481,12 @@ banks: Dict[str, Bank] = {
     # gap
     "ally_spells": Bank(
         0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
-    ),  # NOTE: Adjusted due to clone spells!
+    ),  # note: adjusted due to clone spells!
     # gap
     "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
     "battle_events": Bank(0x3A6000, 0x3A705C),
 
-    #"battle_events": Bank(0x3A60D0, 0x3A705C, 0x3A6004, 0x3A60CF),
+    #"battle_events": bank(0x3a60d0, 0x3a705c, 0x3a6004, 0x3a60cf),
 }
 
 BATTLE_EVENT_INDEXES_START_AT = 0x3A6004
@@ -2099,7 +1669,7 @@ command_lens = [
     1,
     1,
     2,
-    1,  # 0xA0
+    1,  # 0xa0
     2,
     4,
     1,
@@ -2115,7 +1685,7 @@ command_lens = [
     3,
     3,
     3,
-    2,  # 0xB0
+    2,  # 0xb0
     5,
     1,
     1,
@@ -2131,7 +1701,7 @@ command_lens = [
     1,
     1,
     8,
-    6,  # 0xC0
+    6,  # 0xc0
     4,
     1,
     2,
@@ -2147,7 +1717,7 @@ command_lens = [
     1,
     6,
     1,
-    1,  # 0xD0
+    1,  # 0xd0
     1,
     4,
     1,
@@ -2163,7 +1733,7 @@ command_lens = [
     1,
     1,
     1,
-    1,  # 0xE0
+    1,  # 0xe0
     1,
     1,
     1,
@@ -2179,7 +1749,7 @@ command_lens = [
     1,
     1,
     1,
-    1,  # 0xF0
+    1,  # 0xf0
 ]
 
 # command_lens = [
@@ -2193,12 +1763,12 @@ command_lens = [
 #   1, 1, 3, 1, 3, 3, 1, 2, 2, 5, 3, 1, 1, 1, 2, 1, # 0x70
 #   4, 1, 1, 2, 3, 3, 7, 1, 1, 1, 2, 5, 1, 1, 3, 2, # 0x80
 #   1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 5, 9, 2, 3, 1, # 0x90
-#   1, 1, 5, 2, 1, 1, 1, 3, 3, 1, 1, 2, 1, 1, 2, 1, # 0xA0
-#   2, 4, 1, 1, 1, 1, 3, 1, 1, 1, 4, 2, 3, 3, 3, 2, # 0xB0
-#   5, 1, 1, 2, 1, 1,10, 2, 2, 2, 1, 2, 1, 1, 8, 6, # 0xC0
-#   4, 1, 2, 4, 6, 4, 1, 1, 3, 1, 1, 2, 1, 6, 1, 1, # 0xD0
-#   1, 4, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, # 0xE0
-#   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  # 0xF0
+#   1, 1, 5, 2, 1, 1, 1, 3, 3, 1, 1, 2, 1, 1, 2, 1, # 0xa0
+#   2, 4, 1, 1, 1, 1, 3, 1, 1, 1, 4, 2, 3, 3, 3, 2, # 0xb0
+#   5, 1, 1, 2, 1, 1,10, 2, 2, 2, 1, 2, 1, 1, 8, 6, # 0xc0
+#   4, 1, 2, 4, 6, 4, 1, 1, 3, 1, 1, 2, 1, 6, 1, 1, # 0xd0
+#   1, 4, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, # 0xe0
+#   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  # 0xf0
 # ]
 
 rom_coverage = [None] * 0x400000
@@ -2209,26 +1779,26 @@ class AMEM(list):
     """Base class representing a battlefield layout as a list of 16 lists of ints."""
 
     def __new__(cls, data):
-        # Validate the outer list length
+        # validate the outer list length
         if not isinstance(data, list) or len(data) != 16:
             raise ValueError("AMEM must be a list of 16 lists.")
 
-        # Validate each inner list
+        # validate each inner list
         for i, inner in enumerate(data):
             if not isinstance(inner, list):
                 raise TypeError(f"Element at index {i} is not a list.")
             if not all(isinstance(x, int) for x in inner):
                 raise TypeError(f"Element at index {i} contains non-integer values.")
 
-        # Create the list instance (empty; contents set in __init__)
+        # create the list instance (empty; contents set in __init__)
         return super().__new__(cls)
 
     def __init__(self, data):
-        # Initialize list contents
+        # initialize list contents
         super().__init__(data)
 
     def __reduce_ex__(self, protocol):
-        # Tell pickle/deepcopy how to reconstruct us: call AMEM(list(self))
+        # tell pickle/deepcopy how to reconstruct us: call amem(list(self))
         return (self.__class__, (list(self),))
 
 @dataclass
@@ -2265,7 +1835,8 @@ def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_sta
             cmd = rom[dex]
             l = command_lens[cmd]
             if cmd == 0x02 or cmd == 0x47:
-                print("Warning: encountered 0x02 or 0x47 command at 0x%06X" % dex)
+                # print("warning: encountered 0x02 or 0x47 command at 0x%06x" % dex)
+                pass
             if cmd == 0xC6 and l == 0:
                 l = 2 + rom[dex + 1]
             elif cmd == 0xBA and l == 0:
@@ -2288,7 +1859,7 @@ jmp_cmds = [
     0x2B,
     0x38,
     0x39,
-    0x47, # EXPERIMENTAL
+    0x47, # experimental
     0x50,
     0x51,
     0x5D,
@@ -2304,7 +1875,7 @@ jmp_cmds = [
 jmp_cmds_1 = [0x68]
 
 TERMINATING_OPCODES = [0x09, 0x11, 0x07, 0x5E,
-                       0x02 # EXPERIMENTAL
+                       0x02 # experimental
                        ]
 
 SPECIAL_CASE_BREAKS = [
@@ -2442,6 +2013,110 @@ def get_third_byte_as_string(bank_name: str) -> str:
     else:
         return "35"
 
+
+def load_items_from_disassembler_output() -> List[Optional[str]]:
+    """load item class names from disassembled items output.
+
+    returns:
+        list of 256 item class names (or none for invalid items), indexed by item id
+    """
+    try:
+        module = importlib.import_module("disassembler_output.items.items")
+        all_items = getattr(module, "ALL_ITEMS", None)
+        if all_items is None:
+            raise ValueError("Could not find ALL_ITEMS in items.py")
+
+        # build array indexed by item_id
+        items_array: List[Optional[str]] = [None] * 256
+        for item in all_items.items:
+            item_id = item.item_id
+            class_name = item.__class__.__name__
+            items_array[item_id] = class_name
+
+        return items_array
+    except ImportError:
+        # if items haven't been disassembled yet, return empty array
+        return [None] * 256
+
+
+def load_enemies_from_disassembler_output() -> List[str]:
+    """load enemy class names from disassembled enemies output.
+
+    returns:
+        list of 256 enemy class names, indexed by enemy id
+    """
+    try:
+        module = importlib.import_module("disassembler_output.enemies.enemies")
+        all_enemies = getattr(module, "ALL_ENEMIES", None)
+        if all_enemies is None:
+            raise ValueError("Could not find ALL_ENEMIES in enemies.py")
+
+        # build array indexed by monster_id
+        enemies_array: List[str] = ["UnknownEnemy"] * 256
+        for enemy in all_enemies.enemies:
+            monster_id = enemy._monster_id
+            class_name = enemy.__class__.__name__
+            enemies_array[monster_id] = class_name
+
+        return enemies_array
+    except ImportError:
+        # if enemies haven't been disassembled yet, return empty array
+        return ["UnknownEnemy"] * 256
+
+
+def load_arrays_from_input_files() -> Dict[str, List[str]]:
+    """load sound, effect, screen effect, and music arrays from .input files.
+
+    returns:
+        dictionary with keys 'sounds', 'effects', 'screen_effects', 'music'
+    """
+    config_dir = Path(__file__).resolve().parents[4] / "config"
+
+    # load the input files
+    parsed = parse_input_files(config_dir)
+
+    # build arrays from parsed data
+    result = {}
+
+    # load sounds from battle_sfx_names.input
+    if "battle_sfx_names" in parsed:
+        sounds = [""] * 256
+        for name, idx in parsed["battle_sfx_names"]:
+            sounds[int(idx)] = name
+        result["sounds"] = sounds
+    else:
+        result["sounds"] = [""] * 256
+
+    # load effects from battle_effect_names.input
+    if "battle_effect_names" in parsed:
+        effects = [""] * 256
+        for name, idx in parsed["battle_effect_names"]:
+            effects[int(idx)] = name
+        result["effects"] = effects
+    else:
+        result["effects"] = [""] * 256
+
+    # load screen effects from screen_effect_names.input
+    if "screen_effect_names" in parsed:
+        screen_effects = [""] * 256
+        for name, idx in parsed["screen_effect_names"]:
+            screen_effects[int(idx)] = name
+        result["screen_effects"] = screen_effects
+    else:
+        result["screen_effects"] = [""] * 256
+
+    # load music from music_names.input
+    if "music_names" in parsed:
+        music = [""] * 256
+        for name, idx in parsed["music_names"]:
+            music[int(idx)] = name
+        result["music"] = music
+    else:
+        result["music"] = [""] * 256
+
+    return result
+
+
 BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
 class Command(BaseCommand):
@@ -2475,7 +2150,7 @@ class Command(BaseCommand):
         references: Dict[int, List[str]] = {}
 
         for bank_id, blocks in banks.items():
-            print(f'Processing bank: {bank_id}')
+            # print(f'processing bank: {bank_id}')
             third_byte_as_string = get_third_byte_as_string(bank_id)
             reference_label = bank_id
 
@@ -2484,19 +2159,19 @@ class Command(BaseCommand):
             bank_pointer_addresses: List[int] = []
             script_sizes: List[int] = []
 
-            # This is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
+            # this is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
             branches: List[Addr] = []
             amem: AMEM = deepcopy(INIT_AMEM)
 
-            # To start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
+            # to start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
             if blocks.has_pointers:
                 for pointer_table_index, pointer in enumerate(
-                    range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be None if has_pointers is True
+                    range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be none if has_pointers is true
                 ):
                     three_byte_pointer: int = (
                         shortify(rom, pointer) + bank_as_upper_byte
                     )
-                    # This is a string that tells us what the script does, i.e. froggiestick miss, ice bomb, etc.
+                    # this is a string that tells us what the script does, i.e. froggiestick miss, ice bomb, etc.
                     ref_label = "%s %s" % (
                         reference_label,
                         (
@@ -2506,7 +2181,7 @@ class Command(BaseCommand):
                         ),
                     )
                     bank_pointer_addresses.append(three_byte_pointer)
-                    print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06X}")
+                    # print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06x}")
                     branches.append(
                         Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
                     )
@@ -2520,7 +2195,7 @@ class Command(BaseCommand):
                     known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
                     if tertiary_points_to < tertiary_end:
                         tertiary_end = tertiary_points_to
-                    print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06X}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06X}")
+                    # print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06x}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06x}")
                     tertiary_cursor += 2
                     tertiary_cursor_short = tertiary_cursor & 0xFFFF
                     oq_idx_starts.append(
@@ -2531,7 +2206,7 @@ class Command(BaseCommand):
                         )
                     )
                     branches.append(Addr(bank_as_upper_byte + tertiary_points_to, deepcopy(INIT_AMEM), BATTLE_EVENTS_ROOT_LABEL, []))
-                # force 0x3A6000 to be processed as ptr table, do not treat it as a branch
+                # force 0x3a6000 to be processed as ptr table, do not treat it as a branch
                 o = OQRef(
                         0x3A6000,
                         deepcopy(INIT_AMEM),
@@ -2542,29 +2217,29 @@ class Command(BaseCommand):
                     o
                 )
             else:
-                print(f"    adding {bank_id} 0x{blocks.start:06X}")
+                # print(f"    adding {bank_id} 0x{blocks.start:06x}")
                 branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
-            # Now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
+            # now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                print(f'    Tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06X}): {this_branch}')
-                # AMEM can control where the code branches to.
+                # print(f'    tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06x}): {this_branch}')
+                # amem can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
                 absolute_offset = this_branch.offset 
 
-                # Keep a running, recursive list of what top-level scripts ultimately reference this code.
-                # This will ultimatley be displayed in the output python file as an annotation.
+                # keep a running, recursive list of what top-level scripts ultimately reference this code.
+                # this will ultimatley be displayed in the output python file as an annotation.
                 cursor = absolute_offset
                 if absolute_offset not in references:
                     references[absolute_offset] = []
                 references[absolute_offset].extend(this_branch.referenced_by)
                 references[absolute_offset] = list(set(references[absolute_offset]))
 
-                # Process every command in the script until we find a terminating byte.
+                # process every command in the script until we find a terminating byte.
                 end_found = False
                 while not end_found:
-                    print(f'        current_addr: 0x{cursor:06X}')
+                    # print(f'        current_addr: 0x{cursor:06x}')
                     def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
                         if important_amem_indexes_raw is None:
                             important_amem_indexes_raw = [0]
@@ -2609,7 +2284,7 @@ class Command(BaseCommand):
 
                         if not jump_voided:
                             branches.append(destination_branch)
-                            print(f'            --> adding new branch entry for 0x{destination_branch.offset:06X}: {destination_branch}')
+                            # print(f'            --> adding new branch entry for 0x{destination_branch.offset:06x}: {destination_branch}')
 
                         return destination_branch
 
@@ -2625,13 +2300,16 @@ class Command(BaseCommand):
                             ptrs: List[int] = []
                             if label_override is not None:
                                 label = label_override
+                            # check if this is a monster behaviour object queue (should have exactly 6 pointers)
+                            is_monster_behaviour = base_addr in monster_behaviour_oq_offsets
+                            max_pointers = 6 if is_monster_behaviour else None
                             while temp_cursor_addr_short < tbl_ends_at:
                                 cursor_points_to = shortify(rom, temp_cursor_addr)
                                 known_addresses_covered[third_byte_as_string][temp_cursor_addr_short] = True
                                 known_addresses_covered[third_byte_as_string][temp_cursor_addr_short + 1] = True
                                 if cursor_points_to < tbl_ends_at:
                                     tbl_ends_at = cursor_points_to
-                                print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06X}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06X}")
+                                # print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06x}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06x}")
                                 temp_cursor_addr += 2
                                 temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
                                 amem = deepcopy(INIT_AMEM)
@@ -2647,23 +2325,26 @@ class Command(BaseCommand):
                                 ptrs.append(ref)
                                 i += 1
                                 length += 2
+                                # for monster behaviours, stop after exactly 6 pointers
+                                if max_pointers is not None and i >= max_pointers:
+                                    break
                                 if not (temp_cursor_addr_short < tbl_ends_at):
                                     break
                             s.length = length
                             s.pointers = ptrs
                         return length
 
-                    # Get the bytes for whatever command begins at current_addr.
-                    # Check first if this is the start of an OQ pointer table. Add branches if so, and mark table range as used.
+                    # get the bytes for whatever command begins at current_addr.
+                    # check first if this is the start of an oq pointer table. add branches if so, and mark table range as used.
                     if cursor in [s.addr for s in oq_starts]:
                         s = next((s for s in oq_starts if s.addr == cursor), None)
                         if not s:
                             raise ValueError("how did you get here?")
-                        print("        THIS IS A ONE-TIER OQ")
+                        # print("        this is a one-tier oq")
                         cursor += create_object_queue(s.addr)
                         continue
                     elif cursor in [s.addr for s in oq_idx_starts]:
-                        print("        THIS IS A TWO-TIER OQ")
+                        # print("        this is a two-tier oq")
                         complex_oq = next((s for s in oq_idx_starts if s.addr == cursor), None)
                         if not complex_oq:
                             raise ValueError("how did you get here?")
@@ -2675,40 +2356,40 @@ class Command(BaseCommand):
                         length = 0
                         while cursor_short < tbl_ends_at:
                             length += 2
-                            # figure out where every basic OQ in the complex OQ starts
-                            # by iterating through short pointers until we hit the start of a basic OQ
+                            # figure out where every basic oq in the complex oq starts
+                            # by iterating through short pointers until we hit the start of a basic oq
                             if i in complex_oq.relevant_indexes:
                                 # relevant indexes are ones that we know are actually referenced by a script
-                                # and therefore need to carry possible AMEM values and a label
-                                # other indexes are probably unused but we should know them if they are parts of OQs
+                                # and therefore need to carry possible amem values and a label
+                                # other indexes are probably unused but we should know them if they are parts of oqs
                                 amem = complex_oq.amem
                                 label = complex_oq.label
                             else:
                                 amem = deepcopy(INIT_AMEM)
                                 amem[0] = [i]
                                 label = ""
-                            # if this basic OQ is a lower pointer than any others, it's probably where the complex OQ table ends
+                            # if this basic oq is a lower pointer than any others, it's probably where the complex oq table ends
                             cursor_points_to = shortify(rom, cursor)
                             if cursor_points_to < tbl_ends_at:
                                 tbl_ends_at = cursor_points_to
-                            # we know these bytes are used because they point to a basic OQ
+                            # we know these bytes are used because they point to a basic oq
                             known_addresses_covered[third_byte_as_string][cursor_short] = True
                             known_addresses_covered[third_byte_as_string][cursor_short + 1] = True
-                            # add a branch to the branch array for the basic OQ
+                            # add a branch to the branch array for the basic oq
                             # relevant indexes based on the amem being passed in
                             relevant_indexes = list(set([x for sub in amem for x in sub]))
                             pointed_addr = bank_as_upper_byte + cursor_points_to
                             ref = OQRef(pointed_addr, amem, relevant_indexes, label)
                             oq_starts.append(ref)
                             complex_oq.pointers.append(pointed_addr)
-                            # parse the basic OQ to add its branches
-                            print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))  
+                            # parse the basic oq to add its branches
+                            # print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))
                             if this_branch.offset == BATTLE_EVENT_INDEXES_START_AT:
                                 battle_event_index = (cursor - BATTLE_EVENT_INDEXES_START_AT) // 2
                                 label = SCRIPT_NAMES["battle_events"][battle_event_index]
                                 create_object_queue(pointed_addr, label_override=label)
                             elif this_branch.offset == UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:
-                                print(f"cursor: 0x{cursor:06X}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06X}")
+                                # print(f"cursor: 0x{cursor:06x}, base to: 0x{unknown_battle_event_sibling_starts_at:06x}")
                                 label = f"unknown_battle_event_adjacent"
                                 create_object_queue(pointed_addr, label_override=label)
                             else:
@@ -2721,7 +2402,7 @@ class Command(BaseCommand):
 
                     opcode = rom[cursor]
                     length = command_lens[opcode]
-                    print(f'            opcode: {opcode:02X}, cursor: 0x{cursor:06X}, length: {length}, data: {" ".join([f"0x{b:02X}" for b in rom[cursor:cursor+length]])}, {this_branch.ref_label} ({this_branch.referenced_by})')
+                    # print(f'            opcode: {opcode:02x}, cursor: 0x{cursor:06x}, length: {length}, data: {" ".join([f"0x{b:02x}" for b in rom[cursor:cursor+length]])}, {this_branch.ref_label} ({this_branch.referenced_by})')
                     if opcode == 0xC6:
                         length = rom[cursor + 1] + 2
                     elif opcode == 0xBA:    
@@ -2732,8 +2413,8 @@ class Command(BaseCommand):
                     if command == bytearray([0,0,0,0,0,0,0,0,0]):
                         end_found = True
                         break
-                    # I have no idea why the branch array length is being compared to the script size length, but it worked before
-                    # Here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
+                    # i have no idea why the branch array length is being compared to the script size length, but it worked before
+                    # here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
                     elif blocks.has_pointers and (branch_index < len(script_sizes)):
                         for tok_output in range(
                             cvr_range, cvr_range + length
@@ -2743,7 +2424,7 @@ class Command(BaseCommand):
                         for tok_output in range(cvr_range, cvr_range + length):
                             known_addresses_covered[third_byte_as_string][tok_output] = True
 
-                    # If this is a command that changes AMEM $60-$6F, or COULD change them, we need to keep track of what its possible values could be in case an AMEM-based object queue comes up.
+                    # if this is a command that changes amem $60-$6f, or could change them, we need to keep track of what its possible values could be in case an amem-based object queue comes up.
                     if opcode in [0x20, 0x21]:  # set amem 8 bit to...
                         if command[1] & 0xF0 == 0x30:  # copy
                             src = command[2] & 0x0F
@@ -2809,7 +2490,7 @@ class Command(BaseCommand):
 
                     amem_was = deepcopy(amem)
 
-                    # If this command includes a GOTO, need to add the destinations to the branch array and process them separately
+                    # if this command includes a goto, need to add the destinations to the branch array and process them separately
                     if opcode in jmp_cmds or opcode in jmp_cmds_1:
                         if opcode in jmp_cmds_1:
                             address_byte = command[-3:-1]
@@ -2823,14 +2504,14 @@ class Command(BaseCommand):
                         )
 
                         if branch_addr == 0x35053C:
-                            # EXPERIMENTAL: Reroute jump that goes to partway through command in the original game
+                            # experimental: reroute jump that goes to partway through command in the original game
                             # and change it to point to another instance of 0x02 instead
                             # which is treated as terminating
                             branch_addr = 0x350532
 
-                        # Which of AMEM $60-$6F are part of the branch condition? ie if AMEM $64 bit 1 = ... then ...
-                        # Clean up what the AMEMs can be at the target branch, and then add it to the array.
-                        # Only really tracking constants and other AMEM. Not really possible to track $7Exxxx and $7Fxxxx or OMEM
+                        # which of amem $60-$6f are part of the branch condition? ie if amem $64 bit 1 = ... then ...
+                        # clean up what the amems can be at the target branch, and then add it to the array.
+                        # only really tracking constants and other amem. not really possible to track $7exxxx and $7fxxxx or omem
                         important_amem_indexes = [0]
 
                         if opcode in [0x24, 0x25]:  # if amem =
@@ -2878,7 +2559,7 @@ class Command(BaseCommand):
                             index1 = command[1] & 0x0F
                             important_amem_indexes.append(index1)
                             amem[index1] = [a for a in amem[index1] if ~a & command[2] == command[2]]
-                        elif opcode == 0x64 or opcode == 0x47:  # object queue, command index = amem 60 OR EXPERIMENTAL
+                        elif opcode == 0x64 or opcode == 0x47:  # object queue, command index = amem 60 or experimental
                             oq_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
                         elif (
                             opcode == 0x68
@@ -2899,7 +2580,7 @@ class Command(BaseCommand):
                     ):
                         end_found = True
                     elif cursor + length in SPECIAL_CASE_BREAKS:
-                        print(f"        hit special case break at 0x{cursor + length:06X}")
+                        # print(f"        hit special case break at 0x{cursor + length:06x}")
                         end_found = True
                     elif 0x3A0000 <= cursor + length < 0x3A60D0:
                         end_found = True
@@ -2913,25 +2594,39 @@ class Command(BaseCommand):
                     break
                 this_branch = branches[branch_index]
 
-        print("Done tracing branches, collecting data...")
-        # Collect contiguous known bytes
+        # print("done tracing branches, collecting data...")
+        # collect contiguous known bytes
         used: Dict[str, List[ContiguousBlock]] = {
             "02": [],
             "35": [],
             "3A": [],
         }
+
+        # collect all pointer_table_start values from banks dict
+        pointer_table_starts = set()
+        for bank in banks.values():
+            if bank.pointer_table_start is not None:
+                pointer_table_starts.add(bank.pointer_table_start)
+
         for bank_id, bank_contents in known_addresses_covered.items():
-            # bank_name: str (02, 35, 3A)
-            # bank_contents: List[bool] (0x10000 length)
+            # bank_name: str (02, 35, 3a)
+            # bank_contents: list[bool] (0x10000 length)
             started: Optional[int] = None
             upper = (int(bank_id, 16)) << 16
-            # upper: 0x020000, 0x350000, 0x3A0000
+            # upper: 0x020000, 0x350000, 0x3a0000
             for index, value in enumerate(bank_contents):
-                # index: 4 digit ROM position
+                # index: 4 digit rom position
                 # value: used or not
-                if value and started is None:
+                absolute_offset = upper + index
+
+                # check if we need to break the block at a pointer table start
+                if started is not None and value and absolute_offset in pointer_table_starts:
+                    # end the current block and start a new one
+                    used[bank_id].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
                     started = index
-                    # started: 4 digit ROM position at which current block started
+                elif value and started is None:
+                    started = index
+                    # started: 4 digit rom position at which current block started
                 elif started is not None and not value:
                     used[bank_id].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
                     started = None
@@ -2942,45 +2637,49 @@ class Command(BaseCommand):
         for bank_id, blocks in used.items():
             data: List[List[ProtoCommand]] = []
             for block in blocks:
-                print(f'block.start, block.end: 0x{block.start:06X}, 0x{block.end:06X} (size {block.size})')
+                # print(f'block.start, block.end: 0x{block.start:06x}, 0x{block.end:06x} (size {block.size})')
                 split_block = tok(
                     rom, block.start, block.end, oq_starts, oq_idx_starts
                 )
                 offset_within_block = 0
                 this_script: List[ProtoCommand] = []
                 for tok_output in split_block:
-                    print(tok_output)
+                    # print(tok_output)
                     absolute_offset = block.start + offset_within_block
                     identifier = f"command_0x{absolute_offset:06X}"
                     possible_rename = [b.ref_label for b in branches if b.offset == absolute_offset and b.ref_label != ""]
                     if len(possible_rename) > 0:
                         identifier = f"{possible_rename[0].lower().replace(" ", "_").replace("-", "_")}_0x{absolute_offset:06X}"
+                    #if absolute_offset in monster_behaviour_oq_offsets:
+                    #    identifier = f"monster_behaviours_{monster_behaviour_oq_offsets.index(absolute_offset)}_pointer_table"
+                    if absolute_offset in monster_entrance_offsets:
+                        identifier = f"monster_entrance_{monster_entrance_offsets.index(absolute_offset)}"
                     named_proto_command = ProtoCommand(identifier, absolute_offset, tok_output[0], tok_output[2], len(tok_output[0]))
                     this_script.append(named_proto_command)
-                    print(f'    parsed command {named_proto_command}')
+                    # print(f'    parsed command {named_proto_command}')
                     offset_within_block += len(tok_output[0])
                 data.append(this_script)
-            print(data)
+            # print(data)
             collective_data[bank_id].extend(data)
 
-        # associate jump pointers with command IDs
+        # associate jump pointers with command ids
         for bank_id, script in collective_data.items():
 
             third_byte_as_string = get_third_byte_as_string(bank_id)
 
             # when reassembling battle scripts: before each script body, need to insert 2 bytes
             # that are a pointer to its own start
-            # ie: values in pointer bank @ 3A6004 for script 0: 0xD0 0x60
-            # actual value at 3A60D0: 0xD2 0x60
-            # actual script 0 begins at 3A60D2
+            # ie: values in pointer bank @ 3a6004 for script 0: 0xd0 0x60
+            # actual value at 3a60d0: 0xd2 0x60
+            # actual script 0 begins at 3a60d2
 
-            # replace jump addresses with IDs if in the same bank
+            # replace jump addresses with ids if in the same bank
             for index, commands in enumerate(script):
                 for cmd_index, command in enumerate(commands):
                     address_data = None
                     if command.oq:
                         address_data = deepcopy(command.raw_data)
-                        print([f"0x{b:02X}" for b in address_data])
+                        # print([f"0x{b:02x}" for b in address_data])
                         del command.raw_data[0:]
                     elif (
                         command.raw_data[0] in jmp_cmds_1
@@ -2992,17 +2691,17 @@ class Command(BaseCommand):
                     ):
                         address_data = command.raw_data[-2:]
                         del command.raw_data[-2:]
-                        print(2)
-                    print(address_data)
+                        # print(2)
+                    # print(address_data)
 
                     if address_data is None:
                         continue
 
                     addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
-                    print("")
-                    print(addresses)
+                    # print("")
+                    # print(addresses)
                     for address in addresses:
-                        print(address)
+                        # print(address)
                         dest = (
                             (command.addr & 0xFF0000)
                             + (int(address[1]) << 8)
@@ -3032,15 +2731,15 @@ class Command(BaseCommand):
                         script[index][cmd_index].raw_data = command.raw_data
         
         # do the same but for pointer tables
-        # treat pointers as OQs with no AMEM
+        # treat pointers as oqs with no amem
         for bank_id, blocks in banks.items():
             if not blocks.has_pointers:
                 continue
             this_script: List[ProtoCommand] = []
-            makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, blocks.pointer_table_end - blocks.pointer_table_start + 1)  # type: ignore - these can never be None if has_pointers is True
+            makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, blocks.pointer_table_end - blocks.pointer_table_start + 1)  # type: ignore - these can never be none if has_pointers is true
             third_byte_as_string = get_third_byte_as_string(bank_id)
             for pointer_table_index, pointer in enumerate(
-                range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be None if has_pointers is True
+                range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be none if has_pointers is true
             ):
                 three_byte_pointer: int = (
                     shortify(rom, pointer) + (int(third_byte_as_string, 16) << 16)
@@ -3061,12 +2760,12 @@ class Command(BaseCommand):
             this_script.append(makeshift_oq)
             collective_data[third_byte_as_string].insert(0, this_script)
 
-        # TODO: Comprehensive parser seems to be working
-        # Now we need to re-do how the output files are written
-        # Also need to adjust how OQ command classes work. IDX type is just a pointer collection
+        # todo: comprehensive parser seems to be working
+        # now we need to re-do how the output files are written
+        # also need to adjust how oq command classes work. idx type is just a pointer collection
 
         for bank_id, blocks in collective_data.items():
-            print(f"Exporting {bank_id}...")
+            # print(f"exporting {bank_id}...")
 
             third_byte_as_string = get_third_byte_as_string(bank_id)
 
@@ -3081,9 +2780,9 @@ class Command(BaseCommand):
 
             # when reassembling battle scripts: before each script body, need to insert 2 bytes
             # that are a pointer to its own start
-            # ie: values in pointer bank @ 3A6004 for script 0: 0xD0 0x60
-            # actual value at 3A60D0: 0xD2 0x60
-            # actual script 0 begins at 3A60D2
+            # ie: values in pointer bank @ 3a6004 for script 0: 0xd0 0x60
+            # actual value at 3a60d0: 0xd2 0x60
+            # actual script 0 begins at 3a60d2
 
             for script in blocks:
 
@@ -3130,6 +2829,8 @@ class Command(BaseCommand):
             export_output += "\n)"
             writeline(export_file, export_output)
 
+        self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
+
 
 def get_script(script, valid_identifiers):
 
@@ -3169,7 +2870,7 @@ def convert_event_script_command(command, valid_identifiers):
     use_identifier: bool = (
         command.id in valid_identifiers or "queuestart" in command.id
     )
-    # use_identifier: bool = False
+    # use_identifier: bool = false
     args = {}
     cls = None
     include_argnames = True
@@ -4360,14 +4061,14 @@ def convert_event_script_command(command, valid_identifiers):
 
 # empty space filler: 0x11
 
-# screen flash none = 2 bytes {0x8F 0x00}
-# screen flash none 0 frames = 3 bytes {0x8F 0x00 0x00}
+# screen flash none = 2 bytes {0x8f 0x00}
+# screen flash none 0 frames = 3 bytes {0x8f 0x00 0x00}
 
-# theoretically, could we have multiple battle events for walking on KC/CD depending on # of party members,
+# theoretically, could we have multiple battle events for walking on kc/cd depending on # of party members,
 # and battle logic picks which of the 3 to run?
-# maybe THAT'S worth disassembling for
+# maybe that's worth disassembling for
 # figure out which battle events are unused somehow
 
 # also need to make solo crystal battle events
 
-# also need to DA battle text to not deadname birdetta
+# also need to da battle text to not deadname birdetta

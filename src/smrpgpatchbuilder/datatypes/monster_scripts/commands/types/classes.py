@@ -64,8 +64,8 @@ class MonsterScriptCommandOneTarget(MonsterScriptCommand):
 
 
 class MonsterScriptCommandOneTargetLimited(MonsterScriptCommand):
-    """Base class for any command that takes one target, where the target value can only
-    fall within the range of targets beginning with MONSTER_1_SET and ending with SELF.
+    """base class for any command that takes one target, where the target value can only
+    fall within the range of targets beginning with monster_1_set and ending with self.
     """
 
     _target: Target
@@ -94,5 +94,5 @@ class MonsterScriptCommandOneTargetLimited(MonsterScriptCommand):
 
 
 class UsableMonsterScriptCommand(MonsterScriptCommand):
-    """Subclass for commands that can actually be used in a script
+    """subclass for commands that can actually be used in a script
     (no prototypes)."""

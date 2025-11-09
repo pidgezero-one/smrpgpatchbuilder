@@ -92,16 +92,16 @@ class Int16(int):
 
 
 class BitMapSet(set):
-    """A class representing a bitmap of a certain length using the set built-in type to track
+    """a class representing a bitmap of a certain length using the set built-in type to track
     which bits are set."""
 
-    # pylint: disable=W1113
+    # pylint: disable=w1113
     def __init__(self, num_bytes=1, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._num_bytes = num_bytes
 
     def as_bytes(self) -> bytearray:
-        """Return bitmap in little endian byte format for ROM patching.
+        """return bitmap in little endian byte format for rom patching.
 
         :rtype: bytearray
         """
@@ -137,7 +137,7 @@ class ByteField:
         self._value = int(value)
 
     def as_bytes(self) -> bytearray:
-        """Return current value of this stat as a little-endian byte array for the patch.
+        """return current value of this stat as a little-endian byte array for the patch.
         If the value is less than zero, convert this to a signed int in byte format."""
         if self._value < 0:
             val = self._value + (2 ** (self._num_bytes * 8))

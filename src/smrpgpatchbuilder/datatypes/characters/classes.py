@@ -25,14 +25,14 @@ from .constants import (
 
 
 class StatGrowth:
-    """A container class for stat growth/bonus values for a certain level + character.
+    """a container class for stat growth/bonus values for a certain level + character.
 
-    Attributes:
-        max_hp (UInt8): The max HP growth/bonus value.
-        attack (UInt4): The attack growth/bonus value.
-        defense (UInt4): The defense growth/bonus value.
-        magic_attack (UInt4): The magic attack growth/bonus value.
-        magic_defense (UInt4): The magic defense growth/bonus value.
+    attributes:
+        max_hp (uint8): the max hp growth/bonus value.
+        attack (uint4): the attack growth/bonus value.
+        defense (uint4): the defense growth/bonus value.
+        magic_attack (uint4): the magic attack growth/bonus value.
+        magic_defense (uint4): the magic defense growth/bonus value.
     """
 
     _max_hp: UInt8 = UInt8(0)
@@ -47,10 +47,10 @@ class StatGrowth:
         return self._max_hp
 
     def set_max_hp(self, max_hp: int) -> None:
-        """Sets the max HP growth/bonus value.
+        """sets the max hp growth/bonus value.
 
-        Args:
-            max_hp (int): The max HP growth/bonus value.
+        args:
+            max_hp (int): the max hp growth/bonus value.
         """
         self._max_hp = UInt8(max_hp)
 
@@ -60,10 +60,10 @@ class StatGrowth:
         return self._attack
 
     def set_attack(self, attack: int) -> None:
-        """Sets the attack growth/bonus value.
+        """sets the attack growth/bonus value.
 
-        Args:
-            attack (int): The attack growth/bonus value.
+        args:
+            attack (int): the attack growth/bonus value.
         """
         self._attack = UInt4(attack)
 
@@ -73,10 +73,10 @@ class StatGrowth:
         return self._defense
 
     def set_defense(self, defense: int) -> None:
-        """Sets the defense growth/bonus value.
+        """sets the defense growth/bonus value.
 
-        Args:
-            defense (int): The defense growth/bonus value.
+        args:
+            defense (int): the defense growth/bonus value.
         """
         self._defense = UInt4(defense)
 
@@ -86,10 +86,10 @@ class StatGrowth:
         return self._magic_attack
 
     def set_magic_attack(self, magic_attack: int) -> None:
-        """Sets the magic attack growth/bonus value.
+        """sets the magic attack growth/bonus value.
 
-        Args:
-            magic_attack (int): The magic attack growth/bonus value.
+        args:
+            magic_attack (int): the magic attack growth/bonus value.
         """
         self._magic_attack = UInt4(magic_attack)
 
@@ -99,10 +99,10 @@ class StatGrowth:
         return self._magic_defense
 
     def set_magic_defense(self, magic_defense: int) -> None:
-        """Sets the magic defense growth/bonus value.
+        """sets the magic defense growth/bonus value.
 
-        Args:
-            magic_defense (int): The magic defense growth/bonus value.
+        args:
+            magic_defense (int): the magic defense growth/bonus value.
         """
         self._magic_defense = UInt4(magic_defense)
 
@@ -122,8 +122,8 @@ class StatGrowth:
 
     @property
     def best_choices(self) -> "tuple[str]":
-        """Best choice of attributes for a levelup bonus based on the numbers
-        For HP, it must be twice the total of the attack + defense options
+        """best choice of attributes for a levelup bonus based on the numbers
+        for hp, it must be twice the total of the attack + defense options
         to be considered "better". This is arbitrary, but HP is less useful."""
         options = [
             (self.max_hp / 2, ("max_hp",)),
@@ -139,8 +139,8 @@ class StatGrowth:
         """Return byte representation of this stat growth object for the patch."""
         data = bytearray()
 
-        # HP is one byte on its own.
-        # Attack/defense stats are 4 bits each combined into a single byte together.
+        # hp is one byte on its own.
+        # attack/defense stats are 4 bits each combined into a single byte together.
         data += ByteField(self.max_hp).as_bytes()
 
         physical = self.attack << 4
@@ -161,17 +161,17 @@ class LevelUpExps:
 
     @property
     def levels(self) -> List[UInt16]:
-        """Each value in this list is the amount of EXP needed to achieve
+        """each value in this list is the amount of exp needed to achieve
         the level corresponding to its index."""
         return [UInt16(l) for l in self._levels]
 
     def _set_levels(self, levels: List[int]) -> None:
-        """Overwrite the list of EXP needed to achieve the level denoted
+        """overwrite the list of exp needed to achieve the level denoted
         by the value's index in the list (relative to the previous level)."""
         self._levels = levels
 
     def set_exp_for_level(self, exp: int, level: int):
-        """Set the EXP needed to achieve the specific given level
+        """set the exp needed to achieve the specific given level
         (relative to the previous level)."""
         assert 1 <= level <= 30
         self._levels[level] = UInt16(exp)
@@ -181,14 +181,14 @@ class LevelUpExps:
 
     def get_xp_for_level(self, level: int) -> int:
         """
-        The XP required to reach this level.
+        the xp required to reach this level.
         """
         assert 1 <= level <= 30
         return self.levels[level - 1]
 
     def render(self) -> Dict[int, bytearray]:
         """Get data for exp required for each level up in `{0x123456: bytearray([0x00])}` format"""
-        # Data is 29 blocks (starting at level 2), 2 bytes each block.
+        # data is 29 blocks (starting at level 2), 2 bytes each block.
         data = bytearray()
         for level in range(2, 31):
             data += ByteField(self.get_xp_for_level(level)).as_bytes()
@@ -201,7 +201,7 @@ class LevelUpExps:
 class Character:
     """Base class for a playable character."""
 
-    # Base stats.
+    # base stats.
     _character_id: int = 0
     _starting_level: int = 1
     _max_hp: UInt16 = UInt16(1)
@@ -293,29 +293,29 @@ class Character:
         """Get data for this character in `{0x123456: bytearray([0x00])}` format"""
         patch: Dict[int, bytearray] = {}
 
-        # Build character patch data.
+        # build character patch data.
         char_data = bytearray()
         char_data += ByteField(self.starting_level).as_bytes()
-        char_data += ByteField(self.max_hp).as_bytes()  # Current HP
-        char_data += ByteField(self.max_hp).as_bytes()  # Max HP
+        char_data += ByteField(self.max_hp).as_bytes()  # current hp
+        char_data += ByteField(self.max_hp).as_bytes()  # max hp
         char_data += ByteField(self.speed).as_bytes()
         char_data += ByteField(self.attack).as_bytes()
         char_data += ByteField(self.defense).as_bytes()
         char_data += ByteField(self.magic_attack).as_bytes()
         char_data += ByteField(self.magic_defense).as_bytes()
         char_data += ByteField(self.xp).as_bytes()
-        # Set starting weapon/armor/accessory as blank for all characters.
+        # set starting weapon/armor/accessory as blank for all characters.
         char_data += ByteField(0xFF).as_bytes()
         char_data += ByteField(0xFF).as_bytes()
         char_data += ByteField(0xFF).as_bytes()
-        char_data.append(0x00)  # Unused byte
+        char_data.append(0x00)  # unused byte
 
         starting_spells: List[CharacterSpell] = [
             spell
             for level, spell in self.learned_spells.items()
             if level < self.starting_level
         ]
-        # TODO Ensure that less than 4 assigned spells are below the starting level
+        # todo ensure that less than 4 assigned spells are below the starting level
 
         assert len(starting_spells) <= 4
         char_data += BitMapSet(
@@ -323,12 +323,12 @@ class Character:
             [int(spell.index) for spell in starting_spells],
         ).as_bytes()
 
-        # Base address plus offset based on character index.
+        # base address plus offset based on character index.
         addr = CHARACTER_BASE_ADDRESS + (self.character_id * 20)
         patch[addr] = char_data
 
-        # Add levelup stat growth and bonuses to the patch data for this character.
-        # Offset is 15 bytes for each stat object, 3 bytes per character.
+        # add levelup stat growth and bonuses to the patch data for this character.
+        # offset is 15 bytes for each stat object, 3 bytes per character.
         for growth_index, stat in enumerate(self.starting_growths):
             addr = (
                 CHARACTER_BASE_STAT_GROWTH_ADDRESS
@@ -345,14 +345,14 @@ class Character:
             )
             patch[addr] = stat.as_bytes()
 
-        # Add learned spells data.
-        # Data is 29 blocks (starting at level 2), 5 bytes each block
+        # add learned spells data.
+        # data is 29 blocks (starting at level 2), 5 bytes each block
         # (1 byte per character in order)
         base_addr = CHARACTER_BASE_LEARNED_SPELLS_ADDRESS + self.character_id
         for level in range(2, 31):
             level_addr = base_addr + ((level - 2) * 5)
-            # If we have a spell for this level, add the index.
-            # Otherwise it should be 0xff for no spell learned.
+            # if we have a spell for this level, add the index.
+            # otherwise it should be 0xff for no spell learned.
             if self.learned_spells.get(level):
                 patch[level_addr] = ByteField(
                     self.learned_spells[level].index

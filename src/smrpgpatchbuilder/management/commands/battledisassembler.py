@@ -1347,7 +1347,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1,  # A0
+    1,  # a0
     1,
     1,
     1,
@@ -1363,7 +1363,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1,  # B0
+    1,  # b0
     1,
     1,
     1,
@@ -1379,7 +1379,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1,  # C0
+    1,  # c0
     1,
     1,
     1,
@@ -1395,7 +1395,7 @@ battle_lengths = [
     1,
     1,
     1,
-    1,  # D0
+    1,  # d0
     1,
     1,
     1,
@@ -1411,7 +1411,7 @@ battle_lengths = [
     1,
     1,
     1,
-    4,  # E0
+    4,  # e0
     0,
     2,
     2,
@@ -1427,7 +1427,7 @@ battle_lengths = [
     2,
     0,
     2,
-    4,  # F0
+    4,  # f0
     2,
     3,
     3,
@@ -1831,3 +1831,9 @@ class Command(BaseCommand):
             writeline(module, f"\tscript_{monster_id},")
         writeline(module, "])")
         module.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled 256 monster AI scripts to ./src/disassembler_output/monster_ai/"
+            )
+        )

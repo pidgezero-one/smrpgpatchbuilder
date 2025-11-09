@@ -94,7 +94,7 @@ class AnimationPackProperties:
     sequences: list[AnimationSequence] = []
     vram_size: int = 0
     def __init__(self, sequences: list[AnimationSequence], molds: list[Mold], vram_size: int):
-        self.molds = molds # GridplaneMold or NonGridplaneMold
+        self.molds = molds # gridplanemold or nongridplanemold
         self.sequences = sequences
         self.vram_size = vram_size
 
@@ -305,7 +305,7 @@ class CloneCandidate:
         self.y_offset = y_offset
 
     def __eq__(self, other: object) -> bool:
-        """Value-based equality: two CloneCandidate instances are equal when all identifying
+        """value-based equality: two clonecandidate instances are equal when all identifying
         fields match (mold, start, end, x_offset, y_offset)."""
         if not isinstance(other, CloneCandidate):
             return NotImplemented
@@ -413,7 +413,7 @@ def find_clones(tiles: list[Union[Tile, Clone]], molds: list[Mold], index: int =
         # if eligible ranges found, create clone container for all tiles in range
         if len(clone_candidates) > 0:
             eligible_candidates = [c for c in clone_candidates if c.x_offset <= 255 and c.y_offset <= 255]
-            ineligible_candidates = [c for c in clone_candidates if c not in eligible_candidates] # TODO: will this equate two instances of CloneCandidate?
+            ineligible_candidates = [c for c in clone_candidates if c not in eligible_candidates] # todo: will this equate two instances of clonecandidate?
             # clone detection just doesnt work out sometimes, ie 3 sets of the same tiles that overall are >255 apart
             # in those cases, un-clone them and just treat as normal tiles
             if len(eligible_candidates) == 0:
@@ -903,7 +903,7 @@ class SpriteCollection:
                             cutoff_index = next_st_index
                     # if still too big, convert into its own tileset?
                     lowest_subtile_index = cutoff_index
-                    # add too-low sprite IDs to be duped at the end
+                    # add too-low sprite ids to be duped at the end
                     new_tile_pool = tile_groups[tile_key].tiles[cutoff_index:] + tile_groups[tile_key].extra
                     for t_index in all_indexes_for_this_tile:
                         this_tile = available_tiles[t_index]

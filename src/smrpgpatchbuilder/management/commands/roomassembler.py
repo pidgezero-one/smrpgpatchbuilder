@@ -43,3 +43,5 @@ class Command(BaseCommand):
         f = open(f'write_to_0x1E0000.img', 'wb')
         f.write(b)
         f.close()
+
+        self.stdout.write(self.style.SUCCESS("successfully assembled room data"))

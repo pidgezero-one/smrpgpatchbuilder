@@ -10,9 +10,9 @@ from datetime import datetime
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("-t", "--text", action='store_true', dest="text", help="Use -t if you want to output your assembled bytes as plain text files.")
-        parser.add_argument("-b", "--bin", action='store_true', dest="bin", help="Use -b if you want to output your assembled bytes as FlexHEX-compatible IMG files.")
-        parser.add_argument("-r", "--rom", dest="rom", help="Specify a path to a Mario RPG rom if you want to output your assembled bytes as a bps patch.")
+        parser.add_argument("-t", "--text", action='store_true', dest="text", help="use -t if you want to output your assembled bytes as plain text files.")
+        parser.add_argument("-b", "--bin", action='store_true', dest="bin", help="use -b if you want to output your assembled bytes as flexhex-compatible img files.")
+        parser.add_argument("-r", "--rom", dest="rom", help="specify a path to a mario rpg rom if you want to output your assembled bytes as a bps patch.")
 
     def handle(self, *args, **options):
         
@@ -22,7 +22,7 @@ class Command(BaseCommand):
         outputToPatch = romPath is not None 
         
         if not (outputToText or outputToBin or outputToPatch):
-            print("You need to specify at least one output format. Options are --text, --bin, --rom")
+            print("you need to specify at least one output format. options are --text, --bin, --rom")
             exit(1)
 
         if outputToText:
@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 if outputToPatch:
                     end = start + len(bytes_)
                     if end > len(rom):
-                        raise ValueError(f"Change at {start:#X} exceeds file size (end = {end:#X})")
+                        raise ValueError(f"change at {start:#X} exceeds file size (end = {end:#X})")
                     rom[start:end] = bytes_
         
         module = importlib.import_module("disassembler_output.overworld_scripts.animation.actionqueues")
@@ -71,7 +71,7 @@ class Command(BaseCommand):
             if outputToPatch:
                 end = start + len(bytes_)
                 if end > len(rom):
-                    raise ValueError(f"Change at {start:#X} exceeds file size (end = {end:#X})")
+                    raise ValueError(f"change at {start:#X} exceeds file size (end = {end:#X})")
                 rom[start:end] = bytes_
 
         if outputToPatch:
@@ -79,3 +79,5 @@ class Command(BaseCommand):
             iterable = diff_bytearrays(blocksize, bytes(original_rom), bytes(rom))
             with open(f'./src/assembler_output/overworld_scripts/bps/smrpg-{datetime.now().strftime("%Y%m%d%H%M%S")}.bps', 'wb') as f:
                 write_bps(bps_progress(iterable), f)
+
+        self.stdout.write(self.style.SUCCESS("successfully assembled overworld event scripts and action queues"))

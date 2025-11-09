@@ -94,8 +94,8 @@ class EventScript(Script[UsableEventScriptCommand]):
 
 
 class EventScriptBank(ScriptBank[EventScript]):
-    """Base class for a collection of NPC action scripts
-    that should belong to the same $##xxxx bank (1E, 1F, or 20)."""
+    """base class for a collection of npc action scripts
+    that should belong to the same $##xxxx bank (1e, 1f, or 20)."""
 
     _scripts: List[EventScript]
     _pointer_table_start: int
@@ -113,12 +113,12 @@ class EventScriptBank(ScriptBank[EventScript]):
 
     @property
     def start(self) -> int:
-        """The beginning address for this bank's scripts content, indexed by the
+        """the beginning address for this bank's scripts content, indexed by the
         pointer table."""
         return self._start
 
     def set_start(self, start: int) -> None:
-        """Set the beginning address for this bank's scripts content, indexed by the
+        """set the beginning address for this bank's scripts content, indexed by the
         pointer table."""
         self._start = start
 
@@ -199,7 +199,7 @@ class EventScriptBank(ScriptBank[EventScript]):
             initial_position = position
             c = deepcopy(script.contents)
             for index, command in enumerate(script.contents):
-                # If this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
+                # if this is a non-embedded action queue, insert dummy commands to fill space before the offset it should be at
                 if isinstance(command, NonEmbeddedActionQueuePrototype):
                     relative_offset: int = position - initial_position
                     if relative_offset <= command.required_offset:
@@ -265,7 +265,7 @@ class EventScriptController:
         self.set_banks(banks)
 
     def get_script_by_id(self, script_id: int) -> EventScript:
-        """Get one script from any bank by absolute ID.\n
+        """get one script from any bank by absolute id.\n
         It is recommended to use event name constants for this."""
         assert 0 <= script_id < TOTAL_SCRIPTS
         bank_0x1e: EventScriptBank = self.banks[0]

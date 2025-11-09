@@ -100,12 +100,12 @@ test_cases = [
         label="RunBackgroundEvent",
         commands_factory=lambda: [
             RunBackgroundEvent(
-                event_id=E0551_ROSE_TOWN_OCCUPIED_MODS,
+                event_id=551,
                 return_on_level_exit=True,
                 bit_6=True,
             ),
             RunBackgroundEvent(
-                event_id=E0465_MUSHROOM_DERBY_BUSINESS_LOGIC,
+                event_id=465,
                 return_on_level_exit=True,
                 run_as_second_script=True,
             ),
@@ -116,7 +116,7 @@ test_cases = [
         label="RunBackgroundEventWithPause",
         commands_factory=lambda: [
             RunBackgroundEventWithPause(
-                event_id=E3075_HEAL_FLASH, timer_var=TIMER_7022, bit_4=True, bit_5=True
+                event_id=3075, timer_var=TIMER_7022, bit_4=True, bit_5=True
             ),
         ],
         expected_bytes=[
@@ -129,10 +129,10 @@ test_cases = [
         label="RunBackgroundEventWithPauseReturnOnExit",
         commands_factory=lambda: [
             RunBackgroundEventWithPauseReturnOnExit(
-                event_id=E0653_MARRYMORE_SANCTUARY_CANDLE_7, timer_var=TIMER_701C
+                event_id=653, timer_var=TIMER_701C
             ),
             RunBackgroundEventWithPauseReturnOnExit(
-                event_id=E1543_CHEST_CAMERA_SHIFT,
+                event_id=1543,
                 timer_var=TIMER_701C,
                 bit_4=True,
                 bit_5=True,
@@ -142,13 +142,13 @@ test_cases = [
     ),
     Case(
         label="RunEventAtReturn",
-        commands_factory=lambda: [RunEventAtReturn(E1727_EMPTY)],
+        commands_factory=lambda: [RunEventAtReturn(1727)],
         expected_bytes=[0xFD, 0x46, 0xBF, 0x06],
     ),
     Case(
         label="RunEventAsSubroutine",
         commands_factory=lambda: [
-            RunEventAsSubroutine(E3587_SET_70AE_TO_70A8),
+            RunEventAsSubroutine(3587),
         ],
         expected_bytes=[0xD1, 0x03, 0x0E],
     ),
@@ -444,29 +444,29 @@ test_cases = [
     Case(
         label="SetAsyncActionScript",
         commands_factory=lambda: [
-            SetAsyncActionScript(MARIO, A0408_JUMP_ON_SAVE_BLOCK),
-            SetAsyncActionScript(NPC_3, A0099_LOOPED_JUMPING),
+            SetAsyncActionScript(MARIO, 408),
+            SetAsyncActionScript(NPC_3, 99),
         ],
         expected_bytes=[0x00, 0xF3, 0x98, 0x01, 0x17, 0xF3, 0x63, 0x00],
     ),
     Case(
         label="SetSyncActionScript",
         commands_factory=lambda: [
-            SetSyncActionScript(MEM_70A8, A1022_HIT_BY_EXP_STAR),
+            SetSyncActionScript(MEM_70A8, 1022),
         ],
         expected_bytes=[0x10, 0xF2, 0xFE, 0x03],
     ),
     Case(
         label="SetTempAsyncActionScript",
         commands_factory=lambda: [
-            SetTempAsyncActionScript(NPC_1, A0650_BLUE_CLOUD_MOVEMENT),
+            SetTempAsyncActionScript(NPC_1, 650),
         ],
         expected_bytes=[0x15, 0xF5, 0x8A, 0x02],
     ),
     Case(
         label="SetTempSyncActionScript",
         commands_factory=lambda: [
-            SetTempSyncActionScript(NPC_6, A0803_INC_PALETTE_ROW),
+            SetTempSyncActionScript(NPC_6, 803),
         ],
         expected_bytes=[0x1A, 0xF4, 0x23, 0x03],
     ),
@@ -478,7 +478,7 @@ test_cases = [
     Case(
         label="SummonObjectToSpecificLevel",
         commands_factory=lambda: [
-            SummonObjectToSpecificLevel(NPC_6, R204_MUSHROOM_WAY_AREA_02),
+            SummonObjectToSpecificLevel(NPC_6, 204),
         ],
         expected_bytes=[0xF2, 0xCC, 0xB4],
     ),
@@ -505,7 +505,7 @@ test_cases = [
         label="RemoveObjectFromSpecificLevel",
         commands_factory=lambda: [
             RemoveObjectFromSpecificLevel(
-                NPC_10, R023_MUSHROOM_KINGDOM_BEFORE_CROCO_OUTSIDE
+                NPC_10, 23
             ),
         ],
         expected_bytes=[0xF2, 0x17, 0x3C],
@@ -553,7 +553,7 @@ test_cases = [
     Case(
         label="EnableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
-            EnableObjectTriggerInSpecificLevel(NPC_1, R204_MUSHROOM_WAY_AREA_02),
+            EnableObjectTriggerInSpecificLevel(NPC_1, 204),
         ],
         expected_bytes=[0xF3, 0xCC, 0xAA],
     ),
@@ -561,7 +561,7 @@ test_cases = [
         label="DisableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
             DisableObjectTriggerInSpecificLevel(
-                NPC_8, R125_PIPE_VAULT_AREA_04_LINE_OF_COINS_2_HIDDEN_TREASURES
+                NPC_8, 125
             ),
         ],
         expected_bytes=[0xF3, 0x7D, 0x38],
@@ -989,14 +989,14 @@ test_cases = [
     Case(
         label="DeactivateSoundChannels",
         commands_factory=lambda: [
-            DeactivateSoundChannels([0, 1, 2, 3]),
+            DeactivateSoundChannels(set([0, 1, 2, 3])),
         ],
         expected_bytes=[0xFD, 0x94, 0x0F],
     ),
     Case(
         label="FadeInMusic",
         commands_factory=lambda: [
-            FadeInMusic(M66_BOWSERS_CASTLE_2ND_TIME),
+            FadeInMusic(66),
         ],
         expected_bytes=[0x92, 0x42],
     ),
@@ -1028,42 +1028,42 @@ test_cases = [
     ),
     Case(
         label="PlayMusic",
-        commands_factory=lambda: [PlayMusic(M01_DODOS_COMING)],
+        commands_factory=lambda: [PlayMusic(1)],
         expected_bytes=[0xFD, 0x9E, 0x01],
     ),
     Case(
         label="PlayMusicAtCurrentVolume",
         commands_factory=lambda: [
-            PlayMusicAtCurrentVolume(M23_GOT_A_STAR_PIECE_PART_1),
+            PlayMusicAtCurrentVolume(23),
         ],
         expected_bytes=[0x90, 0x17],
     ),
     Case(
         label="PlayMusicAtDefaultVolume",
         commands_factory=lambda: [
-            PlayMusicAtDefaultVolume(M02_MUSHROOM_KINGDOM),
+            PlayMusicAtDefaultVolume(2),
         ],
         expected_bytes=[0x91, 0x02],
     ),
     Case(
         label="PlaySound",
         commands_factory=lambda: [
-            PlaySound(sound=SO150_EXIT_TO_WORLD_MAP, channel=6),
-            PlaySound(sound=SO006_RUNNING_WATER, channel=4),
+            PlaySound(sound=150, channel=6),
+            PlaySound(sound=6, channel=4),
         ],
         expected_bytes=[0x9C, 0x96, 0xFD, 0x9C, 0x06],
     ),
     Case(
         label="PlaySoundBalance",
         commands_factory=lambda: [
-            PlaySoundBalance(sound=SO068_MALLOW_YELLING_AT_CROCO, balance=64)
+            PlaySoundBalance(sound=68, balance=64)
         ],
         expected_bytes=[0x9D, 0x44, 0x40],
     ),
     Case(
         label="PlaySoundBalanceFD9D",
         commands_factory=lambda: [
-            PlaySoundBalanceFD9D(sound=SO021_RUMBLING, balance=192),
+            PlaySoundBalanceFD9D(sound=21, balance=192),
         ],
         expected_bytes=[0xFD, 0x9D, 0x15, 0xC0],
     ),
@@ -1135,7 +1135,7 @@ test_cases = [
         label="RunDialog",
         commands_factory=lambda: [
             RunDialog(
-                dialog_id=DI0519_MUSHROOM_INNKEEPER,
+                dialog_id=519,
                 above_object=MEM_70A8,
                 closable=False,
                 sync=False,
@@ -1143,7 +1143,7 @@ test_cases = [
                 use_background=True,
             ),
             RunDialog(
-                dialog_id=DI0614_EMPTY,
+                dialog_id=614,
                 above_object=NPC_14,
                 closable=True,
                 sync=True,
@@ -1151,7 +1151,7 @@ test_cases = [
                 use_background=False,
             ),
             RunDialog(
-                dialog_id=DI0524_GOT_A_70A7_AWAIT_TERMINATE,
+                dialog_id=524,
                 above_object=BOWSER,
                 closable=True,
                 sync=False,
@@ -1177,9 +1177,9 @@ test_cases = [
     Case(
         label="RunDialogForDuration",
         commands_factory=lambda: [
-            RunDialogForDuration(dialog_id=DI1128_EMPTY, duration=1, sync=False),
-            RunDialogForDuration(dialog_id=DI1180_MALLOW_JOINS, duration=1, sync=True),
-            RunDialogForDuration(dialog_id=DI1186_EMPTY, duration=0, sync=False),
+            RunDialogForDuration(dialog_id=1128, duration=1, sync=False),
+            RunDialogForDuration(dialog_id=1180, duration=1, sync=True),
+            RunDialogForDuration(dialog_id=1186, duration=0, sync=False),
         ],
         expected_bytes=[0x62, 0x68, 0xA4, 0x62, 0x9C, 0x24, 0x62, 0xA2, 0x84],
     ),
@@ -1192,7 +1192,7 @@ test_cases = [
         label="EnterArea",
         commands_factory=lambda: [
             EnterArea(
-                room_id=R002_BOWSERS_KEEP_OUTSIDE_MARIO_ENTERS_AT_BEGINNING_OF_GAME,
+                room_id=2,
                 face_direction=SOUTHWEST,
                 x=7,
                 y=18,
@@ -1200,7 +1200,7 @@ test_cases = [
                 run_entrance_event=True,
             ),
             EnterArea(
-                room_id=R006_MARRYMORE_INN_2F,
+                room_id=6,
                 face_direction=NORTHEAST,
                 x=15,
                 y=52,
@@ -1208,7 +1208,7 @@ test_cases = [
                 z_add_half_unit=True,
             ),
             EnterArea(
-                room_id=R427_BELOME_TEMPLE_AREA_10_PIPE_TO_MONSTRO_TOWN,
+                room_id=427,
                 face_direction=SOUTH,
                 x=29,
                 y=46,
@@ -1241,10 +1241,10 @@ test_cases = [
         label="ApplyTileModToLevel",
         commands_factory=lambda: [
             ApplyTileModToLevel(
-                use_alternate=True, room_id=R096_ROSE_TOWN_INN_2F, mod_id=1
+                use_alternate=True, room_id=96, mod_id=1
             ),
             ApplyTileModToLevel(
-                use_alternate=False, room_id=R052_MUSHROOM_KINGDOM_INN_2F, mod_id=0
+                use_alternate=False, room_id=52, mod_id=0
             ),
         ],
         expected_bytes=[0x6A, 0x60, 0x82, 0x6A, 0x34, 0x00],
@@ -1253,10 +1253,10 @@ test_cases = [
         label="ApplySolidityModToLevel",
         commands_factory=lambda: [
             ApplySolidityModToLevel(
-                permanent=False, room_id=R084_ROSE_TOWN_OUTSIDE, mod_id=0
+                permanent=False, room_id=84, mod_id=0
             ),
             ApplySolidityModToLevel(
-                permanent=True, room_id=R083_ROSE_TOWN_DURING_BOWYER_OUTSIDE, mod_id=3
+                permanent=True, room_id=83, mod_id=3
             ),
         ],
         expected_bytes=[0x6B, 0x54, 0x00, 0x6B, 0x53, 0x86],
@@ -1264,7 +1264,7 @@ test_cases = [
     Case(
         label="ExitToWorldMap",
         commands_factory=lambda: [
-            ExitToWorldMap(area=OW27_BOOSTER_HILL, bit_6=True, bit_7=True),
+            ExitToWorldMap(area=27, bit_6=True, bit_7=True),
         ],
         expected_bytes=[0x4B, 0x1B, 0xC0],
     ),
@@ -1300,7 +1300,7 @@ test_cases = [
     Case(
         label="OpenShop",
         commands_factory=lambda: [
-            OpenShop(SH02_ROSE_TOWN_ARMOR),
+            OpenShop(2),
         ],
         expected_bytes=[0x4C, 0x02],
     ),
@@ -1362,7 +1362,7 @@ test_cases = [
         label="StartBattleAtBattlefield",
         commands_factory=lambda: [
             StartBattleAtBattlefield(
-                PACK198_TOADSTOOL_CLONE_HENCHMAN, BF21_KERO_SEWERS
+                198, BF21_KERO_SEWERS
             ),
         ],
         expected_bytes=[0x4A, 0xC6, 0x00, 0x15],
@@ -1425,7 +1425,7 @@ test_cases = [
     Case(
         label="JmpToEvent",
         commands_factory=lambda: [
-            JmpToEvent(E0081_MARIO_LANDS_SUBROUTINE),
+            JmpToEvent(81),
         ],
         expected_bytes=[0xD0, 0x51, 0x00],
     ),
@@ -1697,7 +1697,9 @@ test_cases = [
         label="CreatePacketAtObjectCoords",
         commands_factory=lambda: [
             CreatePacketAtObjectCoords(
-                packet=P033_BOMB_EXPLOSION, target_npc=NPC_3, destinations=["jmp_here"]
+                packet=Packet(
+                    packet_id=33,
+                ), target_npc=NPC_3, destinations=["jmp_here"]
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1714,7 +1716,9 @@ test_cases = [
         label="CreatePacketAt7010",
         commands_factory=lambda: [
             CreatePacketAt7010(
-                packet=P016_BIG_COIN_BEING_COLLECTED, destinations=["jmp_here"]
+                packet=Packet(
+                    packet_id=16,
+                ), destinations=["jmp_here"]
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1730,8 +1734,10 @@ test_cases = [
         label="CreatePacketAt7010WithEvent",
         commands_factory=lambda: [
             CreatePacketAt7010WithEvent(
-                packet=P032_BLUE_CLOUD,
-                event_id=E1845_CLOUD_BOSS,
+                packet=Packet(
+                    packet_id=32,
+                ),
+                event_id=1845,
                 destinations=["jmp_here"],
             ),
             Return(identifier="jmp_here"),
@@ -1798,7 +1804,7 @@ test_cases = [
         commands_factory=lambda: [
             JmpIfObjectInSpecificLevel(
                 NPC_3,
-                R480_MUSHROOM_KINGDOM_DURING_MACK_JUMPING_KIDS_HOUSE_1F,
+                480,
                 ["jmp_here"],
             ),
             Return(identifier="jmp_here"),
@@ -1830,7 +1836,7 @@ test_cases = [
         label="JmpIfObjectNotInSpecificLevel",
         commands_factory=lambda: [
             JmpIfObjectNotInSpecificLevel(
-                NPC_1, R009_MARRYMORE_INN_REGULAR_ROOM, ["jmp_here"]
+                NPC_1, 9, ["jmp_here"]
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1847,7 +1853,7 @@ test_cases = [
         label="JmpIfObjectTriggerEnabledInSpecificLevel",
         commands_factory=lambda: [
             JmpIfObjectTriggerEnabledInSpecificLevel(
-                NPC_5, R263_LANDS_END_UNDERGROUND_AREA_01, ["jmp_here"]
+                NPC_5, 263, ["jmp_here"]
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1865,7 +1871,7 @@ test_cases = [
         label="JmpIfObjectTriggerDisabledInSpecificLevel",
         commands_factory=lambda: [
             JmpIfObjectTriggerDisabledInSpecificLevel(
-                NPC_0, R009_MARRYMORE_INN_REGULAR_ROOM, ["jmp_here"]
+                NPC_0, 9, ["jmp_here"]
             ),
             Return(identifier="jmp_here"),
         ],
@@ -2033,7 +2039,7 @@ test_cases = [
                     A_SetSequenceSpeed(NORMAL),
                     A_Pause(36),
                     A_SetSequenceSpeed(FAST),
-                    A_PlaySound(sound=SO010_TRAMPOLINE, channel=6),
+                    A_PlaySound(sound=10, channel=6),
                 ],
             ),
         ],

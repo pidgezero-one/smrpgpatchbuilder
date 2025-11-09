@@ -54,3 +54,24 @@ class InflictFunction(enum.IntEnum):
 class OverworldMenuBehaviour(enum.IntEnum):
     LEAD_TO_HP = 0
     LEAD_TO_FP = 1
+
+
+class ItemPrefix(enum.IntEnum):
+    """Enumeration for item name prefix icons."""
+
+    NONE = 0x00  # No prefix (regular ASCII character)
+    EMPTY_SPACE = 0x7F
+    HAMMER = 0x22
+    WAND = 0x28
+    SHELL = 0x23
+    GLOVE = 0x21
+    GUN = 0x29
+    MUSIC = 0x25
+    CHOMP = 0x27
+    FAN = 0x26
+    SHIRT = 0x3C
+    RING = 0x3D
+    CONSUMABLE = 0x2D
+    DOT = 0x2E
+    BOMB = 0x3B
+    QUESTION = 0x3F

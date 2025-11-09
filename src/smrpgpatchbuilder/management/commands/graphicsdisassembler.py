@@ -536,3 +536,9 @@ class Command(BaseCommand):
         writeline(file, f"    image_and_animation_data_begins=0x{imagepack_read[0][0]:06x}")
         writeline(file, ")")
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled sprite graphics data to ./src/disassembler_output/sprites/"
+            )
+        )

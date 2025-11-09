@@ -41,7 +41,7 @@ class EventScriptCommandNoArgs(EventScriptCommand, ScriptCommandNoArgs):
 
 
 class EventScriptCommandAnySizeMem(EventScriptCommand, ScriptCommandAnySizeMem):
-    """Base class for any command in an event script that can accept either an
+    """base class for any command in an event script that can accept either an
     8 bit or 16 bit var."""
 
     def __init__(
@@ -56,14 +56,14 @@ class EventScriptCommandAnySizeMem(EventScriptCommand, ScriptCommandAnySizeMem):
 
 
 class EventScriptCommandShortMem(EventScriptCommand, ScriptCommandShortMem):
-    """Base class for any command in an event script that accepts only
+    """base class for any command in an event script that accepts only
     an 8 bit var."""
 
 
 class EventScriptCommandShortAddrAndValueOnly(
     EventScriptCommand, ScriptCommandShortAddrAndValueOnly
 ):
-    """Base class for any command in an event script that accepts
+    """base class for any command in an event script that accepts
     an 8 bit var and a literal value (either a number or an item class)."""
 
     def __init__(
@@ -83,12 +83,12 @@ class EventScriptCommandShortAddrAndValueOnly(
 class EventScriptCommandBasicShortOperation(
     EventScriptCommand, ScriptCommandBasicShortOperation
 ):
-    """Base class for any command in an event script that performs math
+    """base class for any command in an event script that performs math
     on an 8 bit var."""
 
 
 class EventScriptCommandActionScriptContainer(EventScriptCommand):
-    """Base class for commands in an event script that includes
+    """base class for commands in an event script that includes
     and runs a NPC action script."""
 
     _header_size: int
@@ -96,7 +96,7 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
 
     @property
     def header_size(self) -> int:
-        """The expected size of the bytes indicating information about
+        """the expected size of the bytes indicating information about
         the subscript before the subscript contents begin."""
         return self._header_size
 
@@ -112,8 +112,8 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
 
 
 class Subscript(ActionScript):
-    """Base class for an action script to be used as typing for
-    action command subscripts inside event commands. This is specifically
+    """base class for an action script to be used as typing for
+    action command subscripts inside event commands. this is specifically
     intended for commands whose subscript must be 127 bytes in length or
     shorter."""
 
@@ -151,12 +151,12 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
 
     @property
     def sync(self) -> bool:
-        """If false, the action script must complete before any further commands in the
+        """if false, the action script must complete before any further commands in the
         event script can continue."""
         return self._sync
 
     def set_sync(self, sync: bool) -> None:
-        """If false, the action script must complete before any further commands in the
+        """if false, the action script must complete before any further commands in the
         event script can continue."""
         self._sync = sync
 
@@ -187,7 +187,7 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
 
 
 class ActionQueuePrototype(ActionSubcriptCommandPrototype):
-    """Base class for action queues, must be 127 bytes or less.
+    """base class for action queues, must be 127 bytes or less.
     Cannot be forcibly stopped, overall command length is shorter."""
 
     def render(self) -> bytearray:
@@ -196,7 +196,7 @@ class ActionQueuePrototype(ActionSubcriptCommandPrototype):
 
 
 class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
-    """Base class for action queues, must be 127 bytes or less.
+    """base class for action queues, must be 127 bytes or less.
     Can be forcibly stopped, overall command length is longer."""
 
     _prefix: UInt8
@@ -231,10 +231,10 @@ class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
 
 
 class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
-    """Non-embedded action queues are commands representing code that the game
+    """non-embedded action queues are commands representing code that the game
     runs as an action script instead of an event script.\n
-    When assembled, these queues contain no header to indicate where they begin.
-    The game understands  where these scripts are intended to begin via ASM that
+    when assembled, these queues contain no header to indicate where they begin.
+    the game understands  where these scripts are intended to begin via asm that
     exists outside of the scope of the script bank.\n"""
 
     _subscript: ActionScript
@@ -273,5 +273,5 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
 
 
 class UsableEventScriptCommand(EventScriptCommand):
-    """Subclass for commands that can actually be used in a script
+    """subclass for commands that can actually be used in a script
     (no prototypes)."""

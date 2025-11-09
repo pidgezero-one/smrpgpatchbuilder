@@ -28,7 +28,7 @@ class CommandType(int):
 class EnemyAttack:
     """Class representing an enemy attack."""
 
-    # Default instance attributes.
+    # default instance attributes.
     _index: int = 0
     _attack_level: int = 0
     _ohko: bool = False
@@ -103,14 +103,14 @@ class EnemyAttack:
 
     @property
     def status_effects(self) -> List[Status]:
-        """The list of status effects that are induced by this attack.
-        Since a party member can only have one status at a time, effectively only the
+        """the list of status effects that are induced by this attack.
+        since a party member can only have one status at a time, effectively only the
         status occupying the highest bit (referenced by stat_value) will be applied."""
         return self._status_effects
 
     def set_status_effects(self, status_effects: List[Status]) -> None:
-        """Overwrite the list of status effects that are induced by this attack.
-        Since a party member can only have one status at a time, effectively only the
+        """overwrite the list of status effects that are induced by this attack.
+        since a party member can only have one status at a time, effectively only the
         status occupying the highest bit (referenced by stat_value) will be applied."""
         self._status_effects = status_effects
 
@@ -139,7 +139,7 @@ class EnemyAttack:
 
         data = bytearray()
 
-        # First byte is attack level + damage type flags in a bitmap.
+        # first byte is attack level + damage type flags in a bitmap.
         attack_flags = [i for i in range(3) if self.attack_level & (1 << i)]
         if self.ohko:
             attack_flags.append(3)
@@ -151,7 +151,7 @@ class EnemyAttack:
             attack_flags.append(6)
         data += BitMapSet(1, attack_flags).as_bytes()
 
-        # Other bytes are hit rate, status effects, and buffs.
+        # other bytes are hit rate, status effects, and buffs.
         data += ByteField(self.hit_rate).as_bytes()
         data += BitMapSet(1, self.status_effects).as_bytes()
         data += BitMapSet(1, self.buffs).as_bytes()

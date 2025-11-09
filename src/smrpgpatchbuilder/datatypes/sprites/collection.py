@@ -1262,7 +1262,7 @@ class SpriteCollection(list[SpriteContainer]):
 
     def render(self) -> Dict[int, bytearray]:
         """Get data for all NPC sprite data in `{0x123456: bytearray([0x00])}` format"""
-        ### Produce ROM bytes
+        ### produce rom bytes
         tile_groups = _TileGroupSet()
         wip_sprites: _WIPSprites = _WIPSprites()
 
@@ -1377,7 +1377,7 @@ class SpriteCollection(list[SpriteContainer]):
                             cutoff_index = next_st_index
                     # if still too big, convert into its own tileset?
                     lowest_subtile_index = cutoff_index
-                    # add too-low sprite IDs to be duped at the end
+                    # add too-low sprite ids to be duped at the end
                     new_tile_pool = (
                         tile_groups[tile_key].subtiles[cutoff_index:]
                         + tile_groups[tile_key].extra

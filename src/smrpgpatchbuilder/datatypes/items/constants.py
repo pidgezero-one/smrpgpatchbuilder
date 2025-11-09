@@ -14,6 +14,7 @@ ITEMS_BASE_DESC_DATA_ADDRESSES = (
     (0x3A55F0, 0x3A5FFF),
 )
 ITEMS_BASE_TIMING_ADDRESS: int = 0x3A438A
+ITEMS_BASE_NAME_ADDRESS: int = 0x3A46EF
 
 # Total number of items in the data.
 NUM_ITEMS: int = 256

@@ -32,7 +32,7 @@ class ActionScriptCommandNoArgs(ActionScriptCommand, ScriptCommandNoArgs):
 
 
 class ActionScriptCommandAnySizeMem(ActionScriptCommand, ScriptCommandAnySizeMem):
-    """Base class for any command in a NPC action script that can accept either an
+    """base class for any command in a npc action script that can accept either an
     8 bit or 16 bit var."""
 
     def __init__(
@@ -47,14 +47,14 @@ class ActionScriptCommandAnySizeMem(ActionScriptCommand, ScriptCommandAnySizeMem
 
 
 class ActionScriptCommandShortMem(ActionScriptCommand, ScriptCommandShortMem):
-    """Base class for any command in a NPC action script that accepts only
+    """base class for any command in a npc action script that accepts only
     an 8 bit var."""
 
 
 class ActionScriptCommandShortAddrAndValueOnly(
     ActionScriptCommand, ScriptCommandShortAddrAndValueOnly
 ):
-    """Base class for any command in a NPC action script that accepts
+    """base class for any command in a npc action script that accepts
     an 8 bit var and a literal value (either a number or an item class)."""
 
     def __init__(
@@ -74,12 +74,12 @@ class ActionScriptCommandShortAddrAndValueOnly(
 class ActionScriptCommandBasicShortOperation(
     ActionScriptCommand, ScriptCommandBasicShortOperation
 ):
-    """Base class for any command in a NPC action script that performs math
+    """base class for any command in a npc action script that performs math
     on an 8 bit var."""
 
 
 class ActionScriptCommandByteSteps(ActionScriptCommand):
-    """Base class for any command in a NPC action script that accepts a
+    """base class for any command in a npc action script that accepts a
     number of steps as an 8 bit int."""
 
     _steps: UInt8
@@ -103,7 +103,7 @@ class ActionScriptCommandByteSteps(ActionScriptCommand):
 
 
 class ActionScriptCommandBytePixels(ActionScriptCommand):
-    """Base class for any command in a NPC action script that accepts a
+    """base class for any command in a npc action script that accepts a
     number of pixels as an 8 bit int."""
 
     _pixels: UInt8
@@ -127,7 +127,7 @@ class ActionScriptCommandBytePixels(ActionScriptCommand):
 
 
 class ActionScriptCommandXYBytes(ActionScriptCommand):
-    """Base class for any command in a NPC action script that accepts an
+    """base class for any command in a npc action script that accepts an
     X and Y coordinate, each as 8 bit ints."""
 
     _size: int = 3
@@ -162,5 +162,5 @@ class ActionScriptCommandXYBytes(ActionScriptCommand):
 
 
 class UsableActionScriptCommand(ActionScriptCommand):
-    """Subclass for commands that can actually be used in a script
+    """subclass for commands that can actually be used in a script
     (no prototypes)."""

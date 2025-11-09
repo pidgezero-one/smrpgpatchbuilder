@@ -40,7 +40,7 @@ ptrstart = 0x148000
 ptrend = 0x1483FF
 
 roomevent_start = 0x20E400
-roomevent_end = 0x20FFFF  # might be 0x20FDC7
+roomevent_end = 0x20FFFF  # might be 0x20fdc7
 roomevent_ptrstart = 0x20E000
 roomevent_ptrend = 0x20E3FF
 
@@ -50,7 +50,7 @@ roomexit_ptrstart = 0x1D2D64
 roomexit_ptrend = 0x1D3165
 
 partitionstart = 0x1DDE00
-partitionend = 0x1DDFFF  # bumped up from 0x1DDFDF
+partitionend = 0x1DDFFF  # bumped up from 0x1ddfdf
 
 
 class Command(BaseCommand):
@@ -753,3 +753,9 @@ class Command(BaseCommand):
         for i in range(512):
             writeline(file, "rooms[%i] = room_%i" % (i, i))
         file.close()
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully disassembled 512 room objects to randomizer/data/roomobjects/"
+            )
+        )

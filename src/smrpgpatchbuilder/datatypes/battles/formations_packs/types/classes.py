@@ -79,13 +79,13 @@ class FormationMember:
 
     @property
     def include_in_stat_totaling(self) -> bool:
-        """True by default. If false, this enemy's stats will not be considered
+        """true by default. if false, this enemy's stats will not be considered
         when calculating the total stats for a boss location to distribute to
         the boss fight that is shuffled into it."""
         return self._include_in_stat_totaling
 
     def set_include_in_stat_totaling(self, include_in_stat_totaling: bool) -> None:
-        """If false, this enemy's stats will not be considered
+        """if false, this enemy's stats will not be considered
         when calculating the total stats for a boss location to distribute to
         the boss fight that is shuffled into it."""
         self._include_in_stat_totaling = include_in_stat_totaling
@@ -131,12 +131,12 @@ class Formation:
 
     @property
     def run_event_at_load(self) -> Optional[UInt8]:
-        """The event that should run at the start of the battle when this formation is used.
+        """the event that should run at the start of the battle when this formation is used.
         If not set, no event will run."""
         return self._run_event_at_load
 
     def set_run_event_at_load(self, run_event_at_load: Optional[int]) -> None:
-        """Set the event that should run at the start of the battle when this formation is used.
+        """set the event that should run at the start of the battle when this formation is used.
         If not set, no event will run."""
         if run_event_at_load is None:
             self._run_event_at_load = run_event_at_load
@@ -172,86 +172,86 @@ class Formation:
 
     @property
     def battlefield_override(self) -> Optional[Battlefields]:
-        """If set, forces this formation to always load with the given battlefield,
+        """if set, forces this formation to always load with the given battlefield,
         regardless of where in the world it is encountered."""
         return self._battlefield_override
 
     def set_battlefield_override(
         self, battlefield_override: Optional[Battlefields]
     ) -> None:
-        """Force this formation to always load with the given battlefield,
+        """force this formation to always load with the given battlefield,
         regardless of where in the world it is encountered."""
         self._battlefield_override = battlefield_override
 
     @property
     def additional_enemies_to_scale(self) -> List[Type[Enemy]]:
-        """If this formation is used in a boss fight, its stats will change depending on
-        which location it is shuffled to inhabit. This property specifies enemies that are
-        NOT included in the formation itself whose stats should also be scaled similarly to
+        """if this formation is used in a boss fight, its stats will change depending on
+        which location it is shuffled to inhabit. this property specifies enemies that are
+        not included in the formation itself whose stats should also be scaled similarly to
         the enemies in this formation.
 
-        An example of this is when Valentina occupies the Mushroom Kingdom. Valentina and Dodo
-        will have their stats scaled to roughly match Mack's original stats. However, Valentina
+        an example of this is when valentina occupies the mushroom kingdom. valentina and dodo
+        will have their stats scaled to roughly match mack's original stats. however, valentina
         also brings bluebird henchmen with her who occupy the mushroom kingdom exterior, despite
-        not appearing in battle in the same formation as her. Those bluebirds should also be
-        roughly scaled to match stats suitable to the Mushroom Kingdom, so you would
-        specify BluebirdHenchmen in this list to make sure their stats stay appropriately
+        not appearing in battle in the same formation as her. those bluebirds should also be
+        roughly scaled to match stats suitable to the mushroom kingdom, so you would
+        specify bluebirdhenchmen in this list to make sure their stats stay appropriately
         relative to Valentina's, no matter where she ends up."""
         return self._additional_enemies_to_scale
 
     def set_additional_enemies_to_scale(
         self, additional_enemies_to_scale: List[Type[Enemy]]
     ) -> None:
-        """If this formation is used in a boss fight, its stats will change depending on
-        which location it is shuffled to inhabit. This property specifies enemies that are
-        NOT included in the formation itself whose stats should also be scaled similarly to
+        """if this formation is used in a boss fight, its stats will change depending on
+        which location it is shuffled to inhabit. this property specifies enemies that are
+        not included in the formation itself whose stats should also be scaled similarly to
         the enemies in this formation.
 
-        An example of this is when Valentina occupies the Mushroom Kingdom. Valentina and Dodo
-        will have their stats scaled to roughly match Mack's original stats. However, Valentina
+        an example of this is when valentina occupies the mushroom kingdom. valentina and dodo
+        will have their stats scaled to roughly match mack's original stats. however, valentina
         also brings bluebird henchmen with her who occupy the mushroom kingdom exterior, despite
-        not appearing in battle in the same formation as her. Those bluebirds should also be
-        roughly scaled to match stats suitable to the Mushroom Kingdom, so you would
-        specify BluebirdHenchmen in this list to make sure their stats stay appropriately
+        not appearing in battle in the same formation as her. those bluebirds should also be
+        roughly scaled to match stats suitable to the mushroom kingdom, so you would
+        specify bluebirdhenchmen in this list to make sure their stats stay appropriately
         relative to Valentina's, no matter where she ends up."""
         self._additional_enemies_to_scale = additional_enemies_to_scale
 
     @property
     def additional_enemies_for_stat_count(self) -> List[Type[Enemy]]:
-        """Calculating the stats that a boss location should confer onto the boss inhabiting it
+        """calculating the stats that a boss location should confer onto the boss inhabiting it
         via shuffling is based on the stats of the boss that inhabited that location in the original
         game, and takes into account which enemies absolutely must be defeated in order
-        to end the fight. Sometimes, an enemy formation does not perfectly define the whole
+        to end the fight. sometimes, an enemy formation does not perfectly define the whole
         list of enemies that need to be defeated.
 
-        For example, the Megasmilax fight requires you to defeat 8 smilaxes, but the formation
+        for example, the megasmilax fight requires you to defeat 8 smilaxes, but the formation
         only includes five, three of which are re-summoned during battle.
 
-        This property would be used to contain three more smilaxes, so that the total HP
-        conferred by the Bean Valley boss location is equivalent to megasmilax plus 8 smilaxes
+        this property would be used to contain three more smilaxes, so that the total hp
+        conferred by the bean valley boss location is equivalent to megasmilax plus 8 smilaxes
         instead of five."""
         return self._additional_enemies_for_stat_count
 
     def set_additional_enemies_for_stat_count(
         self, additional_enemies_for_stat_count: List[Type[Enemy]]
     ) -> None:
-        """Calculating the stats that a boss location should confer onto the boss inhabiting it
+        """calculating the stats that a boss location should confer onto the boss inhabiting it
         via shuffling is based on the stats of the boss that inhabited that location in the original
         game, and takes into account which enemies absolutely must be defeated in order
-        to end the fight. Sometimes, an enemy formation does not perfectly define the whole
+        to end the fight. sometimes, an enemy formation does not perfectly define the whole
         list of enemies that need to be defeated.
 
-        For example, the Megasmilax fight requires you to defeat 8 smilaxes, but the formation
+        for example, the megasmilax fight requires you to defeat 8 smilaxes, but the formation
         only includes five, three of which are re-summoned during battle.
 
-        This property would be used to contain three more smilaxes, so that the total HP
-        conferred by the Bean Valley boss location is equivalent to megasmilax plus 8 smilaxes
+        this property would be used to contain three more smilaxes, so that the total hp
+        conferred by the bean valley boss location is equivalent to megasmilax plus 8 smilaxes
         instead of five."""
         self._additional_enemies_for_stat_count = additional_enemies_for_stat_count
 
     def get_summed_stats(self) -> Tuple[int, int, int, int, int, int, int, int, int]:
-        """Calculates the stats that this fight's original location should confer onto whichever
-        boss fight inhabits it via the shuffler, IF the player's settings require relative
+        """calculates the stats that this fight's original location should confer onto whichever
+        boss fight inhabits it via the shuffler, if the player's settings require relative
         stat scaling."""
         stat_counted_enemy_classes = [
             m.enemy
@@ -301,12 +301,12 @@ class Formation:
         return list(set(returned_enemy_classes))
 
     def get_members_by_enemy_classes(self, *cls: Type[Enemy]) -> List[FormationMember]:
-        """Returns all of the enemy containers in this formation if the enemy class
+        """returns all of the enemy containers in this formation if the enemy class
         matches an entry in the given list."""
         return [m for m in self.members if m is not None and type(m) in cls]
 
     def randomize_coords(self, valid_coordinates: List[Tuple[int, int]]) -> None:
-        """Randomizes the coordinates of each formation member.\n
+        """randomizes the coordinates of each formation member.\n
         Should not result in overlap."""
         valid_members = [m for m in self.members if m is not None]
         coords = choices(valid_coordinates, k=len(valid_members))
@@ -344,13 +344,13 @@ class Formation:
         patch: Dict[int, bytearray] = {}
         data = bytearray()
 
-        # Monsters present bitmap.
+        # monsters present bitmap.
         monsters_present = [
             7 - index for (index, enemy) in enumerate(self.members) if enemy is not None
         ]
         data += BitMapSet(1, monsters_present).as_bytes()
 
-        # Monsters hidden bitmap.
+        # monsters hidden bitmap.
         monsters_hidden = [
             7 - index
             for (index, enemy) in enumerate(self.members)
@@ -358,7 +358,7 @@ class Formation:
         ]
         data += BitMapSet(1, monsters_hidden).as_bytes()
 
-        # Monster data.
+        # monster data.
         for index, member in enumerate(self.members):
             if member is not None:
                 data += ByteField(index).as_bytes()
@@ -372,7 +372,7 @@ class Formation:
         base_addr = BASE_FORMATION_ADDRESS + (formation_index * 26)
         patch[base_addr] = data
 
-        # Add formation metadata.
+        # add formation metadata.
         data = bytearray()
         data += ByteField(
             self.run_event_at_load if self.run_event_at_load is not None else 0xFF
@@ -395,7 +395,7 @@ class FormationPack:
 
     @property
     def formation_ids(self) -> List[UInt16]:
-        """A list of all formation IDs included in this battle pack.
+        """a list of all formation ids included in this battle pack.
         If all three formations are the same, it will just return one ID."""
         if self.formation_ids[0] == self.formation_ids[1] == self.formation_ids[2]:
             return [self.formation_id]
@@ -404,7 +404,7 @@ class FormationPack:
 
     @property
     def formation_id(self) -> "UInt16":
-        """Returns one formation ID. It will fail if all three formation
+        """returns one formation id. it will fail if all three formation
         IDs are not the same in this pack."""
         assert self.formation_ids[0] == self.formation_ids[1] == self.formation_ids[2]
         return self.formation_ids[0]
@@ -418,8 +418,8 @@ class FormationPack:
         self._formation_ids = [UInt16(id) for id in pids]
 
     def set_formation_id(self, formation_id: int) -> None:
-        """Overwrites all three formation IDs in this pack with the one
-        ID given as an argument to this function. In effect, this means
+        """overwrites all three formation ids in this pack with the one
+        id given as an argument to this function. in effect, this means
         all three formations will be the same and the pack will always load
         the same battle."""
         assert formation_id < TOTAL_FORMATIONS
@@ -447,7 +447,7 @@ class FormationPack:
                 val -= 256
             data += ByteField(val).as_bytes()
 
-        # High bank indicator.
+        # high bank indicator.
         val = 7 if hi_num else 0
         data += ByteField(val).as_bytes()
 
