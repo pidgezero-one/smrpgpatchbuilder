@@ -173,6 +173,7 @@ class Command(BaseCommand):
         classnames = load_class_names_from_config()
         vars_lookup = load_variables_from_input_files()
         flags_lookup = load_flags_from_input_files()
+        print(flags_lookup)
 
 
         def convert_event_script_command(cmd, valid_identifiers):
@@ -339,7 +340,9 @@ class Command(BaseCommand):
             elif cmd["command"] == "clear_bit":
                 cls = "ClearBit"
                 include_argnames = False
-                args["flag"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["flag"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["flag"])
             elif cmd["command"] == "close_dialog":
                 cls = "CloseDialog"
             elif cmd["command"] == "create_packet_at_npc_coords":
@@ -555,12 +558,16 @@ class Command(BaseCommand):
             elif cmd["command"] == "jmp_if_bit_clear":
                 cls = "JmpIfBitClear"
                 include_argnames = False
-                args["bit"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["bit"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["bit"])
                 args["destinations"] = '["%s"]' % cmdargs[2]
             elif cmd["command"] == "jmp_if_bit_set":
                 cls = "JmpIfBitSet"
                 include_argnames = False
-                args["bit"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["bit"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["bit"])
                 args["destinations"] = '["%s"]' % cmdargs[2]
             elif cmd["command"] == "jmp_if_comparison_result_is_greater_or_equal":
                 cls = "JmpIfComparisonResultIsGreaterOrEqual"
@@ -1012,7 +1019,9 @@ class Command(BaseCommand):
             elif cmd["command"] == "set_bit":
                 cls = "SetBit"
                 include_argnames = False
-                args["flag"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["flag"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["flag"])
             elif cmd["command"] == "set_bit_3":
                 cls = "MarioStopsGlowing"
             elif cmd["command"] == "set_bit_3_offset":
@@ -1130,7 +1139,9 @@ class Command(BaseCommand):
                 cls = "Set7000ToMinecartTimer"
             elif cmd["command"] == "store_set_bits":
                 cls = "StoreSetBits"
-                args["bit"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["bit"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["bit"])
                 include_argnames = False
             elif cmd["command"] == "start_battle_700E":
                 cls = "StartBattleWithPackAt700E"
@@ -1631,13 +1642,17 @@ class Command(BaseCommand):
             elif cmd["command"] == "set_bit":
                 cls = "A_SetBit"
                 include_argnames = False
-                args["flag"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["flag"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["flag"])
             elif cmd["command"] == "set_mem_704x_at_700C_bit":
                 cls = "A_SetMem704XAt700CBit"
             elif cmd["command"] == "clear_bit":
                 cls = "A_ClearBit"
                 include_argnames = False
-                args["flag"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["flag"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["flag"])
             elif cmd["command"] == "clear_mem_704x_at_700C_bit":
                 cls = "A_ClearMem704XAt700CBit"
             elif cmd["command"] == "set_var_to_const":
@@ -1768,12 +1783,16 @@ class Command(BaseCommand):
             elif cmd["command"] == "jmp_if_bit_clear":
                 cls = "A_JmpIfBitClear"
                 include_argnames = False
-                args["bit"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["bit"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["bit"])
                 args["destinations"] = '["%s"]' % cmdargs[2]
             elif cmd["command"] == "jmp_if_bit_set":
                 cls = "A_JmpIfBitSet"
                 include_argnames = False
-                args["bit"] = flags_lookup.get(cmdargs[0], cmdargs[1])
+                print(cmdargs)
+                args["bit"] = flags_lookup.get((cmdargs[0], cmdargs[1]))
+                print(args["bit"])
                 args["destinations"] = '["%s"]' % cmdargs[2]
             elif cmd["command"] == "jmp_if_mem_704x_at_700C_bit_set":
                 cls = "A_JmpIfMem704XAt700CBitSet"
@@ -2023,6 +2042,7 @@ class Command(BaseCommand):
             )
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *"
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *"
 
 
             output += "\nfrom ....variables.action_script_names import *"
@@ -2051,6 +2071,7 @@ class Command(BaseCommand):
             output += (
                 "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
             )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
@@ -2067,6 +2088,7 @@ class Command(BaseCommand):
                 "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
             )
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *"
             output += "\nfrom ....variables.action_script_names import *"
             output += "\nfrom ....variables.battlefield_names import *"
             output += "\nfrom ....variables.dialog_names import *"
