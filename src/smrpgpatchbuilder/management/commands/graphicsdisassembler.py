@@ -15,6 +15,9 @@ from smrpgpatchbuilder.utils.disassembler_common import (
     shortify,
     writeline,
 )
+from smrpgpatchbuilder.management.commands.input_file_parser import (
+    load_arrays_from_input_files,
+)
 import string, random, shutil, os
 
 PALETTE_OFFSET = 0x253000
@@ -89,6 +92,10 @@ class Command(BaseCommand):
 
         os.makedirs(f"{output_path}/objects", exist_ok=True)
         open(f"{output_path}/objects/__init__.py", "w")
+
+        # Load sprite names from input files
+        arrays = load_arrays_from_input_files()
+        sprite_names = arrays.get("sprites", [])
 
         tile_write_banks = load_animation_banks("./config/tiles_write.input")
         animation_write_banks = load_animation_banks("./config/animationdata_write.input")
@@ -418,6 +425,12 @@ class Command(BaseCommand):
 
             dest = f"{output_path}/objects/sprite_%i.py" % index
             file = open(dest, "w")
+
+            # Write sprite name as a comment if available
+            if index < len(sprite_names) and sprite_names[index]:
+                writeline(file, f"# {sprite_names[index]}")
+                writeline(file, "")
+
             writeline(
                 file,
                 "from smrpgpatchbuilder.datatypes.graphics.classes import CompleteSprite, AnimationPack, AnimationPackProperties, AnimationSequence, AnimationSequenceFrame, Mold, Tile, Clone",

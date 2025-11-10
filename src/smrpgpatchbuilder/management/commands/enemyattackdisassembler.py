@@ -108,7 +108,7 @@ class Command(BaseCommand):
         # Write attacks to file
         file = open(f"{dest}/attacks.py", "wb")
 
-        file.write("from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack\n".encode("utf8"))
+        file.write("from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack, EnemyAttackCollection\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.spells.enums import Status, TempStatBuff\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix\n".encode("utf8"))
         file.write("\n\n".encode("utf8"))
@@ -174,6 +174,13 @@ class Command(BaseCommand):
                 file.write(f"    _buffs = [{buffs_list}]\n".encode("utf8"))
 
             file.write("\n\n".encode("utf8"))
+
+        # Write the collection instantiation
+        file.write("\n".encode("utf8"))
+        file.write("collection = EnemyAttackCollection([\n".encode("utf8"))
+        for class_name in attack_class_names:
+            file.write(f"    {class_name}(),\n".encode("utf8"))
+        file.write("])\n".encode("utf8"))
 
         file.close()
 

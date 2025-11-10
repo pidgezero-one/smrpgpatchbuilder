@@ -6817,7 +6817,7 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
 
     Args:
         character (PartyCharacter): The character whose equipment to look at.
-        equip_slot (Type[Equipment]): The equip slot to read (`Weapon`, `Armor`, or `Accessory`)
+        equip_slot (Type[Equipment]): The equip slot to read (`WeaponItem`, `ArmorItem`, or `AccessoryItem`)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -6842,7 +6842,7 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
 
     def set_equip_slot(self, equip_slot: Type[Equipment]) -> None:
         """Designate the equipment type to check."""
-        assert equip_slot in [Weapon, Armor, Accessory]
+        assert 0 <= equip_slot().item_id <= 2
         self._equip_slot = equip_slot
 
     def __init__(

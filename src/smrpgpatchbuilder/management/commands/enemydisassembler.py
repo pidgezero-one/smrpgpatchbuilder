@@ -131,14 +131,7 @@ class Command(BaseCommand):
         output_lines.append(")")
         output_lines.append("from smrpgpatchbuilder.datatypes.spells.enums import Element, Status")
         output_lines.append("from smrpgpatchbuilder.datatypes.items.classes import RegularItem")
-
-        # add imports for used item classes
-        if used_item_classes:
-            sorted_items = sorted(used_item_classes)
-            output_lines.append("from ..items.items import (")
-            for item_class in sorted_items:
-                output_lines.append(f"    {item_class},")
-            output_lines.append(")")
+        output_lines.append("from ..items import *")    
 
         output_lines.append("")
         output_lines.append("")

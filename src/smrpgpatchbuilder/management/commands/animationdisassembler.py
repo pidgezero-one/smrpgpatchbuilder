@@ -123,6 +123,31 @@ monster_behaviour_oq_offsets = [
     0x350E60,  # fade out death, no "escape" transition
     0x350E6C,  # (normal)
     0x350E78,  # no reaction when hit
+
+    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
+    0x02F455,
+    0x02F4BF,
+    0x350402,
+    0x35058A,
+    0x350898,
+    0x350985,
+    0x350AD3,
+    0x350CF2,
+    0x350E60,
+    0x351026,
+    0x351493,
+    0x352128,
+    0x35816D,
+    0x358271,
+    0x358916,
+    0x3589D5,
+    0x358AC6,
+    0x358B57,
+    0x358BEC,
+    0x35C761,
+    0x35C992,
+    0x35ECA2,
+    0x3A6000,
 ]
 
 monster_entrance_offsets = [

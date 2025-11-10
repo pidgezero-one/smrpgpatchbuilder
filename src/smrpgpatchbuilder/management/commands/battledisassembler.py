@@ -349,6 +349,7 @@ class Command(BaseCommand):
         BATTLE_EVENTS = varnames["events"]
         SPELLS = [""] * 252
         SPELLS[251] = "DoNothing"
+        print(classnames["all_spells"])
         for i, a in enumerate(classnames["all_spells"]):
             SPELLS[i] = a
         ATTACKS = [""] * 252
@@ -356,8 +357,6 @@ class Command(BaseCommand):
         for i, a in enumerate(classnames["monster_attacks"]):
             ATTACKS[i] = a
         ENEMIES = classnames["enemies"]
-
-        print(classnames)
 
         def pythonize(command):
             opcode = command[0]

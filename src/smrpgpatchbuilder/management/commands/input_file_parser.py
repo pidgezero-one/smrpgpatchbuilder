@@ -63,8 +63,8 @@ def parse_variable_names_lines(lines: List[str]) -> List[Tuple[str, str]]:
 
     Handles special formats for flags and variables:
     - Lines ending with hex and digit: Flag(0xHEX, digit)
-    - Lines ending with hex in 0x7000-0x703E: ShortVar(0xHEX)
-    - Lines ending with hex in 0x7040-0x71FE: ByteVar(0xHEX)
+    - Lines ending with hex in 0x7000-0x703E, 0x71A0-0x71FE: ShortVar(0xHEX)
+    - Lines ending with hex in 0x7040-0x719F: ByteVar(0xHEX)
     - Lines ending with other hex: 0xHEX
     - Lines without hex: 0
 
@@ -92,9 +92,9 @@ def parse_variable_names_lines(lines: List[str]) -> List[Tuple[str, str]]:
             label_raw = " ".join(parts[:-1])
             label = normalize_label(label_raw)
             hex_val = int(hex_str, 16)
-            if 0x7000 <= hex_val <= 0x703E:
+            if 0x7000 <= hex_val <= 0x703E or 0x71A0 <= hex_val <= 0x71FE:
                 out.append((label, f"ShortVar(0x{hex_val:04X})"))
-            elif 0x7040 <= hex_val <= 0x71FE:
+            elif 0x7040 <= hex_val <= 0x719F:
                 out.append((label, f"ByteVar(0x{hex_val:04X})"))
             else:
                 out.append((label, f"0x{hex_val:04X}"))
@@ -239,12 +239,12 @@ def load_arrays_from_input_files() -> Dict[str, List[str]]:
         result["event_scripts"] = [""] * 4096
 
     if "formation_names" in parsed:
-        formations = [""] * 435
+        formations = [""] * 512
         for name, idx in parsed["formation_names"]:
             formations[int(idx)] = name
         result["formations"] = formations
     else:
-        result["formations"] = [""] * 435
+        result["formations"] = [""] * 512
 
     if "music_names" in parsed:
         music = [""] * 74
@@ -412,7 +412,8 @@ def load_class_names_from_config() -> Dict[str, List[str]]:
             spec.loader.exec_module(spells_module)
 
             # Get CharacterSpell and EnemySpell base classes
-            CharacterSpell = getattr(spells_module, "CharacterSpell", None)
+            CharacterSpellc = getattr(spells_module, "CharacterSpell", None)
+            EnemySpellc = getattr(spells_module, "EnemySpell", None)
 
             # Collect CharacterSpell subclasses with their indices
             ally_spells_with_index = []
@@ -423,13 +424,14 @@ def load_class_names_from_config() -> Dict[str, List[str]]:
                 if not issubclass(obj, Spell):
                     continue
                 index = obj._index
-                all_spells_with_index.append((index, name))
-                if CharacterSpell and obj != CharacterSpell and issubclass(obj, CharacterSpell):
+                if CharacterSpellc and obj != CharacterSpellc and issubclass(obj, CharacterSpellc):
                     index = getattr(obj, '_index', 9999)
                     ally_spells_with_index.append((index, name))
-                else:
+                    all_spells_with_index.append((index, name))
+                if EnemySpellc and obj != EnemySpellc and issubclass(obj, EnemySpellc):
                     index = obj._index
                     monster_spells_with_index.append((index, name))
+                    all_spells_with_index.append((index, name))
 
             # Sort by index and extract names
             result["ally_spells"] = [name for _, name in sorted(ally_spells_with_index)]

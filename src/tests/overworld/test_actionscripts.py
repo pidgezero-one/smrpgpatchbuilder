@@ -2,18 +2,18 @@ import pytest
 from typing import Optional, Type, List
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.battlefields import *
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.packets import *
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import *
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (

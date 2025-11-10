@@ -203,3 +203,38 @@ class EnemyAttack:
             base_addr: data,
             name_addr: name_bytes
         }
+
+
+class EnemyAttackCollection:
+    """Collection of enemy attacks with rendering support."""
+
+    def __init__(self, attacks: List[EnemyAttack]):
+        """Initialize the collection with a list of enemy attacks.
+
+        Args:
+            attacks: list of EnemyAttack objects
+
+        Raises:
+            ValueError: if there aren't exactly 129 attacks
+        """
+        if len(attacks) != 129:
+            raise ValueError(
+                f"EnemyAttackCollection must contain exactly 129 EnemyAttack instances, "
+                f"but {len(attacks)} were found."
+            )
+        self.attacks = attacks
+
+    def render(self) -> Dict[int, bytearray]:
+        """Render all enemy attacks.
+
+        Returns:
+            dictionary mapping ROM addresses to bytearrays
+        """
+        patch: Dict[int, bytearray] = {}
+
+        # Render each attack individually
+        for attack in self.attacks:
+            attack_patch = attack.render()
+            patch.update(attack_patch)
+
+        return patch

@@ -42,38 +42,12 @@ class Command(BaseCommand):
             original_rom = bytearray(open(romPath, "rb").read())
             rom = deepcopy(original_rom)
 
-        # Import the attack module
+        # Import the EnemyAttackCollection from the module
         module = importlib.import_module(module_path)
+        collection = module.collection
 
-        # Get all attack classes from the module
-        # Collect all classes that are subclasses of EnemyAttack
-        from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack
-
-        attack_classes = []
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, type) and issubclass(obj, EnemyAttack) and obj is not EnemyAttack:
-                attack_classes.append(obj)
-
-        # Sort by index to ensure correct order
-        attack_classes.sort(key=lambda cls: cls()._index)
-
-        # Render all attacks and combine patches
-        combined_patch = {}
-        for attack_class in attack_classes:
-            attack_instance = attack_class()
-            attack_patch = attack_instance.render()
-
-            # Merge this attack's patch into the combined patch
-            for addr, data in attack_patch.items():
-                if addr in combined_patch:
-                    # If there's overlap, this shouldn't happen but let's handle it
-                    self.stdout.write(
-                        self.style.WARNING(
-                            f"Warning: overlapping data at address 0x{addr:06X}"
-                        )
-                    )
-                combined_patch[addr] = data
+        # Render the collection to get patch data
+        combined_patch = collection.render()
 
         if combined_patch:
             for start, bytes_ in combined_patch.items():
