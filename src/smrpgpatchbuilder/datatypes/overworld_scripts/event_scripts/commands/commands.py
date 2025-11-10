@@ -13,14 +13,6 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import (
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import (
     COORD_F,
 )
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import (
-    ITEM_ID,
-    PRIMARY_TEMP_7000,
-    TIMER_701C,
-    TIMER_701E,
-    TIMER_7020,
-    TIMER_7022,
-)
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
     ActionQueuePrototype,
@@ -127,7 +119,7 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD5
+    _opcode = 0xD5
     _size: int = 3
     _length: UInt16
 
@@ -144,7 +136,7 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_length(length)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.length)
 
 
@@ -165,7 +157,7 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD4
+    _opcode = 0xD4
     _size: int = 2
     _count: UInt8
 
@@ -182,7 +174,7 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_count(count)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.count)
 
 
@@ -202,7 +194,7 @@ class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD7
+    _opcode = 0xD7
 
 
 class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
@@ -222,10 +214,10 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
         destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of whatever command you want to jump to.
     """
 
-    _opcode: int = 0xD2
+    _opcode = 0xD2
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -246,7 +238,7 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD0
+    _opcode = 0xD0
     _size: int = 3
     _destination: UInt16
 
@@ -266,7 +258,7 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_destination(destination)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.destination)
 
 
@@ -287,7 +279,7 @@ class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF9
+    _opcode = 0xF9
 
 
 class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -307,7 +299,7 @@ class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArg
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFA
+    _opcode = 0xFA
 
 
 class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
@@ -327,10 +319,10 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD3
+    _opcode = 0xD3
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -441,7 +433,7 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_length(length)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         frames = self._length
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
@@ -484,7 +476,7 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x47
+    _opcode = 0x47
     _size: int = 2
     _timer_var: TimerVar
 
@@ -501,7 +493,7 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
 
 
@@ -525,7 +517,7 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x40
+    _opcode = 0x40
     _size: int = 3
     _event_id: UInt16
     _return_on_level_exit: bool
@@ -584,7 +576,7 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_6(bit_6)
         self.set_run_as_second_script(run_as_second_script)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = bools_to_int(
             self._return_on_level_exit, self.bit_6, self.run_as_second_script
         )
@@ -613,7 +605,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x44
+    _opcode = 0x44
     _size: int = 3
     _event_id: UInt16
     _timer_var: TimerVar
@@ -672,7 +664,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_4(bit_4)
         self.set_bit_5(bit_5)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = bools_to_int(self.bit_4, self.bit_5)
         flags = flags << 12
         timer = self.timer_var.to_byte() << 14
@@ -702,7 +694,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x45
+    _opcode = 0x45
     _size: int = 3
     _event_id: UInt16
     _timer_var: TimerVar
@@ -761,7 +753,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
         self.set_bit_4(bit_4)
         self.set_bit_5(bit_5)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = bools_to_int(self.bit_4, self.bit_5)
         flags = flags << 12
         timer = self.timer_var.to_byte() << 14
@@ -805,7 +797,7 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_event_id(event_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.event_id)
 
 
@@ -828,7 +820,7 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD1
+    _opcode = 0xD1
     _size: int = 3
     _event_id: UInt16
 
@@ -847,7 +839,7 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_event_id(event_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.event_id)
 
 
@@ -887,7 +879,7 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x46
+    _opcode = 0x46
     _size: int = 2
     _timer_var: TimerVar
 
@@ -904,7 +896,7 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
 
 
@@ -925,7 +917,7 @@ class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFE
+    _opcode = 0xFE
 
 
 class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -946,7 +938,7 @@ class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFF
+    _opcode = 0xFF
 
 
 class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -1547,7 +1539,7 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_contents(contents)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
 
@@ -1574,7 +1566,7 @@ class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWi
     _opcode = bytearray([0xFD, 0x62])
     _size: int = 4
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1595,10 +1587,10 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x41
+    _opcode = 0x41
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1620,7 +1612,7 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE6
+    _opcode = 0xE6
     _size: int = 5
     _bits: Set[int]
 
@@ -1645,7 +1637,7 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
         super().__init__(destinations, identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
 
@@ -1668,7 +1660,7 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE7
+    _opcode = 0xE7
     _size: int = 5
     _bits: Set[int]
 
@@ -1693,7 +1685,7 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
 
@@ -1738,7 +1730,7 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xDA)
             offset = ShortVar(0x7080)
@@ -1797,7 +1789,7 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xDE)
             offset = ShortVar(0x7080)
@@ -1828,10 +1820,10 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEA
+    _opcode = 0xEA
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1854,10 +1846,10 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEF
+    _opcode = 0xEF
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1878,10 +1870,10 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEE
+    _opcode = 0xEE
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1902,10 +1894,10 @@ class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEB
+    _opcode = 0xEB
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1927,10 +1919,10 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xDB
+    _opcode = 0xDB
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1953,9 +1945,9 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
     """
 
     _size: int = 3
-    _opcode: int = 0xDF
+    _opcode = 0xDF
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -1976,7 +1968,7 @@ class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA3
+    _opcode = 0xA3
 
 
 class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -1996,7 +1988,7 @@ class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA7
+    _opcode = 0xA7
 
 
 class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -2015,7 +2007,7 @@ class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBE
+    _opcode = 0xBE
 
 
 class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -2034,7 +2026,7 @@ class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBF
+    _opcode = 0xBF
 
 
 class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
@@ -2083,7 +2075,7 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
-        if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
+        if address == ShortVar(0x7000) or isinstance(address, ByteVar):
             self._size = 3
         else:
             self._size = 4
@@ -2110,10 +2102,10 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xA8, self.address, self.value)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xAC, UInt16(self.value))
         if isinstance(self.address, ShortVar):
             return super().render(0xB0, self.address, UInt16(self.value))
@@ -2139,7 +2131,7 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5C
+    _opcode = 0x5C
     _size: int = 3
     _address: UInt16
 
@@ -2156,7 +2148,7 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.address)
 
 
@@ -2196,7 +2188,7 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(UInt16(self.address - 0xF800))
 
 
@@ -2235,7 +2227,7 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xA2)
             offset = ShortVar(0x7080)
@@ -2289,7 +2281,7 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xA6)
             offset = ShortVar(0x7080)
@@ -2338,7 +2330,7 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_address(address)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         address_byte = (self.address - 0x0158) // 2
         address_byte &= 0x7F
         return super().render(address_byte)
@@ -2393,7 +2385,7 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         self.set_address(address)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         address_byte = (self.address - 0x0158) // 2
         address_byte &= 0x7F
         address_byte += self.bit_7 << 7
@@ -2449,7 +2441,7 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         self.set_address(address)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         address_byte = (self.address - 0x0158) // 2
         address_byte &= 0x7F
         address_byte += self.bit_7 << 7
@@ -2523,7 +2515,7 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
 
     @property
     def size(self) -> int:
-        if PRIMARY_TEMP_7000 not in (self.from_var, self.to_var):
+        if ShortVar(0x7000) not in (self.from_var, self.to_var):
             return 3
         else:
             return 2
@@ -2549,14 +2541,14 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
         self._to_var = to_var
         self.set_addresses(from_var, to_var)
 
-    def render(self) -> bytearray:
-        if self.to_var == PRIMARY_TEMP_7000 and isinstance(self.from_var, ByteVar):
+    def render(self, *args) -> bytearray:
+        if self.to_var == ShortVar(0x7000) and isinstance(self.from_var, ByteVar):
             return super().render(0xB4, self.from_var)
-        if self.from_var == PRIMARY_TEMP_7000 and isinstance(self.to_var, ByteVar):
+        if self.from_var == ShortVar(0x7000) and isinstance(self.to_var, ByteVar):
             return super().render(0xB5, self.to_var)
-        if self.to_var == PRIMARY_TEMP_7000 and isinstance(self.from_var, ShortVar):
+        if self.to_var == ShortVar(0x7000) and isinstance(self.from_var, ShortVar):
             return super().render(0xBA, self.from_var)
-        if self.from_var == PRIMARY_TEMP_7000 and isinstance(self.to_var, ShortVar):
+        if self.from_var == ShortVar(0x7000) and isinstance(self.to_var, ShortVar):
             return super().render(0xBB, self.to_var)
         if isinstance(self.from_var, ShortVar) and isinstance(self.to_var, ShortVar):
             return super().render(0xBC, self.from_var, self.to_var)
@@ -2614,7 +2606,7 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
         self.set_value_1(value_1)
         self.set_value_2(value_2)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.value_1, self.value_2)
 
 
@@ -2787,7 +2779,7 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = bytearray([0xFD, 0xAA])
             offset = ShortVar(0x7080)
@@ -2819,7 +2811,7 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBD
+    _opcode = 0xBD
     _size: int = 3
     _memory_a: ShortVar
     _memory_b: ShortVar
@@ -2852,7 +2844,7 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
         self.set_memory_a(memory_a)
         self.set_memory_b(memory_b)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.memory_b, self.memory_a)
 
 
@@ -2902,7 +2894,7 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
-        if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
+        if address == ShortVar(0x7000) or isinstance(address, ByteVar):
             self._size = 3
         else:
             self._size = 4
@@ -2929,10 +2921,10 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xA9, self.address, self.value)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xAD, UInt16(self.value))
         if isinstance(self.address, ShortVar):
             return super().render(0xB1, self.address, UInt16(self.value))
@@ -2963,10 +2955,10 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar):
             return super().render(0xAA, self.address)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xAE)
         if isinstance(self.address, ShortVar):
             return super().render(0xB2, self.address)
@@ -2997,10 +2989,10 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar):
             return super().render(0xAB, self.address)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xAF)
         if isinstance(self.address, ShortVar):
             return super().render(0xB3, self.address)
@@ -3026,7 +3018,7 @@ class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB8
+    _opcode = 0xB8
     _size: int = 2
 
 
@@ -3047,7 +3039,7 @@ class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB9
+    _opcode = 0xB9
     _size: int = 2
 
 
@@ -3091,10 +3083,10 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE9
+    _opcode = 0xE9
     _size: int = 5
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3115,10 +3107,10 @@ class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE8
+    _opcode = 0xE8
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3143,8 +3135,8 @@ class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndVal
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
-        if self.address == PRIMARY_TEMP_7000:
+    def render(self, *args) -> bytearray:
+        if self.address == ShortVar(0x7000):
             return super().render(0xB6, self.value)
         return super().render(0xB7, self.address, self.value)
 
@@ -3173,8 +3165,8 @@ class CompareVarToConst(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
-        if self.address == PRIMARY_TEMP_7000:
+    def render(self, *args) -> bytearray:
+        if self.address == ShortVar(0x7000):
             return super().render(0xC0, self.value)
         return super().render(0xC2, self.address, self.value)
 
@@ -3208,7 +3200,7 @@ class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC1
+    _opcode = 0xC1
     _size: int = 2
 
 
@@ -3231,10 +3223,10 @@ class JmpIfComparisonResultIsGreaterOrEqual(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEC
+    _opcode = 0xEC
     _size = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3257,10 +3249,10 @@ class JmpIfComparisonResultIsLesser(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xED
+    _opcode = 0xED
     _size = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3314,7 +3306,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
-        if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
+        if address == ShortVar(0x7000) or isinstance(address, ByteVar):
             self._size = 5
         else:
             self._size = 6
@@ -3342,10 +3334,10 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xE0, self.address, self.value, *self.destinations)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xE2, UInt16(self.value), *self.destinations)
         if isinstance(self.address, ShortVar):
             return super().render(
@@ -3406,7 +3398,7 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04x}: {value}"
             )
-        if address == PRIMARY_TEMP_7000 or isinstance(address, ByteVar):
+        if address == ShortVar(0x7000) or isinstance(address, ByteVar):
             self._size = 5
         else:
             self._size = 6
@@ -3434,10 +3426,10 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xE1, self.address, self.value, *self.destinations)
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             return super().render(0xE3, UInt16(self.value), *self.destinations)
         if isinstance(self.address, ShortVar):
             return super().render(
@@ -3620,7 +3612,7 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
         self.set_address(address)
         self.set_shift(shift)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.address, 0xFF - self._shift)
 
 
@@ -3674,7 +3666,7 @@ class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
         self.set_adding(adding)
         self.set_multiplying(multiplying)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.adding, self.multiplying)
 
 
@@ -3916,7 +3908,7 @@ class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
         self.set_sync(sync)
         self.set_action_script_id(action_script_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         header_byte: int = (not self.sync) + 0xF2
         return super().render(self.target, header_byte, self.action_script_id)
 
@@ -4036,7 +4028,7 @@ class _SetTempActionScript(EventScriptCommand):
         self.set_sync(sync)
         self.set_action_script_id(action_script_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         header_byte: int = (not self.sync) + 0xF4
         return super().render(self.target, header_byte, self.action_script_id)
 
@@ -4136,7 +4128,7 @@ class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF6)
 
 
@@ -4159,7 +4151,7 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF2
+    _opcode = 0xF2
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -4191,7 +4183,7 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg: int = UInt16(self.level_id + (self.target_npc << 9) + (1 << 15))
         return super().render(arg)
 
@@ -4231,7 +4223,7 @@ class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF8)
 
 
@@ -4272,7 +4264,7 @@ class SummonObjectToCurrentLevelAtMariosCoords(
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF7)
 
 
@@ -4295,7 +4287,7 @@ class SummonObjectAt70A8ToCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF4
+    _opcode = 0xF4
 
 
 class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
@@ -4317,7 +4309,7 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF2
+    _opcode = 0xF2
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -4349,7 +4341,7 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_raw = self.level_id + (self.target_npc << 9)
         assert 0 <= arg_raw <= 0x7FFF
         arg: int = UInt16(arg_raw)
@@ -4390,7 +4382,7 @@ class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand)
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF9)
 
 
@@ -4413,7 +4405,7 @@ class RemoveObjectAt70A8FromCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF5
+    _opcode = 0xF5
 
 
 class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
@@ -4451,7 +4443,7 @@ class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFA)
 
 
@@ -4490,7 +4482,7 @@ class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFB)
 
 
@@ -4528,7 +4520,7 @@ class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFC)
 
 
@@ -4566,7 +4558,7 @@ class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFD)
 
 
@@ -4589,7 +4581,7 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF3
+    _opcode = 0xF3
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -4623,7 +4615,7 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_raw = self.level_id + (self.target_npc << 9) + (1 << 15)
         arg: int = UInt16(arg_raw)
         return super().render(arg)
@@ -4648,7 +4640,7 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF3
+    _opcode = 0xF3
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -4682,7 +4674,7 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_raw = self.level_id + (self.target_npc << 9)
         assert 0 <= arg_raw <= 0x7FFF
         arg: int = UInt16(arg_raw)
@@ -4709,7 +4701,7 @@ class EnableTriggerOfObjectAt70A8InCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF6
+    _opcode = 0xF6
 
 
 class DisableTriggerOfObjectAt70A8InCurrentLevel(
@@ -4731,7 +4723,7 @@ class DisableTriggerOfObjectAt70A8InCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF7
+    _opcode = 0xF7
 
 
 class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
@@ -4770,7 +4762,7 @@ class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFE)
 
 
@@ -4810,7 +4802,7 @@ class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFF)
 
 
@@ -4833,7 +4825,7 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3E
+    _opcode = 0x3E
     _size: int = 5
     _packet_id: UInt8
     _target_npc: AreaObject
@@ -4868,7 +4860,7 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
         self.set_packet_id(packet)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.target_npc, *self.destinations)
 
 
@@ -4890,7 +4882,7 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3F
+    _opcode = 0x3F
     _size: int = 4
     _packet_id: UInt8
 
@@ -4913,7 +4905,7 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, *self.destinations)
 
 
@@ -4973,7 +4965,7 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
         self.set_packet_id(packet)
         self.set_event_id(event_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.event_id, *self.destinations)
 
 
@@ -4994,7 +4986,7 @@ class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArg
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x30
+    _opcode = 0x30
 
 
 class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -5013,7 +5005,7 @@ class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x31
+    _opcode = 0x31
 
 
 class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -5073,7 +5065,7 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
             identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x39
+    _opcode = 0x39
     _size: int = 4
     _target: AreaObject
 
@@ -5095,7 +5087,7 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._target, *self.destinations)
 
 
@@ -5118,10 +5110,10 @@ class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWith
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x42
+    _opcode = 0x42
     _size: int = 5
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -5165,7 +5157,7 @@ class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._target_npc, *self.destinations)
 
 
@@ -5188,7 +5180,7 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF8
+    _opcode = 0xF8
     _size: int = 5
     _target_npc: AreaObject
     _level_id: UInt16
@@ -5224,7 +5216,7 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg, *self.destinations)
 
@@ -5247,7 +5239,7 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x32
+    _opcode = 0x32
     _size: int = 4
     _target: AreaObject
 
@@ -5269,7 +5261,7 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
         super().__init__(destinations, identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
 
 
@@ -5294,7 +5286,7 @@ class JmpIfObjectNotInSpecificLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF8
+    _opcode = 0xF8
     _size: int = 5
     _target_npc: AreaObject
     _level_id: UInt16
@@ -5330,7 +5322,7 @@ class JmpIfObjectNotInSpecificLevel(
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
@@ -5393,7 +5385,7 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
         self.set_target(target)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg: int = UInt16(self.level_id + (self.target << 9) + (1 << 15))
         return super().render(arg, *self.destinations)
 
@@ -5455,7 +5447,7 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
         self.set_target(target)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg = UInt16((self.target << 9) + self.level_id)
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
@@ -5502,7 +5494,7 @@ class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJm
         super().__init__(destinations, identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
 
 
@@ -5549,7 +5541,7 @@ class JmpIfObjectActionScriptIsRunning(
         super().__init__(destinations, identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
 
 
@@ -5577,7 +5569,7 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3A
+    _opcode = 0x3A
     _size: int = 7
     _object_1: AreaObject
     _object_2: AreaObject
@@ -5639,7 +5631,7 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         self.set_x(x)
         self.set_y(y)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
@@ -5668,7 +5660,7 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3B
+    _opcode = 0x3B
     _size: int = 7
     _object_1: AreaObject
     _object_2: AreaObject
@@ -5730,7 +5722,7 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         self.set_x(x)
         self.set_y(y)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
@@ -5757,7 +5749,7 @@ class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
             identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5D
+    _opcode = 0x5D
 
 
 class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
@@ -5849,7 +5841,7 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         self.set_is_isometric_not_pixel(isometric)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         opcode = UInt8(0xC4 + self.coord)
         arg = UInt8(
             (self.bit_7 << 7) + (self.is_isometric_not_pixel << 6) + self.target_npc
@@ -5876,7 +5868,7 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC7
+    _opcode = 0xC7
     _size: int = 2
     _target: AreaObject
     _bit_6: bool
@@ -5921,7 +5913,7 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_6(bit_6)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
 
@@ -5942,7 +5934,7 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC8
+    _opcode = 0xC8
     _size: int = 2
     _target: AreaObject
     _bit_6: bool = False
@@ -5987,7 +5979,7 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_6(bit_6)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
 
@@ -6008,7 +6000,7 @@ class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD6
+    _opcode = 0xD6
     _size: int = 2
 
 
@@ -6041,7 +6033,7 @@ class EnableControls(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x35
+    _opcode = 0x35
     _size: int = 2
     _enabled_buttons: Set[ControllerInput]
 
@@ -6064,7 +6056,7 @@ class EnableControls(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_enabled_buttons(enabled_buttons)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         buttons_as_ints: List[int] = cast(
             List[int], [int(b) for b in self.enabled_buttons]
         )
@@ -6099,7 +6091,7 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x34
+    _opcode = 0x34
     _size: int = 2
     _enabled_buttons: Set[ControllerInput]
 
@@ -6124,7 +6116,7 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
             enabled_buttons = []
         self.set_enabled_buttons(enabled_buttons)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         buttons_as_ints: List[int] = cast(
             List[int], [int(b) for b in self.enabled_buttons]
         )
@@ -6156,7 +6148,7 @@ class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCA
+    _opcode = 0xCA
 
 
 class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -6183,7 +6175,7 @@ class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCB
+    _opcode = 0xCB
 
 
 # inventory / party
@@ -6228,7 +6220,7 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_amount(amount)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.amount, ShortVar):
             return super().render(bytearray([0xFD, 0x52]))
         return super().render(0x52, self.amount)
@@ -6292,7 +6284,7 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_amount(amount)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.amount, ShortVar):
             return super().render(bytearray([0xFD, 0x54]))
         return super().render(0x53, self.amount)
@@ -6352,7 +6344,7 @@ class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x57
+    _opcode = 0x57
 
 
 class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -6391,7 +6383,7 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x56
+    _opcode = 0x56
     _size: int = 2
     _character: PartyCharacter
 
@@ -6410,7 +6402,7 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_character(character)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.character)
 
 
@@ -6432,7 +6424,7 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x54
+    _opcode = 0x54
     _size: int = 3
     _character: PartyCharacter
     _item: Type[Equipment]
@@ -6465,7 +6457,7 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
         self.set_character(character)
         self.set_item(item)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.character, self.item().item_id)
 
 
@@ -6506,7 +6498,7 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x36
+    _opcode = 0x36
     _size: int = 2
     _character: PartyCharacter
 
@@ -6525,7 +6517,7 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_character(character)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.character + (1 << 7))
 
 
@@ -6547,7 +6539,7 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x36
+    _opcode = 0x36
     _size: int = 2
     _character: PartyCharacter
 
@@ -6566,7 +6558,7 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_character(character)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.character & 0x7F)
 
 
@@ -6604,7 +6596,7 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        item (Union[Type[Item], ByteVar]): Either the item to equip (use an item class name from datatypes/items/implementations.py), OR the `ITEM_ID` ByteVar to store whatever item ID is in $70A7.
+        item (Union[Type[Item], ByteVar]): Either the item to equip (use an item class name from datatypes/items/implementations.py), OR the `ByteVar(0x70A7)` ByteVar to store whatever item ID is in $70A7.
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
@@ -6617,9 +6609,9 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
         return self._item
 
     def set_item(self, item: Union[Type[Item], ByteVar]) -> None:
-        """Acceptable values: an item class, or ITEM_ID variable."""
+        """Acceptable values: an item class, or ByteVar(0x70A7) variable."""
         if isinstance(item, ByteVar):
-            assert item == ITEM_ID
+            assert item == ByteVar(0x70A7)
             self._item = ByteVar(item)
         else:
             assert issubclass(item, Item)
@@ -6631,7 +6623,7 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_item(item)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.item, ByteVar):
             return super().render(bytearray([0xFD, 0x50]))
         item = self.item
@@ -6655,7 +6647,7 @@ class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x51
+    _opcode = 0x51
     _size: int = 2
     _item: Type[Item]
 
@@ -6672,7 +6664,7 @@ class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand)
         super().__init__(identifier)
         self.set_item(item)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
 
 
@@ -6751,7 +6743,7 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x38
+    _opcode = 0x38
     _size: int = 2
     _slot: UInt8
 
@@ -6769,7 +6761,7 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_slot(slot)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(0x08 + self.slot)
 
 
@@ -6789,7 +6781,7 @@ class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x37
+    _opcode = 0x37
 
 
 class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -6863,7 +6855,7 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
         self.set_character(character)
         self.set_equip_slot(equip_slot)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.character, self.equip_slot().item_id)
 
 
@@ -6883,7 +6875,7 @@ class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x58
+    _opcode = 0x58
 
 
 class StoreEmptyItemInventorySlotCountTo7000(
@@ -6904,7 +6896,7 @@ class StoreEmptyItemInventorySlotCountTo7000(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x55
+    _opcode = 0x55
 
 
 class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -6960,7 +6952,7 @@ class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_item(item)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
 
 
@@ -7003,10 +6995,10 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3D
+    _opcode = 0x3D
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -7073,7 +7065,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x8A
+    _opcode = 0x8A
     _size: int = 3
     _palette_set: UInt8
     _row: UInt8
@@ -7155,7 +7147,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_2(bit_2)
         self.set_bit_3(bit_3)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = bools_to_int(self.bit_0, self.bit_1, self.bit_2, self.bit_3)
         arg_1 = UInt8(flags + ((self.row - 1) << 4))
         return super().render(arg_1, self.palette_set)
@@ -7181,7 +7173,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x89
+    _opcode = 0x89
     _size: int = 4
     _palette_type: PaletteType
     _palette_set: UInt8
@@ -7240,7 +7232,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_row(row)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt8(self.duration + (self.palette_type << 4))
         return super().render(arg_1, self.row, self.palette_set)
 
@@ -7261,7 +7253,7 @@ class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7F
+    _opcode = 0x7F
 
 
 class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
@@ -7285,7 +7277,7 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x84
+    _opcode = 0x84
     _size: int = 3
     _layers: Set[Layer]
     _pixel_size: UInt8
@@ -7358,7 +7350,7 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_6(bit_6)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         layers: int = bits_to_int(cast(List[int], self.layers))
         arg_1 = UInt8(layers + (self.pixel_size << 4))
         return super().render(
@@ -7385,7 +7377,7 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x81
+    _opcode = 0x81
     _size: int = 4
     _mainscreen: Set[Layer]
     _subscreen: Set[Layer]
@@ -7436,7 +7428,7 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
         self.set_subscreen(subscreen)
         self.set_colour_math(colour_math)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         mainscreen: int = bits_to_int(cast(List[int], self.mainscreen))
         subscreen: int = bits_to_int(cast(List[int], self.subscreen))
         colour_math: int = bits_to_int(cast(List[int], self.colour_math))
@@ -7459,7 +7451,7 @@ class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x82
+    _opcode = 0x82
 
 
 class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
@@ -7479,7 +7471,7 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x83
+    _opcode = 0x83
     _size: int = 2
     _colour: Colour
 
@@ -7500,7 +7492,7 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_colour(colour)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.colour)
 
 
@@ -7527,7 +7519,7 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x80
+    _opcode = 0x80
     _size: int = 5
     _layers: List[Layer]
     _red: UInt8
@@ -7614,7 +7606,7 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
         self.set_speed(speed)
         self.set_bit_15(bit_15)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         assembled_raw: int = (
             (self.red >> 3) + (self.green << 2) + (self.blue << 7) + (self.bit_15 << 15)
         )
@@ -7645,7 +7637,7 @@ class CircleMaskExpandFromScreenCenter(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7C
+    _opcode = 0x7C
 
 
 class CircleMaskShrinkToScreenCenter(
@@ -7666,7 +7658,7 @@ class CircleMaskShrinkToScreenCenter(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7D
+    _opcode = 0x7D
 
 
 class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
@@ -7747,7 +7739,7 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
         self.set_speed(speed)
         self.set_static(static)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         opcode: int = 0x8F if self.static else 0x87
         return super().render(opcode, self.target, self.width, self.speed)
 
@@ -7770,7 +7762,7 @@ class StarMaskExpandFromScreenCenter(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7A
+    _opcode = 0x7A
 
 
 class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -7789,7 +7781,7 @@ class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandN
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7B
+    _opcode = 0x7B
 
 
 class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
@@ -7855,7 +7847,7 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
         self.set_sync(sync)
         self.set_duration(duration)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         opcode: int = 0x70 + (not self.sync)
         if self.duration is not None:
             opcode += 2
@@ -7881,7 +7873,7 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x78
+    _opcode = 0x78
     _size: int = 3
     _duration: UInt8
     _colour: Colour
@@ -7911,7 +7903,7 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_colour(colour)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
 
 
@@ -7978,7 +7970,7 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
         self.set_sync(sync)
         self.set_duration(duration)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         opcode: int = 0x74 + (not self.sync)
         if self.duration is not None:
             opcode += 2
@@ -8004,7 +7996,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x79
+    _opcode = 0x79
     _size: int = 3
     _duration: UInt8
     _colour: Colour
@@ -8034,7 +8026,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_colour(colour)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
 
 
@@ -8054,7 +8046,7 @@ class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7E
+    _opcode = 0x7E
 
 
 # music
@@ -8078,7 +8070,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x97
+    _opcode = 0x97
     _size: int = 3
     _duration: UInt8
     _change: UInt8
@@ -8109,7 +8101,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_change(change)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
 
 
@@ -8131,7 +8123,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x97
+    _opcode = 0x97
     _size: int = 3
     _duration: UInt8
     _change: UInt8
@@ -8162,7 +8154,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_change(change)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
 
 
@@ -8184,7 +8176,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x98
+    _opcode = 0x98
     _size: int = 3
     _duration: UInt8
     _change: UInt8
@@ -8215,7 +8207,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_change(change)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
 
 
@@ -8237,7 +8229,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x98
+    _opcode = 0x98
     _size: int = 3
     _duration: UInt8
     _change: UInt8
@@ -8268,7 +8260,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_change(change)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
 
 
@@ -8312,7 +8304,7 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(flags)
 
@@ -8335,7 +8327,7 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x92
+    _opcode = 0x92
     _size: int = 2
     _music_id: UInt8
 
@@ -8354,7 +8346,7 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_music_id(music)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music)
 
 
@@ -8374,7 +8366,7 @@ class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x93
+    _opcode = 0x93
 
 
 class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -8416,7 +8408,7 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x95
+    _opcode = 0x95
     _size: int = 3
     _duration: UInt8
     _volume: UInt8
@@ -8446,7 +8438,7 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_volume(volume)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
 
 
@@ -8468,7 +8460,7 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9E
+    _opcode = 0x9E
     _size: int = 3
     _duration: UInt8
     _volume: UInt8
@@ -8498,7 +8490,7 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_volume(volume)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
 
 
@@ -8542,7 +8534,7 @@ class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWith
         super().__init__(destinations, identifier)
         self.set_threshold(threshold)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.threshold, *self.destinations)
 
 
@@ -8586,7 +8578,7 @@ class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmp
         super().__init__(destinations, identifier)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.value, *self.destinations)
 
 
@@ -8626,7 +8618,7 @@ class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_music_id(music)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music)
 
 
@@ -8647,7 +8639,7 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x90
+    _opcode = 0x90
     _size: int = 2
     _music_id: UInt8
 
@@ -8666,7 +8658,7 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_music_id(music)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music)
 
 
@@ -8687,7 +8679,7 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x91
+    _opcode = 0x91
     _size: int = 2
     _music_id: UInt8
 
@@ -8706,7 +8698,7 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_music_id(music)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.music)
 
 
@@ -8769,7 +8761,7 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
         self.set_sound(sound)
         self.set_channel(channel)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound)
 
 
@@ -8791,7 +8783,7 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9D
+    _opcode = 0x9D
     _size: int = 3
     _sound: UInt8
     _balance: UInt8
@@ -8823,7 +8815,7 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
         self.set_sound(sound)
         self.set_balance(balance)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
 
 
@@ -8878,7 +8870,7 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
         self.set_sound(sound)
         self.set_balance(balance)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
 
 
@@ -8936,7 +8928,7 @@ class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x94
+    _opcode = 0x94
 
 
 class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -9055,7 +9047,7 @@ class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9B
+    _opcode = 0x9B
 
 
 # dialogs
@@ -9079,7 +9071,7 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x63
+    _opcode = 0x63
     _size: int = 2
     _closable: bool
     _sync: bool
@@ -9111,7 +9103,7 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
         self.set_closable(closable)
         self.set_sync(sync)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = (self.closable << 5) + ((not self.sync) << 7)
         return super().render(flags)
 
@@ -9132,7 +9124,7 @@ class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x64
+    _opcode = 0x64
 
 
 class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWithJmps):
@@ -9152,10 +9144,10 @@ class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWit
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x66
+    _opcode = 0x66
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -9178,10 +9170,10 @@ class JmpIfDialogOptionBOrCSelected(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x67
+    _opcode = 0x67
     _size: int = 5
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -9266,16 +9258,16 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
 
     @property
     def dialog_id(self) -> Union[UInt16, ShortVar]:
-        """The ID of the dialog to display, or the var containing an ID to display. If using a var, it has to be `PRIMARY_TEMP_7000`."""
+        """The ID of the dialog to display, or the var containing an ID to display. If using a var, it has to be `ShortVar(0x7000)`."""
         return self._dialog_id
 
     def set_dialog_id(self, dialog_id: Union[int, ShortVar]) -> None:
         """Accepts one of two things:\n
         1. The ID of the dialog to display
         (it is recommended to use dialog ID constant names for this),\n
-        2. A short var, whose value indicates the ID to run (only `PRIMARY_TEMP_7000` accepted).
+        2. A short var, whose value indicates the ID to run (only `ShortVar(0x7000)` accepted).
         """
-        if dialog_id == PRIMARY_TEMP_7000:
+        if dialog_id == ShortVar(0x7000):
             self._dialog_id = ShortVar(dialog_id)
         else:
             assert 0 <= dialog_id < TOTAL_DIALOGS
@@ -9370,7 +9362,7 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
         self.set_multiline(multiline)
         self.set_use_background(use_background)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags_lower: int = (
             (self.closable << 5) + (self.bit_6 << 6) + ((not self.sync) << 7)
         )
@@ -9401,7 +9393,7 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x62
+    _opcode = 0x62
     _size: int = 3
     _dialog_id: UInt16
     _duration: UInt8
@@ -9449,7 +9441,7 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
         self.set_duration(duration)
         self.set_sync(sync)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg = UInt16(self.dialog_id + (self.duration << 13) + ((not self.sync) << 15))
         return super().render(arg)
 
@@ -9470,7 +9462,7 @@ class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x65
+    _opcode = 0x65
 
 
 # levels
@@ -9500,7 +9492,7 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x68
+    _opcode = 0x68
     _size: int = 6
     _room_id: UInt16
     _face_direction: Direction
@@ -9612,7 +9604,7 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         self.set_show_banner(show_banner)
         self.set_run_entrance_event(run_entrance_event)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         room_short = UInt16(
             self.room_id + (self.show_banner << 11) + (self.run_entrance_event << 15)
         )
@@ -9640,7 +9632,7 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6A
+    _opcode = 0x6A
     _size: int = 3
     _room_id: UInt16
     _mod_id: UInt8
@@ -9689,7 +9681,7 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
         self.set_mod_id(mod_id)
         self.set_use_alternate(use_alternate)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         assembled_raw: int = (
             self.room_id + (self.mod_id << 9) + (self.use_alternate << 15)
         )
@@ -9716,7 +9708,7 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6B
+    _opcode = 0x6B
     _size: int = 3
     _room_id: UInt16
     _mod_id: UInt8
@@ -9765,7 +9757,7 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
         self.set_mod_id(mod_id)
         self.set_permanence(permanent)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         assembled_raw: int = self.room_id + (self.mod_id << 9) + (self.permanent << 15)
         return super().render(UInt16(assembled_raw))
 
@@ -9791,7 +9783,7 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4B
+    _opcode = 0x4B
     _size: int = 3
     _area: UInt8
     _bit_5: bool
@@ -9850,7 +9842,7 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_6(bit_6)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = bools_to_int(self.bit_5, self.bit_6, self.bit_7)
         flags = flags << 5
         return super().render(self.area, flags)
@@ -9872,7 +9864,7 @@ class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC3
+    _opcode = 0xC3
 
 
 # scenes
@@ -9926,7 +9918,7 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
         self.set_text(text)
         self.set_y(y)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.y, self.text)
 
 
@@ -9967,7 +9959,7 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4F
+    _opcode = 0x4F
     _size: int = 2
     _scene: Scene
 
@@ -9984,7 +9976,7 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_scene(scene)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.scene)
 
 
@@ -10025,7 +10017,7 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4C
+    _opcode = 0x4C
     _size: int = 2
     _shop_id: UInt8
 
@@ -10044,7 +10036,7 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_shop_id(shop_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.shop_id)
 
 
@@ -10064,7 +10056,7 @@ class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5B
+    _opcode = 0x5B
 
 
 class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -10083,7 +10075,7 @@ class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFB
+    _opcode = 0xFB
 
 
 class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -10102,7 +10094,7 @@ class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFC
+    _opcode = 0xFC
 
 
 class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
@@ -10142,7 +10134,7 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4E
+    _opcode = 0x4E
     _size: int = 3
     _scene: Scene
     _value: UInt8
@@ -10172,7 +10164,7 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
         self.set_scene(scene)
         self.set_value(value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.scene, self.value)
 
 
@@ -10229,7 +10221,7 @@ class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_tutorial(tutorial)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.tutorial)
 
 
@@ -10308,7 +10300,7 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
         super().__init__(identifier)
         self.set_star(star)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.star)
 
 
@@ -10331,7 +10323,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4A
+    _opcode = 0x4A
     _pack_id: UInt8
     _battlefield: Battlefield
     _size = 4
@@ -10363,7 +10355,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
         self.set_pack_id(pack_id)
         self.set_battlefield(battlefield)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(UInt16(self.pack_id), self.battlefield)
 
 
@@ -10383,4 +10375,4 @@ class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x49
+    _opcode = 0x49

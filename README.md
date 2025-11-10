@@ -1,10 +1,10 @@
 # SMRPG Patch Builder
 
-Freeform editing of various kinds of SMRPG scripts and sprites. 
+Freeform editing of various things in Super Mario RPG.
 
 This is not a decomp.
 
-# How this works: converting your ROM's scripts into Python code
+## How this works: converting your ROM's scripts into Python code
 
 You can disassemble the contents of your ROM, which turns your ROM into Python code like this:
 
@@ -131,10 +131,6 @@ Here is the code that the script creates from reading that (battle_events/conten
 ```python
 # BE0022_YARIDOVICH_MIRAGE_ATTACK
 
-from smrpgpatchbuilder.datatypes.battle_animation_scripts import *
-from smrpgpatchbuilder.datatypes.enemies.implementations import *
-from smrpgpatchbuilder.datatypes.items.implementations import *
-
 script = BattleAnimationScript(header=["command_0x3a647c"], script = [
 	RunSubroutine(["command_0x3a7531"]),
 	SpriteQueue(field_object=1, destinations=["queuestart_0x3ac3b2"], bit_2=True, bit_4=True),
@@ -226,11 +222,6 @@ Here is the code that the script creates from reading that (scripts/script_204.p
 
 ```python
 # 204 - Megasmilax
-
-from smrpgpatchbuilder.datatypes.enemies.implementations import *
-from smrpgpatchbuilder.datatypes.items.implementations import *
-from smrpgpatchbuilder.datatypes.monster_scripts import *
-from smrpgpatchbuilder.datatypes.battle_animation_scripts.ids.battle_events import *
 
 script = MonsterScript([
 	IfVarBitsClear(0x7EE00A, [0]),

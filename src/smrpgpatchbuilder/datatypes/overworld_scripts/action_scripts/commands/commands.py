@@ -5,9 +5,6 @@ from typing import List, Optional, Set, Type, Union
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt4, UInt8
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import (
-    PRIMARY_TEMP_700C,
-)
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     InvalidCommandArgumentException,
 )
@@ -84,7 +81,7 @@ class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD0
+    _opcode = 0xD0
     _size: int = 3
     _destination: UInt16
 
@@ -104,7 +101,7 @@ class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_destination(destination)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.destination)
 
 
@@ -125,10 +122,10 @@ class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD2
+    _opcode = 0xD2
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -150,10 +147,10 @@ class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     """
 
-    _opcode: int = 0xD3
+    _opcode = 0xD3
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -174,7 +171,7 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xD4
+    _opcode = 0xD4
     _size: int = 2
     _count: UInt8
 
@@ -191,7 +188,7 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_count(count)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.count)
 
 
@@ -212,7 +209,7 @@ class A_EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
 
     """
 
-    _opcode: int = 0xD7
+    _opcode = 0xD7
 
 
 class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
@@ -264,7 +261,7 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_length(length)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         frames = self._length
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
@@ -286,7 +283,7 @@ class A_JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF9
+    _opcode = 0xF9
 
 
 class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -305,7 +302,7 @@ class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandN
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFA
+    _opcode = 0xFA
 
 
 class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -325,7 +322,7 @@ class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFE
+    _opcode = 0xFE
 
 
 class A_ReturnAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -346,7 +343,7 @@ class A_ReturnAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xFF
+    _opcode = 0xFF
 
 
 _valid_unknowncmd_queue_opcodes = [
@@ -929,7 +926,7 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_contents(contents)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
 
@@ -952,7 +949,7 @@ class A_VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x00
+    _opcode = 0x00
 
 
 class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -971,7 +968,7 @@ class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x01
+    _opcode = 0x01
 
 
 class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -991,7 +988,7 @@ class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x09
+    _opcode = 0x09
 
 
 class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
@@ -1019,7 +1016,7 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0A
+    _opcode = 0x0A
     _size: int = 2
     _bit_0: bool = False
     _cant_walk_under: bool = False
@@ -1124,7 +1121,7 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         self.set_cant_walk_through(cant_walk_through)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         raw_flags = bools_to_int(
             self.bit_0,
             self.cant_walk_under,
@@ -1164,7 +1161,7 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0B
+    _opcode = 0x0B
     _size: int = 2
     _bit_0: bool = False
     _cant_walk_under: bool = False
@@ -1269,7 +1266,7 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         self.set_cant_walk_through(cant_walk_through)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         raw_flags = bools_to_int(
             self.bit_0,
             self.cant_walk_under,
@@ -1309,7 +1306,7 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0C
+    _opcode = 0x0C
     _size: int = 2
     _bit_0: bool = False
     _cant_walk_under: bool = False
@@ -1414,7 +1411,7 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         self.set_cant_walk_through(cant_walk_through)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         raw_flags = bools_to_int(
             self.bit_0,
             self.cant_walk_under,
@@ -1453,7 +1450,7 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x15
+    _opcode = 0x15
     _size: int = 2
     _bit_0: bool = False
     _cant_walk_under: bool = False
@@ -1558,7 +1555,7 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         self.set_cant_walk_through(cant_walk_through)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         raw_flags = bools_to_int(
             self.bit_0,
             self.cant_walk_under,
@@ -1590,7 +1587,7 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x13
+    _opcode = 0x13
     _size: int = 2
     _priority: VRAMPriority
 
@@ -1610,7 +1607,7 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_priority(priority)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.priority)
 
 
@@ -1649,7 +1646,7 @@ class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_priority(priority)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.priority)
 
 
@@ -1787,7 +1784,7 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
         self.set_arg_1(arg_1)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags: int = UInt8(bits_to_int(list(self.bits)))
         if self.arg_1 == 0x0D:
             return super().render(0x11, flags)
@@ -1892,7 +1889,7 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_props(arg_1, bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         args = (self.arg_1, list(self.bits))
         if args == (0x08, [4]):
             opcode = bytearray([0xFD, 0x0A])
@@ -2005,7 +2002,7 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_props(arg_1, bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         args = (self.arg_1, list(self.bits))
         if args == (0x08, [3, 4]):
             opcode = bytearray([0xFD, 0x0B])
@@ -2108,7 +2105,7 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_props(arg_1, set_bits, clear_bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         args = (self.arg_1, list(self.set_bits), list(self.clear_bits))
         if args == (0x09, [5], [4, 6]):
             return super().render(0xFD, 0x0E)
@@ -2154,7 +2151,7 @@ class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xA2)
             offset = ShortVar(0x7080)
@@ -2207,7 +2204,7 @@ class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xA6)
             offset = ShortVar(0x7080)
@@ -2261,7 +2258,7 @@ class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xDA)
             offset = ShortVar(0x7080)
@@ -2320,7 +2317,7 @@ class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         super().__init__(destinations, identifier)
         self.set_bit(bit)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.bit.byte >= 0x7080:
             opcode = UInt8(0xDE)
             offset = ShortVar(0x7080)
@@ -2351,7 +2348,7 @@ class A_SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA3
+    _opcode = 0xA3
 
 
 class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -2372,7 +2369,7 @@ class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xA7
+    _opcode = 0xA7
 
 
 class A_JmpIfMem704XAt700CBitSet(
@@ -2395,10 +2392,10 @@ class A_JmpIfMem704XAt700CBitSet(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xDB
+    _opcode = 0xDB
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -2423,9 +2420,9 @@ class A_JmpIfMem704XAt700CBitClear(
     """
 
     _size: int = 3
-    _opcode: int = 0xDF
+    _opcode = 0xDF
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -2478,7 +2475,7 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
-        if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
+        if address == ShortVar(0x700C) or isinstance(address, ByteVar):
             self._size: int = 3
         else:
             self._size: int = 4
@@ -2505,10 +2502,10 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xA8, self.address, self.value)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xAC, UInt16(self.value))
         if isinstance(self.address, ShortVar):
             return super().render(0xB0, self.address, UInt16(self.value))
@@ -2560,7 +2557,7 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
-        if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
+        if address == ShortVar(0x700C) or isinstance(address, ByteVar):
             self._size: int = 3
         else:
             self._size: int = 4
@@ -2587,10 +2584,10 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xA9, self.address, self.value)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xAD, UInt16(self.value))
         if isinstance(self.address, ShortVar):
             return super().render(0xB1, self.address, UInt16(self.value))
@@ -2621,10 +2618,10 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar):
             return super().render(0xAA, self.address)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xAE)
         if isinstance(self.address, ShortVar):
             return super().render(0xB2, self.address)
@@ -2655,10 +2652,10 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar):
             return super().render(0xAB, self.address)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xAF)
         if isinstance(self.address, ShortVar):
             return super().render(0xB3, self.address)
@@ -2709,7 +2706,7 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{from_var:04X} 0x{to_var:04X}"
             )
-        if PRIMARY_TEMP_700C not in (self.from_var, self.to_var):
+        if ShortVar(0x700C) not in (self.from_var, self.to_var):
             self._size: int = 3
         else:
             self._size: int = 2
@@ -2735,14 +2732,14 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
         self._to_var = to_var
         self.set_addresses(from_var, to_var)
 
-    def render(self) -> bytearray:
-        if self.to_var == PRIMARY_TEMP_700C and isinstance(self.from_var, ByteVar):
+    def render(self, *args) -> bytearray:
+        if self.to_var == ShortVar(0x700C) and isinstance(self.from_var, ByteVar):
             return super().render(0xB4, self.from_var)
-        if self.from_var == PRIMARY_TEMP_700C and isinstance(self.to_var, ByteVar):
+        if self.from_var == ShortVar(0x700C) and isinstance(self.to_var, ByteVar):
             return super().render(0xB5, self.to_var)
-        if self.to_var == PRIMARY_TEMP_700C and isinstance(self.from_var, ShortVar):
+        if self.to_var == ShortVar(0x700C) and isinstance(self.from_var, ShortVar):
             return super().render(0xBA, self.from_var)
-        if self.from_var == PRIMARY_TEMP_700C and isinstance(self.to_var, ShortVar):
+        if self.from_var == ShortVar(0x700C) and isinstance(self.to_var, ShortVar):
             return super().render(0xBB, self.to_var)
         if isinstance(self.from_var, ShortVar) and isinstance(self.to_var, ShortVar):
             return super().render(0xBC, self.from_var, self.to_var)
@@ -2776,8 +2773,8 @@ class A_CompareVarToConst(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
-        if self.address == PRIMARY_TEMP_700C:
+    def render(self, *args) -> bytearray:
+        if self.address == ShortVar(0x700C):
             return super().render(0xC0, self.value)
         return super().render(0xC2, self.address, self.value)
 
@@ -2811,7 +2808,7 @@ class A_Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC1
+    _opcode = 0xC1
     _size: int = 2
 
 
@@ -2834,10 +2831,10 @@ class A_JmpIfComparisonResultIsGreaterOrEqual(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEC
+    _opcode = 0xEC
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -2860,10 +2857,10 @@ class A_JmpIfComparisonResultIsLesser(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xED
+    _opcode = 0xED
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -2890,8 +2887,8 @@ class A_SetVarToRandom(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    def render(self) -> bytearray:
-        if self.address == PRIMARY_TEMP_700C:
+    def render(self, *args) -> bytearray:
+        if self.address == ShortVar(0x700C):
             return super().render(0xB6, self.value)
         return super().render(0xB7, self.address, self.value)
 
@@ -2913,7 +2910,7 @@ class A_AddVarTo700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB8
+    _opcode = 0xB8
     _size: int = 2
 
 
@@ -2934,7 +2931,7 @@ class A_DecVarFrom700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xB9
+    _opcode = 0xB9
     _size: int = 2
 
 
@@ -2956,7 +2953,7 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBD
+    _opcode = 0xBD
     _size: int = 3
     _memory_a: ShortVar
     _memory_b: ShortVar
@@ -2989,7 +2986,7 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
         self.set_memory_a(memory_a)
         self.set_memory_b(memory_b)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.memory_b, self.memory_a)
 
 
@@ -3009,7 +3006,7 @@ class A_Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBE
+    _opcode = 0xBE
 
 
 class A_Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -3028,7 +3025,7 @@ class A_Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xBF
+    _opcode = 0xBF
 
 
 class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
@@ -3081,7 +3078,7 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
-        if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
+        if address == ShortVar(0x700C) or isinstance(address, ByteVar):
             self._size: int = 5
         else:
             self._size: int = 6
@@ -3109,10 +3106,10 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xE0, self.address, self.value, *self.destinations)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xE2, UInt16(self.value), *self.destinations)
         if isinstance(self.address, ShortVar):
             return super().render(
@@ -3173,7 +3170,7 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
             raise InvalidCommandArgumentException(
                 f"illegal args for {self.identifier.label}: 0x{address:04X}: {value}"
             )
-        if address == PRIMARY_TEMP_700C or isinstance(address, ByteVar):
+        if address == ShortVar(0x700C) or isinstance(address, ByteVar):
             self._size: int = 5
         else:
             self._size: int = 6
@@ -3201,10 +3198,10 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if isinstance(self.address, ByteVar) and isinstance(self.value, UInt8):
             return super().render(0xE1, self.address, self.value, *self.destinations)
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             return super().render(0xE3, UInt16(self.value), *self.destinations)
         if isinstance(self.address, ShortVar):
             return super().render(
@@ -3233,7 +3230,7 @@ class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWith
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE6
+    _opcode = 0xE6
     _size: int = 5
     _bits: Set[int]
 
@@ -3258,7 +3255,7 @@ class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWith
         super().__init__(destinations, identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
 
@@ -3281,7 +3278,7 @@ class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE7
+    _opcode = 0xE7
     _size: int = 5
     _bits: Set[int]
 
@@ -3306,7 +3303,7 @@ class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJm
         super().__init__(destinations, identifier)
         self.set_bits(bits)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
 
@@ -3328,10 +3325,10 @@ class A_JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE9
+    _opcode = 0xE9
     _size: int = 5
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3352,10 +3349,10 @@ class A_JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xE8
+    _opcode = 0xE8
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3376,10 +3373,10 @@ class A_JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJ
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEA
+    _opcode = 0xEA
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3402,10 +3399,10 @@ class A_JmpIfLoadedMemoryIsAboveOrEqual0(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEF
+    _opcode = 0xEF
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3428,10 +3425,10 @@ class A_JmpIfLoadedMemoryIsBelow0(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEE
+    _opcode = 0xEE
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3452,10 +3449,10 @@ class A_JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xEB
+    _opcode = 0xEB
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -3637,7 +3634,7 @@ class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
         self.set_address(address)
         self.set_shift(shift)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.address, 0x100 - self.shift)
 
 
@@ -3687,7 +3684,7 @@ class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x08
+    _opcode = 0x08
     _size: int = 3
     _index: UInt8
     _sprite_offset: UInt4
@@ -3787,7 +3784,7 @@ class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         self.set_looping(looping)
         self.set_mirror_sprite(mirror_sprite)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         bit_array = [False] * 16
         bit_array[3] = self.is_mold
         bit_array[4] = not self.looping
@@ -3814,7 +3811,7 @@ class A_SequencePlaybackOn(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x02
+    _opcode = 0x02
 
 
 class A_SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -3833,7 +3830,7 @@ class A_SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x03
+    _opcode = 0x03
 
 
 class A_SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -3852,7 +3849,7 @@ class A_SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x04
+    _opcode = 0x04
 
 
 class A_SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -3871,14 +3868,14 @@ class A_SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x05
+    _opcode = 0x05
 
 
 class _SetAnimationSpeed(ActionScriptCommand):
     """Applies a pre-set multiplier to either the duration of each frame in the NPC's
     active sequence, or the NPC's walking speed, or both."""
 
-    _opcode: int = 0x10
+    _opcode = 0x10
     _size: int = 2
     _speed: SequenceSpeed
     _sequence: bool = False
@@ -3927,7 +3924,7 @@ class _SetAnimationSpeed(ActionScriptCommand):
         if walking:
             self.set_walking(walking)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         assert self.walking or self.sequence
         flags = bools_to_int(self.walking, self.sequence) << 6
         return super().render(UInt8(self.speed + flags))
@@ -4049,7 +4046,7 @@ class A_EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand)
         super().__init__(identifier)
         self.set_args(args)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.args)
 
 
@@ -4069,7 +4066,7 @@ class A_MaximizeSequenceSpeed(UsableActionScriptCommand, ActionScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x85
+    _opcode = 0x85
 
 
 class A_MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4088,7 +4085,7 @@ class A_MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNo
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x86
+    _opcode = 0x86
 
 
 # positioning
@@ -4110,7 +4107,7 @@ class A_FixedFCoordOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x06
+    _opcode = 0x06
 
 
 class A_FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4129,7 +4126,7 @@ class A_FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x07
+    _opcode = 0x07
 
 
 class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWithJmps):
@@ -4152,7 +4149,7 @@ class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWit
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3A
+    _opcode = 0x3A
     _size: int = 6
     _comparing_npc: AreaObject
     _usually: UInt8
@@ -4200,7 +4197,7 @@ class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWit
         self.set_usually(usually)
         self.set_tiles(tiles)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.comparing_npc, self.usually, self.tiles, *self.destinations
         )
@@ -4228,7 +4225,7 @@ class A_JmpIfObjectWithinRangeSameZ(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3B
+    _opcode = 0x3B
     _size: int = 6
     _comparing_npc: AreaObject
     _usually: UInt8
@@ -4276,7 +4273,7 @@ class A_JmpIfObjectWithinRangeSameZ(
         self.set_usually(usually)
         self.set_tiles(tiles)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.comparing_npc, self.usually, self.tiles, *self.destinations
         )
@@ -4298,7 +4295,7 @@ class A_Walk1StepEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x40
+    _opcode = 0x40
 
 
 class A_Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4317,7 +4314,7 @@ class A_Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x41
+    _opcode = 0x41
 
 
 class A_Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4336,7 +4333,7 @@ class A_Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x42
+    _opcode = 0x42
 
 
 class A_Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4355,7 +4352,7 @@ class A_Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x43
+    _opcode = 0x43
 
 
 class A_Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4374,7 +4371,7 @@ class A_Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x44
+    _opcode = 0x44
 
 
 class A_Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4393,7 +4390,7 @@ class A_Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x45
+    _opcode = 0x45
 
 
 class A_Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4412,7 +4409,7 @@ class A_Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x46
+    _opcode = 0x46
 
 
 class A_Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4431,7 +4428,7 @@ class A_Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x47
+    _opcode = 0x47
 
 
 class A_Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4450,7 +4447,7 @@ class A_Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x48
+    _opcode = 0x48
 
 
 class A_AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4469,7 +4466,7 @@ class A_AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4A
+    _opcode = 0x4A
 
 
 class A_DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4488,7 +4485,7 @@ class A_DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x4B
+    _opcode = 0x4B
 
 
 class A_WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4508,7 +4505,7 @@ class A_WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x50
+    _opcode = 0x50
 
 
 class A_WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4528,7 +4525,7 @@ class A_WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x51
+    _opcode = 0x51
 
 
 class A_WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4548,7 +4545,7 @@ class A_WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x52
+    _opcode = 0x52
 
 
 class A_WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4568,7 +4565,7 @@ class A_WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x53
+    _opcode = 0x53
 
 
 class A_WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4588,7 +4585,7 @@ class A_WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x54
+    _opcode = 0x54
 
 
 class A_WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4608,7 +4605,7 @@ class A_WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x55
+    _opcode = 0x55
 
 
 class A_WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4628,7 +4625,7 @@ class A_WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x56
+    _opcode = 0x56
 
 
 class A_WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4648,7 +4645,7 @@ class A_WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x57
+    _opcode = 0x57
 
 
 class A_WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4668,7 +4665,7 @@ class A_WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSt
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x58
+    _opcode = 0x58
 
 
 class A_WalkF20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4687,7 +4684,7 @@ class A_WalkF20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x59
+    _opcode = 0x59
 
 
 class A_ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4707,7 +4704,7 @@ class A_ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5A
+    _opcode = 0x5A
 
 
 class A_ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
@@ -4727,7 +4724,7 @@ class A_ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5B
+    _opcode = 0x5B
 
 
 class A_ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4746,7 +4743,7 @@ class A_ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5C
+    _opcode = 0x5C
 
 
 class A_ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4765,7 +4762,7 @@ class A_ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x5D
+    _opcode = 0x5D
 
 
 class A_WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4785,7 +4782,7 @@ class A_WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x60
+    _opcode = 0x60
 
 
 class A_WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4805,7 +4802,7 @@ class A_WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x61
+    _opcode = 0x61
 
 
 class A_WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4825,7 +4822,7 @@ class A_WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x62
+    _opcode = 0x62
 
 
 class A_WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4845,7 +4842,7 @@ class A_WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x63
+    _opcode = 0x63
 
 
 class A_WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4865,7 +4862,7 @@ class A_WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x64
+    _opcode = 0x64
 
 
 class A_WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4885,7 +4882,7 @@ class A_WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x65
+    _opcode = 0x65
 
 
 class A_WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4905,7 +4902,7 @@ class A_WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x66
+    _opcode = 0x66
 
 
 class A_WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4925,7 +4922,7 @@ class A_WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x67
+    _opcode = 0x67
 
 
 class A_WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4945,7 +4942,7 @@ class A_WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandByteP
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x68
+    _opcode = 0x68
 
 
 class A_WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -4964,7 +4961,7 @@ class A_WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x69
+    _opcode = 0x69
 
 
 class A_ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -4984,7 +4981,7 @@ class A_ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6A
+    _opcode = 0x6A
 
 
 class A_ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
@@ -5004,7 +5001,7 @@ class A_ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixel
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x6B
+    _opcode = 0x6B
 
 
 class A_FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5023,7 +5020,7 @@ class A_FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x70
+    _opcode = 0x70
 
 
 class A_FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5042,7 +5039,7 @@ class A_FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7C
+    _opcode = 0x7C
 
 
 class A_FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5061,7 +5058,7 @@ class A_FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x71
+    _opcode = 0x71
 
 
 class A_FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5080,7 +5077,7 @@ class A_FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x72
+    _opcode = 0x72
 
 
 class A_FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5099,7 +5096,7 @@ class A_FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x73
+    _opcode = 0x73
 
 
 class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
@@ -5121,7 +5118,7 @@ class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
 
     _size: int = 2
     _arg: UInt8 = UInt8(0)
-    _opcode: int = 0x7D
+    _opcode = 0x7D
 
     @property
     def arg(self) -> UInt8:
@@ -5136,7 +5133,7 @@ class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_arg(arg)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.arg)
 
 
@@ -5156,7 +5153,7 @@ class A_FaceWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x74
+    _opcode = 0x74
 
 
 class A_FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5175,7 +5172,7 @@ class A_FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x75
+    _opcode = 0x75
 
 
 class A_FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5194,7 +5191,7 @@ class A_FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x76
+    _opcode = 0x76
 
 
 class A_FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5213,7 +5210,7 @@ class A_FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x77
+    _opcode = 0x77
 
 
 class A_FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5232,7 +5229,7 @@ class A_FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x78
+    _opcode = 0x78
 
 
 class A_TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5251,7 +5248,7 @@ class A_TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x79
+    _opcode = 0x79
 
 
 class A_TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5270,7 +5267,7 @@ class A_TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7A
+    _opcode = 0x7A
 
 
 class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptCommand):
@@ -5290,7 +5287,7 @@ class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptComm
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x7B
+    _opcode = 0x7B
     _size: int = 2
     _count: UInt8
 
@@ -5307,7 +5304,7 @@ class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptComm
         super().__init__(identifier)
         self.set_count(count)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.count)
 
 
@@ -5360,7 +5357,7 @@ class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
         self.set_height(height)
         self.set_silent(silent)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.silent:
             return super().render(0x7E, self.height)
         return super().render(0x7F, self.height)
@@ -5384,7 +5381,7 @@ class A_WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x80
+    _opcode = 0x80
 
 
 class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
@@ -5405,7 +5402,7 @@ class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x81
+    _opcode = 0x81
 
 
 class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
@@ -5426,7 +5423,7 @@ class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x82
+    _opcode = 0x82
 
 
 class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
@@ -5447,7 +5444,7 @@ class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x83
+    _opcode = 0x83
 
 
 class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
@@ -5468,7 +5465,7 @@ class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x84
+    _opcode = 0x84
 
 
 class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
@@ -5488,7 +5485,7 @@ class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x87
+    _opcode = 0x87
     _size: int = 2
     _target_npc: AreaObject
 
@@ -5509,7 +5506,7 @@ class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target_npc)
 
 
@@ -5530,7 +5527,7 @@ class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x95
+    _opcode = 0x95
     _size: int = 2
     _target_npc: AreaObject
 
@@ -5551,7 +5548,7 @@ class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
         super().__init__(identifier)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target_npc)
 
 
@@ -5571,7 +5568,7 @@ class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x8A
+    _opcode = 0x8A
 
 
 class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5590,7 +5587,7 @@ class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x89
+    _opcode = 0x89
 
 
 class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5609,7 +5606,7 @@ class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x99
+    _opcode = 0x99
 
 
 class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5628,7 +5625,7 @@ class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x88
+    _opcode = 0x88
 
 
 class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -5647,7 +5644,7 @@ class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x98
+    _opcode = 0x98
 
 
 class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
@@ -5669,7 +5666,7 @@ class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x90
+    _opcode = 0x90
     _size: int = 4
     _x: UInt8
     _y: UInt8
@@ -5710,7 +5707,7 @@ class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         self.set_y(y)
         self.set_height(height)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.x, self.y, self.height)
 
 
@@ -5733,7 +5730,7 @@ class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x91
+    _opcode = 0x91
     _size: int = 4
     _x: UInt8
     _y: UInt8
@@ -5774,7 +5771,7 @@ class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         self.set_y(y)
         self.set_height(height)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.x, self.y, self.height)
 
 
@@ -5798,7 +5795,7 @@ class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x92
+    _opcode = 0x92
     _size: int = 4
     _x: UInt8
     _y: UInt8
@@ -5856,7 +5853,7 @@ class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
         self.set_z(z)
         self.set_direction(direction)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
 
@@ -5881,7 +5878,7 @@ class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x93
+    _opcode = 0x93
     _size: int = 4
     _x: UInt8
     _y: UInt8
@@ -5939,7 +5936,7 @@ class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
         self.set_z(z)
         self.set_direction(direction)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
 
@@ -5964,7 +5961,7 @@ class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x94
+    _opcode = 0x94
     _size: int = 4
     _x: UInt8
     _y: UInt8
@@ -6022,7 +6019,7 @@ class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
         self.set_z(z)
         self.set_direction(direction)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
 
@@ -6116,7 +6113,7 @@ class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         self.set_is_isometric_not_pixel(isometric)
         self.set_bit_7(bit_7)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         opcode = UInt8(0xC4 + self.coord)
         arg_1 = UInt8(
             (self.bit_7 << 7) + (self.is_isometric_not_pixel << 6) + self.target_npc
@@ -6145,7 +6142,7 @@ class A_CreatePacketAtObjectCoords(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3E
+    _opcode = 0x3E
     _size: int = 5
     _packet_id: UInt8
     _target_npc: AreaObject
@@ -6180,7 +6177,7 @@ class A_CreatePacketAtObjectCoords(
         self.set_packet_id(packet)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.target_npc, *self.destinations)
 
 
@@ -6202,7 +6199,7 @@ class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmp
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3F
+    _opcode = 0x3F
     _size: int = 4
     _packet_id: UInt8
 
@@ -6225,7 +6222,7 @@ class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmp
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, *self.destinations)
 
 
@@ -6287,7 +6284,7 @@ class A_CreatePacketAt7010WithEvent(
         self.set_packet_id(packet)
         self.set_event_id(event_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.event_id, *self.destinations)
 
 
@@ -6310,7 +6307,7 @@ class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptComma
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF2
+    _opcode = 0xF2
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6342,7 +6339,7 @@ class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptComma
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1)
 
@@ -6366,7 +6363,7 @@ class A_SummonObjectAt70A8ToCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF4
+    _opcode = 0xF4
 
 
 class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
@@ -6388,7 +6385,7 @@ class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCom
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF2
+    _opcode = 0xF2
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6420,7 +6417,7 @@ class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCom
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1)
@@ -6445,7 +6442,7 @@ class A_RemoveObjectAt70A8FromCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF5
+    _opcode = 0xF5
 
 
 class A_EnableObjectTriggerInSpecificLevel(
@@ -6469,7 +6466,7 @@ class A_EnableObjectTriggerInSpecificLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF3
+    _opcode = 0xF3
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6503,7 +6500,7 @@ class A_EnableObjectTriggerInSpecificLevel(
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1)
 
@@ -6528,7 +6525,7 @@ class A_EnableTriggerOfObjectAt70A8InCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF6
+    _opcode = 0xF6
 
 
 class A_DisableObjectTriggerInSpecificLevel(
@@ -6552,7 +6549,7 @@ class A_DisableObjectTriggerInSpecificLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF3
+    _opcode = 0xF3
     _size: int = 3
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6586,7 +6583,7 @@ class A_DisableObjectTriggerInSpecificLevel(
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1)
@@ -6611,7 +6608,7 @@ class A_DisableTriggerOfObjectAt70A8InCurrentLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF7
+    _opcode = 0xF7
 
 
 class A_JmpIfObjectInSpecificLevel(
@@ -6635,7 +6632,7 @@ class A_JmpIfObjectInSpecificLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF8
+    _opcode = 0xF8
     _size: int = 5
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6671,7 +6668,7 @@ class A_JmpIfObjectInSpecificLevel(
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1, *self.destinations)
 
@@ -6697,7 +6694,7 @@ class A_JmpIfObjectNotInSpecificLevel(
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xF8
+    _opcode = 0xF8
     _size: int = 5
     _target_npc: AreaObject
     _level_id: UInt16
@@ -6733,7 +6730,7 @@ class A_JmpIfObjectNotInSpecificLevel(
         self.set_target_npc(target_npc)
         self.set_level_id(level_id)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1, *self.destinations)
@@ -6779,7 +6776,7 @@ class A_JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps)
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self._target_npc, *self.destinations)
 
 
@@ -6799,7 +6796,7 @@ class A_Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xC3
+    _opcode = 0xC3
 
 
 # controls
@@ -6829,7 +6826,7 @@ class A_Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoA
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCA
+    _opcode = 0xCA
 
 
 class A_Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -6856,7 +6853,7 @@ class A_Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoAr
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0xCB
+    _opcode = 0xCB
 
 
 # palettes
@@ -6880,7 +6877,7 @@ class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x0D
+    _opcode = 0x0D
     _size: int = 2
     _row: UInt4
     _upper: UInt4
@@ -6910,7 +6907,7 @@ class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
         self.set_row(row)
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(UInt8((self._upper << 4) + self.row))
 
 
@@ -6970,7 +6967,7 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         self.set_rows(rows)
         self.set_upper(upper)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         if self.rows == 1 and self.upper == 0:
             return super().render(0x0F)
         return super().render(0x0E, UInt8((self.upper << 4) + self.rows))
@@ -6995,7 +6992,7 @@ class A_BPL262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x21
+    _opcode = 0x21
 
 
 class A_BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -7014,7 +7011,7 @@ class A_BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x22
+    _opcode = 0x22
 
 
 class A_BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
@@ -7033,7 +7030,7 @@ class A_BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x2A
+    _opcode = 0x2A
 
 
 class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
@@ -7055,7 +7052,7 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3C
+    _opcode = 0x3C
     _size: int = 5
     _arg1: UInt8
     _arg2: UInt8
@@ -7089,7 +7086,7 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         self.set_arg1(arg1)
         self.set_arg2(arg2)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.arg1, self.arg2, *self.destinations)
 
 
@@ -7110,10 +7107,10 @@ class A_JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x3D
+    _opcode = 0x3D
     _size: int = 3
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
 
@@ -7136,7 +7133,7 @@ class A_StopSound(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9B
+    _opcode = 0x9B
 
 
 class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
@@ -7200,7 +7197,7 @@ class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
         self.set_sound(sound)
         self.set_channel(channel)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound)
 
 
@@ -7222,7 +7219,7 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9D
+    _opcode = 0x9D
     _size: int = 3
     _sound: UInt8
     _balance: UInt8
@@ -7254,7 +7251,7 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
         self.set_sound(sound)
         self.set_balance(balance)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
 
 
@@ -7277,7 +7274,7 @@ class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
         identifier (Optional[str]): Give this command a label if you want another command to jump to it.
     """
 
-    _opcode: int = 0x9E
+    _opcode = 0x9E
     _size: int = 3
     _duration: UInt8
     _volume: UInt8
@@ -7307,5 +7304,5 @@ class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
         self.set_duration(duration)
         self.set_volume(volume)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)

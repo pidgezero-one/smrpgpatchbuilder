@@ -1,3 +1,1 @@
-from .classes import EventScript
-from .commands import *
-from .ids import *
+from .classes import EventScript, EventScriptBank, EventScriptController

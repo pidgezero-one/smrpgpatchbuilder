@@ -1,1 +1,1 @@
-from .classes import Target, CommandType, DoNothing, EnemyAttack
+from .classes import CommandType, DoNothing, Target

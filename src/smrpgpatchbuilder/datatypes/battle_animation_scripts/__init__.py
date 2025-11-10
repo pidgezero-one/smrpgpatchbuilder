@@ -8,4 +8,3 @@ from .types import (
 from .ids import *
 from .commands import * 
 from .arguments import *
-from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *

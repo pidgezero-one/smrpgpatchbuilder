@@ -41,8 +41,23 @@ class Command(BaseCommand):
         shutil.rmtree(dest, ignore_errors=True)
         os.makedirs(dest, exist_ok=True)
         os.makedirs(f"{dest}/contents", exist_ok=True)
+        os.makedirs(f"{dest}/variables", exist_ok=True)
         open(f"{dest}/__init__.py", "w")
         open(f"{dest}/contents/__init__.py", "w")
+        open(f"{dest}/variables/__init__.py", "w")
+
+        # Read dialog names from config
+        dialog_names = []
+        if os.path.exists("./config/dialog_names.input"):
+            with open("./config/dialog_names.input", "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        dialog_names.append(line)
+
+        # Pad to 4096 if needed
+        while len(dialog_names) < 4096:
+            dialog_names.append(f"DIALOG_{len(dialog_names):04X}")
 
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
@@ -178,20 +193,29 @@ class Command(BaseCommand):
 
             file.close()
 
+        # Write dialog names to variables file
+        file = open("%s/variables/dialog_names.py" % dest, "wb")
+        for i, name in enumerate(dialog_names):
+            file.write(f"{name} = {i}\n".encode("utf8"))
+        file.close()
+
         file = open("%s/contents/dialog_pointers.py" % dest, "wb")
         file.write(
             "from smrpgpatchbuilder.datatypes.dialogs.classes import Dialog\n".encode(
                 "utf8"
             )
         )
-        file.write(("pointers = [None]*%i\n" % len(pointers_relative)).encode("utf8"))
+        file.write("from typing import Optional\n".encode("utf8"))
+        file.write("from ..variables.dialog_names import *\n".encode("utf8"))
+        file.write(("pointers: list[Optional[Dialog]] = []*%i\n" % len(pointers_relative)).encode("utf8"))
         for i in range(len(pointers_relative)):
             ptr = pointers_relative[i]
             if ptr is not None:
+                dialog_name = dialog_names[i]
                 file.write(
                     (
-                        "pointers[%i] = Dialog(bank=0x%02x, index=%i, pos=%i)\n"
-                        % (i, ptr["bank"], ptr["index"], ptr["pos"])
+                        "pointers[%s] = Dialog(bank=0x%02x, index=%i, pos=%i)\n"
+                        % (dialog_name, ptr["bank"], ptr["index"], ptr["pos"])
                     ).encode("utf8")
                 )
         file.close()

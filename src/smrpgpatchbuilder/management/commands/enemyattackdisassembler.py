@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.constants import (
+from smrpgpatchbuilder.datatypes.enemy_attacks.constants import (
     ENEMY_ATTACK_BASE_ADDRESS,
     ENEMY_ATTACK_NAME_ADDRESS,
     ENEMY_ATTACK_NAME_LENGTH,
@@ -108,13 +108,14 @@ class Command(BaseCommand):
         # Write attacks to file
         file = open(f"{dest}/attacks.py", "wb")
 
-        file.write("from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import EnemyAttack\n".encode("utf8"))
+        file.write("from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.spells.enums import Status, TempStatBuff\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix\n".encode("utf8"))
         file.write("\n\n".encode("utf8"))
 
         # First pass: count name occurrences to detect duplicates
         name_counts = {}
+        name_occurrence = {}  # Track which occurrence number this is for duplicates
         for attack_data in attacks:
             if attack_data['name']:
                 # Strip special characters
@@ -130,14 +131,20 @@ class Command(BaseCommand):
                 # Use the attack name, strip special characters
                 base_name = attack_data['name'].replace(" ", "").replace("'", "").replace("!", "").replace("-", "").replace(".", "").replace("&", "")
 
-                # If this name appears more than once, append the ID
-                if name_counts[base_name] > 1:
-                    class_name = f"{base_name}{attack_data['index']}"
+                # Track which occurrence this is (1st, 2nd, 3rd, etc.)
+                if base_name not in name_occurrence:
+                    name_occurrence[base_name] = 1
                 else:
-                    class_name = base_name
+                    name_occurrence[base_name] += 1
+
+                # If this name appears more than once, append the occurrence number
+                if name_counts[base_name] > 1:
+                    class_name = f"{base_name}Attack{name_occurrence[base_name]}"
+                else:
+                    class_name = f"{base_name}Attack"
             else:
-                # Blank name - use PhysicalAttack{ID}
-                class_name = f"PhysicalAttack{attack_data['index']}"
+                # Blank name - use Attack{ID}
+                class_name = f"Attack{attack_data['index']}"
 
             # Store the class name
             attack_class_names.append(class_name)

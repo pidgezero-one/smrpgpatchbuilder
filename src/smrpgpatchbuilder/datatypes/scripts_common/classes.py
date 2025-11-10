@@ -10,11 +10,13 @@ from typing import (
     Union,
     Type,
     cast,
+    TYPE_CHECKING,
 )
 import uuid
 from copy import deepcopy
 
-from smrpgpatchbuilder.datatypes.items.classes import Item
+if TYPE_CHECKING:
+    from smrpgpatchbuilder.datatypes.items.classes import Item
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import (
     ShortVar,
@@ -282,17 +284,18 @@ class ScriptCommandShortAddrAndValueOnly(ScriptCommand):
         """The constant number argument used by the command."""
         return self._value
 
-    def set_value(self, value: Union[int, Type[Item]]) -> None:
+    def set_value(self, value: Union[int, Type["Item"]]) -> None:
         """set the constant number argument used by the command.\n
         Can also accept an item class, which it extracts the ID from."""
-        if not isinstance(value, int) and issubclass(value, Item):
+        if not isinstance(value, int) and hasattr(value, "item_id"):
+            # This is an Item subclass - extract the ID
             value = value().item_id
         self._value = UInt16(value)
 
     def __init__(
         self,
         address: ShortVar,
-        value: Union[int, Type[Item]],
+        value: Union[int, Type["Item"]],
         identifier: Optional[str] = None,
     ) -> None:
         super().__init__(identifier)

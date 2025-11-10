@@ -84,7 +84,7 @@ class MonsterScriptCommandOneTargetLimited(MonsterScriptCommand):
         super().__init__(identifier)
         self.set_target(target)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         byte1: int
         if self.target == SELF:
             byte1 = 0

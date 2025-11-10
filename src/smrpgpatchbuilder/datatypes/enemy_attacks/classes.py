@@ -1,7 +1,8 @@
 """Base classes for enemy attack data."""
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
+from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     BitMapSet,
     ByteField,
@@ -11,7 +12,7 @@ from smrpgpatchbuilder.datatypes.numbers.classes import (
 
 from smrpgpatchbuilder.datatypes.spells.enums import TempStatBuff, Status
 
-from .constants import ENEMY_ATTACK_BASE_ADDRESS
+from .constants import ENEMY_ATTACK_BASE_ADDRESS, ENEMY_ATTACK_NAME_ADDRESS, ENEMY_ATTACK_NAME_LENGTH
 
 
 class EnemyAttack:
@@ -19,6 +20,8 @@ class EnemyAttack:
 
     # default instance attributes.
     _index: int = 0
+    _name: str = ""
+    _prefix: Optional[ItemPrefix] = None
     _attack_level: int = 0
     _ohko: bool = False
     _damageless_flag_1: bool = False
@@ -33,6 +36,24 @@ class EnemyAttack:
         """The enemy attack's unique index."""
         assert 0 <= self._index <= 128 or self._index == 251
         return UInt8(self._index)
+
+    @property
+    def attack_name(self) -> str:
+        """The name of this attack as it appears in-game."""
+        return self._name
+
+    def set_attack_name(self, name: str) -> None:
+        """Set the name of this attack."""
+        self._name = name
+
+    @property
+    def prefix(self) -> Optional[ItemPrefix]:
+        """The icon prefix that appears before the attack name."""
+        return self._prefix
+
+    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+        """Set the icon prefix for this attack."""
+        self._prefix = prefix
 
     @property
     def attack_level(self) -> UInt4:
@@ -124,10 +145,13 @@ class EnemyAttack:
         return self.__class__.__name__
 
     def render(self) -> Dict[int, bytearray]:
-        """Get data for this attack in `{0x123456: bytearray([0x00])}` format"""
-        patch: Dict[int, bytearray] = {}
-        base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
+        """Return attack stats and name as bytearrays with their ROM addresses.
 
+        Returns:
+            Dict[int, bytearray]: {stats_addr: stats_data, name_addr: name_data}
+        """
+        # Attack stats data
+        base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
         data = bytearray()
 
         # first byte is attack level + damage type flags in a bitmap.
@@ -144,8 +168,38 @@ class EnemyAttack:
 
         # other bytes are hit rate, status effects, and buffs.
         data += ByteField(self.hit_rate).as_bytes()
-        data += BitMapSet(1, self.status_effects).as_bytes()
-        data += BitMapSet(1, self.buffs).as_bytes()
 
-        patch[base_addr] = data
-        return patch
+        # Convert status effects to their spell_value integers
+        status_bits = [status.spell_value for status in self.status_effects]
+        data += BitMapSet(1, status_bits).as_bytes()
+
+        # Convert buffs to their integer values
+        buff_bits = [int(buff) for buff in self.buffs]
+        data += BitMapSet(1, buff_bits).as_bytes()
+
+        # Attack name data (13 bytes: optional prefix + name + padding with 0x20)
+        name_addr = ENEMY_ATTACK_NAME_ADDRESS + (self.index * ENEMY_ATTACK_NAME_LENGTH)
+        name_bytes = bytearray()
+
+        # Add prefix byte if present
+        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
+            name_bytes.append(self._prefix)
+
+        # Encode the name
+        if self._name:
+            # Replace & with \x9c before encoding
+            encoded_name = self._name.replace('&', '\x9c')
+            name_bytes.extend(encoded_name.encode('latin-1'))
+
+        # Pad to ENEMY_ATTACK_NAME_LENGTH bytes with spaces
+        while len(name_bytes) < ENEMY_ATTACK_NAME_LENGTH:
+            name_bytes.append(0x20)
+
+        # Truncate if too long
+        if len(name_bytes) > ENEMY_ATTACK_NAME_LENGTH:
+            name_bytes = name_bytes[:ENEMY_ATTACK_NAME_LENGTH]
+
+        return {
+            base_addr: data,
+            name_addr: name_bytes
+        }

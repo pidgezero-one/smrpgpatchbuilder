@@ -16,19 +16,18 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
-from .ids.types.classes import DialogBankID
 from .utils import compress, COMPRESSION_TABLE
 
 
 class Dialog:
     """An individual dialog in the overworld"""
 
-    _bank: DialogBankID
+    _bank: int
     _index: int
     _position: int
 
     @property
-    def bank(self) -> DialogBankID:
+    def bank(self) -> int:
         """The bank that this dialog belongs to"""
         return self._bank
 
@@ -46,7 +45,8 @@ class Dialog:
         """Overwrite the starting position within the raw text where this dialog begins"""
         self._position = position
 
-    def __init__(self, bank: DialogBankID, index: int, pos: int) -> None:
+    def __init__(self, bank: int, index: int, pos: int) -> None:
+        assert 0x22 <= bank <= 0x24, f"Dialog bank must be 0x22, 0x23, or 0x24, got 0x{bank:02X}"
         self._bank = bank
         self._index = index
         self.set_position(pos)

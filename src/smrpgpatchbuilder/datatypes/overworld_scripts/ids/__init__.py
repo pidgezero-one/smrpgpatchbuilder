@@ -1,6 +1,1 @@
-from .misc import *
-from .music_names import *
-from .overworld_names import *
-from .room_names import *
-from .shops_ids import *
-from .sound_names import *
+from .misc import TOTAL_DIALOGS, TOTAL_MUSIC, TOTAL_PACKETS, TOTAL_ROOMS, TOTAL_SHOPS, TOTAL_SOUNDS, TOTAL_WORLD_MAP_AREAS

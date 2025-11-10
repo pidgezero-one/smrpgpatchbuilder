@@ -2,7 +2,7 @@
 These are the building blocks of monster battle scripts."""
 
 from copy import deepcopy
-from typing import List, Optional, Set, Type, Union
+from typing import List, Optional, Protocol, Set, Type, Union
 
 from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack
 from smrpgpatchbuilder.datatypes.items.classes import Item
@@ -26,7 +26,6 @@ from .types.classes import (
     MonsterScriptCommandOneVar,
     UsableMonsterScriptCommand,
 )
-
 
 class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Issue an attack, or one of three attacks at random. Each of the three attacks do not have to be unique from each other.

@@ -47,7 +47,7 @@ class Command(BaseCommand):
 
         # Get all attack classes from the module
         # Collect all classes that are subclasses of EnemyAttack
-        from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import EnemyAttack
+        from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack
 
         attack_classes = []
         for name in dir(module):

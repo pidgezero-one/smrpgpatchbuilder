@@ -1,2 +1,1 @@
-from .known_variables import * 
-from .misc import *
+from .misc import BANK_RANGE_1_END, BANK_RANGE_1_START, BANK_RANGE_2_END, BANK_RANGE_2_START, POINTER_TABLE_START, TOTAL_ATTACKS, TOTAL_MONSTERS

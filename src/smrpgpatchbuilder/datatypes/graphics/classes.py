@@ -458,7 +458,7 @@ def find_clones(tiles: list[Union[Tile, Clone]], molds: list[Mold], index: int =
                 invert=False,
                 x=candidate.x_offset,
                 y=candidate.y_offset,
-                tiles=tmp_output[candidate.start_index:candidate.end_index]
+                tiles=[t for t in tmp_output[candidate.start_index:candidate.end_index] if isinstance(t, Tile)]
             ))
             tile_index -= (candidate.end_index - candidate.start_index)
             ineligible_to_be_clones.extend(list(range(candidate.start_index, candidate.end_index)))

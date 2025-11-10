@@ -1,15 +1,10 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, UInt16
-from smrpgpatchbuilder.datatypes.sprites.ids.misc import TOTAL_SPRITES
-from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import SPR0524_EMPTY
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.misc import (
-    TOTAL_SCRIPTS,
-)
-from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.ids.script_ids import (
-    A0015_DO_NOTHING,
-)
+# Constants to avoid circular imports
+TOTAL_SPRITES = 0x400
+TOTAL_SCRIPTS = 0x400
 
 class Packet:
     """An object to be spawned on the field that does not exist in the room's
@@ -87,17 +82,72 @@ class Packet:
     def __init__(
         self,
         packet_id: int,
-        sprite_id: int = SPR0524_EMPTY,
+        sprite_id: int = 524,
         shadow: bool = False,
-        action_script_id: int = A0015_DO_NOTHING,
+        action_script_id: int = 15,
         unknown_bits: Optional[List[bool]] = None,
-        unknown_bytes: bytearray = bytearray(),
+        unknown_bytes: Optional[bytearray] = None,
     ) -> None:
         if unknown_bits is None:
-            unknown_bits = []
+            unknown_bits = [False, False, False]
+        if unknown_bytes is None:
+            unknown_bytes = bytearray([0, 0, 0, 0, 0, 0, 0])
         self._packet_id = UInt8(packet_id)
         self._set_sprite_id(sprite_id)
         self._set_shadow(shadow)
         self._set_action_script_id(action_script_id)
         self._set_unknown_bits(unknown_bits)
         self._set_unknown_bytes(unknown_bytes)
+
+    def render(self) -> bytearray:
+        output = bytearray()
+        output.append(((self.sprite_id - 0xC0) & 0x3F) + (self.unknown_bytes[0] << 6))
+        output.append(self.unknown_bytes[1] + (self.unknown_bytes[2] << 3) + (self.unknown_bytes[3] << 5))
+        output.append(self.unknown_bytes[4] + (self.unknown_bits[0] << 2) + (self.unknown_bits[1] << 3) + (self.unknown_bits[2] << 4) + (self.shadow << 5) + (self.unknown_bytes[5] << 6))
+        output.append(self.action_script_id & 0xFF)
+        output.append(((self.action_script_id >> 8) & 0x03) + (self.unknown_bytes[6] << 4))
+        return output
+
+
+class PacketCollection:
+    """Collection of up to 256 packets with rendering support.
+
+    Each packet occupies 5 bytes in the ROM. When a packet slot is None,
+    it is represented by 5 0xFF bytes.
+    """
+
+    def __init__(self, packets: List[Optional[Packet]]):
+        """Initialize the collection with a list of up to 256 optional packets.
+
+        Args:
+            packets: list of optional Packet objects (up to 256 entries)
+
+        Raises:
+            ValueError: if more than 256 packets are provided
+        """
+        if len(packets) > 256:
+            raise ValueError(
+                f"PacketCollection can contain at most 256 packets, "
+                f"but {len(packets)} were provided."
+            )
+
+        # Pad with None to ensure exactly 256 entries
+        self.packets = packets + [None] * (256 - len(packets))
+
+    def render(self) -> Dict[int, bytearray]:
+        """Render all packets to ROM format.
+
+        Returns:
+            dictionary mapping ROM address (0x1DB000) to bytearray of all packet data
+        """
+        data = bytearray()
+
+        for packet in self.packets:
+            if packet is None:
+                # Empty packet slot: 5 bytes of 0xFF
+                data.extend([0xFF] * 5)
+            else:
+                # Render the packet
+                data.extend(packet.render())
+
+        return {0x1DB000: data}

@@ -9,7 +9,7 @@ from smrpgpatchbuilder.datatypes.spells.ids.misc import (
     SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS,
 )
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
-from smrpgpatchbuilder.datatypes.items.classes import decode_item_description
+from smrpgpatchbuilder.datatypes.items.encoding import decode_item_description
 from smrpgpatchbuilder.datatypes.spells.enums import (
     SpellType,
     EffectType,
@@ -18,6 +18,7 @@ from smrpgpatchbuilder.datatypes.spells.enums import (
     InflictFunction,
     TempStatBuff,
 )
+from smrpgpatchbuilder.datatypes.spells.arguments import timing_properties, damage_modifiers
 import shutil
 import os
 
@@ -27,13 +28,28 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
 
-    def handle(self, *args, **options):
+    def handle(self, **options):
         dest = "./src/disassembler_output/spells/"
         shutil.rmtree(dest, ignore_errors=True)
         os.makedirs(dest, exist_ok=True)
         open(f"{dest}/__init__.py", "w")
 
         rom = bytearray(open(options["rom"], "rb").read())
+
+        # Build lookup dictionaries for timing and damage modifier constants
+        timing_lookup = {}
+        for name in dir(timing_properties):
+            if not name.startswith('_'):
+                obj = getattr(timing_properties, name)
+                if hasattr(obj, '__class__') and obj.__class__.__name__ == 'TimingProperties':
+                    timing_lookup[int(obj)] = name
+
+        damage_lookup = {}
+        for name in dir(damage_modifiers):
+            if not name.startswith('_'):
+                obj = getattr(damage_modifiers, name)
+                if hasattr(obj, '__class__') and obj.__class__.__name__ == 'DamageModifiers':
+                    damage_lookup[int(obj)] = name
 
         # There are 128 spell slots (0-127)
         # Indices 0-26 are character spells, the rest are enemy spells
@@ -228,10 +244,30 @@ class Command(BaseCommand):
         file.write("from smrpgpatchbuilder.datatypes.spells.enums import SpellType, EffectType, Element, Status, InflictFunction, TempStatBuff\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix\n".encode("utf8"))
         file.write("from smrpgpatchbuilder.datatypes.spells.arguments.types.classes import TimingProperties, DamageModifiers\n".encode("utf8"))
+
+        # Write imports for timing and damage constants if needed
+        used_timing_constants = set()
+        used_damage_constants = set()
+        for spell_data in spells:
+            if spell_data['is_character']:
+                if spell_data['timing_modifiers'] in timing_lookup:
+                    used_timing_constants.add(timing_lookup[spell_data['timing_modifiers']])
+                if spell_data['damage_modifiers'] in damage_lookup:
+                    used_damage_constants.add(damage_lookup[spell_data['damage_modifiers']])
+
+        if used_timing_constants:
+            timing_imports = ", ".join(sorted(used_timing_constants))
+            file.write(f"from smrpgpatchbuilder.datatypes.spells.arguments.timing_properties import {timing_imports}\n".encode("utf8"))
+
+        if used_damage_constants:
+            damage_imports = ", ".join(sorted(used_damage_constants))
+            file.write(f"from smrpgpatchbuilder.datatypes.spells.arguments.damage_modifiers import {damage_imports}\n".encode("utf8"))
+
         file.write("\n\n".encode("utf8"))
 
         # First pass: count name occurrences to detect duplicates
         name_counts = {}
+        name_occurrence = {}  # Track which occurrence number this is for duplicates
         for spell_data in spells:
             if spell_data['title']:
                 # Strip special characters
@@ -247,11 +283,17 @@ class Command(BaseCommand):
                 # Use the spell title, strip special characters
                 base_name = spell_data['title'].replace(" ", "").replace("'", "").replace("!", "").replace("-", "").replace(".", "")
 
-                # If this name appears more than once, append the ID
-                if name_counts[base_name] > 1:
-                    class_name = f"{base_name}{spell_data['index']}"
+                # Track which occurrence this is (1st, 2nd, 3rd, etc.)
+                if base_name not in name_occurrence:
+                    name_occurrence[base_name] = 1
                 else:
-                    class_name = base_name
+                    name_occurrence[base_name] += 1
+
+                # If this name appears more than once, append the occurrence number
+                if name_counts[base_name] > 1:
+                    class_name = f"{base_name}Spell{name_occurrence[base_name]}"
+                else:
+                    class_name = f"{base_name}Spell"
             else:
                 # Blank title - use Spell{ID}
                 class_name = f"Spell{spell_data['index']}"
@@ -305,8 +347,18 @@ class Command(BaseCommand):
 
             # Add character spell specific properties
             if spell_data['is_character']:
-                file.write(f"    _timing_modifiers = TimingProperties(0x{spell_data['timing_modifiers']:04X})\n".encode("utf8"))
-                file.write(f"    _damage_modifiers = DamageModifiers(0x{spell_data['damage_modifiers']:04X})\n".encode("utf8"))
+                # Use constant name if available, otherwise use hex value
+                timing_val = spell_data['timing_modifiers']
+                if timing_val in timing_lookup:
+                    file.write(f"    _timing_modifiers = {timing_lookup[timing_val]}\n".encode("utf8"))
+                else:
+                    file.write(f"    _timing_modifiers = TimingProperties(0x{timing_val:04X})\n".encode("utf8"))
+
+                damage_val = spell_data['damage_modifiers']
+                if damage_val in damage_lookup:
+                    file.write(f"    _damage_modifiers = {damage_lookup[damage_val]}\n".encode("utf8"))
+                else:
+                    file.write(f"    _damage_modifiers = DamageModifiers(0x{damage_val:04X})\n".encode("utf8"))
 
                 # Add description
                 if spell_data['index'] < len(descriptions):

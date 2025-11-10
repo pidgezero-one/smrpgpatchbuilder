@@ -1,4 +1,3 @@
-from .types import *
 from .command_types import COMMAND_ATTACK, COMMAND_ITEM, COMMAND_SPECIAL
 from .targets import (
 	MARIO,

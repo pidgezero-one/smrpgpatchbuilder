@@ -14,7 +14,6 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptCommandWithJmps,
 )
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import PRIMARY_TEMP_700C
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 
@@ -40,7 +39,7 @@ class ActionScriptCommandAnySizeMem(ActionScriptCommand, ScriptCommandAnySizeMem
     ) -> None:
         super().__init__(address, identifier)
 
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             self._size = 1
         else:
             self._size = 2
@@ -65,7 +64,7 @@ class ActionScriptCommandShortAddrAndValueOnly(
     ) -> None:
         super().__init__(address, value, identifier)
 
-        if self.address == PRIMARY_TEMP_700C:
+        if self.address == ShortVar(0x700C):
             self._size = 3
         else:
             self._size = 4
@@ -98,7 +97,7 @@ class ActionScriptCommandByteSteps(ActionScriptCommand):
         super().__init__(identifier)
         self.set_steps(steps)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.steps)
 
 
@@ -122,7 +121,7 @@ class ActionScriptCommandBytePixels(ActionScriptCommand):
         super().__init__(identifier)
         self.set_pixels(pixels)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.pixels)
 
 
@@ -157,7 +156,7 @@ class ActionScriptCommandXYBytes(ActionScriptCommand):
         self.set_x(x)
         self.set_y(y)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.x, self.y)
 
 

@@ -69,7 +69,9 @@ def compress(string: str, compression_table: List[tuple[str, bytes]]) -> bytearr
         regex_result = re.search(r"^(\[delay_\d+\])", string[cursor:])
         if regex_result:
             token = regex_result.group()
-            delay_int = re.search(r"\d+", token).group()
+            di = re.search(r"\d+", token)
+            assert di is not None, "Delay tag malformed."
+            delay_int = di.group()
             delay = int(delay_int)
             output += bytearray([0x0D, delay])
             cursor += len(token)

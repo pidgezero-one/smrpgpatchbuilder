@@ -10,8 +10,7 @@ from smrpgpatchbuilder.datatypes.numbers.classes import (
     UInt8,
 )
 from smrpgpatchbuilder.datatypes.spells.classes import Status, Element
-from smrpgpatchbuilder.datatypes.items.classes import Item, RegularItem
-from smrpgpatchbuilder.datatypes.items.implementations import Mushroom
+from smrpgpatchbuilder.datatypes.items.classes import RegularItem
 
 from .constants import (
     BASE_ENEMY_ADDRESS,

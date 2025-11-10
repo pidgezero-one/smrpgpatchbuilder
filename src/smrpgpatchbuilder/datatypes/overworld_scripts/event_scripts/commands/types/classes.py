@@ -23,7 +23,6 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object i
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.variables import PRIMARY_TEMP_7000
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8
 
@@ -49,7 +48,7 @@ class EventScriptCommandAnySizeMem(EventScriptCommand, ScriptCommandAnySizeMem):
     ) -> None:
         super().__init__(address, identifier)
 
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             self._size = 1
         else:
             self._size = 2
@@ -74,7 +73,7 @@ class EventScriptCommandShortAddrAndValueOnly(
     ) -> None:
         super().__init__(address, value, identifier)
 
-        if self.address == PRIMARY_TEMP_7000:
+        if self.address == ShortVar(0x7000):
             self._size = 3
         else:
             self._size = 4
@@ -190,7 +189,7 @@ class ActionQueuePrototype(ActionSubcriptCommandPrototype):
     """base class for action queues, must be 127 bytes or less.
     Cannot be forcibly stopped, overall command length is shorter."""
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         header_byte: UInt8 = UInt8(self.subscript.length + ((not self.sync) << 7))
         return super().render(self.target, header_byte, self.subscript.render())
 
@@ -223,7 +222,7 @@ class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
         super().__init__(target, sync, subscript, identifier)
         self.set_prefix(prefix)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         header_byte: UInt8 = UInt8(self.subscript.length + ((not self.sync) << 7))
         return super().render(
             self.target, self.prefix, header_byte, self.subscript.render()
@@ -268,7 +267,7 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
         self._subscript = ActionScript()
         self.set_subscript(subscript)
 
-    def render(self) -> bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.subscript.render())
 
 

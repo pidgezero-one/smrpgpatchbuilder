@@ -5,17 +5,13 @@ from smrpgpatchbuilder.utils.disassembler_common import (
     byte_signed,
     writeline,
 )
-import re
 import os
 import shutil
-from smrpgpatchbuilder.datatypes.sprites.ids.sprite_ids import *
 from copy import deepcopy
 from typing import List, Tuple, Dict, Optional, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import numpy as np
-import importlib
-from pathlib import Path
-from .input_file_parser import parse_input_files
+from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config
 
 
 ORIGINS = [
@@ -24,9 +20,6 @@ ORIGINS = [
     "TARGET_CURRENT_POSITION",
     "CASTER_CURRENT_POSITION",
 ]
-
-# effects will be populated from battle_effect_names.input
-EFFECTS: List[str] = []
 
 FLASH_COLOURS = ["NO_COLOUR", "RED", "GREEN", "YELLOW", "BLUE", "PINK", "AQUA", "WHITE"]
 
@@ -39,14 +32,6 @@ BONUS_MESSAGES = [
     "BM_AGAIN",
     "BM_LUCKY",
 ]
-
-# screen_effects will be populated from screen_effect_names.input
-SCREEN_EFFECTS: List[str] = []
-
-# sounds will be populated from battle_sfx_names.input
-SOUNDS: List[str] = []
-# music will be populated from music_names.input
-MUSIC: List[str] = []
 
 TARGETS = [
     "MARIO",
@@ -99,243 +84,6 @@ TARGETS = [
     "MONSTER_8_CALL",
 ]
 
-ITEMS = [
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Hammer",
-    "FroggieStick",
-    "NokNokShell",
-    "PunchGlove",
-    "FingerShot",
-    "Cymbals",
-    "Chomp",
-    "Masher",
-    "ChompShell",
-    "SuperHammer",
-    "HandGun",
-    "WhompGlove",
-    "SlapGlove",
-    "TroopaShell",
-    "Parasol",
-    "HurlyGloves",
-    "DoublePunch",
-    "RibbitStick",
-    "SpikedLink",
-    "MegaGlove",
-    "WarFan",
-    "HandCannon",
-    "StickyGlove",
-    "UltraHammer",
-    "SuperSlap",
-    "DrillClaw",
-    "StarGun",
-    "SonicCymbal",
-    "LazyShellWeapon",
-    "FryingPan",
-    "LuckyHammer",
-    None,
-    "Shirt",
-    "Pants",
-    "ThickShirt",
-    "ThickPants",
-    "MegaShirt",
-    "MegaPants",
-    "WorkPants",
-    "MegaCape",
-    "HappyShirt",
-    "HappyPants",
-    "HappyCape",
-    "HappyShell",
-    "PolkaDress",
-    "SailorShirt",
-    "SailorPants",
-    "SailorCape",
-    "NauticaDress",
-    "CourageShell",
-    "FuzzyShirt",
-    "FuzzyPants",
-    "FuzzyCape",
-    "FuzzyDress",
-    "FireShirt",
-    "FirePants",
-    "FireCape",
-    "FireShell",
-    "FireDress",
-    "HeroShirt",
-    "PrincePants",
-    "StarCape",
-    "HealShell",
-    "RoyalDress",
-    "SuperSuit",
-    "LazyShellArmor",
-    None,
-    None,
-    None,
-    "ZoomShoes",
-    "SafetyBadge",
-    "JumpShoes",
-    "SafetyRing",
-    "Amulet",
-    "ScroogeRing",
-    "ExpBooster",
-    "AttackScarf",
-    "RareScarf",
-    "BtubRing",
-    "AntidotePin",
-    "WakeUpPin",
-    "FearlessPin",
-    "TrueformPin",
-    "CoinTrick",
-    "GhostMedal",
-    "JinxBelt",
-    "Feather",
-    "TroopaPin",
-    "SignalRing",
-    "QuartzCharm",
-    None,
-    "Mushroom",
-    "MidMushroom",
-    "MaxMushroom",
-    "HoneySyrup",
-    "MapleSyrup",
-    "RoyalSyrup",
-    "PickMeUp",
-    "AbleJuice",
-    "Bracer",
-    "Energizer",
-    "YoshiAde",
-    "RedEssence",
-    "KerokeroCola",
-    "YoshiCookie",
-    "PureWater",
-    "SleepyBomb",
-    "BadMushroom",
-    "FireBomb",
-    "IceBomb",
-    "FlowerTab",
-    "FlowerJar",
-    "FlowerBox",
-    "YoshiCandy",
-    "FroggieDrink",
-    "MukuCookie",
-    "Elixir",
-    "Megalixir",
-    "SeeYa",
-    "TempleKey",
-    "GoodieBag",
-    "EarlierTimes",
-    "FreshenUp",
-    "RareFrogCoin",
-    "Wallet",
-    "CricketPie",
-    "RockCandy",
-    "CastleKey1",
-    None,
-    "CastleKey2",
-    "BambinoBomb",
-    "SheepAttack",
-    "CarboCookie",
-    "ShinyStone",
-    None,
-    "RoomKey",
-    "ElderKey",
-    "ShedKey",
-    "LambsLure",
-    "FrightBomb",
-    "MysteryEgg",
-    None,
-    None,
-    "LuckyJewel",
-    None,
-    "SopranoCard",
-    "AltoCard",
-    "TenorCard",
-    "Crystalline",
-    "PowerBlast",
-    "WiltShroom",
-    "RottenMush",
-    "MoldyMush",
-    "Seed",
-    "Fertilizer",
-    "WasteBasket",
-    "BigBooFlag",
-    "DryBonesFlag",
-    "GreaperFlag",
-    None,
-    None,
-    "CricketJam",
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Fireworks",
-    None,
-    "BrightCard",
-    "Mushroom2",
-    "StarEgg",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Shoes",
-    "Brooch",
-    "Ring",
-    "Crown",
-]
-
 MASKS = [
     "NO_MASK",
     "INCLINE_1",
@@ -347,1038 +95,11 @@ MASKS = [
     "CYLINDER_MASK",
 ]
 
-ENEMIES = [
-    "Terrapin", # 0
-    "Spikey", # 1
-    "Skytroopa", # 2
-    "MadMallet", # 3
-    "Shaman", # 4
-    "Crook", # 5
-    "Goomba", # 6
-    "PiranhaPlant", # 7
-    "Amanita", # 8
-    "Goby", # 9
-    "Bloober", # 10
-    "BandanaRed", # 11
-    "Lakitu", # 12
-    "Birdy", # 13
-    "Pinwheel", # 14
-    "Ratfunk", # 15
-    "K9", # 16
-    "Magmite", # 17
-    "TheBigBoo", # 18
-    "DryBones", # 19
-    "Greaper", # 20
-    "Sparky", # 21
-    "Chomp", # 22
-    "Pandorite", # 23
-    "ShyRanger", # 24
-    # "bobombhenchman", # todo rando shold reaplce all of these bobombs
-    "Bobomb", # 25
-    "Spookum", # 26
-    "HammerBro", # 27
-    "Buzzer", # 28
-    "Ameboid", # 29
-    "Gecko", # 30
-    "Wiggler", # 31
-    "Crusty", # 32
-    "Magikoopa", # 33
-    "Leuko", # 34
-    "Jawful", # 35
-    "Enigma", # 36
-    "Blaster", # 37
-    "Guerrilla", # 38
-    "Babayaga", # 39
-    "Hobgoblin", # 40
-    "Reacher", # 41
-    "Shogun", # 42
-    "Orbuser", # 43
-    "HeavyTroopa", # 44
-    "Shadow", # 45
-    "Cluster", # 46
-    # "bahamuttmagikoopa",
-    "Bahamutt",  # same as bobombhenchman
-    "Octolot", # 48
-    "Frogog", # 49
-    "Clerk", # 50
-    "Gunyolk", # 51
-    "Boomer", # 52
-    "Remocon", # 53
-    "Snapdragon", # 54
-    "Stumpet", # 55
-    "Dodo", # 56
-    "Jester", # 57
-    "Artichoker", # 58
-    "Arachne", # 59
-    "Carriboscis", # 60
-    "Hippopo", # 61
-    "Mastadoom", # 62
-    "Corkpedite", # 63
-    "Terracotta", # 64
-    "Spikester", # 65
-    "Malakoopa", # 66
-    "Pounder", # 67
-    "Poundette", # 68
-    "Sackit", # 69
-    "GuGoomba", # 70
-    "Chewy", # 71
-    "Fireball", # 72
-    "MrKipper", # 73
-    "FactoryChief", # 74
-    "BandanaBlue", # 75
-    "Manager", # 76
-    "Bluebird", # 77
-    "None", # 78
-    "AlleyRat", # 79
-    "Chow", # 80
-    "Magmus", # 81
-    "LilBoo", # 82
-    "Vomer", # 83
-    "GlumReaper", # 84
-    "Pyrosphere", # 85
-    "ChompChomp", # 86
-    "Hidon", # 87
-    "SlingShy", # 88
-    "Robomb", # 89
-    "ShyGuy", # 90
-    "Ninja", # 91
-    "Stinger", # 92
-    "Goombette", # 93
-    "Geckit", # 94
-    "Jabit", # 95
-    "Starcruster", # 96
-    "Merlin", # 97
-    "Muckle", # 98
-    "Forkies", # 99
-    "Gorgon", # 100
-    "BigBertha", # 101
-    "ChainedKong", # 102
-    "Fautso", # 103
-    "Strawhead", # 104
-    "Juju", # 105
-    "ArmoredAnt", # 106
-    "Orbison", # 107
-    "TuboTroopa", # 108
-    "Doppel", # 109
-    "Pulsar", # 110
-    "Bobomb", # 111
-    "Octovader", # 112
-    "Ribbite", # 113
-    "Director", # 114
-    "SnifitHenchman", # 115
-    "None", # 116
-    "Puppox", # 117
-    "FinkFlower", # 118
-    "Lumbler", # 119
-    "Springer", # 120
-    "Harlequin", # 121
-    "Kriffid", # 122
-    "Spinthra", # 123
-    "Radish", # 124
-    "Crippo", # 125
-    "MastaBlasta", # 126
-    "Piledriver", # 127
-    "Apprentice", # 128
-    "ApprenticeHenchman", # 129
-    "BandanaRedHenchman", # 130
-    "PiranhaPlantHenchman", # 131
-    "None", # 132
-    "MadMalletHenchman", # 133
-    "BoxBoy", # 134
-    "Shelly", # 135
-    "Superspike", # 136
-    "DodoSolo", # 137
-    "Oerlikon", # 138
-    "Chester", # 139
-    "CorkpediteBody", # 140
-    "BluebirdHenchman", # 141
-    "Torte", # 142
-    "Shyaway", # 143
-    "JinxClone", # 144
-    "MachineMadeShyster", # 145
-    "MachineMadeDrillBit", # 146
-    "Formless", # 147
-    "Mokura", # 148
-    "FireCrystal", # 149
-    "WaterCrystal", # 150
-    "EarthCrystal", # 151
-    "WindCrystal", # 152
-    "MarioClone", # 153
-    "PeachClone", # 154
-    "BowserClone", # 155
-    "GenoClone", # 156
-    "MallowClone", # 157
-    "Shyster", # 158
-    "Kinklink", # 159
-    "BirdyHenchman", # 160
-    "HanginShy", # 161
-    "Smelter", # 162
-    "MachineMadeMack", # 163
-    "MachineMadeBowyer", # 164
-    "MachineMadeYaridovich", # 165
-    "MachineMadeAxemPink", # 166
-    "MachineMadeAxemBlack", # 167
-    "MachineMadeAxemRed", # 168
-    "MachineMadeAxemYellow", # 169
-    "MachineMadeAxemGreen", # 170
-    "BahamuttChester", # 171
-    "BlooberHenchman", # 172
-    "MachineMadeAxemBlackHenchman", # 173
-    "MachineMadeAxemPinkHenchman", # 174
-    "AeroSmithy", # 175
-    "Starslap", # 176
-    "Mukumuku", # 177
-    "Zeostar", # 178
-    "Jagger", # 179
-    "EmptyEnemy", # 180
-    "Smithy2TankHead", # 181
-    "Smithy2SafeHead", # 182
-    "PyrosphereHenchman", # 183
-    "Microbomb", # 184
-    "ShyGuyHenchman", # 185
-    "Grit", # 186
-    "Neosquid", # 187
-    "YaridovichMirage", # 188
-    "Helio", # 189
-    "RightEye", # 190
-    "LeftEye", # 191
-    "KnifeGuy", # 192
-    "GrateGuy", # 193
-    "Bundt", # 194
-    "Jinx1", # 195
-    "Jinx2", # 196
-    "CountDown", # 197
-    "DingALing", # 198
-    "Belome1", # 199
-    "Belome2", # 200
-    "MachineMadeAxemRedHenchman", # 201
-    "Smilax", # 202
-    "Thrax", # 203
-    "Megasmilax", # 204
-    "Birdo", # 205
-    "Eggbert", # 206
-    "AxemYellow", # 207
-    "Punchinello", # 208
-    "TentaclesRight", # 209
-    "AxemRed", # 210
-    "AxemGreen", # 211
-    "KingBomb", # 212
-    "MezzoBomb", # 213
-    "MachineMadeShysterHenchman", # 214
-    "Raspberry", # 215
-    "KingCalamari", # 216
-    "TentaclesLeft", # 217
-    "Jinx3", # 218
-    "Zombone", # 219
-    "CzarDragon", # 220
-    "Cloaker", # 221
-    "Domino", # 222
-    "MadAdder", # 223
-    "Mack", # 224
-    "Bodyguard", # 225
-    "Yaridovich", # 226
-    "DrillBit", # 227
-    "AxemPink", # 228
-    "AxemBlack", # 229
-    "Bowyer", # 230
-    "AeroBowyer", # 231
-    "MachineMadeAxemGreenHenchman", # 232
-    "Exor", # 233
-    "Smithy1", # 234
-    "Shyper", # 235
-    "Smithy2Body", # 236
-    "Smithy2Head", # 237
-    "Smithy2MageHead", # 238
-    "Smithy2ChestHead", # 239
-    "Croco1", # 240
-    "Croco2", # 241
-    "MachineMadeAxemYellowHenchman", # 242
-    "Earthlink", # 243
-    "YaridovichDrillBit", # 244
-    "AxemRangers", # 245
-    "Booster", # 246
-    "Booster2", # 247
-    "Snifit", # 248
-    "Johnny", # 249
-    "JohnnySolo", # 250
-    "Valentina", # 251
-    "Cloaker2", # 252
-    "Domino2", # 253
-    "Candle", # 254
-    "Culex", # 255
-]
-
-SCRIPT_NAMES = {
-    "battle_events": [
-        "BE0000_UNUSED",
-        "BE0001_UNUSED",
-        "BE0002_BELOME_SWALLOWS_MALLOW",
-        "BE0003_UNUSED",
-        "BE0004_MACK_JUMPS_OUT_OF_BATTLE_OFF_SCREEN",
-        "BE0005_MACK_RETURNS_TO_BATTLE",
-        "BE0006_BELOME_SPITS_OUT_MALLOW",
-        "BE0007_COUNTDOWN_RUNS_SCHEDULE_1_00_3_00_5_00_6_00_7_00",
-        "BE0008_COUNTDOWN_RUNS_SCHEDULE_6_00_9_00_10_00_12_00",
-        "BE0009_PUNCHINELLO_INTERLUDES_AND_PREPARES_TO_SUMMON_BOB_OMBS",
-        "BE0010_PUNCHINELLO_INTERLUDES_AND_PREPARES_TO_SUMMON_MEZZO_BOMBS",
-        "BE0011_SOLO_EARTH_CRYSTAL_APPEARS",
-        "BE0012_DIALOGUE_FROM_BOOSTER_FIGHT",
-        "BE0013_UNKNOWN",
-        "BE0014_SET_7EE00A_TO_PARTY_SIZE_AT_START_OF_FIGHT",
-        "BE0015_CROCO_STEALS_ITEMS_YOU_WANT_THEM_BACK",
-        "BE0016_CROCO_RETURNS_ITEMS_ENOUGH_HERE_S_YOUR_JUNK",
-        "BE0017_UNUSED",
-        "BE0018_KNIFE_GUY_GRATE_GUY_PAIR_UP_PIGGY_BACK",
-        "BE0019_KNIFE_GUY_GRATE_GUY_SEPARATE_YIKES_THEY_RE_PRETTY_TOUGH",
-        "BE0020_SOLO_WATER_CRYSTAL_APPEARS",
-        "BE0021_JOHNNY_CHALLENGES_MARIO_TO_A_ONE_ON_ONE",
-        "BE0022_YARIDOVICH_MIRAGE_ATTACK",
-        "BE0023_YARIDOVICH_MIRAGE_IS_DESTROYED_RETURN_TO_SINGLE_FORM",
-        "BE0024_MACHINE_MADE_YARIDOVICH_MULTIPLIER",
-        "BE0025_DRILL_BIT",
-        "BE0026_INTRO_SCENE_TENTACLES_RISE_FROM_HOLES",
-        "BE0027_BEAT_TENTACLES_MOVE_ON_TO_NEXT",
-        "BE0028_BEAT_TENTACLES_MOVE_ON_TO_KING_CALAMARI",
-        "BE0029_UNUSED",
-        "BE0030_UNUSED",
-        "BE0031_UNUSED",
-        "BE0032_BUNDT_MOVES_AGAIN_BOTH_COOKS_RUN_AWAY",
-        "BE0033_CANDLES_APPEAR_ON_BUNDT",
-        "BE0034_BLOW_THOSE_CANDLES_OUT",
-        "BE0035_SOLO_WIND_CRYSTAL_APPEARS",
-        "BE0036_TENTACLES_THROW_CHARACTER_OFF_SCREEN",
-        "BE0037_UNUSED",
-        "BE0038_UNUSED",
-        "BE0039_UNUSED",
-        "BE0040_UNUSED",
-        "BE0041_UNUSED",
-        "BE0042_BB_BOMBS_EXPLODE",
-        "BE0043_UNUSED",
-        "BE0044_CZAR_DRAGON_DIES",
-        "BE0045_ZOMBONE_DIES",
-        "BE0046_CZAR_DRAGON_SUMMONS_HELIOS",
-        "BE0047_UNKNOWN",
-        "BE0048_VALENTINA_SUMMONS_DODO_DODO_CARRIES_OFF_MIDDLE_CHARACTER",
-        "BE0049_DODO_FLUTTERS_AND_LEAVES_BATTLE",
-        "BE0050_DODO_RETURNS_TO_VALENTINA_S_FORMATION",
-        "BE0051_UNUSED",
-        "BE0052_INTRO_SCENE_DOMINO_CLOAKER_S_INTRODUCTION",
-        "BE0053_DOMINO_TEAMS_UP_WITH_MAD_ADDER",
-        "BE0054_CLOAKER_TEAMS_UP_WITH_EARTHLINK",
-        "BE0055_SHY_AWAY_WATERS_SMILAX_PART_1",
-        "BE0056_SHY_AWAY_WATERS_SMILAX_PART_2",
-        "BE0057_SHY_AWAY_WATERS_SMILAX_PART_3",
-        "BE0058_THRAX_IS_THERE",
-        "BE0059_BELOME_CONFRONTS_A_CHARACTER_YOU_ALL_LOOK_DELICIOUS",
-        "BE0060_BELOME_CLONES_SOMEONE",
-        "BE0061_ONLY_MARIO_IS_THERE",
-        "BE0062_UNUSED",
-        "BE0063_UNUSED",
-        "BE0064_UNUSED",
-        "BE0065_UNUSED",
-        "BE0066_UNUSED",
-        "BE0067_AXEM_RANGERS_GROUP_FORMATION",
-        "BE0068_UNUSED",
-        "BE0069_AXEM_RANGERS_ARE_DEFEATED",
-        "BE0070_JINX_USES_JINXED",
-        "BE0071_JINX_USES_TRIPLE_KICK",
-        "BE0072_JINX_USES_QUICKSILVER",
-        "BE0073_JINX_USES_BOMBS_AWAY",
-        "BE0074_CULEX_SUMMONS_CRYSTALS",
-        "BE0075_FORMLESS_CHANGES_INTO_MOKURA",
-        "BE0076_SOLO_FIRE_CRYSTAL_APPEARS",
-        "BE0077_SCREEN_FLASHES_WHITE",
-        "BE0078_DODO_FLUTTERS_AND_EXITS_BATTLE",
-        "BE0079_MAGIKOOPA_SUMMONS_MONSTER",
-        "BE0080_EXOR_FIGHT_BEGINS",
-        "BE0081_EXOR_IS_DEFEATED_CRIES_AND_OPENS_MOUTH",
-        "BE0082_SMITHY_1ST_FORM_IS_BEATEN_GROUND_SHAKES_ETC",
-        "BE0083_SCREEN_FLASHES_WHITE",
-        "BE0084_SCREEN_FLASHES_WHITE",
-        "BE0085_FEAR_ROULETTE",
-        "BE0086_SMELTER_POURS_MOLTEN_LIQUID_SMITHY_WELDS",
-        "BE0087_SMITHY_TRANSFORMS_INTO_TANK_HEAD",
-        "BE0088_SMITHY_TRANSFORMS_INTO_MAGIC_HEAD",
-        "BE0089_SMITHY_TRANSFORMS_INTO_CHEST_HEAD",
-        "BE0090_SMITHY_TRANSFORMS_INTO_BOX_HEAD",
-        "BE0091_SMITHY_S_HEAD_FADES_BEFORE_TRANSFORMING_INTO_OTHER_HEAD",
-        "BE0092_SHELLY_BREAKS",
-        "BE0093_BEAM_OF_LIGHT_FORMS_AROUND_SMITHY_HEAD_BEFORE_BODY_APPEARS",
-        "BE0094_PUNCHINELLO_S_BOMBS_EXPLODE_IF_STILL_ALIVE",
-        "BE0095_BOMBS_EXPLODE",
-        "BE0096_NOTHING",
-        "BE0097_SMITHY_WAITS_BEFORE_TRANSFORMING_HEAD",
-        "BE0098_SMITHY_IS_DEFEATED",
-        "BE0099_UNKNOWN",
-        "BE0100_EARTHLINK_MAD_ADDER_COLLAPSES_AND_DIES",
-        "BE0101_MAGIKOOPA_IS_THERE",
-        "BE0102_NONE",
-    ],
-    
-    "ally_spells": [
-        "Jump",
-        "Fire Orb",
-        "Super Jump",
-        "Super Flame",
-        "Ultra Jump",
-        "Ultra Flame",
-        "Therapy",
-        "Group Hug",
-        "Sleepy Time",
-        "Come Back",
-        "Mute",
-        "Psych Bomb",
-        "Terrorize",
-        "Poison Gas",
-        "Crusher",
-        "Bowser Crush",
-        "Geno Beam",
-        "Geno Boost",
-        "Geno Whirl",
-        "Geno Blast",
-        "Geno Flash",
-        "Thunderbolt",
-        "HP Rain",
-        "Psychopath",
-        "Shocker",
-        "Snowy",
-        "Star Rain",
-    ],
-    "flower_bonus": [
-        "(empty flower bonus message)",
-        "Attack Up!",
-        "Defense Up!",
-        "HP Max!",
-        "Once Again!",
-        "Lucky!",
-    ],
-    "items": [  # offset 96
-        "Mushroom",
-        "MidMushroom",
-        "MaxMushroom",
-        "HoneySyrup",
-        "MapleSyrup",
-        "RoyalSyrup",
-        "PickMeUp",
-        "AbleJuice",
-        "Bracer",
-        "Energizer",
-        "YoshiAde",
-        "RedEssence",
-        "KerokeroCola",
-        "YoshiCookie",
-        "PureWater",
-        "SleepyBomb",
-        "BadMushroom",
-        "FireBomb",
-        "IceBomb",
-        "FlowerTab",
-        "FlowerJar",
-        "FlowerBox",
-        "YoshiCandy",
-        "FroggieDrink",
-        "MukuCookie",
-        "Elixir",
-        "Megalixir",
-        "SeeYa",
-        "TempleKey",
-        "GoodieBag",
-        "EarlierTimes",
-        "FreshenUp",
-        "RareFrogCoin",
-        "Wallet",
-        "CricketPie",
-        "RockCandy",
-        "CastleKey1",
-        "DebugBomb",
-        "CastleKey2",
-        "BambinoBomb",
-        "SheepAttack",
-        "CarboCookie",
-        "ShinyStone",
-        "DUMMY_43" "RoomKey",
-        "ElderKey",
-        "ShedKey",
-        "LambsLure",
-        "FrightBomb",
-        "MysteryEgg",
-        "BeetleBox",
-        "BeetleBox2",
-        "LuckyJewel",
-        "DUMMY_53" "SopranoCard",
-        "AltoCard",
-        "TenorCard",
-        "Crystalline",
-        "PowerBlast",
-        "WiltShroom",
-        "RottenMush",
-        "MoldyMush",
-        "Seed",
-        "Fertilizer",
-        "WasteBasket",
-        "BigBooFlag",
-        "DryBonesFlag",
-        "GreaperFlag",
-        "SecretGame",
-        "ScrowBomb",
-        "CricketJam",
-        "BaneBomb",
-        "DoomBomb",
-        "FearBomb",
-        "SleepBomb",
-        "MuteBomb",
-        "Fireworks",
-        "Bomb",
-        "BrightCard",
-        "Mushroom2",
-        "StarEgg",
-    ],
-    "ally_behaviours": [
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: Mario/DUMMY A attack',
-        'Ally behaviour unindexed: Mario/DUMMY Y attack',
-        'Ally behaviour unindexed: Mario/DUMMY X item',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: Peach A attack',
-        'Ally behaviour unindexed: Peach Y attack',
-        'Ally behaviour unindexed: Peach X item',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: Bowser A attack',
-        'Ally behaviour unindexed: Bowser Y attack',
-        'Ally behaviour unindexed: Bowser X item',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: Geno A attack',
-        'Ally behaviour unindexed: Geno Y attack',
-        'Ally behaviour unindexed: Geno X item',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: Mallow A attack',
-        'Ally behaviour unindexed: Mallow Y attack',
-        'Ally behaviour unindexed: Mallow X item',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-
-        'Ally behaviour unindexed: unknown 0x350462',
-        'Ally behaviour 0: flinch animation',
-        'Ally behaviour unindexed: unknown 0x350484',
-        'Ally behaviour unindexed: unknown 0x350488 (mario/dummy)',
-        'Ally behaviour unindexed: unknown 0x3504AB (mario/dummy)',
-        'Ally behaviour unindexed: unknown 0x3504CE (mario/dummy)',
-        'Ally behaviour unindexed: victory pose',
-        'Ally behaviour 1: run away attempt',
-    ],
-    "monster_behaviours_1": [  # 5
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit'
-        'Monster behaviour 1: flinch animation of sprite behaviours: no movement for "Escape"',
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 2: flinch animation of sprite behaviours: slide backward when hit",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 3: flinch animation of sprite behaviours: Bowser Clone sprite",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 4: flinch animation of sprite behaviours: Mario Clone sprite",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
-        'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
-        'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        "Monster behaviour 5: flinch animation of sprite behaviours: no reaction when hit",
-        'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
-        'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
-        "Monster behaviour 11: KO animation of sprite behaviours: no reaction when hit",
-    ],
-    "monster_behaviours_2": [  # 1
-        "Monster behaviour 12: entrance animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 13: flinch animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 14: initiate spell animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 15: initiate attack animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 16: escape animation of sprite behaviours: sprite shadow",
-        "Monster behaviour 17: KO animation of sprite behaviours: sprite shadow",
-    ],
-    "monster_behaviours_3": [  # 2
-        "Monster behaviour 18: entrance animation of sprite behaviours: floating, sprite shadow",
-        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 23: escape animation of sprite behaviours: floating, sprite shadow",
-        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 19: entrance animation of sprite behaviours: floating",
-        "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
-        "Monster behaviour 24: escape animation of sprite behaviours: floating",
-        "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
-    ],
-    "monster_behaviours_4": [  # 3
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 32: escape animation of sprite behaviours: floating, slide backward when hit (1)",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 33: escape animation of sprite behaviours: floating, slide backward when hit (2)",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 28: flinch animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 30: initiate spell animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-        "Monster behaviour 34: escape animation of sprite behaviours: fade out death, floating",
-        "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
-    ],
-    "monster_behaviours_5": [  # 4
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 38: initiate spell aanimation of sprite behaviours: fade out death (2)",
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        "Monster behaviour 42: escape animation of sprite behaviours: fade out death, Smithy spell cast",
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-        'Monster behaviour 43: escape animation of sprite behaviours: fade out death, no "Escape" movement',
-        'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
-    ],
-    "monster_behaviours_6": [  # 3
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 46: flinch animation of sprite behaviours: fade out death, no "Escape" transition',
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 51: escape animation of sprite behaviours: fade out death, no "Escape" transition',
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 47: flinch animation of sprite behaviours: (normal)",
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 48: flinch animation of sprite behaviours: no reaction when hit",
-        'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-        "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
-        'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
-    ],
-    "misses": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "weapons": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "weapon_misses": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "weapon_sounds": [
-        "Weapon",
-        "Armor",
-        "Accessory",
-        "Space",
-        "Space",
-        "Hammer",
-        "FroggieStick",
-        "NokNokShell",
-        "PunchGlove",
-        "FingerShot",
-        "Cymbals",
-        "Chomp",
-        "Masher",
-        "ChompShell",
-        "SuperHammer",
-        "HandGun",
-        "WhompGlove",
-        "SlapGlove",
-        "TroopaShell",
-        "Parasol",
-        "HurlyGloves",
-        "DoublePunch",
-        "RibbitStick",
-        "SpikedLink",
-        "MegaGlove",
-        "WarFan",
-        "HandCannon",
-        "StickyGlove",
-        "UltraHammer",
-        "SuperSlap",
-        "DrillClaw",
-        "StarGun",
-        "SonicCymbal",
-        "LazyShellWeapon",
-        "FryingPan",
-        "LuckyHammer",
-    ],
-    "monster_attacks": [
-        "PhysicalAttack0",
-        "PhysicalAttack1",
-        "PhysicalAttack2",
-        "PhysicalAttack3",
-        "PhysicalAttack4",
-        "PhysicalAttack5",
-        "PhysicalAttack6",
-        "PhysicalAttack7",
-        "PhysicalAttack8",
-        "PhysicalAttack9",
-        "PhysicalAttack10",
-        "PhysicalAttack11",
-        "PhysicalAttack12",
-        "PhysicalAttack13",
-        "PhysicalAttack14",
-        "PhysicalAttack15",
-        "PhysicalAttack16",
-        "Thornet",
-        "PhysicalAttack18",
-        "Funguspike",
-        "PhysicalAttack20",
-        "PhysicalAttack21",
-        "FullHouse",
-        "WildCard",
-        "RoyalFlush",
-        "PhysicalAttack25",
-        "SpritzBomb",
-        "PhysicalAttack27",
-        "PhysicalAttack28",
-        "PhysicalAttack29",
-        "Blazer",
-        "PhysicalAttack31",
-        "PhysicalAttack32",
-        "Echofinder",
-        "ScrowBell",
-        "DoomReverb",
-        "SporeChimes",
-        "InkBlast",
-        "GunkBall",
-        "Endobubble",
-        "PhysicalAttack40",
-        "SleepSauce",
-        "VenomDrool",
-        "MushFunk",
-        "ScrowFunk",
-        "Stench",
-        "PhysicalAttack46",
-        "PhysicalAttack47",
-        "ViroPlasm",
-        "PsychoPlasm",
-        "PhysicalAttack50",
-        "PhysicalAttack51",
-        "PollenNap",
-        "ScrowDust",
-        "Sporocyst",
-        "Toxicyst",
-        "PhysicalAttack56",
-        "PhysicalAttack57",
-        "LullaBye",
-        "Elegy",
-        "Backfire",
-        "VaVaVoom",
-        "FunRun",
-        "BodySlam",
-        "Howl",
-        "Scream",
-        "IronMaiden",
-        "Fangs",
-        "Poison",
-        "CarniKiss",
-        "Claw",
-        "Grinder",
-        "DarkClaw",
-        "Scythe",
-        "Sickle",
-        "Deathsickle",
-        "EerieJig",
-        "SomnusWaltz",
-        "DahliaDance",
-        "Skewer",
-        "Pierce",
-        "PhysicalAttack81",
-        "Magnum",
-        "Psyche",
-        "Migraine",
-        "PhysicalAttack85",
-        "PhysicalAttack86",
-        "Multistrike",
-        "FlutterHush",
-        "PhysicalAttack89",
-        "PhysicalAttack90",
-        "PhysicalAttack91",
-        "FearRoulette",
-        "PhysicalAttack93",
-        "PhysicalAttack94",
-        "PhysicalAttack95",
-        "HammerTime",
-        "ValorUp",
-        "PhysicalAttack98",
-        "LastShot",
-        "PhysicalAttack100",
-        "PhysicalAttack101",
-        "PhysicalAttack102",
-        "PhysicalAttack103",
-        "PhysicalAttack104",
-        "PhysicalAttack105",
-        "Gnight",
-        "PhysicalAttack107",
-        "PhysicalAttack108",
-        "Chomp",
-        "GetTough",
-        "PhysicalAttack111",
-        "Missedme",
-        "PhysicalAttack113",
-        "LocoExpress",
-        "PhysicalAttack115",
-        "PhysicalAttack116",
-        "PhysicalAttack117",
-        "PhysicalAttack118",
-        "Jinxed",
-        "TripleKick",
-        "Quicksilver",
-        "BombsAway",
-        "Vigorup",
-        "PhysicalAttack124",
-        "SilverBullet",
-        "Terrapunch",
-        "ScrowFangs",
-        "Shaker",
-    ],
-    "monster_entrances": [
-        "ENT0000_NONE",
-        "ENT0001_SLIDE_IN",
-        "ENT0002_LONG_JUMP",
-        "ENT0003_HOP_3_TIMES",
-        "ENT0004_DROP_FROM_ABOVE",
-        "ENT0005_ZOOM_IN_FROM_RIGHT",
-        "ENT0006_ZOOM_IN_FROM_LEFT",
-        "ENT0007_SPREAD_OUT_FROM_BACK",
-        "ENT0008_HOVER_IN",
-        "ENT0009_READY_TO_ATTACK",
-        "ENT0010_FADE_IN",
-        "ENT0011_SLOW_DROP_FROM_ABOVE",
-        "ENT0012_WAIT_THEN_APPEAR",
-        "ENT0013_SPREAD_FROM_FRONT",
-        "ENT0014_SPREAD_FROM_MIDDLE",
-        "ENT0015_READY_TO_ATTACK",
-    ],
-    "monster_spells": [  # offset: 64
-        "Drain",
-        "LightningOrb",
-        "Flame",
-        "Bolt",
-        "Crystal",
-        "FlameStone",
-        "MegaDrain",
-        "WillyWisp",
-        "DiamondSaw",
-        "Electroshock",
-        "Blast",
-        "Storm",
-        "IceRock",
-        "Escape",
-        "DarkStar",
-        "Recover",
-        "MegaRecover",
-        "FlameWall",
-        "StaticE",
-        "SandStorm",
-        "Blizzard",
-        "DrainBeam",
-        "MeteorBlast",
-        "LightBeam",
-        "WaterBlast",
-        "Solidify",
-        "PetalBlast",
-        "AuroraFlash",
-        "Boulder",
-        "Corona",
-        "MeteorSwarm",
-        "KnockOut",
-        "WeirdMushroom",
-        "BreakerBeam",
-        "Shredder",
-        "Sledge",
-        "SwordRain",
-        "SpearRain",
-        "ArrowRain",
-        "BigBang",
-        "ChestScrow",
-        "ChestFear",
-        "ChestMute",
-        "ChestPoison",
-        "ChainSaw",
-    ],
-
-}
-
-
 searchable_vars = globals()
 
 
 def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] == obj]
-
-
-def get_var_name_string(id, prefix):
-    candidates = namestr(id, searchable_vars)
-    r = re.compile("^%s.*" % prefix)
-    newlist = list(filter(r.match, candidates))
-    if len(newlist) != 1:
-        raise Exception(newlist)
-    return newlist[0]
-
-
-def get_sprite_name(id):
-    return get_var_name_string(id, "SPR")
-
 
 # monster behaviours are pretty much just object queues.
 # the "sprite behaviour" dropdown is a pointer to an object queue.
@@ -2014,109 +735,6 @@ def get_third_byte_as_string(bank_name: str) -> str:
         return "35"
 
 
-def load_items_from_disassembler_output() -> List[Optional[str]]:
-    """load item class names from disassembled items output.
-
-    returns:
-        list of 256 item class names (or none for invalid items), indexed by item id
-    """
-    try:
-        module = importlib.import_module("disassembler_output.items.items")
-        all_items = getattr(module, "ALL_ITEMS", None)
-        if all_items is None:
-            raise ValueError("Could not find ALL_ITEMS in items.py")
-
-        # build array indexed by item_id
-        items_array: List[Optional[str]] = [None] * 256
-        for item in all_items.items:
-            item_id = item.item_id
-            class_name = item.__class__.__name__
-            items_array[item_id] = class_name
-
-        return items_array
-    except ImportError:
-        # if items haven't been disassembled yet, return empty array
-        return [None] * 256
-
-
-def load_enemies_from_disassembler_output() -> List[str]:
-    """load enemy class names from disassembled enemies output.
-
-    returns:
-        list of 256 enemy class names, indexed by enemy id
-    """
-    try:
-        module = importlib.import_module("disassembler_output.enemies.enemies")
-        all_enemies = getattr(module, "ALL_ENEMIES", None)
-        if all_enemies is None:
-            raise ValueError("Could not find ALL_ENEMIES in enemies.py")
-
-        # build array indexed by monster_id
-        enemies_array: List[str] = ["UnknownEnemy"] * 256
-        for enemy in all_enemies.enemies:
-            monster_id = enemy._monster_id
-            class_name = enemy.__class__.__name__
-            enemies_array[monster_id] = class_name
-
-        return enemies_array
-    except ImportError:
-        # if enemies haven't been disassembled yet, return empty array
-        return ["UnknownEnemy"] * 256
-
-
-def load_arrays_from_input_files() -> Dict[str, List[str]]:
-    """load sound, effect, screen effect, and music arrays from .input files.
-
-    returns:
-        dictionary with keys 'sounds', 'effects', 'screen_effects', 'music'
-    """
-    config_dir = Path(__file__).resolve().parents[4] / "config"
-
-    # load the input files
-    parsed = parse_input_files(config_dir)
-
-    # build arrays from parsed data
-    result = {}
-
-    # load sounds from battle_sfx_names.input
-    if "battle_sfx_names" in parsed:
-        sounds = [""] * 256
-        for name, idx in parsed["battle_sfx_names"]:
-            sounds[int(idx)] = name
-        result["sounds"] = sounds
-    else:
-        result["sounds"] = [""] * 256
-
-    # load effects from battle_effect_names.input
-    if "battle_effect_names" in parsed:
-        effects = [""] * 256
-        for name, idx in parsed["battle_effect_names"]:
-            effects[int(idx)] = name
-        result["effects"] = effects
-    else:
-        result["effects"] = [""] * 256
-
-    # load screen effects from screen_effect_names.input
-    if "screen_effect_names" in parsed:
-        screen_effects = [""] * 256
-        for name, idx in parsed["screen_effect_names"]:
-            screen_effects[int(idx)] = name
-        result["screen_effects"] = screen_effects
-    else:
-        result["screen_effects"] = [""] * 256
-
-    # load music from music_names.input
-    if "music_names" in parsed:
-        music = [""] * 256
-        for name, idx in parsed["music_names"]:
-            music[int(idx)] = name
-        result["music"] = music
-    else:
-        result["music"] = [""] * 256
-
-    return result
-
-
 BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
 class Command(BaseCommand):
@@ -2130,6 +748,12 @@ class Command(BaseCommand):
 
         os.makedirs(output_path, exist_ok=True)
         open(f"{output_path}/__init__.py", "w")
+
+        # Create variables directory for battle_event_names
+        variables_path = "./src/disassembler_output/variables"
+        os.makedirs(variables_path, exist_ok=True)
+        if not os.path.exists(f"{variables_path}/__init__.py"):
+            open(f"{variables_path}/__init__.py", "w")
 
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
@@ -2148,6 +772,1450 @@ class Command(BaseCommand):
         collective_data: Dict[str, List[List[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
         
         references: Dict[int, List[str]] = {}
+
+        # Load data from config input files
+        loaded_arrays = load_arrays_from_input_files()
+        loaded_class_names = load_class_names_from_config()
+
+        def convert_event_script_command(command, valid_identifiers):
+            cmd = command.raw_data
+            use_identifier: bool = (
+                command.id in valid_identifiers or "queuestart" in command.id
+            )
+            # use_identifier: bool = false
+            args = {}
+            cls = None
+            include_argnames = True
+
+            if command.oq:
+                args["destinations"] = '[%s]' %  ", ".join(f"\"{a}\"" for a in command.parsed_data)
+                return "DefineObjectQueue", args, True, False
+
+            opcode = cmd[0]
+
+            if opcode == 0x00:
+                cls = "NewSpriteAtCoords"
+                args["sprite_id"] = loaded_arrays["sprites"][shortify(cmd, 3) & 0x3FF]
+                args["sequence"] = str(cmd[5] & 0x0F)
+                args["priority"] = str((cmd[6] & 0x30) >> 4)
+                args["vram_address"] = f"0x{shortify(cmd, 7):04X}"
+                args["palette_row"] = str(cmd[6] & 0x0F)
+                if (cmd[1] & 0x01) == 0x01:
+                    args["overwrite_vram"] = "True"
+                if (cmd[2] & 0x08) == 0x08:
+                    args["looping"] = "True"
+                if (cmd[2] & 0x10) == 0x10:
+                    args["param_2_and_0x10"] = "True"
+                if (cmd[2] & 0x20) == 0x20:
+                    args["overwrite_palette"] = "True"
+                if (cmd[6] & 0x40) == 0x40:
+                    args["mirror_sprite"] = "True"
+                if (cmd[6] & 0x80) == 0x80:
+                    args["invert_sprite"] = "True"
+                if (cmd[1] & 0x40) == 0x40:
+                    args["behind_all_sprites"] = "True"
+                if (cmd[1] & 0x80) == 0x80:
+                    args["overlap_all_sprites"] = "True"
+            elif opcode == 0x01 or opcode == 0x0B:
+                if opcode == 0x01:
+                    cls = "SetAMEM32ToXYZCoords"
+                elif opcode == 0x0B:
+                    cls = "SetAMEM40ToXYZCoords"
+                args["origin"] = ORIGINS[((cmd[1] >> 4) & 0b11)]
+                args["x"] = str(shortify_signed(cmd, 2))
+                args["y"] = str(shortify_signed(cmd, 4))
+                args["z"] = str(shortify_signed(cmd, 6))
+                if (cmd[1] & 0x01) == 0x01:
+                    args["set_x"] = "True"
+                if (cmd[1] & 0x02) == 0x02:
+                    args["set_y"] = "True"
+                if (cmd[1] & 0x04) == 0x04:
+                    args["set_z"] = "True"
+            elif opcode == 0x02:
+                cls = "ActorExitBattleEXPERIMENTAL"
+            elif opcode == 0x03:
+                cls = "DrawSpriteAtAMEM32Coords"
+                args["sprite_id"] = loaded_arrays["sprites"][shortify(cmd, 3) & 0x3FF]
+                args["sequence"] = cmd[5] & 0x0F
+                if (cmd[1] & 0x01) == 0x01:
+                    args["store_to_vram"] = "True"
+                if (cmd[2] & 0x08) == 0x08:
+                    args["looping"] = "True"
+                if (cmd[2] & 0x20) == 0x20:
+                    args["store_palette"] = "True"
+                if (cmd[1] & 0x40) == 0x40:
+                    args["behind_all_sprites"] = "True"
+                if (cmd[1] & 0x80) == 0x80:
+                    args["overlap_all_sprites"] = "True"
+                if (cmd[2] & 0x10) == 0x10:
+                    args["bit_4"] = "True"
+                if (cmd[5] & 0x80) == 0x80:
+                    args["bit_7"] = "True"
+            elif opcode == 0x04:
+                cls = "PauseScriptUntil"
+                if cmd[1] == 6:
+                    args["condition"] = "SPRITE_SHIFT_COMPLETE"
+                elif cmd[1] == 8:
+                    args["condition"] = "BUTTON_PRESSED"
+                elif cmd[1] == 0x10:
+                    args["condition"] = "FRAMES_ELAPSED"
+                    args["frames"] = str(shortify(cmd, 2))
+                elif cmd[1] in [1, 2, 4, 7]:
+                    args["condition"] = f"UNKNOWN_PAUSE_{cmd[1]}"
+                else:
+                    args["condition"] = f"0x{cmd[1]:02X}"
+            elif opcode == 0x05:
+                cls = "RemoveObject"
+            elif opcode == 0x07:
+                cls = "ReturnObjectQueue"
+            elif opcode == 0x08:
+                cls = "MoveObject"
+                args["speed"] = str(shortify_signed(cmd, 6))
+                args["start_position"] = str(shortify_signed(cmd, 2))
+                args["end_position"] = str(shortify_signed(cmd, 4))
+                if (cmd[1] & 0x04) == 0x04:
+                    args["apply_to_x"] = "True"
+                if (cmd[1] & 0x02) == 0x02:
+                    args["apply_to_y"] = "True"
+                if (cmd[1] & 0x01) == 0x01:
+                    args["apply_to_z"] = "True"
+                if (cmd[1] & 0x20) == 0x20:
+                    args["should_set_start_position"] = "True"
+                if (cmd[1] & 0x40) == 0x40:
+                    args["should_set_end_position"] = "True"
+                if (cmd[1] & 0x80) == 0x80:
+                    args["should_set_speed"] = "True"
+            elif opcode == 0x09:
+                cls = "Jmp"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0x0A:
+                cls = "Pause1Frame"
+            elif opcode == 0x0C:
+                cls = "MoveSpriteToCoords"
+                if cmd[1] & 0x0E == 0:
+                    args["shift_type"] = "SHIFT_TYPE_0X00"
+                elif cmd[1] & 0x0E == 2:
+                    args["shift_type"] = "SHIFT_TYPE_SHIFT"
+                elif cmd[1] & 0x0E == 4:
+                    args["shift_type"] = "SHIFT_TYPE_TRANSFER"
+                elif cmd[1] & 0x0E == 6:
+                    args["shift_type"] = "SHIFT_TYPE_0X04"
+                elif cmd[1] & 0x0E == 8:
+                    args["shift_type"] = "SHIFT_TYPE_0X08"
+                else:
+                    raise Exception("invalid shift type: %r" % command)
+                args["speed"] = str(shortify_signed(cmd, 2))
+                args["arch_height"] = str(shortify_signed(cmd, 4))
+            elif opcode == 0x0E:
+                cls = "ResetTargetMappingMemory"
+            elif opcode == 0x0F:
+                cls = "ResetObjectMappingMemory"
+            elif opcode == 0x10:
+                cls = "RunSubroutine"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0x11:
+                cls = "ReturnSubroutine"
+            elif opcode == 0x1A:
+                cls = "VisibilityOn"
+                args["unknown_byte"] = f"0x{cmd[1]:02X}"
+            elif opcode == 0x1B:
+                cls = "VisibilityOff"
+                args["unknown_byte"] = f"0x{cmd[1]:02X}"
+            elif (
+                opcode
+                in [
+                    0x20,
+                    0x21,
+                    0x24,
+                    0x25,
+                    0x26,
+                    0x27,
+                    0x28,
+                    0x29,
+                    0x2A,
+                    0x2B,
+                    0x2C,
+                    0x2D,
+                    0x2E,
+                    0x2F,
+                ]
+                and cmd[1] & 0xF0 <= 0xB0
+            ) or (opcode in [0x22, 0x23] and 0x10 <= cmd[1] & 0xF0 <= 0x60):
+                byte2 = cmd[1] & 0xF0
+                include_argnames = False
+                if opcode == 0x20:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "SetAMEM8BitToConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "SetAMEM8BitTo7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "SetAMEM8BitTo7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "SetAMEM8BitToAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "SetAMEM8BitToOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "SetAMEM8BitTo7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "SetAMEM8BitToOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "SetAMEM8BitToUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                elif opcode == 0x21:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "SetAMEM16BitToConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "SetAMEM16BitTo7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "SetAMEM16BitTo7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "SetAMEM16BitToAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "SetAMEM16BitToOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "SetAMEM16BitTo7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "SetAMEM16BitToOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "SetAMEM16BitToUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                elif opcode == 0x22:
+                    if byte2 == 0x10:
+                        cls = "Set7E1xToAMEM8Bit"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "Set7FToAMEM8Bit"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "SetAMEMToAMEM8Bit"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["dest_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "SetOMEMCurrentToAMEM8Bit"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "Set7E5xToAMEM8Bit"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "SetOMEMMainToAMEM8Bit"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "SetUnknownShortToAMEM8Bit"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                elif opcode == 0x23:
+                    if byte2 == 0x10:
+                        cls = "Set7E1xToAMEM16Bit"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "Set7FToAMEM16Bit"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "SetAMEMToAMEM16Bit"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["dest_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "SetOMEMCurrentToAMEM16Bit"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "Set7E5xToAMEM16Bit"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "SetOMEMMainToAMEM16Bit"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "SetUnknownShortToAMEM16Bit"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                elif opcode == 0x24:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM8BitEqualsConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM8BitEquals7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM8BitEquals7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM8BitEqualsAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM8BitEqualsOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM8BitEquals7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM8BitEqualsOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    else:
+                        cls = "JmpIfAMEM8BitEqualsUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x25:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM16BitEqualsConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM16BitEquals7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM16BitEquals7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM16BitEqualsAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM16BitEqualsOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM16BitEquals7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM16BitEqualsOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM16BitEqualsUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x26:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM8BitNotEqualsConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM8BitNotEquals7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM8BitNotEquals7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM8BitNotEqualsAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM8BitNotEqualsOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM8BitNotEquals7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM8BitNotEqualsOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM8BitNotEqualsUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x27:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM16BitNotEqualsConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM16BitNotEquals7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM16BitNotEquals7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM16BitNotEqualsAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM16BitNotEqualsOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM16BitNotEquals7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM16BitNotEq16BitualsOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM16BitNotEqualsUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x28:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM8BitLessThanConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM8BitLessThan7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM8BitLessThan7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM8BitLessThanAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM8BitLessThanOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM8BitLessThan7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM8BitLessThanOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM8BitLessThanUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x29:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM16BitLessThanConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM16BitLessThan7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM16BitLessThan7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM16BitLessThanAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM16BitLessThanOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM16BitLessThan7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM16BitLessThanOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM16BitLessThanUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x2A:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThan7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThan7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThan7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x2B:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThan7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThan7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThan7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                elif opcode == 0x2C:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "IncAMEM8BitByConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "IncAMEM8BitBy7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "IncAMEM8BitBy7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "IncAMEM8BitByAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "IncAMEM8BitByOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "IncAMEM8BitBy7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "IncAMEM8BitByOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "IncAMEM8BitByUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                elif opcode == 0x2D:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "IncAMEM16BitByConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "IncAMEM16BitBy7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "IncAMEM16BitBy7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "IncAMEM16BitByAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "IncAMEM16BitByOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "IncAMEM16BitBy7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "IncAMEM16BitByOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "IncAMEM16BitByUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                elif opcode == 0x2E:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "DecAMEM8BitByConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "DecAMEM8BitBy7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "DecAMEM8BitBy7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "DecAMEM8BitByAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "DecAMEM8BitByOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "DecAMEM8BitBy7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "DecAMEM8BitByOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "DecAMEM8BitByUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+                elif opcode == 0x2F:
+                    args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                    if byte2 == 0:
+                        cls = "DecAMEM16BitByConst"
+                        args["value"] = str(shortify(cmd, 2))
+                    elif byte2 == 0x10:
+                        cls = "DecAMEM16BitBy7E1x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x20:
+                        cls = "DecAMEM16BitBy7F"
+                        args["address"] = f"0x7F{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x30:
+                        cls = "DecAMEM16BitByAMEM"
+                        src = cmd[2] & 0x0F
+                        upper = cmd[2] & 0xF0
+                        args["source_amem"] = f"0x{(src + 0x60):02X}"
+                        args["upper"] = f"0x{(upper):02X}"
+                        include_argnames = True
+                    elif byte2 == 0x40:
+                        cls = "DecAMEM16BitByOMEMCurrent"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 == 0x50:
+                        cls = "DecAMEM16BitBy7E5x"
+                        args["address"] = f"0x7E{shortify(cmd, 2):04X}"
+                    elif byte2 == 0x60:
+                        cls = "DecAMEM16BitByOMEMMain"
+                        args["omem"] = f"0x{cmd[2]:02X}"
+                        include_argnames = True
+                    elif byte2 <= 0xB0:
+                        cls = "DecAMEM16BitByUnknownShort"
+                        args["type"] = f"0x{(byte2 >> 4):01X}"
+                        args["value"] = f"0x{shortify(cmd, 2):04X}"
+                        include_argnames = True
+                    else:
+                        raise Exception("invalid amem shift type: %r" % command)
+            elif opcode in [0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B]:
+                cls = "UnknownJmp%02X" % opcode
+                args["byte_1"] = str(cmd[1])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode in [0x30, 0x31, 0x32, 0x33, 0x34, 0x35]:
+                if opcode == 0x30:
+                    cls = "IncAMEM8Bit"
+                elif opcode == 0x31:
+                    cls = "IncAMEM16Bit"
+                elif opcode == 0x32:
+                    cls = "DecAMEM8Bit"
+                elif opcode == 0x33:
+                    cls = "DecAMEM16Bit"
+                elif opcode == 0x34:
+                    cls = "ClearAMEM8Bit"
+                elif opcode == 0x35:
+                    cls = "ClearAMEM16Bit"
+                args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                include_argnames = False
+            elif opcode in [0x36, 0x37, 0x38, 0x39, 0x40, 0x41]:
+                if opcode == 0x36:
+                    cls = "SetAMEMBits"
+                elif opcode == 0x37:
+                    cls = "ClearAMEMBits"
+                elif opcode == 0x38:
+                    cls = "JmpIfAMEMBitsSet"
+                elif opcode == 0x39:
+                    cls = "JmpIfAMEMBitsClear"
+                elif opcode == 0x40:
+                    cls = "PauseScriptUntilAMEMBitsSet"
+                elif opcode == 0x41:
+                    cls = "PauseScriptUntilAMEMBitsClear"
+                args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                bits = []
+                for b in range(0, 8):
+                    if cmd[2] & (1 << b) != 0:
+                        bits.append(b)
+                args["bits"] = "%r" % bits
+                if opcode in [0x38, 0x39]:
+                    args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0x3A:
+                cls = "AttackTimerBegins"
+            elif opcode == 0x43:
+                cls = "SpriteSequence"
+                args["sequence"] = str(cmd[1] & 0x0F)
+                if cmd[1] & 0x10 == 0x10:
+                    args["looping_on"] = "True"
+                if cmd[1] & 0x20 == 0x20:
+                    args["looping_off"] = "True"
+                if cmd[1] & 0x40 == 0x40:
+                    args["bit_6"] = "True"
+                if cmd[1] & 0x80 == 0x80:
+                    args["mirror"] = "True"
+            elif opcode == 0x45:
+                cls = "SetAMEM60ToCurrentTarget"
+            elif opcode == 0x46:
+                cls = "GameOverIfNoAlliesStanding"
+            elif opcode == 0x47:
+                cls = "SpriteQueueReferenceEXPERIMENTAL"
+                args["unknown_byte"] = str(cmd[1])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0x4E:
+                cls = "PauseScriptUntilSpriteSequenceDone"
+            elif opcode == 0x50:
+                cls = "JmpIfTargetDisabled"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0x51:
+                cls = "JmpIfTargetEnabled"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0x5D:
+                cls = "UseSpriteQueue"
+                args["field_object"] = str(cmd[2])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                if cmd[1] & 0x01 == 0x01:
+                    args["bit_0"] = "True"
+                if cmd[1] & 0x02 == 0x02:
+                    args["bit_1"] = "True"
+                if cmd[1] & 0x04 == 0x04:
+                    args["bit_2"] = "True"
+                if cmd[1] & 0x08 == 0x08:
+                    args["character_slot"] = "True"
+                if cmd[1] & 0x10 == 0x10:
+                    args["bit_4"] = "True"
+                if cmd[1] & 0x20 == 0x20:
+                    args["bit_5"] = "True"
+                if cmd[1] & 0x40 == 0x40:
+                    args["current_target"] = "True"
+                if cmd[1] & 0x80 == 0x80:
+                    args["bit_7"] = "True"
+            elif opcode == 0x5E:
+                cls = "ReturnSpriteQueue"
+            elif opcode == 0x63 and 0 <= cmd[1] <= 2:
+                cls = "DisplayMessageAtOMEM60As"
+                if cmd[1] == 0:
+                    args["type"] = "ATTACK_NAME"
+                elif cmd[1] == 1:
+                    args["type"] = "SPELL_NAME"
+                elif cmd[1] == 2:
+                    args["type"] = "ITEM_NAME"
+                elif cmd[1] == 3:
+                    args["type"] = "UNKNOWN_MESSAGE_TYPE_3"
+                elif cmd[1] == 4:
+                    args["type"] = "UNKNOWN_MESSAGE_TYPE_4"
+                elif cmd[1] == 5:
+                    args["type"] = "UNKNOWN_MESSAGE_TYPE_5"
+                include_argnames = False
+            elif opcode == 0x64:
+                cls = "UseObjectQueueAtOffsetWithAMEM60Index"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0x68:
+                cls = "UseObjectQueueAtOffsetWithAMEM60PointerOffset"
+                args["index"] = str(cmd[1])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0x69:
+                cls = "SetOMEM60To072C"
+            elif opcode == 0x6A:
+                cls = "SetAMEMToRandomByte"
+                args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                args["upper_bound"] = str(cmd[2])
+            elif opcode == 0x6B:
+                cls = "SetAMEMToRandomShort"
+                args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
+                args["upper_bound"] = str(shortify(cmd, 2))
+            elif opcode == 0x70:
+                cls = "EnableSpritesOnSubscreen"
+            elif opcode == 0x71:
+                cls = "DisableSpritesOnSubscreen"
+            elif opcode == 0x72:
+                cls = "NewEffectObject"
+                args["effect"] = loaded_arrays["battle_effect_names"][cmd[2]]
+                if cmd[1] & 0x01 == 0x01:
+                    args["looping_on"] = "True"
+                if cmd[1] & 0x02 == 0x02:
+                    args["playback_off"] = "True"
+                if cmd[1] & 0x04 == 0x04:
+                    args["looping_off"] = "True"
+                if cmd[1] & 0x08 == 0x08:
+                    args["bit_3"] = "True"
+            elif opcode == 0x73:
+                cls = "Pause2Frames"
+            elif opcode == 0x74 and cmd[1:] in [
+                [0x04, 0x00],
+                [0x08, 0x00],
+                [0x00, 0x02],
+                [0x00, 0x04],
+                [0x00, 0x08],
+            ]:
+                cls = "PauseScriptUntil"
+                if cmd[1:] == [0x04, 0x00]:
+                    args["condition"] = "SEQ_4BPP_COMPLETE"
+                elif cmd[1:] == [0x08, 0x00]:
+                    args["condition"] = "SEQ_2BPP_COMPLETE"
+                elif cmd[1:] == [0x00, 0x02]:
+                    args["condition"] = "FADE_IN_COMPLETE"
+                elif cmd[1:] == [0x00, 0x04]:
+                    args["condition"] = "FADE_4BPP_COMPLETE"
+                elif cmd[1:] == [0x00, 0x08]:
+                    args["condition"] = "FADE_2BPP_COMPLETE"
+            elif opcode == 0x75:
+                cls = "PauseScriptUntilBitsClear"
+                args["bits"] = f"0x{shortify(cmd, 1):04X}"
+                include_argnames = False
+            elif opcode == 0x76:
+                cls = "ClearEffectIndex"
+            elif opcode in [0x77, 0x78]:
+                if opcode == 0x77:
+                    cls = "Layer3On"
+                else:
+                    cls = "Layer3Off"
+                if cmd[1] & 0xF0 == 0:
+                    args["property"] = "TRANSPARENCY_OFF"
+                elif cmd[1] & 0xF0 == 0x10:
+                    args["property"] = "OVERLAP_ALL"
+                elif cmd[1] & 0xF0 == 0x20:
+                    args["property"] = "OVERLAP_NONE"
+                elif cmd[1] & 0xF0 == 0x30:
+                    args["property"] = "OVERLAP_ALL_EXCEPT_ALLIES"
+                else:
+                    raise Exception("invalid property type at %r" % command)
+                if cmd[1] & 0x01 == 0x01:
+                    args["bit_0"] = "True"
+                if cmd[1] & 0x02 == 0x02:
+                    args["bpp4"] = "True"
+                if cmd[1] & 0x04 == 0x04:
+                    args["bpp2"] = "True"
+                if cmd[1] & 0x08 == 0x08:
+                    args["invisible"] = "True"
+            elif opcode == 0x7A and 0 <= cmd[1] <= 2:
+                cls = "DisplayMessage"
+                if cmd[1] == 0:
+                    args["type"] = "ATTACK_NAME"
+                elif cmd[1] == 1:
+                    args["type"] = "SPELL_NAME"
+                elif cmd[1] == 2:
+                    args["type"] = "ITEM_NAME"
+                args["dialog_id"] = str(cmd[2])
+                include_argnames = False
+            elif opcode == 0x7B:
+                cls = "PauseScriptUntilDialogClosed"
+            elif opcode == 0x7E:
+                cls = "FadeOutObject"
+                args["duration"] = str(cmd[1])
+            elif opcode == 0x7F:
+                cls = "ResetSpriteSequence"
+            elif opcode == 0x80:
+                cls = "ShineEffect"
+                args["colour_count"] = str(cmd[2] & 0x0F)
+                args["starting_colour_index"] = str((cmd[2] & 0xF0) >> 4)
+                args["glow_duration"] = str(cmd[3])
+                if cmd[1] == 1:
+                    args["west"] = "True"
+                elif cmd[1] == 0:
+                    args["east"] = "True"
+                else:
+                    raise Exception(command)
+            elif opcode == 0x85:
+                if cmd[1] == 0:
+                    cls = "FadeOutEffect"
+                elif cmd[1] == 0x10:
+                    cls = "FadeOutSprite"
+                elif cmd[1] == 0x20:
+                    cls = "FadeOutScreen"
+                elif cmd[1] == 2:
+                    cls = "FadeInEffect"
+                elif cmd[1] == 0x12:
+                    cls = "FadeInSprite"
+                elif cmd[1] == 0x22:
+                    cls = "FadeInScreen"
+                args["duration"] = cmd[2]
+            elif opcode == 0x86 and cmd[1] in [1, 2, 4]:
+                if cmd[1] == 1:
+                    cls = "ShakeScreen"
+                elif cmd[1] == 2:
+                    cls = "ShakeSprites"
+                elif cmd[1] == 4:
+                    cls = "ShakeScreenAndSprites"
+                args["amount"] = str(cmd[4])
+                args["speed"] = str(shortify(cmd, 5))
+            elif opcode == 0x87:
+                cls = "StopShakingObject"
+            elif opcode == 0x9C:
+                cls = "WaveEffect"
+                param1 = cmd[2]
+                if param1 & 0x01 == 0x01:
+                    args["layer"] = "WAVE_LAYER_BATTLEFIELD"
+                elif param1 & 0x02 == 0x02:
+                    args["layer"] = "WAVE_LAYER_4BPP"
+                elif param1 & 0x04 == 0x04:
+                    args["layer"] = "WAVE_LAYER_2BPP"
+                if param1 & 0x40 == 0x40:
+                    args["direction"] = "WAVE_LAYER_HORIZONTAL"
+                elif param1 & 0x80 == 0x80:
+                    args["direction"] = "WAVE_LAYER_VERTICAL"
+                args["depth"] = str(shortify(cmd, 3))
+                args["intensity"] = str(shortify(cmd, 5))
+                args["speed"] = str(shortify(cmd, 7))
+                if param1 & 0x08 == 0x08:
+                    args["bit_3"] = "True"
+                if param1 & 0x10 == 0x10:
+                    args["bit_4"] = "True"
+                if param1 & 0x20 == 0x20:
+                    args["bit_5"] = "True"
+                if cmd[1] != 0:
+                    args["byte_1"] = f"0x{cmd[1]:02X}"
+            elif opcode == 0x9D:
+                cls = "StopWaveEffect"
+                if cmd[1] & 0x80 == 0x80:
+                    args["bit_7"] = "True"
+            elif opcode == 0xA7:
+                cls = "JmpIfTimedHitSuccess"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0x8E:
+                cls = "ScreenFlashWithDuration"
+                args["colour"] = FLASH_COLOURS[cmd[1] & 0x07]
+                args["duration"] = str(cmd[2])
+                if cmd[1] & 0xF8 != 0:
+                    args["unknown_upper"] = str(cmd[1] & 0xF8)
+                include_argnames = False
+            elif opcode == 0x8F:
+                cls = "ScreenFlash"
+                args["colour"] = FLASH_COLOURS[cmd[1] & 0x07]
+                if cmd[1] & 0xF8 != 0:
+                    args["unknown_upper"] = str(cmd[1] & 0xF8)
+                include_argnames = False
+            elif opcode == 0x95:
+                cls = "InitializeBonusMessageSequence"
+            elif opcode == 0x96:
+                cls = "DisplayBonusMessage"
+                args["message"] = BONUS_MESSAGES[cmd[2]]
+                args["x"] = str(byte_signed(cmd[3]))
+                args["y"] = str(byte_signed(cmd[4]))
+            elif opcode == 0x97:
+                cls = "PauseScriptUntilBonusMessageComplete"
+            elif opcode == 0xA3:
+                cls = "ScreenEffect"
+                args["message"] = loaded_arrays["screen_effects"][cmd[1]]
+                include_argnames = False
+            elif opcode in [0xAB, 0xAE]:
+                cls = "PlaySound"
+                args["sound"] = loaded_arrays["sounds"][cmd[1]]
+                if opcode == 0xAE:
+                    args["channel"] = "4"
+            elif opcode == 0xB0:
+                cls = "PlayMusicAtCurrentVolume"
+                args["sound"] = loaded_arrays["music"][cmd[1]]
+                include_argnames = False
+            elif opcode == 0xB1:
+                cls = "PlayMusicAtVolume"
+                args["sound"] = loaded_arrays["music"][cmd[1]]
+                args["volume"] = str(shortify(cmd, 2))
+                include_argnames = False
+            elif opcode == 0xB2:
+                cls = "StopCurrentSoundEffect"
+            elif opcode == 0xB6:
+                cls = "FadeCurrentMusicToVolume"
+                args["speed"] = str(cmd[1])
+                args["volume"] = str(cmd[2])
+            elif opcode == 0xBB:
+                cls = "SetTarget"
+                args["target"] = TARGETS[cmd[1]]
+                include_argnames = False
+            elif opcode in [0xBC, 0xBD]:
+                include_argnames = False
+                if cmd[2] == 0:
+                    cls = (
+                        "AddItemToStandardInventory"
+                        if opcode == 0xBC
+                        else "AddItemToKeyItemInventory"
+                    )
+                    args["target"] = loaded_class_names["all_items"][cmd[1]]
+                elif cmd[2] == 0xFF:
+                    cls = (
+                        "RemoveItemFromStandardInventory"
+                        if opcode == 0xBC
+                        else "RemoveItemFromKeyItemInventory"
+                    )
+                    args["target"] = loaded_class_names["all_items"][256 - cmd[1]]
+                else:
+                    raise Exception(command)
+            elif opcode == 0xBE:
+                cls = "AddCoins"
+                args["amount"] = str(shortify(cmd, 1))
+                include_argnames = False
+            elif opcode == 0xBF:
+                cls = "AddYoshiCookiesToInventory"
+                args["amount"] = str(cmd[1])
+                include_argnames = False
+            elif opcode == 0xC3:
+                cls = "DoMaskEffect"
+                args["effect"] = MASKS[cmd[1] & 0x07]
+                if cmd[1] & 0xF8 != 0:
+                    args["unknown_upper"] = str(cmd[1] & 0xF8)
+                include_argnames = False
+            elif opcode == 0xC6:
+                cls = "SetMaskCoords"
+                point_bytes = byte_signed(cmd[1])
+                points = []
+                for i in range(2, (point_bytes // 2) * 2 + 2, 2):
+                    points.append("(%s, %s)" % (byte_signed(cmd[i]), byte_signed(cmd[i + 1])))
+                args["points"] = f'[{",".join(points)}]'
+                if point_bytes % 2 != 0:
+                    args["extra_byte"] = f"0x{cmd[2 + point_bytes - 1]:02x}"
+            elif opcode == 0xCB:
+                cls = "SetSequenceSpeed"
+                args["speed"] = str(cmd[1])
+                include_argnames = False
+            elif opcode == 0xCC:
+                cls = "StartTrackingAllyButtonInputs"
+            elif opcode == 0xCD:
+                cls = "EndTrackingAllyButtonInputs"
+            elif opcode == 0xCE:
+                cls = "TimingForOneTieredButtonPress"
+                args["start_accepting_input"] = str(cmd[2])
+                args["end_accepting_input"] = str(cmd[1])
+                args["partial_start"] = str(cmd[3])
+                args["perfect_start"] = str(cmd[4])
+                args["perfect_end"] = str(cmd[5])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0xCF:
+                cls = "TimingForOneBinaryButtonPress"
+                args["start_accepting_input"] = str(cmd[2])
+                args["end_accepting_input"] = str(cmd[1])
+                args["timed_hit_ends"] = str(cmd[3])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0xD0:
+                cls = "TimingForMultipleButtonPresses"
+                args["start_accepting_input"] = str(cmd[1])
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+            elif opcode == 0xD1:
+                cls = "TimingForButtonMashUnknown"
+            elif opcode == 0xD2:
+                cls = "TimingForButtonMashCount"
+                args["max_presses"] = str(cmd[1])
+            elif opcode == 0xD3:
+                cls = "TimingForRotationCount"
+                args["start_accepting_input"] = str(cmd[2])
+                args["end_accepting_input"] = str(cmd[1])
+                args["max_presses"] = str(cmd[3])
+            elif opcode == 0xD4:
+                cls = "TimingForChargePress"
+                args["charge_level_1_end"] = str(cmd[1])
+                args["charge_level_2_end"] = str(cmd[2])
+                args["charge_level_3_end"] = str(cmd[3])
+                args["charge_level_4_end"] = str(cmd[4])
+                args["overcharge_end"] = str(cmd[5])
+            elif opcode == 0xD5:
+                cls = "SummonMonster"
+                args["monster"] = loaded_class_names["enemies"][cmd[2]]
+                args["position"] = cmd[3]
+                if cmd[1] & 0x01 == 0x01:
+                    args["bit_0"] = "True"
+                if cmd[1] & 0x02 == 0x02:
+                    args["bit_1"] = "True"
+                if cmd[1] & 0x04 == 0x04:
+                    args["bit_2"] = "True"
+                if cmd[1] & 0x08 == 0x08:
+                    args["bit_3"] = "True"
+                if cmd[1] & 0x10 == 0x10:
+                    args["bit_4"] = "True"
+                if cmd[1] & 0x20 == 0x20:
+                    args["bit_5"] = "True"
+                if cmd[1] & 0x40 == 0x40:
+                    args["bit_6"] = "True"
+                if cmd[1] & 0x80 == 0x80:
+                    args["bit_7"] = "True"
+            elif opcode == 0xD8:
+                cls = "MuteTimingJmp"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
+                include_argnames = False
+            elif opcode == 0xD9:
+                cls = "DisplayCantRunDialog"
+            elif opcode == 0xE0:
+                cls = "StoreOMEM60ToItemInventory"
+            elif opcode == 0xE1:
+                cls = "RunBattleEvent"
+                args["script_id"] = SCRIPT_NAMES["battle_events"][shortify(cmd, 1)]
+                if cmd[3] != 0:
+                    args["offset"] = str(cmd[3])
+            else:
+                cls = "UnknownCommand"
+                include_argnames = False
+                args["args"] = "%r" % bytearray(cmd)
+
+            return cls, args, use_identifier, include_argnames
+
+        def get_script(script, valid_identifiers):
+
+            new_script = []
+
+            for cmd in script:
+                identifier = ""
+                cls, args, use_identifier, include_argnames = convert_event_script_command(
+                    cmd, valid_identifiers
+                )
+
+                if cls is not None:
+                    arg_strings = []
+                    for key in args:
+                        if include_argnames:
+                            arg_strings.append("%s=%s" % (key, args[key]))
+                        else:
+                            arg_strings.append(args[key])
+                    try:
+                        arg_string = ", ".join(arg_strings)
+                    except:
+                        raise Exception(cls)
+
+                    if use_identifier:
+                        if len(arg_string) > 0:
+                            arg_string += ", "
+                        identifier = 'identifier="%s"' % cmd.id
+
+                    output = "%s(%s%s)" % (cls, arg_string, identifier)
+                    new_script.append(output)
+
+            return new_script
+        
+        SCRIPT_NAMES = {
+            "battle_events": loaded_arrays.get("events", []),
+            "ally_spells": loaded_class_names.get("ally_spells", []),
+            "monster_spells": loaded_class_names.get("monster_spells", []),
+            "monster_attacks": loaded_class_names.get("monster_attacks", []),
+            "items": loaded_class_names.get("item_names", []),  # offset 96
+            "weapons": loaded_class_names.get("weapons", []),
+            "weapon_misses": loaded_class_names.get("weapon_misses", []),
+            "weapon_sounds": loaded_class_names.get("weapon_sounds", []),
+            "sprites": loaded_arrays.get("sprites", []),
+            "flower_bonus": [
+                "(empty flower bonus message)",
+                "Attack Up!",
+                "Defense Up!",
+                "HP Max!",
+                "Once Again!",
+                "Lucky!",
+            ],
+            "ally_behaviours": [
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: Mario/DUMMY A attack',
+                'Ally behaviour unindexed: Mario/DUMMY Y attack',
+                'Ally behaviour unindexed: Mario/DUMMY X item',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: Peach A attack',
+                'Ally behaviour unindexed: Peach Y attack',
+                'Ally behaviour unindexed: Peach X item',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: Bowser A attack',
+                'Ally behaviour unindexed: Bowser Y attack',
+                'Ally behaviour unindexed: Bowser X item',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: Geno A attack',
+                'Ally behaviour unindexed: Geno Y attack',
+                'Ally behaviour unindexed: Geno X item',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: Mallow A attack',
+                'Ally behaviour unindexed: Mallow Y attack',
+                'Ally behaviour unindexed: Mallow X item',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+
+                'Ally behaviour unindexed: unknown 0x350462',
+                'Ally behaviour 0: flinch animation',
+                'Ally behaviour unindexed: unknown 0x350484',
+                'Ally behaviour unindexed: unknown 0x350488 (mario/dummy)',
+                'Ally behaviour unindexed: unknown 0x3504AB (mario/dummy)',
+                'Ally behaviour unindexed: unknown 0x3504CE (mario/dummy)',
+                'Ally behaviour unindexed: victory pose',
+                'Ally behaviour 1: run away attempt',
+            ],
+            "monster_behaviours_1": [  # 5
+                'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit'
+                'Monster behaviour 1: flinch animation of sprite behaviours: no movement for "Escape"',
+                'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+                'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+                'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 2: flinch animation of sprite behaviours: slide backward when hit",
+                'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+                'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+                'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 3: flinch animation of sprite behaviours: Bowser Clone sprite",
+                'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+                'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+                'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 4: flinch animation of sprite behaviours: Mario Clone sprite",
+                'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 9: escape animation of sprite behaviours: slide backward when hit, Bowser Clone sprite, Mario Clone sprite",
+                'Monster behaviour 10: KO animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite',
+                'Monster behaviour 0: entrance animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                "Monster behaviour 5: flinch animation of sprite behaviours: no reaction when hit",
+                'Monster behaviour 6: initiate spell animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 7: initiate attack animation of sprite behaviours: no movement for "Escape", slide backward when hit, Bowser Clone sprite, Mario Clone sprite, no reaction when hit',
+                'Monster behaviour 8: escape animation of sprite behaviours: no movement for "Escape", no reaction when hit',
+                "Monster behaviour 11: KO animation of sprite behaviours: no reaction when hit",
+            ],
+            "monster_behaviours_2": [  # 1
+                "Monster behaviour 12: entrance animation of sprite behaviours: sprite shadow",
+                "Monster behaviour 13: flinch animation of sprite behaviours: sprite shadow",
+                "Monster behaviour 14: initiate spell animation of sprite behaviours: sprite shadow",
+                "Monster behaviour 15: initiate attack animation of sprite behaviours: sprite shadow",
+                "Monster behaviour 16: escape animation of sprite behaviours: sprite shadow",
+                "Monster behaviour 17: KO animation of sprite behaviours: sprite shadow",
+            ],
+            "monster_behaviours_3": [  # 2
+                "Monster behaviour 18: entrance animation of sprite behaviours: floating, sprite shadow",
+                "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 23: escape animation of sprite behaviours: floating, sprite shadow",
+                "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 19: entrance animation of sprite behaviours: floating",
+                "Monster behaviour 20: flinch animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 21: initiate spell animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 22: initiate attack animation of sprite behaviours: floating, sprite shadow, floating",
+                "Monster behaviour 24: escape animation of sprite behaviours: floating",
+                "Monster behaviour 25: KO animation of sprite behaviours: floating, sprite shadow, floating",
+            ],
+            "monster_behaviours_4": [  # 3
+                "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+                "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+                "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 32: escape animation of sprite behaviours: floating, slide backward when hit (1)",
+                "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 27: flinch animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+                "Monster behaviour 29: initiate spell animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2)",
+                "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 33: escape animation of sprite behaviours: floating, slide backward when hit (2)",
+                "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 26: entrance animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 28: flinch animation of sprite behaviours: fade out death, floating",
+                "Monster behaviour 30: initiate spell animation of sprite behaviours: fade out death, floating",
+                "Monster behaviour 31: initiate attack animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+                "Monster behaviour 34: escape animation of sprite behaviours: fade out death, floating",
+                "Monster behaviour 35: KO animation of sprite behaviours: floating, slide backward when hit (1), floating, slide backward when hit (2), fade out death, floating",
+            ],
+            "monster_behaviours_5": [  # 4
+                'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+                'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                "Monster behaviour 38: initiate spell aanimation of sprite behaviours: fade out death (2)",
+                'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                "Monster behaviour 41: escape animation of sprite behaviours: fade out death (1), fade out death (2)",
+                'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                "Monster behaviour 42: escape animation of sprite behaviours: fade out death, Smithy spell cast",
+                'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 36: entrance animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 37: flinch animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 39: initiate spell aanimation of sprite behaviours: fade out death (1), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 40: initiate attack animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+                'Monster behaviour 43: escape animation of sprite behaviours: fade out death, no "Escape" movement',
+                'Monster behaviour 44: KO animation of sprite behaviours: fade out death (1), fade out death (2), fade out death, Smithy spell cast, fade out death, no "Escape" movement',
+            ],
+            "monster_behaviours_6": [  # 3
+                'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 46: flinch animation of sprite behaviours: fade out death, no "Escape" transition',
+                'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 51: escape animation of sprite behaviours: fade out death, no "Escape" transition',
+                'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                "Monster behaviour 47: flinch animation of sprite behaviours: (normal)",
+                'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+                'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 45: entrance animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                "Monster behaviour 48: flinch animation of sprite behaviours: no reaction when hit",
+                'Monster behaviour 49: initiate spell animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                'Monster behaviour 50: initiate attack animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+                "Monster behaviour 52: escape animation of sprite behaviours: (normal), no reaction when hit",
+                'Monster behaviour 53: KO animation of sprite behaviours: fade out death, no "Escape" transition, (normal), no reaction when hit',
+            ],
+            "monster_entrances": [
+                "ENT0000_NONE",
+                "ENT0001_SLIDE_IN",
+                "ENT0002_LONG_JUMP",
+                "ENT0003_HOP_3_TIMES",
+                "ENT0004_DROP_FROM_ABOVE",
+                "ENT0005_ZOOM_IN_FROM_RIGHT",
+                "ENT0006_ZOOM_IN_FROM_LEFT",
+                "ENT0007_SPREAD_OUT_FROM_BACK",
+                "ENT0008_HOVER_IN",
+                "ENT0009_READY_TO_ATTACK",
+                "ENT0010_FADE_IN",
+                "ENT0011_SLOW_DROP_FROM_ABOVE",
+                "ENT0012_WAIT_THEN_APPEAR",
+                "ENT0013_SPREAD_FROM_FRONT",
+                "ENT0014_SPREAD_FROM_MIDDLE",
+                "ENT0015_READY_TO_ATTACK",
+            ],
+        }
+
+
 
         for bank_id, blocks in banks.items():
             # print(f'processing bank: {bank_id}')
@@ -2801,12 +2869,18 @@ class Command(BaseCommand):
 
                 size = sum([c.length for c in script])
 
-                output = (
-                    "from smrpgpatchbuilder.datatypes.items.implementations import *"
-                )
-                output += "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
-                output += "\nfrom smrpgpatchbuilder.datatypes.enemies.implementations import *"
-                
+                output = "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
+
+                # Add imports from disassembler_output - variables
+                output += "\nfrom ...variables.sprite_names import *"
+                output += "\nfrom ...variables.music_names import *"
+                output += "\nfrom ...variables.battle_sfx_names import *"
+                output += "\nfrom ...variables.battle_effect_names import *"
+                output += "\nfrom ...variables.screen_effect_names import *"
+                output += "\nfrom ...spells.spells import *"
+                output += "\nfrom ...items.items import *"
+                output += "\nfrom ...enemy_attacks.attacks import *"
+
                 output += f"\n\nscript = AnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"
 
                 contents = get_script(script, jump_pointers)
@@ -2832,1231 +2906,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
 
 
-def get_script(script, valid_identifiers):
 
-    new_script = []
-
-    for cmd in script:
-        identifier = ""
-        cls, args, use_identifier, include_argnames = convert_event_script_command(
-            cmd, valid_identifiers
-        )
-
-        if cls is not None:
-            arg_strings = []
-            for key in args:
-                if include_argnames:
-                    arg_strings.append("%s=%s" % (key, args[key]))
-                else:
-                    arg_strings.append(args[key])
-            try:
-                arg_string = ", ".join(arg_strings)
-            except:
-                raise Exception(cls)
-
-            if use_identifier:
-                if len(arg_string) > 0:
-                    arg_string += ", "
-                identifier = 'identifier="%s"' % cmd.id
-
-            output = "%s(%s%s)" % (cls, arg_string, identifier)
-            new_script.append(output)
-
-    return new_script
-
-
-def convert_event_script_command(command, valid_identifiers):
-    cmd = command.raw_data
-    use_identifier: bool = (
-        command.id in valid_identifiers or "queuestart" in command.id
-    )
-    # use_identifier: bool = false
-    args = {}
-    cls = None
-    include_argnames = True
-
-    if command.oq:
-        args["destinations"] = '[%s]' %  ", ".join(f"\"{a}\"" for a in command.parsed_data)
-        return "DefineObjectQueue", args, True, False
-
-    opcode = cmd[0]
-
-    if opcode == 0x00:
-        cls = "NewSpriteAtCoords"
-        args["sprite_id"] = get_sprite_name(shortify(cmd, 3) & 0x3FF)
-        args["sequence"] = str(cmd[5] & 0x0F)
-        args["priority"] = str((cmd[6] & 0x30) >> 4)
-        args["vram_address"] = f"0x{shortify(cmd, 7):04X}"
-        args["palette_row"] = str(cmd[6] & 0x0F)
-        if (cmd[1] & 0x01) == 0x01:
-            args["overwrite_vram"] = "True"
-        if (cmd[2] & 0x08) == 0x08:
-            args["looping"] = "True"
-        if (cmd[2] & 0x10) == 0x10:
-            args["param_2_and_0x10"] = "True"
-        if (cmd[2] & 0x20) == 0x20:
-            args["overwrite_palette"] = "True"
-        if (cmd[6] & 0x40) == 0x40:
-            args["mirror_sprite"] = "True"
-        if (cmd[6] & 0x80) == 0x80:
-            args["invert_sprite"] = "True"
-        if (cmd[1] & 0x40) == 0x40:
-            args["behind_all_sprites"] = "True"
-        if (cmd[1] & 0x80) == 0x80:
-            args["overlap_all_sprites"] = "True"
-    elif opcode == 0x01 or opcode == 0x0B:
-        if opcode == 0x01:
-            cls = "SetAMEM32ToXYZCoords"
-        elif opcode == 0x0B:
-            cls = "SetAMEM40ToXYZCoords"
-        args["origin"] = ORIGINS[((cmd[1] >> 4) & 0b11)]
-        args["x"] = str(shortify_signed(cmd, 2))
-        args["y"] = str(shortify_signed(cmd, 4))
-        args["z"] = str(shortify_signed(cmd, 6))
-        if (cmd[1] & 0x01) == 0x01:
-            args["set_x"] = "True"
-        if (cmd[1] & 0x02) == 0x02:
-            args["set_y"] = "True"
-        if (cmd[1] & 0x04) == 0x04:
-            args["set_z"] = "True"
-    elif opcode == 0x02:
-        cls = "ActorExitBattleEXPERIMENTAL"
-    elif opcode == 0x03:
-        cls = "DrawSpriteAtAMEM32Coords"
-        args["sprite_id"] = get_sprite_name(shortify(cmd, 3) & 0x3FF)
-        args["sequence"] = cmd[5] & 0x0F
-        if (cmd[1] & 0x01) == 0x01:
-            args["store_to_vram"] = "True"
-        if (cmd[2] & 0x08) == 0x08:
-            args["looping"] = "True"
-        if (cmd[2] & 0x20) == 0x20:
-            args["store_palette"] = "True"
-        if (cmd[1] & 0x40) == 0x40:
-            args["behind_all_sprites"] = "True"
-        if (cmd[1] & 0x80) == 0x80:
-            args["overlap_all_sprites"] = "True"
-        if (cmd[2] & 0x10) == 0x10:
-            args["bit_4"] = "True"
-        if (cmd[5] & 0x80) == 0x80:
-            args["bit_7"] = "True"
-    elif opcode == 0x04:
-        cls = "PauseScriptUntil"
-        if cmd[1] == 6:
-            args["condition"] = "SPRITE_SHIFT_COMPLETE"
-        elif cmd[1] == 8:
-            args["condition"] = "BUTTON_PRESSED"
-        elif cmd[1] == 0x10:
-            args["condition"] = "FRAMES_ELAPSED"
-            args["frames"] = str(shortify(cmd, 2))
-        elif cmd[1] in [1, 2, 4, 7]:
-            args["condition"] = f"UNKNOWN_PAUSE_{cmd[1]}"
-        else:
-            args["condition"] = f"0x{cmd[1]:02X}"
-    elif opcode == 0x05:
-        cls = "RemoveObject"
-    elif opcode == 0x07:
-        cls = "ReturnObjectQueue"
-    elif opcode == 0x08:
-        cls = "MoveObject"
-        args["speed"] = str(shortify_signed(cmd, 6))
-        args["start_position"] = str(shortify_signed(cmd, 2))
-        args["end_position"] = str(shortify_signed(cmd, 4))
-        if (cmd[1] & 0x04) == 0x04:
-            args["apply_to_x"] = "True"
-        if (cmd[1] & 0x02) == 0x02:
-            args["apply_to_y"] = "True"
-        if (cmd[1] & 0x01) == 0x01:
-            args["apply_to_z"] = "True"
-        if (cmd[1] & 0x20) == 0x20:
-            args["should_set_start_position"] = "True"
-        if (cmd[1] & 0x40) == 0x40:
-            args["should_set_end_position"] = "True"
-        if (cmd[1] & 0x80) == 0x80:
-            args["should_set_speed"] = "True"
-    elif opcode == 0x09:
-        cls = "Jmp"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0x0A:
-        cls = "Pause1Frame"
-    elif opcode == 0x0C:
-        cls = "MoveSpriteToCoords"
-        if cmd[1] & 0x0E == 0:
-            args["shift_type"] = "SHIFT_TYPE_0X00"
-        elif cmd[1] & 0x0E == 2:
-            args["shift_type"] = "SHIFT_TYPE_SHIFT"
-        elif cmd[1] & 0x0E == 4:
-            args["shift_type"] = "SHIFT_TYPE_TRANSFER"
-        elif cmd[1] & 0x0E == 6:
-            args["shift_type"] = "SHIFT_TYPE_0X04"
-        elif cmd[1] & 0x0E == 8:
-            args["shift_type"] = "SHIFT_TYPE_0X08"
-        else:
-            raise Exception("invalid shift type: %r" % command)
-        args["speed"] = str(shortify_signed(cmd, 2))
-        args["arch_height"] = str(shortify_signed(cmd, 4))
-    elif opcode == 0x0E:
-        cls = "ResetTargetMappingMemory"
-    elif opcode == 0x0F:
-        cls = "ResetObjectMappingMemory"
-    elif opcode == 0x10:
-        cls = "RunSubroutine"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0x11:
-        cls = "ReturnSubroutine"
-    elif opcode == 0x1A:
-        cls = "VisibilityOn"
-        args["unknown_byte"] = f"0x{cmd[1]:02X}"
-    elif opcode == 0x1B:
-        cls = "VisibilityOff"
-        args["unknown_byte"] = f"0x{cmd[1]:02X}"
-    elif (
-        opcode
-        in [
-            0x20,
-            0x21,
-            0x24,
-            0x25,
-            0x26,
-            0x27,
-            0x28,
-            0x29,
-            0x2A,
-            0x2B,
-            0x2C,
-            0x2D,
-            0x2E,
-            0x2F,
-        ]
-        and cmd[1] & 0xF0 <= 0xB0
-    ) or (opcode in [0x22, 0x23] and 0x10 <= cmd[1] & 0xF0 <= 0x60):
-        byte2 = cmd[1] & 0xF0
-        include_argnames = False
-        if opcode == 0x20:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "SetAMEM8BitToConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "SetAMEM8BitTo7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "SetAMEM8BitTo7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "SetAMEM8BitToAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "SetAMEM8BitToOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "SetAMEM8BitTo7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "SetAMEM8BitToOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "SetAMEM8BitToUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-        elif opcode == 0x21:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "SetAMEM16BitToConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "SetAMEM16BitTo7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "SetAMEM16BitTo7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "SetAMEM16BitToAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "SetAMEM16BitToOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "SetAMEM16BitTo7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "SetAMEM16BitToOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "SetAMEM16BitToUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-        elif opcode == 0x22:
-            if byte2 == 0x10:
-                cls = "Set7E1xToAMEM8Bit"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "Set7FToAMEM8Bit"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "SetAMEMToAMEM8Bit"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["dest_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "SetOMEMCurrentToAMEM8Bit"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "Set7E5xToAMEM8Bit"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "SetOMEMMainToAMEM8Bit"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "SetUnknownShortToAMEM8Bit"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        elif opcode == 0x23:
-            if byte2 == 0x10:
-                cls = "Set7E1xToAMEM16Bit"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "Set7FToAMEM16Bit"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "SetAMEMToAMEM16Bit"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["dest_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "SetOMEMCurrentToAMEM16Bit"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "Set7E5xToAMEM16Bit"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "SetOMEMMainToAMEM16Bit"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "SetUnknownShortToAMEM16Bit"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        elif opcode == 0x24:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM8BitEqualsConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM8BitEquals7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM8BitEquals7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM8BitEqualsAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM8BitEqualsOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM8BitEquals7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM8BitEqualsOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            else:
-                cls = "JmpIfAMEM8BitEqualsUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x25:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM16BitEqualsConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM16BitEquals7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM16BitEquals7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM16BitEqualsAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM16BitEqualsOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM16BitEquals7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM16BitEqualsOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM16BitEqualsUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x26:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM8BitNotEqualsConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM8BitNotEquals7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM8BitNotEquals7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM8BitNotEqualsAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM8BitNotEqualsOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM8BitNotEquals7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM8BitNotEqualsOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM8BitNotEqualsUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x27:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM16BitNotEqualsConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM16BitNotEquals7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM16BitNotEquals7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM16BitNotEqualsAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM16BitNotEqualsOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM16BitNotEquals7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM16BitNotEq16BitualsOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM16BitNotEqualsUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x28:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM8BitLessThanConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM8BitLessThan7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM8BitLessThan7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM8BitLessThanAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM8BitLessThanOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM8BitLessThan7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM8BitLessThanOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM8BitLessThanUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x29:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM16BitLessThanConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM16BitLessThan7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM16BitLessThan7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM16BitLessThanAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM16BitLessThanOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM16BitLessThan7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM16BitLessThanOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM16BitLessThanUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x2A:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThanConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThan7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThan7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThanAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThan7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThanOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM8BitGreaterOrEqualThanUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x2B:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThanConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThan7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThan7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThanAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThan7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThanOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "JmpIfAMEM16BitGreaterOrEqualThanUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        elif opcode == 0x2C:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "IncAMEM8BitByConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "IncAMEM8BitBy7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "IncAMEM8BitBy7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "IncAMEM8BitByAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "IncAMEM8BitByOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "IncAMEM8BitBy7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "IncAMEM8BitByOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "IncAMEM8BitByUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-        elif opcode == 0x2D:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "IncAMEM16BitByConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "IncAMEM16BitBy7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "IncAMEM16BitBy7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "IncAMEM16BitByAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "IncAMEM16BitByOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "IncAMEM16BitBy7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "IncAMEM16BitByOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "IncAMEM16BitByUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-        elif opcode == 0x2E:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "DecAMEM8BitByConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "DecAMEM8BitBy7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "DecAMEM8BitBy7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "DecAMEM8BitByAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "DecAMEM8BitByOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "DecAMEM8BitBy7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "DecAMEM8BitByOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "DecAMEM8BitByUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-        elif opcode == 0x2F:
-            args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-            if byte2 == 0:
-                cls = "DecAMEM16BitByConst"
-                args["value"] = str(shortify(cmd, 2))
-            elif byte2 == 0x10:
-                cls = "DecAMEM16BitBy7E1x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x20:
-                cls = "DecAMEM16BitBy7F"
-                args["address"] = f"0x7F{shortify(cmd, 2):04X}"
-            elif byte2 == 0x30:
-                cls = "DecAMEM16BitByAMEM"
-                src = cmd[2] & 0x0F
-                upper = cmd[2] & 0xF0
-                args["source_amem"] = f"0x{(src + 0x60):02X}"
-                args["upper"] = f"0x{(upper):02X}"
-                include_argnames = True
-            elif byte2 == 0x40:
-                cls = "DecAMEM16BitByOMEMCurrent"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 == 0x50:
-                cls = "DecAMEM16BitBy7E5x"
-                args["address"] = f"0x7E{shortify(cmd, 2):04X}"
-            elif byte2 == 0x60:
-                cls = "DecAMEM16BitByOMEMMain"
-                args["omem"] = f"0x{cmd[2]:02X}"
-                include_argnames = True
-            elif byte2 <= 0xB0:
-                cls = "DecAMEM16BitByUnknownShort"
-                args["type"] = f"0x{(byte2 >> 4):01X}"
-                args["value"] = f"0x{shortify(cmd, 2):04X}"
-                include_argnames = True
-            else:
-                raise Exception("invalid amem shift type: %r" % command)
-    elif opcode in [0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B]:
-        cls = "UnknownJmp%02X" % opcode
-        args["byte_1"] = str(cmd[1])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode in [0x30, 0x31, 0x32, 0x33, 0x34, 0x35]:
-        if opcode == 0x30:
-            cls = "IncAMEM8Bit"
-        elif opcode == 0x31:
-            cls = "IncAMEM16Bit"
-        elif opcode == 0x32:
-            cls = "DecAMEM8Bit"
-        elif opcode == 0x33:
-            cls = "DecAMEM16Bit"
-        elif opcode == 0x34:
-            cls = "ClearAMEM8Bit"
-        elif opcode == 0x35:
-            cls = "ClearAMEM16Bit"
-        args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        include_argnames = False
-    elif opcode in [0x36, 0x37, 0x38, 0x39, 0x40, 0x41]:
-        if opcode == 0x36:
-            cls = "SetAMEMBits"
-        elif opcode == 0x37:
-            cls = "ClearAMEMBits"
-        elif opcode == 0x38:
-            cls = "JmpIfAMEMBitsSet"
-        elif opcode == 0x39:
-            cls = "JmpIfAMEMBitsClear"
-        elif opcode == 0x40:
-            cls = "PauseScriptUntilAMEMBitsSet"
-        elif opcode == 0x41:
-            cls = "PauseScriptUntilAMEMBitsClear"
-        args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        bits = []
-        for b in range(0, 8):
-            if cmd[2] & (1 << b) != 0:
-                bits.append(b)
-        args["bits"] = "%r" % bits
-        if opcode in [0x38, 0x39]:
-            args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0x3A:
-        cls = "AttackTimerBegins"
-    elif opcode == 0x43:
-        cls = "SpriteSequence"
-        args["sequence"] = str(cmd[1] & 0x0F)
-        if cmd[1] & 0x10 == 0x10:
-            args["looping_on"] = "True"
-        if cmd[1] & 0x20 == 0x20:
-            args["looping_off"] = "True"
-        if cmd[1] & 0x40 == 0x40:
-            args["bit_6"] = "True"
-        if cmd[1] & 0x80 == 0x80:
-            args["mirror"] = "True"
-    elif opcode == 0x45:
-        cls = "SetAMEM60ToCurrentTarget"
-    elif opcode == 0x46:
-        cls = "GameOverIfNoAlliesStanding"
-    elif opcode == 0x47:
-        cls = "SpriteQueueReferenceEXPERIMENTAL"
-        args["unknown_byte"] = str(cmd[1])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0x4E:
-        cls = "PauseScriptUntilSpriteSequenceDone"
-    elif opcode == 0x50:
-        cls = "JmpIfTargetDisabled"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0x51:
-        cls = "JmpIfTargetEnabled"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0x5D:
-        cls = "UseSpriteQueue"
-        args["field_object"] = str(cmd[2])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        if cmd[1] & 0x01 == 0x01:
-            args["bit_0"] = "True"
-        if cmd[1] & 0x02 == 0x02:
-            args["bit_1"] = "True"
-        if cmd[1] & 0x04 == 0x04:
-            args["bit_2"] = "True"
-        if cmd[1] & 0x08 == 0x08:
-            args["character_slot"] = "True"
-        if cmd[1] & 0x10 == 0x10:
-            args["bit_4"] = "True"
-        if cmd[1] & 0x20 == 0x20:
-            args["bit_5"] = "True"
-        if cmd[1] & 0x40 == 0x40:
-            args["current_target"] = "True"
-        if cmd[1] & 0x80 == 0x80:
-            args["bit_7"] = "True"
-    elif opcode == 0x5E:
-        cls = "ReturnSpriteQueue"
-    elif opcode == 0x63 and 0 <= cmd[1] <= 2:
-        cls = "DisplayMessageAtOMEM60As"
-        if cmd[1] == 0:
-            args["type"] = "ATTACK_NAME"
-        elif cmd[1] == 1:
-            args["type"] = "SPELL_NAME"
-        elif cmd[1] == 2:
-            args["type"] = "ITEM_NAME"
-        elif cmd[1] == 3:
-            args["type"] = "UNKNOWN_MESSAGE_TYPE_3"
-        elif cmd[1] == 4:
-            args["type"] = "UNKNOWN_MESSAGE_TYPE_4"
-        elif cmd[1] == 5:
-            args["type"] = "UNKNOWN_MESSAGE_TYPE_5"
-        include_argnames = False
-    elif opcode == 0x64:
-        cls = "UseObjectQueueAtOffsetWithAMEM60Index"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0x68:
-        cls = "UseObjectQueueAtOffsetWithAMEM60PointerOffset"
-        args["index"] = str(cmd[1])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0x69:
-        cls = "SetOMEM60To072C"
-    elif opcode == 0x6A:
-        cls = "SetAMEMToRandomByte"
-        args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        args["upper_bound"] = str(cmd[2])
-    elif opcode == 0x6B:
-        cls = "SetAMEMToRandomShort"
-        args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
-        args["upper_bound"] = str(shortify(cmd, 2))
-    elif opcode == 0x70:
-        cls = "EnableSpritesOnSubscreen"
-    elif opcode == 0x71:
-        cls = "DisableSpritesOnSubscreen"
-    elif opcode == 0x72:
-        cls = "NewEffectObject"
-        args["effect"] = EFFECTS[cmd[2]]
-        if cmd[1] & 0x01 == 0x01:
-            args["looping_on"] = "True"
-        if cmd[1] & 0x02 == 0x02:
-            args["playback_off"] = "True"
-        if cmd[1] & 0x04 == 0x04:
-            args["looping_off"] = "True"
-        if cmd[1] & 0x08 == 0x08:
-            args["bit_3"] = "True"
-    elif opcode == 0x73:
-        cls = "Pause2Frames"
-    elif opcode == 0x74 and cmd[1:] in [
-        [0x04, 0x00],
-        [0x08, 0x00],
-        [0x00, 0x02],
-        [0x00, 0x04],
-        [0x00, 0x08],
-    ]:
-        cls = "PauseScriptUntil"
-        if cmd[1:] == [0x04, 0x00]:
-            args["condition"] = "SEQ_4BPP_COMPLETE"
-        elif cmd[1:] == [0x08, 0x00]:
-            args["condition"] = "SEQ_2BPP_COMPLETE"
-        elif cmd[1:] == [0x00, 0x02]:
-            args["condition"] = "FADE_IN_COMPLETE"
-        elif cmd[1:] == [0x00, 0x04]:
-            args["condition"] = "FADE_4BPP_COMPLETE"
-        elif cmd[1:] == [0x00, 0x08]:
-            args["condition"] = "FADE_2BPP_COMPLETE"
-    elif opcode == 0x75:
-        cls = "PauseScriptUntilBitsClear"
-        args["bits"] = f"0x{shortify(cmd, 1):04X}"
-        include_argnames = False
-    elif opcode == 0x76:
-        cls = "ClearEffectIndex"
-    elif opcode in [0x77, 0x78]:
-        if opcode == 0x77:
-            cls = "Layer3On"
-        else:
-            cls = "Layer3Off"
-        if cmd[1] & 0xF0 == 0:
-            args["property"] = "TRANSPARENCY_OFF"
-        elif cmd[1] & 0xF0 == 0x10:
-            args["property"] = "OVERLAP_ALL"
-        elif cmd[1] & 0xF0 == 0x20:
-            args["property"] = "OVERLAP_NONE"
-        elif cmd[1] & 0xF0 == 0x30:
-            args["property"] = "OVERLAP_ALL_EXCEPT_ALLIES"
-        else:
-            raise Exception("invalid property type at %r" % command)
-        if cmd[1] & 0x01 == 0x01:
-            args["bit_0"] = "True"
-        if cmd[1] & 0x02 == 0x02:
-            args["bpp4"] = "True"
-        if cmd[1] & 0x04 == 0x04:
-            args["bpp2"] = "True"
-        if cmd[1] & 0x08 == 0x08:
-            args["invisible"] = "True"
-    elif opcode == 0x7A and 0 <= cmd[1] <= 2:
-        cls = "DisplayMessage"
-        if cmd[1] == 0:
-            args["type"] = "ATTACK_NAME"
-        elif cmd[1] == 1:
-            args["type"] = "SPELL_NAME"
-        elif cmd[1] == 2:
-            args["type"] = "ITEM_NAME"
-        args["dialog_id"] = str(cmd[2])
-        include_argnames = False
-    elif opcode == 0x7B:
-        cls = "PauseScriptUntilDialogClosed"
-    elif opcode == 0x7E:
-        cls = "FadeOutObject"
-        args["duration"] = str(cmd[1])
-    elif opcode == 0x7F:
-        cls = "ResetSpriteSequence"
-    elif opcode == 0x80:
-        cls = "ShineEffect"
-        args["colour_count"] = str(cmd[2] & 0x0F)
-        args["starting_colour_index"] = str((cmd[2] & 0xF0) >> 4)
-        args["glow_duration"] = str(cmd[3])
-        if cmd[1] == 1:
-            args["west"] = "True"
-        elif cmd[1] == 0:
-            args["east"] = "True"
-        else:
-            raise Exception(command)
-    elif opcode == 0x85:
-        if cmd[1] == 0:
-            cls = "FadeOutEffect"
-        elif cmd[1] == 0x10:
-            cls = "FadeOutSprite"
-        elif cmd[1] == 0x20:
-            cls = "FadeOutScreen"
-        elif cmd[1] == 2:
-            cls = "FadeInEffect"
-        elif cmd[1] == 0x12:
-            cls = "FadeInSprite"
-        elif cmd[1] == 0x22:
-            cls = "FadeInScreen"
-        args["duration"] = cmd[2]
-    elif opcode == 0x86 and cmd[1] in [1, 2, 4]:
-        if cmd[1] == 1:
-            cls = "ShakeScreen"
-        elif cmd[1] == 2:
-            cls = "ShakeSprites"
-        elif cmd[1] == 4:
-            cls = "ShakeScreenAndSprites"
-        args["amount"] = str(cmd[4])
-        args["speed"] = str(shortify(cmd, 5))
-    elif opcode == 0x87:
-        cls = "StopShakingObject"
-    elif opcode == 0x9C:
-        cls = "WaveEffect"
-        param1 = cmd[2]
-        if param1 & 0x01 == 0x01:
-            args["layer"] = "WAVE_LAYER_BATTLEFIELD"
-        elif param1 & 0x02 == 0x02:
-            args["layer"] = "WAVE_LAYER_4BPP"
-        elif param1 & 0x04 == 0x04:
-            args["layer"] = "WAVE_LAYER_2BPP"
-        if param1 & 0x40 == 0x40:
-            args["direction"] = "WAVE_LAYER_HORIZONTAL"
-        elif param1 & 0x80 == 0x80:
-            args["direction"] = "WAVE_LAYER_VERTICAL"
-        args["depth"] = str(shortify(cmd, 3))
-        args["intensity"] = str(shortify(cmd, 5))
-        args["speed"] = str(shortify(cmd, 7))
-        if param1 & 0x08 == 0x08:
-            args["bit_3"] = "True"
-        if param1 & 0x10 == 0x10:
-            args["bit_4"] = "True"
-        if param1 & 0x20 == 0x20:
-            args["bit_5"] = "True"
-        if cmd[1] != 0:
-            args["byte_1"] = f"0x{cmd[1]:02X}"
-    elif opcode == 0x9D:
-        cls = "StopWaveEffect"
-        if cmd[1] & 0x80 == 0x80:
-            args["bit_7"] = "True"
-    elif opcode == 0xA7:
-        cls = "JmpIfTimedHitSuccess"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0x8E:
-        cls = "ScreenFlashWithDuration"
-        args["colour"] = FLASH_COLOURS[cmd[1] & 0x07]
-        args["duration"] = str(cmd[2])
-        if cmd[1] & 0xF8 != 0:
-            args["unknown_upper"] = str(cmd[1] & 0xF8)
-        include_argnames = False
-    elif opcode == 0x8F:
-        cls = "ScreenFlash"
-        args["colour"] = FLASH_COLOURS[cmd[1] & 0x07]
-        if cmd[1] & 0xF8 != 0:
-            args["unknown_upper"] = str(cmd[1] & 0xF8)
-        include_argnames = False
-    elif opcode == 0x95:
-        cls = "InitializeBonusMessageSequence"
-    elif opcode == 0x96:
-        cls = "DisplayBonusMessage"
-        args["message"] = BONUS_MESSAGES[cmd[2]]
-        args["x"] = str(byte_signed(cmd[3]))
-        args["y"] = str(byte_signed(cmd[4]))
-    elif opcode == 0x97:
-        cls = "PauseScriptUntilBonusMessageComplete"
-    elif opcode == 0xA3:
-        cls = "ScreenEffect"
-        args["message"] = SCREEN_EFFECTS[cmd[1]]
-        include_argnames = False
-    elif opcode in [0xAB, 0xAE]:
-        cls = "PlaySound"
-        args["sound"] = SOUNDS[cmd[1]]
-        if opcode == 0xAE:
-            args["channel"] = "4"
-    elif opcode == 0xB0:
-        cls = "PlayMusicAtCurrentVolume"
-        args["sound"] = MUSIC[cmd[1]]
-        include_argnames = False
-    elif opcode == 0xB1:
-        cls = "PlayMusicAtVolume"
-        args["sound"] = MUSIC[cmd[1]]
-        args["volume"] = str(shortify(cmd, 2))
-        include_argnames = False
-    elif opcode == 0xB2:
-        cls = "StopCurrentSoundEffect"
-    elif opcode == 0xB6:
-        cls = "FadeCurrentMusicToVolume"
-        args["speed"] = str(cmd[1])
-        args["volume"] = str(cmd[2])
-    elif opcode == 0xBB:
-        cls = "SetTarget"
-        args["target"] = TARGETS[cmd[1]]
-        include_argnames = False
-    elif opcode in [0xBC, 0xBD]:
-        include_argnames = False
-        if cmd[2] == 0:
-            cls = (
-                "AddItemToStandardInventory"
-                if opcode == 0xBC
-                else "AddItemToKeyItemInventory"
-            )
-            args["target"] = ITEMS[cmd[1]]
-        elif cmd[2] == 0xFF:
-            cls = (
-                "RemoveItemFromStandardInventory"
-                if opcode == 0xBC
-                else "RemoveItemFromKeyItemInventory"
-            )
-            args["target"] = ITEMS[256 - cmd[1]]
-        else:
-            raise Exception(command)
-    elif opcode == 0xBE:
-        cls = "AddCoins"
-        args["amount"] = str(shortify(cmd, 1))
-        include_argnames = False
-    elif opcode == 0xBF:
-        cls = "AddYoshiCookiesToInventory"
-        args["amount"] = str(cmd[1])
-        include_argnames = False
-    elif opcode == 0xC3:
-        cls = "DoMaskEffect"
-        args["effect"] = MASKS[cmd[1] & 0x07]
-        if cmd[1] & 0xF8 != 0:
-            args["unknown_upper"] = str(cmd[1] & 0xF8)
-        include_argnames = False
-    elif opcode == 0xC6:
-        cls = "SetMaskCoords"
-        point_bytes = byte_signed(cmd[1])
-        points = []
-        for i in range(2, (point_bytes // 2) * 2 + 2, 2):
-            points.append("(%s, %s)" % (byte_signed(cmd[i]), byte_signed(cmd[i + 1])))
-        args["points"] = f'[{",".join(points)}]'
-        if point_bytes % 2 != 0:
-            args["extra_byte"] = f"0x{cmd[2 + point_bytes - 1]:02x}"
-    elif opcode == 0xCB:
-        cls = "SetSequenceSpeed"
-        args["speed"] = str(cmd[1])
-        include_argnames = False
-    elif opcode == 0xCC:
-        cls = "StartTrackingAllyButtonInputs"
-    elif opcode == 0xCD:
-        cls = "EndTrackingAllyButtonInputs"
-    elif opcode == 0xCE:
-        cls = "TimingForOneTieredButtonPress"
-        args["start_accepting_input"] = str(cmd[2])
-        args["end_accepting_input"] = str(cmd[1])
-        args["partial_start"] = str(cmd[3])
-        args["perfect_start"] = str(cmd[4])
-        args["perfect_end"] = str(cmd[5])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0xCF:
-        cls = "TimingForOneBinaryButtonPress"
-        args["start_accepting_input"] = str(cmd[2])
-        args["end_accepting_input"] = str(cmd[1])
-        args["timed_hit_ends"] = str(cmd[3])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0xD0:
-        cls = "TimingForMultipleButtonPresses"
-        args["start_accepting_input"] = str(cmd[1])
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-    elif opcode == 0xD1:
-        cls = "TimingForButtonMashUnknown"
-    elif opcode == 0xD2:
-        cls = "TimingForButtonMashCount"
-        args["max_presses"] = str(cmd[1])
-    elif opcode == 0xD3:
-        cls = "TimingForRotationCount"
-        args["start_accepting_input"] = str(cmd[2])
-        args["end_accepting_input"] = str(cmd[1])
-        args["max_presses"] = str(cmd[3])
-    elif opcode == 0xD4:
-        cls = "TimingForChargePress"
-        args["charge_level_1_end"] = str(cmd[1])
-        args["charge_level_2_end"] = str(cmd[2])
-        args["charge_level_3_end"] = str(cmd[3])
-        args["charge_level_4_end"] = str(cmd[4])
-        args["overcharge_end"] = str(cmd[5])
-    elif opcode == 0xD5:
-        cls = "SummonMonster"
-        args["monster"] = ENEMIES[cmd[2]]
-        args["position"] = cmd[3]
-        if cmd[1] & 0x01 == 0x01:
-            args["bit_0"] = "True"
-        if cmd[1] & 0x02 == 0x02:
-            args["bit_1"] = "True"
-        if cmd[1] & 0x04 == 0x04:
-            args["bit_2"] = "True"
-        if cmd[1] & 0x08 == 0x08:
-            args["bit_3"] = "True"
-        if cmd[1] & 0x10 == 0x10:
-            args["bit_4"] = "True"
-        if cmd[1] & 0x20 == 0x20:
-            args["bit_5"] = "True"
-        if cmd[1] & 0x40 == 0x40:
-            args["bit_6"] = "True"
-        if cmd[1] & 0x80 == 0x80:
-            args["bit_7"] = "True"
-    elif opcode == 0xD8:
-        cls = "MuteTimingJmp"
-        args["destinations"] = '["%s"]' % command.parsed_data[0]
-        include_argnames = False
-    elif opcode == 0xD9:
-        cls = "DisplayCantRunDialog"
-    elif opcode == 0xE0:
-        cls = "StoreOMEM60ToItemInventory"
-    elif opcode == 0xE1:
-        cls = "RunBattleEvent"
-        args["script_id"] = SCRIPT_NAMES["battle_events"][shortify(cmd, 1)]
-        if cmd[3] != 0:
-            args["offset"] = str(cmd[3])
-    else:
-        cls = "UnknownCommand"
-        include_argnames = False
-        args["args"] = "%r" % bytearray(cmd)
-
-    return cls, args, use_identifier, include_argnames
 
 
 # empty space filler: 0x11

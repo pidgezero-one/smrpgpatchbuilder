@@ -486,21 +486,26 @@ class Command(BaseCommand):
     def _generate_class_name(self, enemy_name, used_names):
         """Generate a valid Python class name from enemy name, handling duplicates."""
         # clean up the name for use as a class name
-        class_name = enemy_name.replace(" ", "").replace("-", "").replace("'", "").replace(".", "")
+        base_name = enemy_name.replace(" ", "").replace("-", "").replace("'", "").replace(".", "")
         # remove any non-alphanumeric characters
-        class_name = ''.join(c for c in class_name if c.isalnum())
+        base_name = ''.join(c for c in base_name if c.isalnum())
 
         # ensure it starts with a letter
-        if not class_name or not class_name[0].isalpha():
-            class_name = "Enemy" + class_name
+        if not base_name or not base_name[0].isalpha():
+            base_name = "Unnamed"
 
-        # handle duplicates
-        base_name = class_name
-        if base_name in used_names:
-            used_names[base_name] += 1
-            class_name = f"{base_name}{used_names[base_name]}"
+        # track occurrence for duplicates
+        if base_name not in used_names:
+            used_names[base_name] = 0
+
+        used_names[base_name] += 1
+        occurrence = used_names[base_name]
+
+        # generate class name with "Enemy" suffix
+        if occurrence > 1:
+            class_name = f"{base_name}Enemy{occurrence}"
         else:
-            used_names[base_name] = 1
+            class_name = f"{base_name}Enemy"
 
         return class_name
 

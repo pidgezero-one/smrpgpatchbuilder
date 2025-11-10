@@ -5,7 +5,7 @@ from typing import List, Dict, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
-from smrpgpatchbuilder.datatypes.items.classes import encode_item_description
+from smrpgpatchbuilder.datatypes.items.encoding import encode_item_description
 
 
 from .arguments.types.classes import DamageModifiers, TimingProperties

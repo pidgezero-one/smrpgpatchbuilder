@@ -1,6 +1,6 @@
 """Base classes supporting monster battle script assembly."""
 
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Sequence, Tuple, Type
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
@@ -41,9 +41,9 @@ class MonsterScript(Script[UsableMonsterScriptCommand]):
         super().set_contents(script)
 
     def __init__(
-        self, script: Optional[List[UsableMonsterScriptCommand]] = None
+        self, script: Optional[Sequence[UsableMonsterScriptCommand]] = None
     ) -> None:
-        super().__init__(script)
+        super().__init__(list(script) if script is not None else None)
 
     def insert_before_nth_command(
         self, index: int, command: UsableMonsterScriptCommand

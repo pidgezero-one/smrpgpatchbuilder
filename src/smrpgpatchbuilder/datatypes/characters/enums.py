@@ -1,6 +1,5 @@
 """Enums supporting character classes and functions."""
 
-
 from enum import Enum
 
 

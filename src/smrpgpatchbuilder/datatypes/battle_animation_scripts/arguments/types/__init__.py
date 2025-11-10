@@ -1,16 +1,1 @@
-"""Class definitions for certain restricted argument types for battle animatio nscripts."""
-
-from .classes import (
-    Origin,
-    PauseUntil,
-    ShiftType,
-    MessageType,
-    LayerPriorityType,
-    FlashColour,
-    BonusMessage,
-    BattleTarget,
-    MaskEffect,
-    MaskPoint,
-    WaveEffectDirection,
-    WaveEffectLayer,
-)
+from .classes import BattleTarget, BonusMessage, FlashColour, LayerPriorityType, MaskEffect, MaskPoint, MessageType, Origin, PauseUntil, ShiftType, WaveEffectDirection, WaveEffectLayer
