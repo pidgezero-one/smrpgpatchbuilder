@@ -59,7 +59,6 @@ Then inside the config folder, you'll see a bunch of plaintext files. They are:
 - `battlefield_names.input`: If you've changed any of the 64 battlefields, rename them here.
 - `dialog_names.input`: If you want to remember what certain overworld dialogs are being used for, you can give them names here. There's 4096 of them, so it can be handy.
 - `event_script_names.input`: Describe your 4096 event scripts.
-- `formation_names.input`: Describe any of the 512 battle enemy formations
 - `imagepack_read.input`: If you have moved image pack data for sprites to anywhere else in the ROM besides where SMRPG keeps it by default, indicate the range here.
 - `item_prefixes.input`: Items and ally spells can begin with a special symbol or a blank space. If you've changed what any of those symbols look like in your ROM's alphabet, indicate them here. (i.e. if you've replaced the fan symbol, normally 0x26, wholesale with some other symbol, rename it here)
 - `music_names.input`: Rename the game's music tracks if you've changed them.
@@ -122,7 +121,7 @@ Disassemble monsters by running
 PYTHONPATH=src python src/smrpgpatchbuilder/manage.py enemydisassembler --rom "/path/to/your/smrpg/rom"
 ```
 
-These will produce `./src/disassembler_output/enemies/enemies.py`. It's important to do this next because battle formations use monsters.
+These will produce `./src/disassembler_output/enemies/enemies.py`. It's important to do this next because battle packs use monsters.
 
 ### Step 6
 
@@ -199,12 +198,12 @@ script = ActionScript([
 	A_StartLoopNTimes(15, identifier="ACTION_2_start_loop_n_times_3"),
 	A_Pause(2),
 	A_VisibilityOff(),
-	Pause(2),
+	A_Pause(2),
 	A_VisibilityOn(),
 	A_EndLoop(),
 	A_SetSolidityBits(bit_4=True, cant_walk_through=True),
 	A_ObjectMemoryClearBit(arg_1=0x30, bits=[4]),
-	A_Return()
+	A_ReturnQueue()
 ])
 ```
 <sup>(All action script commands are prefixed with `A_` to distinguish them from event script commands.)</sup>
@@ -227,7 +226,7 @@ script = EventScript([
 	SetBit(EXP_STAR_BIT_6),
 	UnfreezeAllNPCs(),
 	Pause(3),
-	CreatePacketAtObjectCoords(packet=P031_LEVELUP_TEXT, object=MARIO, destinations=["EVENT_255_set_bit_5"]),
+	CreatePacketAtObjectCoords(packet=P031_LEVELUP_TEXT, target_npc=MARIO, destinations=["EVENT_255_set_bit_5"]),
 	PlaySound(sound=SO095_LEVEL_UP_WITH_STAR, channel=6),
 	SetVarToConst(TIMER_701E, 64),
 	RunBackgroundEventWithPauseReturnOnExit(event_id=E0254_EXP_STAR_HIT_SUBROUTINE, timer_var=TIMER_701E),
@@ -236,6 +235,7 @@ script = EventScript([
 ```
 
 When it comes time to build your scripts into ROM patches, the builder code will convert names into pointers for you.
+
 <sup>*caveat: you still need to be conscious about the script ID because two-byte pointers are still a thing. Jump commands in scripts 0-1535 can only jump to other scripts in 0-1535 (0x1Exxxx), same with 1536-3071 (0x1Fxxxx), same with 3072-4095 (0x20xxxx).</sup>
 
 The `__init__.py` in each of the two output folders will export either a `ActionScriptBank` or three `EventScriptBank`s. If you want to use these in another Python project, it should import these. For both types, `bank.render()` returns a bytearray that when building your ROM should be patched at `bank.pointer_table_start`.
@@ -720,7 +720,58 @@ The disassembler creates a `BattleDialogCollection` (in the same file). If you w
 
 ### Battle packs and formations
 
-(coming soon)
+Disassemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py packdisassembler --rom "path/to/your/smrpg/rom" 
+```
+Assemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py packassembler -r path/to/your/smrpg/rom -t -b
+# -r generates a ROM patch, -t generates a text file, -b generates a FlexHEX .bin
+```
+Writes to:
+```
+./src/disassembler_output/packs/pack_collection.py
+```
+
+There are 255 battle packs. When you disassemble them, you will see formations established inside the Pack class. When you assemble your packs, the assembler will identify which formations are identical, and warn you if you have more than 512 unique ones.
+
+Here is what this pack looks like disassembled:
+![alt text](image-11.png)
+```python
+packs[PACK098_SHAMAN_WITH_ORBISON_JAWFUL] = FormationPack(
+    Formation(
+        members=[
+            FormationMember(SHAMAN, 151, 111),
+            FormationMember(SHAMAN, 199, 151),
+        ],
+        music=NormalBattleMusic(),
+        unknown_bit=True,
+    )
+    ,
+    Formation(
+        members=[
+            FormationMember(SHAMAN, 135, 119),
+            FormationMember(ORBISON, 199, 151),
+            FormationMember(JAWFUL, 199, 119),
+        ],
+        music=NormalBattleMusic(),
+        unknown_bit=True,
+    )
+    ,
+    Formation(
+        members=[
+            FormationMember(SHAMAN, 167, 103),
+            FormationMember(SHAMAN, 231, 135),
+            FormationMember(JAWFUL, 167, 135),
+        ],
+        music=NormalBattleMusic(),
+        unknown_bit=True,
+    )
+)
+```
+
+The assembler produces a `PackCollection`. If you want to use your packs in another Python project, this is what your project should import. When building a patch, the `collection.render()` method produces a `dict[int, bytearray]` where each int is the address at which to patch the bytearray.
 
 <sub>([back to top](#how-this-works))</sub>
 

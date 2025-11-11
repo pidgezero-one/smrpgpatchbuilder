@@ -2,10 +2,11 @@
 
 from random import choices
 import statistics
-from typing import List, Tuple, Type, Optional, Dict
+from typing import List, Tuple, Type, Optional, Dict, Union
 
 
 from smrpgpatchbuilder.datatypes.battles.enums import BattleMusic, Battlefields
+from smrpgpatchbuilder.datatypes.battles.types.classes import Music
 from smrpgpatchbuilder.datatypes.enemies.classes import Enemy
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     ByteField,
@@ -13,6 +14,7 @@ from smrpgpatchbuilder.datatypes.numbers.classes import (
     UInt16,
     UInt8,
 )
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types import Battlefield
 
 from smrpgpatchbuilder.datatypes.battles.ids.misc import (
     BASE_FORMATION_ADDRESS,
@@ -112,12 +114,11 @@ class Formation:
 
     _members: List[Optional[FormationMember]]
     _run_event_at_load: Optional[UInt8]
-    _music: BattleMusic
+    _music: Optional[Music]
     _can_run_away: bool
+    _unknown_byte: UInt8
     _unknown_bit: bool
-    _battlefield_override: Optional[Battlefields]
-    _additional_enemies_to_scale: List[Type[Enemy]]
-    _additional_enemies_for_stat_count: List[Type[Enemy]]
+    _battlefield: Battlefield
 
     @property
     def members(self) -> List[Optional[FormationMember]]:
@@ -144,11 +145,11 @@ class Formation:
             self._run_event_at_load = UInt8(run_event_at_load)
 
     @property
-    def music(self) -> BattleMusic:
+    def music(self) -> Optional[Music]:
         """The battle music that should accompany this formation."""
         return self._music
 
-    def set_music(self, music: BattleMusic) -> None:
+    def set_music(self, music: Optional[Music]) -> None:
         """Set the battle music that should accompany this formation."""
         self._music = music
 
@@ -162,6 +163,15 @@ class Formation:
         self._can_run_away = can_run_away
 
     @property
+    def unknown_byte(self) -> UInt8:
+        """(unknown)"""
+        return self._unknown_byte
+
+    def set_unknown_byte(self, unknown_byte: int) -> None:
+        """(unknown)"""
+        self._unknown_byte = UInt8(unknown_byte)
+
+    @property
     def unknown_bit(self) -> bool:
         """(unknown)"""
         return self._unknown_bit
@@ -171,172 +181,31 @@ class Formation:
         self._unknown_bit = unknown_bit
 
     @property
-    def battlefield_override(self) -> Optional[Battlefields]:
-        """if set, forces this formation to always load with the given battlefield,
-        regardless of where in the world it is encountered."""
-        return self._battlefield_override
+    def battlefield(self) -> Battlefield:
+        """Battlefield to use for this formation"""
+        return self._battlefield
 
-    def set_battlefield_override(
-        self, battlefield_override: Optional[Battlefields]
+    def set_battlefield(
+        self, battlefield: Battlefield
     ) -> None:
-        """force this formation to always load with the given battlefield,
-        regardless of where in the world it is encountered."""
-        self._battlefield_override = battlefield_override
-
-    @property
-    def additional_enemies_to_scale(self) -> List[Type[Enemy]]:
-        """if this formation is used in a boss fight, its stats will change depending on
-        which location it is shuffled to inhabit. this property specifies enemies that are
-        not included in the formation itself whose stats should also be scaled similarly to
-        the enemies in this formation.
-
-        an example of this is when valentina occupies the mushroom kingdom. valentina and dodo
-        will have their stats scaled to roughly match mack's original stats. however, valentina
-        also brings bluebird henchmen with her who occupy the mushroom kingdom exterior, despite
-        not appearing in battle in the same formation as her. those bluebirds should also be
-        roughly scaled to match stats suitable to the mushroom kingdom, so you would
-        specify bluebirdhenchmen in this list to make sure their stats stay appropriately
-        relative to Valentina's, no matter where she ends up."""
-        return self._additional_enemies_to_scale
-
-    def set_additional_enemies_to_scale(
-        self, additional_enemies_to_scale: List[Type[Enemy]]
-    ) -> None:
-        """if this formation is used in a boss fight, its stats will change depending on
-        which location it is shuffled to inhabit. this property specifies enemies that are
-        not included in the formation itself whose stats should also be scaled similarly to
-        the enemies in this formation.
-
-        an example of this is when valentina occupies the mushroom kingdom. valentina and dodo
-        will have their stats scaled to roughly match mack's original stats. however, valentina
-        also brings bluebird henchmen with her who occupy the mushroom kingdom exterior, despite
-        not appearing in battle in the same formation as her. those bluebirds should also be
-        roughly scaled to match stats suitable to the mushroom kingdom, so you would
-        specify bluebirdhenchmen in this list to make sure their stats stay appropriately
-        relative to Valentina's, no matter where she ends up."""
-        self._additional_enemies_to_scale = additional_enemies_to_scale
-
-    @property
-    def additional_enemies_for_stat_count(self) -> List[Type[Enemy]]:
-        """calculating the stats that a boss location should confer onto the boss inhabiting it
-        via shuffling is based on the stats of the boss that inhabited that location in the original
-        game, and takes into account which enemies absolutely must be defeated in order
-        to end the fight. sometimes, an enemy formation does not perfectly define the whole
-        list of enemies that need to be defeated.
-
-        for example, the megasmilax fight requires you to defeat 8 smilaxes, but the formation
-        only includes five, three of which are re-summoned during battle.
-
-        this property would be used to contain three more smilaxes, so that the total hp
-        conferred by the bean valley boss location is equivalent to megasmilax plus 8 smilaxes
-        instead of five."""
-        return self._additional_enemies_for_stat_count
-
-    def set_additional_enemies_for_stat_count(
-        self, additional_enemies_for_stat_count: List[Type[Enemy]]
-    ) -> None:
-        """calculating the stats that a boss location should confer onto the boss inhabiting it
-        via shuffling is based on the stats of the boss that inhabited that location in the original
-        game, and takes into account which enemies absolutely must be defeated in order
-        to end the fight. sometimes, an enemy formation does not perfectly define the whole
-        list of enemies that need to be defeated.
-
-        for example, the megasmilax fight requires you to defeat 8 smilaxes, but the formation
-        only includes five, three of which are re-summoned during battle.
-
-        this property would be used to contain three more smilaxes, so that the total hp
-        conferred by the bean valley boss location is equivalent to megasmilax plus 8 smilaxes
-        instead of five."""
-        self._additional_enemies_for_stat_count = additional_enemies_for_stat_count
-
-    def get_summed_stats(self) -> Tuple[int, int, int, int, int, int, int, int, int]:
-        """calculates the stats that this fight's original location should confer onto whichever
-        boss fight inhabits it via the shuffler, if the player's settings require relative
-        stat scaling."""
-        stat_counted_enemy_classes = [
-            m.enemy
-            for m in self.members
-            if m is not None and m.include_in_stat_totaling
-        ]
-        stat_counted_enemy_classes.extend(self.additional_enemies_for_stat_count)
-        stat_counted_enemies = [m() for m in stat_counted_enemy_classes]
-
-        hp: int = sum(e.hp for e in stat_counted_enemies)
-        xp: int = sum(e.xp for e in stat_counted_enemies)
-        coins: int = sum(e.coins for e in stat_counted_enemies)
-
-        attack: int = int(
-            round(statistics.mean(e.attack for e in stat_counted_enemies))
-        )
-        defense: int = int(
-            round(statistics.mean(e.defense for e in stat_counted_enemies))
-        )
-        magic_attack: int = int(
-            round(statistics.mean(e.magic_attack for e in stat_counted_enemies))
-        )
-        magic_defense: int = int(
-            round(statistics.mean(e.magic_defense for e in stat_counted_enemies))
-        )
-        evade: int = int(round(statistics.mean(e.evade for e in stat_counted_enemies)))
-        magic_evade: int = int(
-            round(statistics.mean(e.magic_evade for e in stat_counted_enemies))
-        )
-
-        return (
-            hp,
-            xp,
-            coins,
-            attack,
-            defense,
-            magic_attack,
-            magic_defense,
-            evade,
-            magic_evade,
-        )
-
-    def get_scaled_enemy_classes(self) -> List[Type[Enemy]]:
-        """A list of the class definitions of enemies which are included in scaling."""
-        returned_enemy_classes = [m.enemy for m in self.members if m is not None]
-        returned_enemy_classes.extend(self.additional_enemies_to_scale)
-        return list(set(returned_enemy_classes))
-
-    def get_members_by_enemy_classes(self, *cls: Type[Enemy]) -> List[FormationMember]:
-        """returns all of the enemy containers in this formation if the enemy class
-        matches an entry in the given list."""
-        return [m for m in self.members if m is not None and type(m) in cls]
-
-    def randomize_coords(self, valid_coordinates: List[Tuple[int, int]]) -> None:
-        """randomizes the coordinates of each formation member.\n
-        Should not result in overlap."""
-        valid_members = [m for m in self.members if m is not None]
-        coords = choices(valid_coordinates, k=len(valid_members))
-        for member, coord in zip(valid_members, coords):
-            member.set_x_pos(coord[0])
-            member.set_y_pos(coord[1])
-
+        """Battlefield to use for this formation"""
+        self._battlefield = battlefield
+        
     def __init__(
         self,
         members: List[Optional[FormationMember]],
         run_event_at_load: Optional[int] = None,
-        music: BattleMusic = BattleMusic.NORMAL_MUSIC,
+        music: Optional[Music] = None,
         can_run_away: bool = True,
-        unknown_bit: bool = True,
-        battlefield_override: Optional[Battlefields] = None,
-        additional_enemies_to_scale: Optional[List[Type[Enemy]]] = None,
-        additional_enemies_for_stat_count: Optional[List[Type[Enemy]]] = None,
+        unknown_byte: int = 0,
+        unknown_bit: bool = False,
     ) -> None:
-        if additional_enemies_to_scale is None:
-            additional_enemies_to_scale = []
-        if additional_enemies_for_stat_count is None:
-            additional_enemies_for_stat_count = []
         self.set_members(members)
         self.set_run_event_at_load(run_event_at_load)
         self.set_music(music)
         self.set_can_run_away(can_run_away)
+        self.set_unknown_byte(unknown_byte)
         self.set_unknown_bit(unknown_bit)
-        self.set_battlefield_override(battlefield_override)
-        self.set_additional_enemies_to_scale(additional_enemies_to_scale)
-        self.set_additional_enemies_for_stat_count(additional_enemies_for_stat_count)
 
     def render(self, formation_index: int) -> Dict[int, bytearray]:
         """Get formation data in `{0x123456: bytearray([0x00])}` format."""
@@ -373,85 +242,154 @@ class Formation:
         patch[base_addr] = data
 
         # add formation metadata.
-        data = bytearray()
+        data = bytearray([self.unknown_byte])
         data += ByteField(
             self.run_event_at_load if self.run_event_at_load is not None else 0xFF
         ).as_bytes()
         music_byte = (
-            self.music.value + ((not self.can_run_away) * 0x02) + self.unknown_bit
+            (self.music.value << 2) + ((not self.can_run_away) * 0x02) + self.unknown_bit
         )
         data += ByteField(music_byte).as_bytes()
 
-        base_addr = BASE_FORMATION_META_ADDRESS + formation_index * 3 + 1
+        base_addr = BASE_FORMATION_META_ADDRESS + formation_index * 3
         patch[base_addr] = data
 
         return patch
 
 
 class FormationPack:
-    """Base class for an arrangement of enemies in battle."""
+    """A pack containing either 1 or 3 Formation instances for battle."""
 
-    _formation_ids: List[UInt16] = []
-
-    @property
-    def formation_ids(self) -> List[UInt16]:
-        """a list of all formation ids included in this battle pack.
-        If all three formations are the same, it will just return one ID."""
-        if self.formation_ids[0] == self.formation_ids[1] == self.formation_ids[2]:
-            return [self.formation_id]
-        assert len(self._formation_ids) == 3
-        return self._formation_ids
+    _formations: List[Formation]
 
     @property
-    def formation_id(self) -> "UInt16":
-        """returns one formation id. it will fail if all three formation
-        IDs are not the same in this pack."""
-        assert self.formation_ids[0] == self.formation_ids[1] == self.formation_ids[2]
-        return self.formation_ids[0]
+    def formations(self) -> List[Formation]:
+        """The list of formations in this pack (either 1 or 3 formations)."""
+        return self._formations
 
-    def set_formation_ids(self, *formation_ids: int) -> None:
-        """Overwrites the formation IDs in this pack."""
-        assert len(formation_ids) == 3
-        pids = list(formation_ids)
-        for form_id in pids:
-            assert form_id < TOTAL_FORMATIONS
-        self._formation_ids = [UInt16(id) for id in pids]
+    def __init__(self, *formations: Formation) -> None:
+        """Initialize a FormationPack with either 1 or 3 Formation instances.
 
-    def set_formation_id(self, formation_id: int) -> None:
-        """overwrites all three formation ids in this pack with the one
-        id given as an argument to this function. in effect, this means
-        all three formations will be the same and the pack will always load
-        the same battle."""
-        assert formation_id < TOTAL_FORMATIONS
-        self.set_formation_ids(formation_id, formation_id, formation_id)
+        Args:
+            *formations: Either 1 Formation (will be used for all 3 slots)
+                        or 3 Formations (one for each slot)
 
-    def __init__(self, *formation_ids: int) -> None:
-        if len(formation_ids) == 1:
-            self.set_formation_ids(formation_ids[0], formation_ids[0], formation_ids[0])
+        Raises:
+            AssertionError: If not exactly 1 or 3 formations are provided
+        """
+        assert len(formations) in (1, 3), \
+            f"FormationPack requires exactly 1 or 3 formations, got {len(formations)}"
+
+        if len(formations) == 1:
+            # Store 3 references to the same formation
+            self._formations = [formations[0], formations[0], formations[0]]
         else:
-            self.set_formation_ids(*formation_ids)
+            # Store the 3 different formations
+            self._formations = list(formations)
 
-    def render(self, pack_index: int) -> Dict[int, bytearray]:
-        """Get pack data in `{0x123456: bytearray([0x00])}` format."""
-        assert UInt8(pack_index)
-        assert len(self._formation_ids) == 3
 
+class PackCollection:
+    """Collection of 255 FormationPacks that manages formation deduplication and rendering."""
+
+    _packs: List[FormationPack]
+
+    @property
+    def packs(self) -> List[FormationPack]:
+        """The list of 255 FormationPacks in this collection."""
+        return self._packs
+
+    def __init__(self, packs: List[FormationPack]) -> None:
+        """Initialize a PackCollection with exactly 255 FormationPacks.
+
+        Args:
+            packs: A list of exactly 255 FormationPack instances
+
+        Raises:
+            AssertionError: If not exactly 255 packs are provided
+        """
+        assert len(packs) == 255, \
+            f"PackCollection requires exactly 255 packs, got {len(packs)}"
+        self._packs = packs
+
+    def _formations_equal(self, f1: Formation, f2: Formation) -> bool:
+        """Check if two formations are identical by comparing their rendered output."""
+        # Render both formations at index 0 to compare their data
+        render1 = f1.render(0)
+        render2 = f2.render(0)
+        return render1 == render2
+
+    def render(self) -> Dict[int, bytearray]:
+        """Render all packs and formations, deduplicating identical formations.
+
+        This method:
+        1. Collects all unique formations from all packs
+        2. Assigns IDs to each unique formation
+        3. Renders all unique formations
+        4. Renders all packs using the assigned formation IDs
+
+        Returns:
+            A dictionary mapping ROM addresses to bytearrays for patching
+        """
         patch: Dict[int, bytearray] = {}
-        data = bytearray()
-        hi_num = False
 
-        for formation_id in self.formation_ids:
-            val = formation_id
-            if val > 255:
-                hi_num = True
-                val -= 256
+        # Collect all formations from all packs
+        all_formations: List[Formation] = []
+        for pack in self._packs:
+            all_formations.extend(pack.formations)
+
+        # Deduplicate formations and assign IDs
+        unique_formations: List[Formation] = []
+        formation_to_id: Dict[int, int] = {}  # Maps id(formation) to formation_id
+
+        for formation in all_formations:
+            # Check if this formation is identical to any existing unique formation
+            found_id = None
+            for idx, unique_formation in enumerate(unique_formations):
+                if self._formations_equal(formation, unique_formation):
+                    found_id = idx
+                    break
+
+            if found_id is not None:
+                # Use existing formation ID
+                formation_to_id[id(formation)] = found_id
+            else:
+                # Add as new unique formation
+                formation_id = len(unique_formations)
+                if formation_id >= TOTAL_FORMATIONS:
+                    raise ValueError(
+                        f"Too many unique formations: {formation_id + 1} unique formations found, "
+                        f"but maximum is {TOTAL_FORMATIONS}. Please reduce the number of unique formations "
+                        f"or reuse existing formations."
+                    )
+                unique_formations.append(formation)
+                formation_to_id[id(formation)] = formation_id
+
+        # Render all unique formations
+        for formation_id, formation in enumerate(unique_formations):
+            formation_patch = formation.render(formation_id)
+            patch.update(formation_patch)
+
+        # Render all packs using the assigned formation IDs
+        for pack_index, pack in enumerate(self._packs):
+            # Get the formation IDs for this pack
+            formation_ids = [formation_to_id[id(f)] for f in pack.formations]
+
+            # Render pack data
+            data = bytearray()
+            hi_num = False
+
+            for formation_id in formation_ids:
+                val = formation_id
+                if val > 255:
+                    hi_num = True
+                    val -= 256
+                data += ByteField(val).as_bytes()
+
+            # high bank indicator
+            val = 7 if hi_num else 0
             data += ByteField(val).as_bytes()
 
-        # high bank indicator.
-        val = 7 if hi_num else 0
-        data += ByteField(val).as_bytes()
-
-        base_addr = PACK_BASE_ADDRESS + (pack_index * 4)
-        patch[base_addr] = data
+            base_addr = PACK_BASE_ADDRESS + (pack_index * 4)
+            patch[base_addr] = data
 
         return patch

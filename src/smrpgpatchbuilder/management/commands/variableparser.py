@@ -34,13 +34,19 @@ class Command(BaseCommand):
                 lines.append("from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar")
                 lines.append("from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag")
                 lines.append("")
+            if key == "battlefield_names" or key == "battlefield_names.input":
+                lines.append("from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import Battlefield")
+                lines.append("")
 
             for name, value in tuples:
                 if re.match(r"^(ShortVar|ByteVar|Flag)\(", value) or value.startswith("0x"):
                     lines.append(f"{name} = {value}")
                 else:
                     escaped = value.replace('"', '\\"')
-                    lines.append(f"{name} = {escaped}")
+                    if key == "battlefield_names" or key == "battlefield_names.input":
+                        lines.append(f"{name} = Battlefield({escaped})")
+                    else:
+                        lines.append(f"{name} = {escaped}")
             out_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
         self.stdout.write(f"Wrote {len(parsed)} variable files to {out_base}")
