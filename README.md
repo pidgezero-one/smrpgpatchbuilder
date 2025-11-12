@@ -851,7 +851,48 @@ The disassembler produces a list of 255 packet definitions and a PacketCollectio
 
 ### Overworld location data
 
-(coming soon)
+Disassemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py worldmaplocationdisassembler --rom "path/to/your/smrpg/rom" 
+```
+Assemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py worldmaplocationassembler -r path/to/your/smrpg/rom -t -b
+# -r generates a ROM patch, -t generates a text file, -b generates a FlexHEX .bin
+```
+Writes to:
+```
+./src/disassembler_output/world_map_locations/world_map_locations.py
+```
+These are the level entry points on the overworld map.
+
+![alt text](image-12.png)
+
+```python
+world_map_locations[OW10_MUSHROOM_KINGDOM] = WorldMapLocation(
+    index=10,
+    name="Mushroom Kingdom",
+    x=144,
+    y=108,
+    show_check_flag=MAP_MUSHROOM_KINGDOM,
+    go_location=False,
+    run_event=E3843_WORLD_MAP_MUSHROOM_KINGDOM,
+    enabled_to_east=True,
+    check_flag_to_east=MAP_DIRECTIONAL_MUSHROOM_KINGDOM_KERO_SEWERS,
+    location_to_east=OW12_KERO_SEWERS,
+    enabled_to_south=True,
+    check_flag_to_south=MAP_DIRECTIONAL_MUSHROOM_KINGDOM_BANDITS_WAY,
+    location_to_south=OW11_BANDITS_WAY,
+    enabled_to_west=True,
+    check_flag_to_west=MAP_DIRECTIONAL_MUSHROOM_KINGDOM_BANDITS_WAY,
+    location_to_west=OW11_BANDITS_WAY,
+    enabled_to_north=True,
+    check_flag_to_north=MAP_DIRECTIONAL_MUSHROOM_WAY_MUSHROOM_KINGDOM,
+    location_to_north=OW09_MUSHROOM_WAY,
+)
+```
+
+The disassembler produces a list of 56 world map locations and a WorldMapLocationCollection. If you want to use your packets in another Python project, your project should import the WorldMapLocationCollection. The `collection.render()` method produces a `dict[int, bytearray]` where each int is the address at which to patch the bytearray.
 
 <sub>([back to top](#how-this-works))</sub>
 
