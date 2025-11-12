@@ -641,7 +641,37 @@ Disassembly will produce a `SpriteCollection`. If you want to import your sprite
 
 ### Shops
 
-(coming soon)
+Disassemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py shopdisassembler --rom "path/to/your/smrpg/rom" 
+```
+Assemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py shopassembler -r path/to/your/smrpg/rom -t -b
+# -r generates a ROM patch, -t generates a text file, -b generates a FlexHEX .bin
+```
+Writes to:
+```
+./src/disassembler_output/shops/shops.py
+```
+which produces a `ShopCollection` of 33 shops. If you want to use your disassembled shops in another project, this is what your project should import. `ShopCollection.render()` produces a `dict[int, bytearray]` where each `int` is a ROM address where the corresponding `bytearray` is supposed to be patched.
+
+Example shop:
+
+```python
+shops[SH06_FROG_COIN_EMPORIUM] = Shop(
+    index=6,
+    items=[
+        SleepyBombItem,
+        BracerItem,
+        EnergizerItem,
+        CrystallineItem,
+        PowerBlastItem,
+    ],
+    buy_frog_coin=True,
+)
+```
+
 
 <sub>([back to top](#how-this-works))</sub>
 
