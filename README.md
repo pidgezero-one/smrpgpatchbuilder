@@ -866,7 +866,7 @@ Writes to:
 ```
 These are the level entry points on the overworld map.
 
-![alt text](image-12.png)
+![alt text](image-13.png)
 
 ```python
 world_map_locations[OW10_MUSHROOM_KINGDOM] = WorldMapLocation(
