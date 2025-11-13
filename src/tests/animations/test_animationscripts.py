@@ -1,18 +1,28 @@
 import pytest
 from typing import Optional, Type, List
 from smrpgpatchbuilder.datatypes.battle_animation_scripts import *
-from smrpgpatchbuilder.datatypes.enemies.implementations import *
-from smrpgpatchbuilder.datatypes.items.implementations import *
 
+from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.commands import Enemy
+from smrpgpatchbuilder.datatypes.items.classes import RegularItem
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptBankTooLongException,
-    IdentifierException,
-    InvalidCommandArgumentException,
-    InvalidOpcodeException,
-    RenderException,
 )
 
 from dataclasses import dataclass
+
+class SheepAttackItem(RegularItem):
+    _item_id: int = 136
+
+class LambsLureItem(RegularItem):
+    _item_id: int = 143
+
+class RareFrogCoinItem(RegularItem):
+    _item_name: str = "RareFrogCoin"
+
+    _item_id: int = 128
+
+class YARIDOVICH(Enemy):
+    _monster_id: int = 226
 
 
 @dataclass
@@ -1609,27 +1619,27 @@ test_cases = [
     Case(
         label="AddItemToStandardInventory",
         commands_factory=lambda: [
-            AddItemToStandardInventory(SheepAttack),
+            AddItemToStandardInventory(SheepAttackItem),
         ],
         expected_bytes=[0xBC, 0x88, 0x00],
     ),
     Case(
         label="RemoveItemFromStandardInventory",
         commands_factory=lambda: [
-            RemoveItemFromStandardInventory(LambsLure),
+            RemoveItemFromStandardInventory(LambsLureItem),
         ],
         expected_bytes=[0xBC, 0x71, 0xFF],
     ),
     Case(
         label="AddItemToKeyItemInventory",
         commands_factory=lambda: [
-            AddItemToKeyItemInventory(RareFrogCoin),
+            AddItemToKeyItemInventory(RareFrogCoinItem),
         ],
         expected_bytes=[0xBD, 0x80, 0x00],
     ),
     Case(
         label="RemoveItemFromKeyItemInventory",
-        commands_factory=lambda: [RemoveItemFromKeyItemInventory(RareFrogCoin)],
+        commands_factory=lambda: [RemoveItemFromKeyItemInventory(RareFrogCoinItem)],
         expected_bytes=[0xBD, 0x80, 0xFF],
     ),
     Case(
@@ -1747,7 +1757,7 @@ test_cases = [
     Case(
         label="SummonMonster",
         commands_factory=lambda: [
-            SummonMonster(monster=Yaridovich, position=1, bit_6=True, bit_7=True)
+            SummonMonster(monster=YARIDOVICH, position=1, bit_6=True, bit_7=True)
         ],
         expected_bytes=[0xD5, 0xC0, 0xE2, 0x01],
     ),
@@ -1772,7 +1782,7 @@ test_cases = [
     Case(
         label="RunBattleEvent",
         commands_factory=lambda: [
-            RunBattleEvent(script_id=BE0085_FEAR_ROULETTE, offset=4),
+            RunBattleEvent(script_id=85, offset=4),
         ],
         expected_bytes=[0xE1, 0x55, 0x00, 0x04],
     ),

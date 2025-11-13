@@ -1,10 +1,13 @@
 """Base classes supporting event script assembly."""
 
-from typing import List, Optional, Type, cast, Union
+from typing import TYPE_CHECKING, List, Optional, Type, cast, Union
 from copy import deepcopy
-from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
-    ActionScript,
-)
+
+if TYPE_CHECKING:
+    from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
+        ActionScript,
+    )
+
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
 )
@@ -91,7 +94,7 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
     and runs a NPC action script."""
 
     _header_size: int
-    _subscript: ActionScript
+    _subscript: "ActionScript"
 
     @property
     def header_size(self) -> int:
@@ -100,7 +103,7 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
         return self._header_size
 
     @property
-    def subscript(self) -> ActionScript:
+    def subscript(self) -> "ActionScript":
         """The contents of the NPC action script that this command runs."""
         return self._subscript
 
@@ -108,6 +111,12 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
     def size(self) -> int:
         """The length of this command as a whole."""
         return self.header_size + self.subscript.length
+
+
+# Import here to avoid circular dependency at module level
+from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
+    ActionScript,
+)
 
 
 class Subscript(ActionScript):
@@ -236,7 +245,7 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
     the game understands  where these scripts are intended to begin via asm that
     exists outside of the scope of the script bank.\n"""
 
-    _subscript: ActionScript
+    _subscript: "ActionScript"
     _header_size: int = 0
     _required_offset: int = 0
 
@@ -246,7 +255,7 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
         return self._required_offset
 
     @property
-    def subscript(self) -> ActionScript:
+    def subscript(self) -> "ActionScript":
         """The contents to be run by this queue."""
         return self._subscript
 

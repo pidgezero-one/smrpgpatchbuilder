@@ -2,13 +2,52 @@ import pytest
 from typing import Optional, Type, List
 from dataclasses import dataclass
 
-from smrpgpatchbuilder.datatypes.enemies.implementations import *
-from smrpgpatchbuilder.datatypes.items.implementations import *
+from disassembler_output.spells.spells import CharacterSpell, EnemySpell
+from smrpgpatchbuilder.datatypes.enemy_attacks.classes import EnemyAttack
+from smrpgpatchbuilder.datatypes.items.classes import RegularItem
 from smrpgpatchbuilder.datatypes.monster_scripts import *
-from smrpgpatchbuilder.datatypes.battle_animation_scripts.ids.battle_events import *
+from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import DoNothing
+from smrpgpatchbuilder.datatypes.monster_scripts.commands import *
 from smrpgpatchbuilder.datatypes.monster_scripts.types import MonsterScriptBank
+from smrpgpatchbuilder.datatypes.monster_scripts.arguments import *
+from smrpgpatchbuilder.datatypes.spells.enums import Element, Status
+class DUMMYAttack5(EnemyAttack):
+    _index = 102
+
+class DUMMYAttack2(EnemyAttack):
+    _index = 98
+
+class FangsAttack(EnemyAttack):
+    _index = 67
 
 
+class BigBangSpell(EnemySpell):
+    _index = 103
+
+class KnockOutSpell(EnemySpell):
+    _index = 95
+
+class DrainSpell(EnemySpell):
+    _index = 64
+
+
+class SuperJumpSpell(CharacterSpell):
+    _index = 2
+
+class ThunderboltSpell(CharacterSpell):
+    _index = 21
+
+class GenoBeamSpell(CharacterSpell):
+    _index = 16
+
+class StarEggItem(RegularItem):
+    _item_id: int = 176
+
+class RockCandyItem(RegularItem):
+    _item_id: int = 131
+
+class FireBombItem(RegularItem):
+    _item_id: int = 113
 
 @dataclass
 class Case:
@@ -22,12 +61,12 @@ class Case:
 test_cases = [
     Case(
         label="Attack",
-        commands_factory=lambda: [Attack(PhysicalAttack102)],
+        commands_factory=lambda: [Attack(DUMMYAttack5)],
         expected_bytes=[0x66, 0xFF, 0xFF],
     ),
     Case(
         label="Attack x3",
-        commands_factory=lambda: [Attack(AttackDoNothing, PhysicalAttack98, Fangs)],
+        commands_factory=lambda: [Attack(DoNothing, DUMMYAttack2, FangsAttack)],
         expected_bytes=[0xE0, 0xFB, 0x62, 0x43, 0xFF, 0xFF],
     ),
     Case(
@@ -69,7 +108,7 @@ test_cases = [
     ),
     Case(
         label="ClearVar",
-        commands_factory=lambda: [ClearVar(ATTACK_PHASE_COUNTER)],
+        commands_factory=lambda: [ClearVar(0x7EE006)],
         expected_bytes=[0xE8, 0x06, 0xFF, 0xFF],
     ),
     Case(
@@ -104,12 +143,12 @@ test_cases = [
     ),
     Case(
         label="CastSpell",
-        commands_factory=lambda: [CastSpell(BigBang)],
+        commands_factory=lambda: [CastSpell(BigBangSpell)],
         expected_bytes=[0xEF, 0x67, 0xFF, 0xFF],
     ),
     Case(
         label="CastSpell x3",
-        commands_factory=lambda: [CastSpell(KnockOut, Drain, SpellDoNothing)],
+        commands_factory=lambda: [CastSpell(KnockOutSpell, DrainSpell, DoNothing)],
         expected_bytes=[0xF0, 0x5F, 0x40, 0xFB, 0xFF, 0xFF],
     ),
     Case(
@@ -169,24 +208,24 @@ test_cases = [
     ),
     Case(
         label="IfTargetedBySpell",
-        commands_factory=lambda: [IfTargetedBySpell([SuperJump, Thunderbolt])],
+        commands_factory=lambda: [IfTargetedBySpell([SuperJumpSpell, ThunderboltSpell])],
         expected_bytes=[0xFC, 0x02, 0x02, 0x15, 0xFF, 0xFF],
     ),
     Case(
         label="IfTargetedBySpell should fail if too many commands",
         commands_factory=lambda: [
-            IfTargetedBySpell([SuperJump, Thunderbolt, GenoBeam])
+            IfTargetedBySpell([SuperJumpSpell, ThunderboltSpell, GenoBeamSpell])
         ],
         exception_type=AssertionError,
     ),
     Case(
         label="IfTargetedByItem",
-        commands_factory=lambda: [IfTargetedByItem([StarEgg])],
+        commands_factory=lambda: [IfTargetedByItem([StarEggItem])],
         expected_bytes=[0xFC, 0x03, 0xB0, 0x00, 0xFF, 0xFF],
     ),
     Case(
         label="IfTargetedByItem should fail if too many items",
-        commands_factory=lambda: [IfTargetedByItem([StarEgg, RockCandy, FireBomb])],
+        commands_factory=lambda: [IfTargetedByItem([StarEggItem, RockCandyItem, FireBombItem])],
         exception_type=AssertionError,
     ),
     Case(
@@ -244,13 +283,13 @@ test_cases = [
     ),
     Case(
         label="IfVarLessThan",
-        commands_factory=lambda: [IfVarLessThan(ATTACK_PHASE_COUNTER, 6)],
+        commands_factory=lambda: [IfVarLessThan(0x7EE006, 6)],
         expected_bytes=[0xFC, 0x0C, 0x06, 0x06, 0xFF, 0xFF],
     ),
     Case(
         label="IfVarEqualOrGreaterThan",
         commands_factory=lambda: [
-            IfVarEqualOrGreaterThan(DESIGNATED_RANDOM_NUM_VAR, 10)
+            IfVarEqualOrGreaterThan(0x7EE005, 10)
         ],
         expected_bytes=[0xFC, 0x0D, 0x05, 0x0A, 0xFF, 0xFF],
     ),

@@ -393,9 +393,12 @@ class Item:
         return str(self)
     
     def set_name(self, name: str) -> None:
-        """Set the item's display name (must be latin-1 encodable)."""
+        """Set the item's display name (must be latin-1 encodable or contain closing single quote ’)."""
+        # Validate that the name can be encoded (latin-1 + special character ’)
         try:
-            name.encode('latin-1')
+            for char in name:
+                if char != "’" and char != "'":
+                    char.encode('latin-1')
         except UnicodeEncodeError:
             raise ValueError("name contains characters not encodable in latin-1")
         self._item_name = name
@@ -494,10 +497,16 @@ class Item:
             name_bytes.append(self._prefix)
 
         # encode the name
+        # special character mapping: ' (closing single quote) -> 0x3A
         if self._item_name:
             max_name_length = 15 - len(name_bytes)
-            encoded_name = self._item_name.encode('latin-1')[:max_name_length]
-            name_bytes.extend(encoded_name)
+            encoded_name = bytearray()
+            for char in self._item_name:
+                if char == "’" or char == "'":
+                    encoded_name.append(0x7E)
+                else:
+                    encoded_name.extend(char.encode('latin-1'))
+            name_bytes.extend(encoded_name[:max_name_length])
 
         # pad with spaces (0x20) to fill all 15 bytes
         while len(name_bytes) < 15:

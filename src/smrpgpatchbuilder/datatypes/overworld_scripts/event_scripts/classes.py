@@ -2,7 +2,7 @@
 
 from typing import List, Optional, Type, Union
 from copy import deepcopy
-from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
+from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (

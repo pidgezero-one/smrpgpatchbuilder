@@ -14,20 +14,20 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types impor
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
 
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.packet import Packet
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
     ActionScriptBank,
 )
-from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
-    UsableActionScriptCommand,
-)
+from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands import *
+from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
-    ScriptBankTooLongException,
+    ByteVar,
     IdentifierException,
     InvalidCommandArgumentException,
-    InvalidOpcodeException,
-    RenderException,
+    ShortVar,
 )
 
 from dataclasses import dataclass
@@ -464,18 +464,18 @@ test_cases = [
     Case(
         "Set bit",
         commands_factory=lambda: [
-            A_SetBit(TEMP_7043_5),
-            A_SetBit(MAP_MENU_UNLOCKED),
-            A_SetBit(SEASIDE_SHED_EMPTIED),
+            A_SetBit(Flag(0x7043, 5)),
+            A_SetBit(Flag(0x7062, 0)),
+            A_SetBit(Flag(0x7086, 6)),
         ],
         expected_bytes=[0xA0, 0x1D, 0xA1, 0x10, 0xA2, 0x36],
     ),
     Case(
         "Clear bit",
         commands_factory=lambda: [
-            A_ClearBit(TEMP_7043_5),
-            A_ClearBit(MAP_MENU_UNLOCKED),
-            A_ClearBit(SEASIDE_SHED_EMPTIED),
+            A_ClearBit(Flag(0x7043, 5)),
+            A_ClearBit(Flag(0x7062, 0)),
+            A_ClearBit(Flag(0x7086, 6)),
         ],
         expected_bytes=[0xA4, 0x1D, 0xA5, 0x10, 0xA6, 0x36],
     ),
@@ -487,16 +487,16 @@ test_cases = [
     Case(
         "Set var to const",
         commands_factory=lambda: [
-            A_SetVarToConst(PRIMARY_TEMP_700C, 1000),
-            A_SetVarToConst(WEDDING_GEAR_COUNTER, 200),
-            A_SetVarToConst(ROSE_WAY_7038, 3000),
+            A_SetVarToConst(ShortVar(0x700C), 1000),
+            A_SetVarToConst(ByteVar(0x70B2), 200),
+            A_SetVarToConst(ShortVar(0x7038), 3000),
         ],
         expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
     ),
     Case(
         "Should fail if you try to use the wrong const size for a byte var",
         commands_factory=lambda: [
-            A_SetVarToConst(WEDDING_GEAR_COUNTER, 2000, identifier="aaaa"),
+            A_SetVarToConst(ByteVar(0x70B2), 2000, identifier="aaaa"),
         ],
         exception_type=InvalidCommandArgumentException,
         exception="illegal args for aaaa: 0x70B2: 2000",
@@ -504,11 +504,11 @@ test_cases = [
     Case(
         "add const to var",
         commands_factory=lambda: [
-            A_SetVarToConst(PRIMARY_TEMP_700C, 1000),
-            A_SetVarToConst(WEDDING_GEAR_COUNTER, 200),
-            A_SetVarToConst(ROSE_WAY_7038, 3000),
+            A_AddConstToVar(ShortVar(0x700C), 1000),
+            A_AddConstToVar(ByteVar(0x70B2), 200),
+            A_AddConstToVar(ShortVar(0x7038), 3000),
         ],
-        expected_bytes=[0xAC, 0xE8, 0x03, 0xA8, 0x12, 0xC8, 0xB0, 0x1C, 0xB8, 0x0B],
+        expected_bytes=[0xAD, 0xE8, 0x03, 0xA9, 0x12, 0xC8, 0xB1, 0x1C, 0xB8, 0x0B],
     ),
     Case(
         "Walk xx steps east",
@@ -828,38 +828,38 @@ test_cases = [
     Case(
         label="A_AddConstToVar",
         commands_factory=lambda: [
-            A_AddConstToVar(UNKNOWN_70AD, 4),
-            A_AddConstToVar(ROSE_WAY_703E, 10),
-            A_AddConstToVar(PRIMARY_TEMP_700C, 100),
+            A_AddConstToVar(ByteVar(0x70AD), 4),
+            A_AddConstToVar(ShortVar(0x703E), 10),
+            A_AddConstToVar(ShortVar(0x700C), 100),
         ],
         expected_bytes=[0xA9, 0x0D, 0x04, 0xB1, 0x1F, 0x0A, 0x00, 0xAD, 0x64, 0x00],
     ),
     Case(
         label="A_Inc",
         commands_factory=lambda: [
-            A_Inc(SECONDARY_TEMP_7024),
-            A_Inc(PRIMARY_TEMP_700C),
-            A_Inc(KEEP_DOOR_LIVES),
+            A_Inc(ShortVar(0x7024)),
+            A_Inc(ShortVar(0x700C)),
+            A_Inc(ByteVar(0x70CB)),
         ],
         expected_bytes=[0xB2, 0x12, 0xAE, 0xAA, 0x2B],
     ),
     Case(
         label="A_Dec",
         commands_factory=lambda: [
-            A_Dec(SECONDARY_TEMP_7024),
-            A_Dec(PRIMARY_TEMP_700C),
-            A_Dec(KEEP_DOOR_LIVES),
+            A_Dec(ShortVar(0x7024)),
+            A_Dec(ShortVar(0x700C)),
+            A_Dec(ByteVar(0x70CB)),
         ],
         expected_bytes=[0xB3, 0x12, 0xAF, 0xAB, 0x2B],
     ),
     Case(
         label="A_CopyVarToVar",
         commands_factory=lambda: [
-            A_CopyVarToVar(PRIMARY_TEMP_700C, UNKNOWN_70D0),
-            A_CopyVarToVar(PRIMARY_TEMP_700C, TEMP_702E),
-            A_CopyVarToVar(UNKNOWN_70C9, PRIMARY_TEMP_700C),
-            A_CopyVarToVar(TIMER_7020, PRIMARY_TEMP_700C),
-            A_CopyVarToVar(TIMER_7020, TEMP_702E),
+            A_CopyVarToVar(ShortVar(0x700C), ByteVar(0x70D0)),
+            A_CopyVarToVar(ShortVar(0x700C), ShortVar(0x702E)),
+            A_CopyVarToVar(ByteVar(0x70C9), ShortVar(0x700C)),
+            A_CopyVarToVar(ShortVar(0x7020), ShortVar(0x700C)),
+            A_CopyVarToVar(ShortVar(0x7020), ShortVar(0x702E)),
         ],
         expected_bytes=[
             0xB5,
@@ -878,7 +878,7 @@ test_cases = [
     Case(
         "A_CopyVarToVar should fail when both vars are bytes that aren't 0x700C",
         commands_factory=lambda: [
-            A_CopyVarToVar(UNKNOWN_70C9, UNKNOWN_70D0, identifier="aaaa"),
+            A_CopyVarToVar(ByteVar(0x70C9), ByteVar(0x70D0), identifier="aaaa"),
         ],
         exception_type=InvalidCommandArgumentException,
         exception="illegal args for aaaa: 0x70C9 0x70D0",
@@ -886,14 +886,14 @@ test_cases = [
     Case(
         label="A_CompareVarToConst",
         commands_factory=lambda: [
-            A_CompareVarToConst(PRIMARY_TEMP_700C, 80),
-            A_CompareVarToConst(X_COORD_1, 65535),
+            A_CompareVarToConst(ShortVar(0x700C), 80),
+            A_CompareVarToConst(ShortVar(0x7010), 65535),
         ],
         expected_bytes=[0xC0, 0x50, 0x00, 0xC2, 0x08, 0xFF, 0xFF],
     ),
     Case(
         label="A_Compare700CToVar",
-        commands_factory=lambda: [A_Compare700CToVar(UNKNOWN_7036)],
+        commands_factory=lambda: [A_Compare700CToVar(ShortVar(0x7036))],
         expected_bytes=[0xC1, 0x1B],
     ),
     Case(
@@ -1013,22 +1013,22 @@ test_cases = [
     ),
     Case(
         label="A_SetVarToRandom",
-        commands_factory=lambda: [A_SetVarToRandom(UNKNOWN_7036, 90)],
+        commands_factory=lambda: [A_SetVarToRandom(ShortVar(0x7036), 90)],
         expected_bytes=[0xB7, 0x1B, 0x5A, 0x00],
     ),
     Case(
         label="A_AddVarTo700C",
-        commands_factory=lambda: [A_AddVarTo700C(UNKNOWN_7036)],
+        commands_factory=lambda: [A_AddVarTo700C(ShortVar(0x7036))],
         expected_bytes=[0xB8, 0x1B],
     ),
     Case(
         label="A_DecVarFrom700C",
-        commands_factory=lambda: [A_DecVarFrom700C(ROSE_WAY_703E)],
+        commands_factory=lambda: [A_DecVarFrom700C(ShortVar(0x703E))],
         expected_bytes=[0xB9, 0x1F],
     ),
     Case(
         label="A_SwapVars",
-        commands_factory=lambda: [A_SwapVars(OLD_STAR_PIECE_ID, BATTLE_PACK_ID)],
+        commands_factory=lambda: [A_SwapVars(ShortVar(0x700A), ShortVar(0x700E))],
         expected_bytes=[0xBD, 0x07, 0x05],
     ),
     Case(
@@ -1048,7 +1048,7 @@ test_cases = [
     ),
     Case(
         label="A_Mem700CAndVar",
-        commands_factory=lambda: [A_Mem700CAndVar(TIMER_701C)],
+        commands_factory=lambda: [A_Mem700CAndVar(ShortVar(0x701C))],
         expected_bytes=[0xFD, 0xB3, 0x0E],
     ),
     Case(
@@ -1058,7 +1058,7 @@ test_cases = [
     ),
     Case(
         label="A_Mem700COrVar",
-        commands_factory=lambda: [A_Mem700COrVar(TEMP_7028)],
+        commands_factory=lambda: [A_Mem700COrVar(ShortVar(0x7028))],
         expected_bytes=[0xFD, 0xB4, 0x14],
     ),
     Case(
@@ -1068,17 +1068,17 @@ test_cases = [
     ),
     Case(
         label="A_Mem700CXorVar",
-        commands_factory=lambda: [A_Mem700CXorVar(SECONDARY_TEMP_7024)],
+        commands_factory=lambda: [A_Mem700CXorVar(ShortVar(0x7024))],
         expected_bytes=[0xFD, 0xB5, 0x12],
     ),
     Case(
         label="A_VarShiftLeft",
-        commands_factory=lambda: [A_VarShiftLeft(X_COORD_1, 113)],
+        commands_factory=lambda: [A_VarShiftLeft(ShortVar(0x7010), 113)],
         expected_bytes=[0xFD, 0xB6, 0x08, 0x8F],
     ),
     Case(
         label="A_LoadMemory",
-        commands_factory=lambda: [A_LoadMemory(TEMP_7030)],
+        commands_factory=lambda: [A_LoadMemory(ShortVar(0x7030))],
         expected_bytes=[0xD6, 0x18],
     ),
     Case(
@@ -1523,9 +1523,9 @@ test_cases = [
     Case(
         "Jump if bit set",
         commands_factory=lambda: [
-            A_JmpIfBitSet(TEMP_7043_5, ["end_here"]),
-            A_JmpIfBitSet(MAP_MENU_UNLOCKED, ["end_here"]),
-            A_JmpIfBitSet(SEASIDE_SHED_EMPTIED, ["end_here"]),
+            A_JmpIfBitSet(Flag(0x7043, 5), ["end_here"]),
+            A_JmpIfBitSet(Flag(0x7062, 0), ["end_here"]),
+            A_JmpIfBitSet(Flag(0x7086, 6), ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[
@@ -1547,7 +1547,7 @@ test_cases = [
     Case(
         label="A_JmpIfComparisonResultIsGreaterOrEqual",
         commands_factory=lambda: [
-            A_CompareVarToConst(X_COORD_1, 12544),
+            A_CompareVarToConst(ShortVar(0x7010), 12544),
             A_JmpIfComparisonResultIsGreaterOrEqual(["ACTION_18_ret_61"]),
             A_ReturnQueue(identifier="ACTION_18_ret_61"),
         ],
@@ -1556,7 +1556,7 @@ test_cases = [
     Case(
         label="A_JmpIfComparisonResultIsLesser",
         commands_factory=lambda: [
-            A_CompareVarToConst(X_COORD_1, 12544),
+            A_CompareVarToConst(ShortVar(0x7010), 12544),
             A_JmpIfComparisonResultIsLesser(["ACTION_18_ret_61"]),
             A_ReturnQueue(identifier="ACTION_18_ret_61"),
         ],
@@ -1565,9 +1565,9 @@ test_cases = [
     Case(
         "Jump if bit clear",
         commands_factory=lambda: [
-            A_JmpIfBitClear(TEMP_7043_5, ["end_here"]),
-            A_JmpIfBitClear(MAP_MENU_UNLOCKED, ["end_here"]),
-            A_JmpIfBitClear(SEASIDE_SHED_EMPTIED, ["end_here"]),
+            A_JmpIfBitClear(Flag(0x7043, 5), ["end_here"]),
+            A_JmpIfBitClear(Flag(0x7062, 0), ["end_here"]),
+            A_JmpIfBitClear(Flag(0x7086, 6), ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[
@@ -1608,9 +1608,9 @@ test_cases = [
     Case(
         label="A_JmpIfVarEqualsConst",
         commands_factory=lambda: [
-            A_JmpIfVarEqualsConst(PRIMARY_TEMP_700C, 1, ["end_here"]),
-            A_JmpIfVarEqualsConst(TEMP_70AF, 1, ["end_here"]),
-            A_JmpIfVarEqualsConst(TEMP_7030, 0, ["end_here"]),
+            A_JmpIfVarEqualsConst(ShortVar(0x700C), 1, ["end_here"]),
+            A_JmpIfVarEqualsConst(ByteVar(0x70AF), 1, ["end_here"]),
+            A_JmpIfVarEqualsConst(ShortVar(0x7030), 0, ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[
@@ -1636,9 +1636,9 @@ test_cases = [
     Case(
         label="A_JmpIfVarNotEqualsConst",
         commands_factory=lambda: [
-            A_JmpIfVarNotEqualsConst(PRIMARY_TEMP_700C, 13, ["end_here"]),
-            A_JmpIfVarNotEqualsConst(TEMP_7032, 1, ["end_here"]),
-            A_JmpIfVarNotEqualsConst(TEMP_70AE, 21, ["end_here"]),
+            A_JmpIfVarNotEqualsConst(ShortVar(0x700C), 13, ["end_here"]),
+            A_JmpIfVarNotEqualsConst(ShortVar(0x7032), 1, ["end_here"]),
+            A_JmpIfVarNotEqualsConst(ByteVar(0x70AE), 21, ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[

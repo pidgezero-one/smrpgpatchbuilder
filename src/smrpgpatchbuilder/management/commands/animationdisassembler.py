@@ -1680,7 +1680,7 @@ class Command(BaseCommand):
                 cls = "DisableSpritesOnSubscreen"
             elif opcode == 0x72:
                 cls = "NewEffectObject"
-                args["effect"] = loaded_arrays["battle_effect_names"][cmd[2]]
+                args["effect"] = loaded_arrays["effects"][cmd[2]]
                 if cmd[1] & 0x01 == 0x01:
                     args["looping_on"] = "True"
                 if cmd[1] & 0x02 == 0x02:
@@ -2893,14 +2893,14 @@ class Command(BaseCommand):
                 output = "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
 
                 # Add imports from disassembler_output - variables
-                output += "\nfrom ...variables.sprite_names import *"
-                output += "\nfrom ...variables.music_names import *"
-                output += "\nfrom ...variables.battle_sfx_names import *"
-                output += "\nfrom ...variables.battle_effect_names import *"
-                output += "\nfrom ...variables.screen_effect_names import *"
-                output += "\nfrom ...spells.spells import *"
-                output += "\nfrom ...items.items import *"
-                output += "\nfrom ...enemy_attacks.attacks import *"
+                output += "\nfrom ....variables.sprite_names import *"
+                output += "\nfrom ....variables.music_names import *"
+                output += "\nfrom ....variables.battle_sfx_names import *"
+                output += "\nfrom ....variables.battle_effect_names import *"
+                output += "\nfrom ....variables.screen_effect_names import *"
+                output += "\nfrom ....spells.spells import *"
+                output += "\nfrom ....items.items import *"
+                output += "\nfrom ....enemy_attacks.attacks import *"
 
                 output += f"\n\nscript = AnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"
 

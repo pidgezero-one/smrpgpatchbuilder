@@ -351,8 +351,14 @@ class Command(BaseCommand):
             name_chars.pop()
 
         # convert to string (assuming ascii/latin-1 encoding)
+        # special character mapping: 0x3A -> ’ (closing single quote)
         try:
-            name = bytes(name_chars).decode('latin-1')
+            name = ""
+            for byte_val in name_chars:
+                if byte_val == 0x7E:
+                    name += "’"
+                else:
+                    name += bytes([byte_val]).decode('latin-1')
         except:
             name = f"Item{offset}"
 
