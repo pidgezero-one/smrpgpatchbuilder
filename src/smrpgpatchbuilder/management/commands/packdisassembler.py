@@ -129,9 +129,6 @@ class Command(BaseCommand):
         run_event = meta_data[1]
         music_byte = meta_data[2]
 
-        if formation_id == 0:
-            print(meta_data)
-
         # Parse music_byte
         # Bit 0: music bit 0
         # Bit 1: cannot run away

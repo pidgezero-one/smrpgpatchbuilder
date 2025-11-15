@@ -83,41 +83,132 @@ class RoomCollection:
 
         return tuple(sig)
 
-    def _build_npc_table(self) -> tuple[list[NPC], dict[tuple, int]]:
-        """Build unique NPC table and mapping.
+    def _collect_clone_group_requirements(self) -> list[tuple[int, int, list[tuple]]]:
+        """Collect all clone group requirements across all rooms.
 
         Returns:
-            Tuple of (unique_npcs, npc_signature_to_index)
-
-        Raises:
-            ValueError: If more than allowed NPCs (0x1DDE00 - 0x1DB800 bytes / 7 bytes per NPC)
+            List of (room_idx, parent_obj_idx, [signatures]) tuples where signatures
+            is a list of NPC signatures that appear together in a clone group.
         """
-        max_npcs = (0x1DDE00 - 0x1DB800) // 7  # ~1143 NPCs max
-
-        unique_npcs: list[NPC] = []
-        npc_signature_to_index: dict[tuple, int] = {}
+        clone_groups = []
 
         for room_idx, room in enumerate(self._rooms):
             if room is None:
                 continue
 
+            # Scan for clone groups in this room
+            obj_idx = 0
+            while obj_idx < len(room.objects):
+                obj = room.objects[obj_idx]
+
+                if not isinstance(obj, Clone):
+                    # This is a parent object - collect its clones
+                    parent_sig = self._get_npc_signature(obj._npc, obj)
+                    signatures = [parent_sig]
+
+                    # Collect consecutive clones
+                    clone_idx = obj_idx + 1
+                    while clone_idx < len(room.objects) and isinstance(room.objects[clone_idx], Clone):
+                        clone_sig = self._get_npc_signature(room.objects[clone_idx]._npc, room.objects[clone_idx])
+                        signatures.append(clone_sig)
+                        clone_idx += 1
+
+                    # Only record if there are clones (more than just the parent)
+                    if len(signatures) > 1:
+                        clone_groups.append((room_idx, obj_idx, signatures))
+
+                obj_idx += 1
+
+        return clone_groups
+
+    def _build_sequential_placement(self, clone_groups: list[tuple[int, int, list[tuple]]]) -> tuple[
+        list[NPC],
+        dict[tuple[int, int], dict[tuple, int]]
+    ]:
+        """Build NPC table with strategic sequential placement for clone groups.
+
+        Args:
+            clone_groups: List of (room_idx, parent_obj_idx, signatures) tuples
+
+        Returns:
+            Tuple of:
+            - unique_npcs: List of NPC objects in the table
+            - clone_group_mapping: dict[(room_idx, parent_obj_idx), dict[signature, table_index]]
+        """
+        unique_npcs = []
+        clone_group_mapping = {}
+        global_sig_to_npc = {}  # signature -> NPC object (for creating copies)
+
+        # First pass: collect all unique signatures and create NPC objects
+        all_signatures = set()
+        for room_idx, room in enumerate(self._rooms):
+            if room is None:
+                continue
             for obj in room.objects:
-                if isinstance(obj, Clone):
-                    continue  # Clones don't need unique NPC entries
-
-                # Get signature including any room-level overrides
                 sig = self._get_npc_signature(obj._npc, obj)
+                if sig not in global_sig_to_npc:
+                    global_sig_to_npc[sig] = self._create_merged_npc(obj._npc, obj)
+                all_signatures.add(sig)
 
-                if sig not in npc_signature_to_index:
-                    if len(unique_npcs) >= max_npcs:
-                        raise ValueError(
-                            f"Too many unique NPCs: {len(unique_npcs)} exceeds maximum of {max_npcs}"
-                        )
-                    npc_signature_to_index[sig] = len(unique_npcs)
-                    # Create new NPC with room-level overrides applied
-                    unique_npcs.append(self._create_merged_npc(obj._npc, obj))
+        # Second pass: process clone groups and create sequential placements
+        for room_idx, parent_obj_idx, signatures in clone_groups:
+            # Deduplicate signatures while preserving order
+            # (multiple objects in the clone group might use the same signature)
+            unique_signatures = []
+            seen = set()
+            for sig in signatures:
+                if sig not in seen:
+                    unique_signatures.append(sig)
+                    seen.add(sig)
 
-        return unique_npcs, npc_signature_to_index
+            # Check if this clone group fits within 8 unique NPCs
+            if len(unique_signatures) > 8:
+                raise ValueError(
+                    f"Room {room_idx} object {parent_obj_idx}: "
+                    f"Clone group has {len(unique_signatures)} different NPCs (max 8)"
+                )
+
+            # Create a sequential block for this clone group using only unique signatures
+            sig_to_index = {}
+            base_index = len(unique_npcs)
+
+            for i, sig in enumerate(unique_signatures):
+                # Add NPC to table at sequential index
+                npc_obj = global_sig_to_npc[sig]
+                unique_npcs.append(npc_obj)
+                sig_to_index[sig] = base_index + i
+
+            # Store mapping for this clone group
+            clone_group_mapping[(room_idx, parent_obj_idx)] = sig_to_index
+
+        # Third pass: build global fallback mapping for all signatures
+        # This is used for objects that aren't part of a clone group (standalone parents with no clones)
+        # We need ALL signatures here because a signature might appear in a clone group in one room
+        # but as a standalone object in another room
+        global_fallback_mapping = {}
+        for sig in all_signatures:
+            # Check if this signature is already in the NPC table (from a clone group)
+            already_in_table = False
+            existing_index = None
+            for group_mapping in clone_group_mapping.values():
+                if sig in group_mapping:
+                    already_in_table = True
+                    existing_index = group_mapping[sig]
+                    break
+
+            if already_in_table:
+                # Reuse the existing table index
+                global_fallback_mapping[sig] = existing_index
+            else:
+                # Add new entry to table
+                idx = len(unique_npcs)
+                unique_npcs.append(global_sig_to_npc[sig])
+                global_fallback_mapping[sig] = idx
+
+        # Store fallback mapping for non-clone-group objects
+        clone_group_mapping[(-1, -1)] = global_fallback_mapping
+
+        return unique_npcs, clone_group_mapping
 
     def _create_merged_npc(self, base_npc: NPC, room_obj: BaseRoomObject) -> NPC:
         """Create a new NPC with room-level overrides merged in."""
@@ -146,131 +237,6 @@ class RoomCollection:
             byte6_bit2=room_obj.byte6_bit2 if room_obj.byte6_bit2 is not None else base_npc.byte6_bit2,
         )
         return merged
-
-    def _validate_and_fix_clones(self, unique_npcs: list[NPC], npc_signature_to_index: dict[tuple, int]):
-        """Validate clone constraints and insert intermediate NPCs if needed.
-
-        Modifies unique_npcs and npc_signature_to_index in place.
-
-        Raises:
-            ValueError: If clones violate constraints that can't be auto-fixed
-        """
-        for room_idx, room in enumerate(self._rooms):
-            if room is None:
-                continue
-
-            last_non_clone = None
-            clone_group = []  # Track consecutive clones
-
-            for obj_idx, obj in enumerate(room.objects):
-                if isinstance(obj, Clone):
-                    if last_non_clone is None:
-                        raise ValueError(
-                            f"Room {room_idx}: Clone at index {obj_idx} has no preceding non-clone object"
-                        )
-
-                    # Validate clone type matches parent type
-                    if isinstance(obj, RegularClone) and not isinstance(last_non_clone, RegularNPC):
-                        raise ValueError(
-                            f"Room {room_idx}: RegularClone at index {obj_idx} must follow a RegularNPC, "
-                            f"but follows {type(last_non_clone).__name__}"
-                        )
-                    elif isinstance(obj, ChestClone) and not isinstance(last_non_clone, ChestNPC):
-                        raise ValueError(
-                            f"Room {room_idx}: ChestClone at index {obj_idx} must follow a ChestNPC, "
-                            f"but follows {type(last_non_clone).__name__}"
-                        )
-                    elif isinstance(obj, BattlePackClone) and not isinstance(last_non_clone, BattlePackNPC):
-                        raise ValueError(
-                            f"Room {room_idx}: BattlePackClone at index {obj_idx} must follow a BattlePackNPC, "
-                            f"but follows {type(last_non_clone).__name__}"
-                        )
-
-                    clone_group.append(obj)
-
-                    # Validate action script difference
-                    action_diff = abs(obj.action_script - last_non_clone.action_script)
-                    if action_diff > 15:
-                        raise ValueError(
-                            f"Room {room_idx}: Clone at {obj_idx} has action_script {obj.action_script} "
-                            f"which is {action_diff} away from parent's {last_non_clone.action_script} (max 15)"
-                        )
-
-                    # Validate type-specific constraints
-                    if isinstance(obj, RegularClone) and isinstance(last_non_clone, RegularNPC):
-                        event_diff = abs(obj.event_script - last_non_clone.event_script)
-                        if event_diff > 7:
-                            raise ValueError(
-                                f"Room {room_idx}: RegularClone at {obj_idx} has event_script {obj.event_script} "
-                                f"which is {event_diff} away from parent's {last_non_clone.event_script} (max 7)"
-                            )
-
-                    elif isinstance(obj, BattlePackClone) and isinstance(last_non_clone, BattlePackNPC):
-                        pack_diff = abs(obj.battle_pack - last_non_clone.battle_pack)
-                        if pack_diff > 15:
-                            raise ValueError(
-                                f"Room {room_idx}: BattlePackClone at {obj_idx} has battle_pack {obj.battle_pack} "
-                                f"which is {pack_diff} away from parent's {last_non_clone.battle_pack} (max 15)"
-                            )
-
-                else:
-                    # Process accumulated clone group
-                    if clone_group and last_non_clone:
-                        self._process_clone_group(last_non_clone, clone_group, unique_npcs, npc_signature_to_index, room_idx)
-
-                    # Reset for next group
-                    last_non_clone = obj
-                    clone_group = []
-
-            # Process final clone group if any
-            if clone_group and last_non_clone:
-                self._process_clone_group(last_non_clone, clone_group, unique_npcs, npc_signature_to_index, room_idx)
-
-    def _process_clone_group(self, parent: RoomObject, clones: list[Clone], unique_npcs: list[NPC],
-                            npc_signature_to_index: dict[tuple, int], room_idx: int):
-        """Process a group of consecutive clones, inserting intermediate NPCs if needed."""
-        # Collect all unique NPCs needed (parent + all clones with different NPCs)
-        needed_npc_indices = []
-
-        parent_sig = self._get_npc_signature(parent._npc, parent)
-        parent_npc_idx = npc_signature_to_index[parent_sig]
-        needed_npc_indices.append(parent_npc_idx)
-
-        for clone in clones:
-            clone_sig = self._get_npc_signature(clone._npc, clone)
-            clone_npc_idx = npc_signature_to_index.get(clone_sig, parent_npc_idx)
-            if clone_npc_idx not in needed_npc_indices:
-                needed_npc_indices.append(clone_npc_idx)
-
-        # Check if all NPCs fit within a 7-index range
-        if len(needed_npc_indices) > 8:  # Parent + 7 different clones
-            raise ValueError(
-                f"Room {room_idx}: Clone group has {len(needed_npc_indices)} different NPCs (max 8)"
-            )
-
-        # Check if they're already sequential
-        needed_npc_indices.sort()
-        if needed_npc_indices[-1] - needed_npc_indices[0] <= 7:
-            return  # Already fits, no need for intermediate NPCs
-
-        # Need to create sequential copies at end of NPC table
-        new_base_idx = len(unique_npcs)
-
-        for i, old_idx in enumerate(needed_npc_indices):
-            # Copy the NPC
-            npc_copy = unique_npcs[old_idx]
-            unique_npcs.append(npc_copy)
-
-            # Update the signature mapping for objects using this NPC
-            # We need to update references for the parent and clones
-            if old_idx == parent_npc_idx:
-                new_parent_sig = self._get_npc_signature(npc_copy, parent)
-                npc_signature_to_index[new_parent_sig] = new_base_idx + i
-
-            for clone in clones:
-                clone_sig = self._get_npc_signature(clone._npc, clone)
-                if npc_signature_to_index.get(clone_sig, parent_npc_idx) == old_idx:
-                    npc_signature_to_index[clone_sig] = new_base_idx + i
 
     def _build_partition_table(self) -> tuple[list[Partition], dict]:
         """Build partition table.
@@ -343,11 +309,9 @@ class RoomCollection:
         """
         patches = {}
 
-        # Build NPC table
-        unique_npcs, npc_signature_to_index = self._build_npc_table()
-
-        # Validate and fix clones
-        self._validate_and_fix_clones(unique_npcs, npc_signature_to_index)
+        # Build NPC table with intelligent sequential placement for clone groups
+        clone_groups = self._collect_clone_group_requirements()
+        unique_npcs, clone_group_mapping = self._build_sequential_placement(clone_groups)
 
         # Build partition table
         partitions, room_to_partition_index = self._build_partition_table()
@@ -378,19 +342,26 @@ class RoomCollection:
                 offset = partition_start + (idx * 4)
                 patches[offset] = self._render_partition(partition)
 
-        # Write NPC table to 0x1DB800-0x1DDDFF
+        # Write NPC table to 0x1DB800-0x1DDDFF (or 0x1DDFFF with large partition table)
         npc_start = 0x1DB800
         for idx, npc in enumerate(unique_npcs):
             offset = npc_start + (idx * 7)
             patches[offset] = self._render_npc(npc)
 
         # Fill remaining NPC slots with 0xFF
-        for idx in range(len(unique_npcs), (0x1DDE00 - 0x1DB800) // 7):
+        # End address depends on whether we're using large partition table
+        if self._large_partition_table:
+            npc_end = 0x1DE000  # Extended range
+        else:
+            npc_end = 0x1DDE00  # Standard range (stops before partition table)
+
+        max_npc_slots = (npc_end - npc_start) // 7
+        for idx in range(len(unique_npcs), max_npc_slots):
             offset = npc_start + (idx * 7)
             patches[offset] = bytearray([0xFF] * 7)
 
         # Render room object data (NPCs)
-        room_object_patches = self._render_room_objects(npc_signature_to_index, room_to_partition_index)
+        room_object_patches = self._render_room_objects(clone_group_mapping, room_to_partition_index)
         patches.update(room_object_patches)
 
         # Render event data
@@ -454,7 +425,7 @@ class RoomCollection:
 
         return data
 
-    def _render_room_objects(self, npc_signature_to_index: dict[tuple, int],
+    def _render_room_objects(self, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
                             room_to_partition_index: dict[int, int]) -> dict[int, bytearray]:
         """Render room object (NPC) data.
 
@@ -493,32 +464,34 @@ class RoomCollection:
 
             # Render each object (track parent for clones and count extra_length)
             last_parent = None
+            last_parent_obj_idx = -1
             obj_idx = 0
             while obj_idx < len(room.objects):
                 obj = room.objects[obj_idx]
 
                 if isinstance(obj, Clone):
                     # This is a clone, render it
-                    obj_data = self._render_room_object(obj, npc_signature_to_index, last_parent)
+                    obj_data = self._render_room_object(obj, clone_group_mapping, last_parent, None, room_idx, obj_idx, last_parent_obj_idx)
                     all_room_data.extend(obj_data)
                     data_offset += len(obj_data)
                     obj_idx += 1
                 else:
-                    # This is a parent object - count consecutive clones
-                    clone_count = 0
+                    # This is a parent object - collect all consecutive clones
+                    clones = []
                     check_idx = obj_idx + 1
                     while check_idx < len(room.objects) and isinstance(room.objects[check_idx], Clone):
-                        clone_count += 1
+                        clones.append(room.objects[check_idx])
                         check_idx += 1
 
-                    # Render parent with correct extra_length
-                    obj_data = self._render_room_object(obj, npc_signature_to_index, None)
+                    # Render parent with clones (to calculate proper base values and offsets)
+                    obj_data = self._render_room_object(obj, clone_group_mapping, None, clones, room_idx, obj_idx, obj_idx)
                     # Update byte 0 with clone count
-                    obj_data[0] = (obj.object_type << 4) | (clone_count & 0x0F)
+                    obj_data[0] = (obj.object_type << 4) | (len(clones) & 0x0F)
                     all_room_data.extend(obj_data)
                     data_offset += len(obj_data)
 
                     last_parent = obj
+                    last_parent_obj_idx = obj_idx
                     obj_idx += 1
 
         # Write all room data as a single patch
@@ -527,18 +500,31 @@ class RoomCollection:
 
         return patches
 
-    def _render_room_object(self, obj: BaseRoomObject, npc_signature_to_index: dict[tuple, int],
-                           parent: Optional[RoomObject] = None) -> bytearray:
+    def _render_room_object(self, obj: BaseRoomObject, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
+                           parent: Optional[RoomObject] = None, clones: Optional[list[Clone]] = None,
+                           room_idx: int = -1, obj_idx: int = -1, parent_obj_idx: int = -1) -> bytearray:
         """Render a single room object to bytes.
 
         Args:
             obj: The room object to render
-            npc_signature_to_index: Mapping from NPC signatures to indices
+            clone_group_mapping: Context-aware mapping from (room_idx, parent_obj_idx) to {signature: table_index}
             parent: The parent object (required for clones)
+            clones: List of clones following this parent object (used to calculate base values and offsets)
+            room_idx: The room index (for error reporting)
+            obj_idx: The object index within the room (for error reporting)
+            parent_obj_idx: The parent object index (for looking up the correct NPC mapping)
         """
-        # Get NPC index
+        # Get NPC index using context-aware mapping
         obj_sig = self._get_npc_signature(obj._npc, obj)
-        npc_index = npc_signature_to_index[obj_sig]
+
+        # Look up the mapping for this clone group (or fallback for non-clone-group objects)
+        if (room_idx, parent_obj_idx) in clone_group_mapping:
+            sig_to_index = clone_group_mapping[(room_idx, parent_obj_idx)]
+        else:
+            # Use fallback mapping for standalone objects (not in a clone group)
+            sig_to_index = clone_group_mapping[(-1, -1)]
+
+        npc_index = sig_to_index[obj_sig]
 
         if isinstance(obj, Clone):
             # Clone: 4 bytes
@@ -548,18 +534,19 @@ class RoomCollection:
 
             data = bytearray(4)
 
-            # Get parent NPC index for calculating offsets
+            # Get parent NPC index for calculating offsets using the same mapping
             parent_sig = self._get_npc_signature(parent._npc, parent)
-            parent_npc_index = npc_signature_to_index[parent_sig]
+            parent_npc_index = sig_to_index[parent_sig]
 
             # Byte 0: Offsets (type-specific encoding)
             if isinstance(obj, RegularClone):
                 assert isinstance(parent, RegularNPC), "Parent must be RegularNPC for RegularClone"
                 # (event_offset << 5) + (action_offset << 3) + npc_offset
+                # Note: action_offset is only 2 bits (0-3 range) for RegularClone
                 npc_offset = npc_index - parent_npc_index
                 action_offset = obj.action_script - parent.action_script
                 event_offset = obj.event_script - parent.event_script
-                data[0] = (event_offset << 5) | (action_offset << 3) | (npc_offset & 0x07)
+                data[0] = ((event_offset & 0x07) << 5) | ((action_offset & 0x03) << 3) | (npc_offset & 0x07)
             elif isinstance(obj, ChestClone):
                 assert isinstance(parent, ChestNPC), "Parent must be ChestNPC for ChestClone"
                 # (upper_70a7 << 4) + lower_70a7
@@ -569,7 +556,15 @@ class RoomCollection:
                 # (pack_offset << 4) + action_offset
                 action_offset = obj.action_script - parent.action_script
                 pack_offset = obj.battle_pack - parent.battle_pack
-                data[0] = (pack_offset << 4) | (action_offset & 0x0F)
+
+                # Pack offset must be positive (clone's pack must be >= parent's pack)
+                if pack_offset < 0 or pack_offset > 15:
+                    raise ValueError(
+                        f"BattlePackClone battle_pack offset {pack_offset} out of range [0, 15]. "
+                        f"Clone battle_pack={obj.battle_pack} must be >= parent battle_pack={parent.battle_pack}"
+                    )
+
+                data[0] = ((pack_offset & 0x0F) << 4) | (action_offset & 0x0F)
             else:
                 data[0] = 0
 
@@ -623,45 +618,152 @@ class RoomCollection:
                 ((1 if obj.byte3_bit7 else 0) << 7)
             )
 
+            # Calculate base values and offsets for parent + clones
+            # We need to find the minimum value among parent and all clones for:
+            # - assigned_npc (for RegularNPC)
+            # - action_script (for all types except ChestNPC)
+            # - event_script (for RegularNPC)
+            # - battle_pack (for BattlePackNPC)
+
+            clones = clones if clones is not None else []
+
+            # Calculate base_assigned_npc (minimum NPC index among parent + clones)
+            # NOTE: Only RegularNPC/RegularClone use assigned_npc offsets in byte 8!
+            # ChestNPC and BattlePackNPC don't have assigned_npc offsets.
+            if isinstance(obj, RegularNPC):
+                all_npc_indices = [npc_index]
+                for clone in clones:
+                    if isinstance(clone, RegularClone):
+                        clone_sig = self._get_npc_signature(clone._npc, clone)
+                        clone_npc_index = sig_to_index[clone_sig]
+                        all_npc_indices.append(clone_npc_index)
+                base_assigned_npc = min(all_npc_indices)
+                assigned_npc_offset = npc_index - base_assigned_npc
+            else:
+                # ChestNPC and BattlePackNPC: no assigned_npc offset, just use npc_index directly
+                base_assigned_npc = npc_index
+                assigned_npc_offset = 0
+
+            # Calculate base_action_script (minimum action_script among parent + clones)
+            if not isinstance(obj, ChestNPC):
+                all_action_scripts = [obj.action_script]
+                for clone in clones:
+                    all_action_scripts.append(clone.action_script)
+                base_action_script = min(all_action_scripts)
+                action_script_offset = obj.action_script - base_action_script
+            else:
+                base_action_script = obj.action_script
+                action_script_offset = 0
+
             # Bytes 3-5: NPC ID and action script (packed)
             # base_assigned_npc = ((d[offset + 4] & 0x0F) << 6) + (d[offset + 3] >> 2)
             # base_action_script = ((d[offset + 5] & 0x3F) << 4) + ((d[offset + 4] & 0xFF) >> 4)
 
             # Byte 3: (base_npc_id << 2) low 8 bits + slidable_along_walls (bit 0) + cant_move_if_in_air (bit 1)
-            data[3] = ((npc_index << 2) & 0xFF) | (1 if obj.slidable_along_walls else 0) | ((1 if obj.cant_move_if_in_air else 0) << 1)
+            data[3] = ((base_assigned_npc << 2) & 0xFF) | (1 if obj.slidable_along_walls else 0) | ((1 if obj.cant_move_if_in_air else 0) << 1)
 
             # Byte 4: (action_script low 4 bits << 4) + (base_npc_id >> 6)
-            data[4] = ((obj.action_script & 0x0F) << 4) | ((npc_index >> 6) & 0x0F)
+            data[4] = ((base_action_script & 0x0F) << 4) | ((base_assigned_npc >> 6) & 0x0F)
 
             # Byte 5: byte7_upper2 (bits 6-7) + (action_script >> 4 in low 6 bits)
-            data[5] = ((obj.byte7_upper2 & 0x03) << 6) | ((obj.action_script >> 4) & 0x3F)
+            data[5] = ((obj.byte7_upper2 & 0x03) << 6) | ((base_action_script >> 4) & 0x3F)
 
             # Bytes 6-7: Event ID or battle pack + initiator
             if isinstance(obj, BattlePackNPC):
-                # Byte 6: battle_pack
-                data[6] = obj.battle_pack & 0xFF
+                # Calculate base_battle_pack (minimum battle_pack among parent + clones)
+                all_battle_packs = [obj.battle_pack]
+                for clone in clones:
+                    if isinstance(clone, BattlePackClone):
+                        all_battle_packs.append(clone.battle_pack)
+                base_battle_pack = min(all_battle_packs)
+                battle_pack_offset = obj.battle_pack - base_battle_pack
+
+                # Byte 6: base_battle_pack
+                data[6] = base_battle_pack & 0xFF
                 # Byte 7: (initiator << 4) + after_battle
                 data[7] = (obj.initiator << 4) | (obj.after_battle & 0x0F)
             else:
                 assert isinstance(obj, (RegularNPC, ChestNPC)), "Parent object must be RegularNPC, ChestNPC, or BattlePackNPC"
-                # Regular or Chest NPC
-                # Byte 6: event_id low 8 bits
-                data[6] = obj.event_script & 0xFF
-                # Byte 7: (initiator << 4) + event_id high 4 bits
-                data[7] = (obj.initiator << 4) | ((obj.event_script >> 8) & 0x0F)
 
-            # Byte 8: Offsets (type-specific, all zeros for parent)
+                if isinstance(obj, RegularNPC):
+                    # Calculate base_event_script (minimum event_script among parent + clones)
+                    all_event_scripts = [obj.event_script]
+                    for clone in clones:
+                        if isinstance(clone, RegularClone):
+                            all_event_scripts.append(clone.event_script)
+                    base_event_script = min(all_event_scripts)
+                    event_script_offset = obj.event_script - base_event_script
+                else:
+                    # ChestNPC
+                    base_event_script = obj.event_script
+                    event_script_offset = 0
+
+                # Regular or Chest NPC
+                # Byte 6: base_event_id low 8 bits
+                data[6] = base_event_script & 0xFF
+                # Byte 7: (initiator << 4) + base_event_id high 4 bits
+                data[7] = (obj.initiator << 4) | ((base_event_script >> 8) & 0x0F)
+
+            # Byte 8: Offsets (calculated from parent's values relative to base)
             if isinstance(obj, RegularNPC):
                 # (event_offset << 5) + (action_offset << 3) + npc_offset
-                # For parent, all offsets are 0
-                data[8] = 0
+                # Note: action_offset is only 2 bits (0-3 range) for RegularNPC
+                # Validate offsets are in range
+                if assigned_npc_offset < 0 or assigned_npc_offset > 7:
+                    # Build detailed error message
+                    clone_indices = []
+                    for clone in clones:
+                        if isinstance(clone, RegularClone):
+                            clone_sig = self._get_npc_signature(clone._npc, clone)
+                            clone_npc_index = npc_signature_to_index[clone_sig]
+                            clone_indices.append(clone_npc_index)
+
+                    raise ValueError(
+                        f"Room {room_idx} object {obj_idx} (RegularNPC):\n"
+                        f"  assigned_npc offset {assigned_npc_offset} out of range [0, 7]\n"
+                        f"  Parent NPC index: {npc_index}\n"
+                        f"  Clone NPC indices: {clone_indices}\n"
+                        f"  Base assigned_npc: {base_assigned_npc}\n"
+                        f"  All NPC indices in group: {all_npc_indices}"
+                    )
+                if action_script_offset < 0 or action_script_offset > 3:
+                    raise ValueError(
+                        f"Room {room_idx} object {obj_idx} (RegularNPC):\n"
+                        f"  action_script offset {action_script_offset} out of range [0, 3]\n"
+                        f"  Parent action_script: {obj.action_script}\n"
+                        f"  Base action_script: {base_action_script}"
+                    )
+                if event_script_offset < 0 or event_script_offset > 7:
+                    raise ValueError(
+                        f"Room {room_idx} object {obj_idx} (RegularNPC):\n"
+                        f"  event_script offset {event_script_offset} out of range [0, 7]\n"
+                        f"  Parent event_script: {obj.event_script}\n"
+                        f"  Base event_script: {base_event_script}"
+                    )
+
+                data[8] = ((event_script_offset & 0x07) << 5) | ((action_script_offset & 0x03) << 3) | (assigned_npc_offset & 0x07)
             elif isinstance(obj, ChestNPC):
                 # (upper_70a7 << 4) + lower_70a7
                 data[8] = (obj.upper_70a7 << 4) | (obj.lower_70a7 & 0x0F)
             elif isinstance(obj, BattlePackNPC):
                 # (pack_offset << 4) + action_offset
-                # For parent, all offsets are 0
-                data[8] = 0
+                # Validate offsets are in range
+                if battle_pack_offset < 0 or battle_pack_offset > 15:
+                    raise ValueError(
+                        f"Room {room_idx} object {obj_idx} (BattlePackNPC):\n"
+                        f"  battle_pack offset {battle_pack_offset} out of range [0, 15]\n"
+                        f"  Parent battle_pack: {obj.battle_pack}\n"
+                        f"  Base battle_pack: {base_battle_pack}"
+                    )
+                if action_script_offset < 0 or action_script_offset > 15:
+                    raise ValueError(
+                        f"Room {room_idx} object {obj_idx} (BattlePackNPC):\n"
+                        f"  action_script offset {action_script_offset} out of range [0, 15]\n"
+                        f"  Parent action_script: {obj.action_script}\n"
+                        f"  Base action_script: {base_action_script}"
+                    )
+
+                data[8] = ((battle_pack_offset & 0x0F) << 4) | (action_script_offset & 0x0F)
             else:
                 data[8] = 0
 

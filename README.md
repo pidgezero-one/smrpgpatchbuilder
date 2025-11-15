@@ -20,9 +20,7 @@ Convert some contents of your ROM into Python code so you can freely edit it, th
 - [overworld dialogs](#overworld-dialogs)
 - [battle dialogs and battle messages](#battle-dialogs-and-messages)
 - [battle packs and formations](#battle-packs-and-formations)
-- [level NPCs, exits, and event blocks](#level-npcs-exits-and-event-blocks)
-- [NPC definitions](#npc-definitions)
-- [packet NPCs](#packet-npcs)
+- [rooms and NPCs](#rooms-and-npcs)
 - [overworld location data](#overworld-location-data)
 
 You can also take the contents of your disassembler_output folder and stick it in whatever Python project you want, as long as that project imports this package. (example: SMRPG randomizer)

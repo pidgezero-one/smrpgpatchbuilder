@@ -247,7 +247,7 @@ class Formation:
             self.run_event_at_load if self.run_event_at_load is not None else 0xFF
         ).as_bytes()
         music_byte = (
-            (self.music.value << 2) + ((not self.can_run_away) * 0x02) + self.unknown_bit
+            ((self.music.value if self.music else 0x30) << 2) + ((not self.can_run_away) * 0x02) + self.unknown_bit
         )
         data += ByteField(music_byte).as_bytes()
 

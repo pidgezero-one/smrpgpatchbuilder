@@ -41,6 +41,8 @@ class Command(BaseCommand):
             for name, value in tuples:
                 if re.match(r"^(ShortVar|ByteVar|Flag)\(", value) or value.startswith("0x"):
                     lines.append(f"{name} = {value}")
+                elif key == "battle_variable_names":
+                    lines.append(f"{name} = 0x7EE00{int(value):01X}")
                 else:
                     escaped = value.replace('"', '\\"')
                     if key == "battlefield_names" or key == "battlefield_names.input":

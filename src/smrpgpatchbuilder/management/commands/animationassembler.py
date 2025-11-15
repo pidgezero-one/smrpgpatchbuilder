@@ -70,4 +70,4 @@ class Command(BaseCommand):
 			with open(f'./src/assembler_output/battle_animations/bps/smrpg-{datetime.now().strftime("%Y%m%d%H%M%S")}.bps', 'wb') as f:
 				write_bps(bps_progress(iterable), f)
 
-	self.stdout.write(self.style.SUCCESS("successfully assembled battle animation data"))
+		self.stdout.write(self.style.SUCCESS("successfully assembled battle animation data"))

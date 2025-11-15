@@ -26,16 +26,16 @@ class Command(BaseCommand):
         output_path = options["output"]
 
         # Load ROM
-        self.stdout.write(f"Loading ROM from {rom_path}...")
+        #self.stdout.write(f"Loading ROM from {rom_path}...")
         with open(rom_path, "rb") as f:
             rom = f.read()
 
         # Load spell classes
-        self.stdout.write("Loading character spells...")
+        #self.stdout.write("Loading character spells...")
         spell_index_to_class = self._load_spell_classes()
 
         # Load item classes
-        self.stdout.write("Loading items...")
+        #self.stdout.write("Loading items...")
         item_index_to_class = self._load_item_classes()
 
         # Disassemble all 5 allies
@@ -43,12 +43,12 @@ class Command(BaseCommand):
         ally_names = ["Mario", "Mallow", "Geno", "Bowser", "Toadstool"]
 
         for ally_index in range(5):
-            self.stdout.write(f"Disassembling {ally_names[ally_index]}...")
+            #self.stdout.write(f"Disassembling {ally_names[ally_index]}...")
             ally = self._disassemble_ally(rom, ally_index, spell_index_to_class, item_index_to_class)
             allies.append(ally)
 
         # Write output file
-        self.stdout.write(f"Writing to {output_path}...")
+        #self.stdout.write(f"Writing to {output_path}...")
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         with open(output_path, "w", encoding="utf-8") as f:
@@ -75,13 +75,10 @@ class Command(BaseCommand):
                 for spell in spell_collection.spells:
                     if spell.index <= 26:
                         spell_index_to_class[spell.index] = type(spell)
-                self.stdout.write(f"Loaded {len(spell_index_to_class)} character spells")
-            else:
-                self.stdout.write(self.style.WARNING("Could not find ALL_SPELLS in spells module"))
-
+            
             return spell_index_to_class
         except ImportError as e:
-            self.stdout.write(self.style.WARNING(f"Could not load spells: {e}"))
+            #self.stdout.write(self.style.WARNING(f"Could not load spells: {e}"))
             return {}
 
     def _load_item_classes(self):
@@ -103,13 +100,10 @@ class Command(BaseCommand):
                 item_collection: ItemCollection = items_module.ALL_ITEMS
                 for item in item_collection.items:
                     item_index_to_class[item.index] = type(item)
-                self.stdout.write(f"Loaded {len(item_index_to_class)} items")
-            else:
-                self.stdout.write(self.style.WARNING("Could not find ALL_ITEMS in items module"))
-
+            
             return item_index_to_class
         except ImportError as e:
-            self.stdout.write(self.style.WARNING(f"Could not load items: {e}"))
+            #self.stdout.write(self.style.WARNING(f"Could not load items: {e}"))
             return {}
 
     def _disassemble_ally(self, rom: bytes, index: int, spell_index_to_class: dict, item_index_to_class: dict) -> Ally:
@@ -238,18 +232,12 @@ class Command(BaseCommand):
         spell_offset = owner + ((level - 2) * 5) + 0x3A42F5
         spell_learned_byte = rom[spell_offset]
 
-        # Debug output for specific case
-        if owner == 0 and level == 6:
-            self.stdout.write(f"DEBUG: Mario level 6 - offset=0x{spell_offset:X}, byte=0x{spell_learned_byte:02X} ({spell_learned_byte})")
-
         # Map byte to spell class
         if spell_learned_byte > 0x1F:
             spell_learned = None  # No spell
         else:
             spell_learned = spell_index_to_class.get(spell_learned_byte, None)
-            if owner == 0 and level == 6:
-                self.stdout.write(f"DEBUG: Mapped to spell class: {spell_learned}")
-
+            
         return LevelUp(
             level=level,
             exp_needed=exp_needed,

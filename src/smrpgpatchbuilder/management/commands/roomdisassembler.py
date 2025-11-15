@@ -35,7 +35,8 @@ partitionstart = 0x1DDE00
 partitionend = 0x1DDFFF  # bumped up from 0x1ddfdf
 
 npctable_start = 0x1DB800
-npctable_end = 0x1DDDFF
+npctable_end_standard = 0x1DDDFF
+npctable_end_extended = 0x1DDFFF
 
 directions = [
     "EAST",
@@ -128,6 +129,61 @@ class Command(BaseCommand):
         roomevent_ptrs = []
         roomexit_ptrs = []
 
+        # First pass: scan all rooms to find which NPC IDs are actually used
+        used_npc_indices = set()
+
+        # Scan room objects to find used NPCs
+        for room_idx in range(512):
+            ptr_offset = ptrstart + (room_idx * 2)
+            room_ptr = shortify(rom, ptr_offset)
+            room_offset = start + room_ptr
+
+            if room_offset >= end:
+                continue
+
+            # Skip partition byte
+            cursor = room_offset + 1
+
+            # Process room objects
+            while cursor < end:
+                if rom[cursor] == 0xFF:  # End marker
+                    break
+
+                obj_type = rom[cursor] >> 4
+                if obj_type == 0xFF:
+                    break
+
+                # Check if it's a parent object (12 bytes) or clone (4 bytes)
+                if cursor + 12 <= end and (rom[cursor] & 0x0F) >= 0:
+                    # Parent object - extract NPC index
+                    base_assigned_npc = ((rom[cursor + 4] & 0x0F) << 6) + (rom[cursor + 3] >> 2)
+                    npc_offset_in_byte8 = rom[cursor + 8] & 0x07
+
+                    if obj_type == 0:  # Regular NPC
+                        assigned_npc = base_assigned_npc + npc_offset_in_byte8
+                    else:  # Chest or Battle
+                        assigned_npc = base_assigned_npc
+
+                    used_npc_indices.add(assigned_npc)
+
+                    # Process clones if any
+                    extra_length = rom[cursor] & 0x0F
+                    cursor += 12
+
+                    for _ in range(extra_length):
+                        if cursor + 4 <= end:
+                            clone_offset = rom[cursor] & 0x07
+                            clone_npc = base_assigned_npc + clone_offset
+                            used_npc_indices.add(clone_npc)
+                            cursor += 4
+                        else:
+                            break
+                else:
+                    break
+
+        # Determine NPC table end based on partition table size
+        npctable_end = npctable_end_extended if large_partition_table else npctable_end_standard
+
         npc_classes: list[NPC] = []
         npc_variable_names: dict[int, str] = {}  # Maps NPC index to variable name
         sprite_usage_count: dict[int, int] = {}  # Tracks how many NPCs use each sprite
@@ -136,9 +192,14 @@ class Command(BaseCommand):
         for offset in range(npctable_start, npctable_end + 1, 7):
             if offset + 7 > npctable_end:
                 break
+
+            npc_index = (offset - npctable_start) // 7
             raw_data = rom[offset : (offset + 7)]
+
+            # Skip NPCs that are all 0xFF unless they're used in a room
             if raw_data == bytearray([0xFF] * 7):
-                continue
+                if npc_index not in used_npc_indices:
+                    continue
             sprite_val = ((raw_data[1] << 8) | raw_data[0]) & 0x03FF
             vram_store_val = (raw_data[1] >> 2) & 0x07
             vram_size = raw_data[1] >> 5
@@ -338,11 +399,7 @@ class Command(BaseCommand):
                 "from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *",
             )
             # Import all NPCs from the npcs.py file in the same directory
-            if dest.startswith("randomizer"):
-                writeline(file, "from randomizer.data.rooms import npcs")
-            else:
-                # For debug mode
-                writeline(file, "from . import npcs")
+            writeline(file, "from . import npcs")
             writeline(
                 file,
                 "from disassembler_output.variables.room_names import *",
@@ -661,11 +718,10 @@ class Command(BaseCommand):
                     initiator = d[offset + 7] >> 4
                     if otype == 0:  # regular
                         base_event = ((d[offset + 7] & 0x0F) << 8) + d[offset + 6]
-                        event = base_event + (d[offset + 8] >> 5)
-                        assigned_npc = base_assigned_npc + (d[offset + 8] & 0x07)
-                        action_script = base_action_script + (
-                            (d[offset + 8] & 0x1F) >> 3
-                        )
+                        # For parent objects, byte 8 should be 0, so no offsets added
+                        event = base_event
+                        assigned_npc = base_assigned_npc
+                        action_script = base_action_script
                     elif otype == 1:  # chest
                         base_event = ((d[offset + 7] & 0x0F) << 8) + d[offset + 6]
                         event = base_event
@@ -678,7 +734,8 @@ class Command(BaseCommand):
                         action_script = base_action_script + (d[offset + 8] & 0x0F)
                         after_battle = (d[offset + 7] >> 1) & 0x07
                         base_pack = d[offset + 6]
-                        pack = base_pack + (d[offset + 8] >> 4)
+                        # For parent objects, byte 8 should be 0, so pack = base_pack
+                        pack = base_pack
                     visible = bit_bool_from_num(d[offset + 9], 7)
                     x = d[offset + 9] & 0x7F
                     y = d[offset + 10] & 0x7F
@@ -806,6 +863,10 @@ class Command(BaseCommand):
                             else:  # battle
                                 args = [npc_from_table, pack, action_script] + ending_args
                             thisNPC = npcType(*args)
+
+                            # No validation needed here - parent and clones can have any values
+                            # as long as they're all within 0-15 of their shared base value.
+                            # The base is determined during assembly as the minimum value.
 
                             room_objects.append(thisNPC)
                     offset += l
@@ -982,6 +1043,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Successfully disassembled 512 rooms to randomizer/data/rooms/"
+                "Successfully disassembled 512 rooms to disassembler_output/rooms"
             )
         )

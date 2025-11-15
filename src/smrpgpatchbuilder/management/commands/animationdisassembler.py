@@ -2941,9 +2941,88 @@ class Command(BaseCommand):
             export_output += "\n)"
             writeline(export_file, export_output)
 
+        # Generate bank usage visualization
+        self._write_bank_usage_visualization(output_path, known_addresses_covered)
+
         self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
 
+    def _write_bank_usage_visualization(self, output_path: str, known_addresses_covered: Dict[str, List[bool]]):
+        """Write ASCII visualization of bank usage to a file.
 
+        Args:
+            output_path: Base output directory
+            known_addresses_covered: Dict mapping bank ID to list of booleans indicating byte usage
+        """
+        # ANSI color codes for terminal output
+        GREEN = '\033[92m'
+        RED = '\033[91m'
+        RESET = '\033[0m'
+
+        usage_file_path = f"{output_path}/bank_usage.txt"
+
+        with open(usage_file_path, "w", encoding="utf-8") as f:
+            f.write("Bank Usage Visualization\n")
+            f.write("=" * 80 + "\n")
+            f.write("Legend: █ = used (green), █ = unused (red)\n")
+            f.write("Each row shows 16 bytes\n\n")
+
+            for bank_id in sorted(known_addresses_covered.keys()):
+                bank_contents = known_addresses_covered[bank_id]
+                bank_base = int(bank_id, 16) << 16
+
+                # Find the range of used addresses
+                first_used = None
+                last_used = None
+                for i, used in enumerate(bank_contents):
+                    if used:
+                        if first_used is None:
+                            first_used = i
+                        last_used = i
+
+                if first_used is None:
+                    # No addresses used in this bank
+                    f.write(f"Bank 0x{bank_id}: No addresses used\n\n")
+                    continue
+
+                # Align to 16-byte boundaries
+                start_addr = (first_used // 16) * 16
+                end_addr = ((last_used // 16) + 1) * 16
+
+                f.write(f"Bank 0x{bank_id}: 0x{bank_base + first_used:06X} - 0x{bank_base + last_used:06X}\n")
+                f.write("-" * 80 + "\n")
+
+                # Generate visualization
+                for addr in range(start_addr, end_addr, 16):
+                    # Write address
+                    f.write(f"0x{bank_base + addr:06X} ")
+
+                    # Write 16 blocks
+                    for offset in range(16):
+                        byte_addr = addr + offset
+                        if byte_addr < len(bank_contents) and bank_contents[byte_addr]:
+                            f.write(f"{GREEN}█{RESET}")
+                        else:
+                            f.write(f"{RED}█{RESET}")
+
+                    # Calculate and show usage percentage for this row
+                    used_count = sum(1 for offset in range(16)
+                                   if (addr + offset) < len(bank_contents)
+                                   and bank_contents[addr + offset])
+                    percentage = (used_count / 16) * 100
+                    f.write(f" {used_count:2d}/16 ({percentage:5.1f}%)")
+
+                    f.write("\n")
+
+                # Calculate overall usage for this bank
+                total_in_range = end_addr - start_addr
+                used_in_range = sum(1 for i in range(start_addr, end_addr)
+                                  if i < len(bank_contents) and bank_contents[i])
+                overall_percentage = (used_in_range / total_in_range) * 100 if total_in_range > 0 else 0
+
+                f.write(f"\nBank 0x{bank_id} overall usage: {used_in_range}/{total_in_range} bytes ({overall_percentage:.1f}%)\n")
+                f.write("\n" + "=" * 80 + "\n\n")
+
+        self.stdout.write(f"Bank usage visualization written to {usage_file_path}")
 
 
 
