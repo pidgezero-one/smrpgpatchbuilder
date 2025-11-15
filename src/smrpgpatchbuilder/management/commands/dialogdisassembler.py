@@ -207,7 +207,7 @@ class Command(BaseCommand):
         )
         file.write("from typing import Optional\n".encode("utf8"))
         file.write("from ..variables.dialog_names import *\n".encode("utf8"))
-        file.write(("pointers: list[Optional[Dialog]] = []*%i\n" % len(pointers_relative)).encode("utf8"))
+        file.write(("pointers: list[Dialog] = [None]*%i # type: ignore\n" % len(pointers_relative)).encode("utf8"))
         for i in range(len(pointers_relative)):
             ptr = pointers_relative[i]
             if ptr is not None:

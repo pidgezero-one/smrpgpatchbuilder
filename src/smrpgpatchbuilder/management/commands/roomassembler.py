@@ -1,47 +1,89 @@
+"""Django management command to assemble rooms into a ROM file."""
 from django.core.management.base import BaseCommand
-from randomizer.logic.rooms import Rooms
-from randomizer.logic.enscript import EventScript
-from randomizer.logic.osscript import ObjectSequenceScript as OSCommand
-from randomizer.data.rooms.rooms import rooms as all_rooms
-from randomizer.data.eventscripts.events import scripts
+import importlib.util
+import sys
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
-        npcs, eventtiles, exits, partitions, npctable, new_scripts = Rooms.assemble_from_table(
-            all_rooms, scripts
+    help = "Assemble rooms from Python files into a ROM"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-r", "--rom",
+            dest="rom",
+            required=True,
+            help="Path to the Mario RPG ROM file to modify"
         )
 
-        allnpcbytes = npcs[0] + npcs[1]
+        parser.add_argument(
+            "-i", "--input",
+            dest="input",
+            required=True,
+            help="Path to the rooms.py file containing the RoomCollection"
+        )
 
-        f = open(f"write_to_0x148000.img", "wb")
-        f.write(allnpcbytes)
-        f.close()
+        parser.add_argument(
+            "-o", "--output",
+            dest="output",
+            required=True,
+            help="Path to write the modified ROM"
+        )
 
-        alleventbytes = eventtiles[0] + eventtiles[1]
+        parser.add_argument(
+            "--large-partition-table",
+            dest="large_partition_table",
+            action="store_true",
+            help="Use larger partition table (512 partitions at 0x1DEBE0 instead of 128 at 0x1DDE00)"
+        )
 
-        f = open(f"write_to_0x20E000.img", "wb")
-        f.write(alleventbytes)
-        f.close()
+    def handle(self, *args, **options):
+        rom_path = options["rom"]
+        input_path = options["input"]
+        output_path = options["output"]
+        large_partition_table = options["large_partition_table"]
 
-        allexitbytes = exits[0] + exits[1]
+        # Load the ROM
+        self.stdout.write(f"Loading ROM from {rom_path}...")
+        with open(rom_path, "rb") as f:
+            rom = bytearray(f.read())
 
-        f = open(f"write_to_0x1D2D64.img", "wb")
-        f.write(allexitbytes)
-        f.close()
+        # Load the rooms module
+        self.stdout.write(f"Loading rooms from {input_path}...")
+        spec = importlib.util.spec_from_file_location("rooms_module", input_path)
+        if spec is None or spec.loader is None:
+            raise ValueError(f"Could not load module from {input_path}")
 
-        f = open(f"write_to_0x1DDE00.img", "wb")
-        f.write(partitions)
-        f.close()
+        rooms_module = importlib.util.module_from_spec(spec)
+        sys.modules["rooms_module"] = rooms_module
+        spec.loader.exec_module(rooms_module)
 
-        f = open(f"write_to_0x1DB800.img", "wb")
-        f.write(npctable)
-        f.close()
+        # Get the RoomCollection
+        if not hasattr(rooms_module, "room_collection"):
+            raise ValueError(
+                f"Module {input_path} must define a 'room_collection' variable of type RoomCollection"
+            )
 
-        b = EventScript.assemble_from_table(new_scripts)
+        room_collection = rooms_module.room_collection
 
-        f = open(f'write_to_0x1E0000.img', 'wb')
-        f.write(b)
-        f.close()
+        # Override large_partition_table if specified
+        if large_partition_table:
+            room_collection._large_partition_table = True
+            self.stdout.write(self.style.WARNING("Using large partition table (--large-partition-table flag)"))
 
-        self.stdout.write(self.style.SUCCESS("successfully assembled room data"))
+        # Render to patches
+        self.stdout.write("Rendering rooms to patches...")
+        patches = room_collection.render()
+
+        # Apply patches to ROM
+        self.stdout.write(f"Applying {len(patches)} patches to ROM...")
+        for address, data in patches.items():
+            rom[address:address + len(data)] = data
+
+        # Write output
+        self.stdout.write(f"Writing modified ROM to {output_path}...")
+        with open(output_path, "wb") as f:
+            f.write(rom)
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Successfully assembled rooms into {output_path}"
+        ))

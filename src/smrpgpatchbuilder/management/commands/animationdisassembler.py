@@ -805,8 +805,10 @@ class Command(BaseCommand):
 
         def convert_event_script_command(command, valid_identifiers):
             cmd = command.raw_data
+            # Force identifier output for commands at monster_behaviour_oq_offsets
+            is_monster_behaviour = command.addr in monster_behaviour_oq_offsets
             use_identifier: bool = (
-                command.id in valid_identifiers or "queuestart" in command.id
+                command.id in valid_identifiers or "queuestart" in command.id or is_monster_behaviour
             )
             # use_identifier: bool = false
             args = {}
@@ -2313,6 +2315,19 @@ class Command(BaseCommand):
             else:
                 #print(f"    adding {bank_id} 0x{blocks.start:06x}")
                 branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
+
+            # sprite behaviour OQs need to be included
+            if third_byte_as_string == '35':
+                for i, mb_offset in enumerate(monster_behaviour_oq_offsets):
+                    oq_starts.append(
+                        OQRef(
+                            mb_offset,
+                            deepcopy(INIT_AMEM),
+                            [0],
+                            label=f'sprite behaviour {i}'
+                        )
+                    )
+                    branches.append(Addr(mb_offset, deepcopy(INIT_AMEM), f'sprite behaviour {i}', []))
             # now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
@@ -2897,9 +2912,11 @@ class Command(BaseCommand):
                 output += "\nfrom ....variables.music_names import *"
                 output += "\nfrom ....variables.battle_sfx_names import *"
                 output += "\nfrom ....variables.battle_effect_names import *"
+                output += "\nfrom ....variables.battle_event_names import *"
                 output += "\nfrom ....variables.screen_effect_names import *"
                 output += "\nfrom ....spells.spells import *"
                 output += "\nfrom ....items.items import *"
+                output += "\nfrom ....enemies.enemies import *"
                 output += "\nfrom ....enemy_attacks.attacks import *"
 
                 output += f"\n\nscript = AnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"

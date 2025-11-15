@@ -42,7 +42,11 @@ class Command(BaseCommand):
             rom = bytearray(f.read())
 
         # load animation bank to get command address mappings
-        address_to_identifier = self._load_animation_bank(animation_bank_path)
+        # If animation_bank_path is "dummy", skip loading (for stage 1 of combined disassembly)
+        if animation_bank_path and animation_bank_path != "dummy":
+            address_to_identifier = self._load_animation_bank(animation_bank_path)
+        else:
+            address_to_identifier = {}  # Empty mapping for stage 1
 
         # load item collection to get item id to class name mappings
         item_id_to_class = self._load_item_mapping()
@@ -360,7 +364,7 @@ class Command(BaseCommand):
         behaviour_full_address = 0x350000 | behaviour_pointer
 
         # look up identifier from address mapping
-        monster_behaviour = address_to_identifier.get(behaviour_full_address, f"unknown_0x{behaviour_full_address:06X}")
+        monster_behaviour = address_to_identifier.get(behaviour_full_address)
 
         return {
             "name": name,
@@ -645,7 +649,11 @@ class Command(BaseCommand):
             lines.append(f"    # WARNING: Unknown entrance_style value: {data['entrance_style']}")
 
         # monster behaviour
-        lines.append(f'    _monster_behaviour: str = "{data["monster_behaviour"]}"')
+        if data["monster_behaviour"] is not None:
+            lines.append(f'    _monster_behaviour: str = "{data["monster_behaviour"]}"')
+        else:
+            # Will be filled in during stage 5 of combined disassembly
+            lines.append('    _monster_behaviour: str = ""  # To be filled by combined_disassembler')
 
         # elevation
         if data["elevate"] > 0:

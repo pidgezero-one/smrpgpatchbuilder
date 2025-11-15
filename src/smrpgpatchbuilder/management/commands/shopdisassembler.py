@@ -124,7 +124,7 @@ class Command(BaseCommand):
             writeline(f, "")
             writeline(f, "")
 
-            writeline(f, "shops = [None] * 33")
+            writeline(f, "shops: list[Shop] = [None] * 33 # type: ignore")
 
             # Generate shop definitions
             for shop in shops_data:

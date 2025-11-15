@@ -221,7 +221,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
     ) -> int:
         """Associates an identifier and an address as a key-value pair in the addresses dict."""
         key: str = command.identifier.label
-        if key in self.addresses:
+        if key in self.addresses and self.addresses[key] != position:
             raise IdentifierException(f"duplicate command identifier found: {key}")
         self.addresses[key] = position
         position += command.size

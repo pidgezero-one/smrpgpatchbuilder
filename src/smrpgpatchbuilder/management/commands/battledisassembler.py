@@ -349,7 +349,6 @@ class Command(BaseCommand):
         BATTLE_EVENTS = varnames["events"]
         SPELLS = [""] * 252
         SPELLS[251] = "DoNothing"
-        print(classnames["all_spells"])
         for i, a in enumerate(classnames["all_spells"]):
             SPELLS[i] = a
         ATTACKS = [""] * 252

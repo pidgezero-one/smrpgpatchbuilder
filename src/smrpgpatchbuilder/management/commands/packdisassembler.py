@@ -215,7 +215,7 @@ class Command(BaseCommand):
             writeline(f, "")
 
             writeline(f, "# Initialize packs array with None values")
-            writeline(f, "packs = [None] * 256")
+            writeline(f, "packs: list[FormationPack] = [None] * 256 # type: ignore")
             writeline(f, "")
             writeline(f, "")
 

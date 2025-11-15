@@ -262,7 +262,7 @@ class Command(BaseCommand):
             writeline(f, "")
             writeline(f, "")
 
-            writeline(f, "world_map_locations = [None] * 56")
+            writeline(f, "world_map_locations: list[WorldMapLocation] = [None] * 56 # type: ignore")
             writeline(f, "")
 
             # Generate location definitions

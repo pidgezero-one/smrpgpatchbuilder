@@ -1,62 +1,20 @@
 from django.core.management.base import BaseCommand
-from randomizer.data.npcs import npcs
-from randomizer.data.rooms.room import (
-    Buffer,
-    Partition,
-    DestinationProps,
-    RoomExit,
-    MapExit,
-    Event,
-    BattlePackNPC,
-    RegularNPC,
-    ChestNPC,
-    BattlePackClone,
-    RegularClone,
-    ChestClone,
-    Room,
-)
-from randomizer.helpers.roomobjecttables import (
-    object_type,
-    event_initiator,
-    post_battle_behaviour,
-    radial_direction_table,
-    music_table,
-    edge_table,
-    exit_type_table,
-    location_table,
-    room_table,
-    partition_space_table,
-    partition_buffer_table,
-    ExitType,
-)
-from randomizer.logic.utils import isclass_or_instance
-
-from randomizer.management.disassembler_common import (
+from smrpgpatchbuilder.datatypes.levels.classes import *
+from smrpgpatchbuilder.utils.disassembler_common import (
     shortify,
-    bit,
-    dbyte,
-    hbyte,
-    named,
-    con,
-    byte,
-    byte_int,
-    short,
-    short_int,
-    build_table,
-    use_table_name,
-    get_flag_string,
-    flags,
-    con_int,
-    flags_short,
     writeline,
     bit_bool_from_num,
 )
-from randomizer.helpers.npcmodeltables import (
-    sprite_name_table,
-    vram_store_table,
-    shadow_size_table,
-)
+import shutil, os
+from disassembler_output.variables import room_names, overworld_area_names, music_names, sprite_names, event_script_names, action_script_names
 
+# Build lookup dictionaries from the imported name modules
+room_id_to_name = {v: k for k, v in vars(room_names).items() if isinstance(v, int) and not k.startswith('_')}
+location_id_to_name = {v: k for k, v in vars(overworld_area_names).items() if isinstance(v, int) and not k.startswith('_')}
+music_id_to_name = {v: k for k, v in vars(music_names).items() if isinstance(v, int) and not k.startswith('_')}
+sprite_id_to_name = {v: k for k, v in vars(sprite_names).items() if isinstance(v, int) and not k.startswith('_')}
+event_script_id_to_name = {v: k for k, v in vars(event_script_names).items() if isinstance(v, int) and not k.startswith('_')}
+action_script_id_to_name = {v: k for k, v in vars(action_script_names).items() if isinstance(v, int) and not k.startswith('_')}
 
 start = 0x148400
 end = 0x14FFFF
@@ -79,383 +37,15 @@ partitionend = 0x1DDFFF  # bumped up from 0x1ddfdf
 npctable_start = 0x1DB800
 npctable_end = 0x1DDDFF
 
-ELIGIBLE_NPCS = [
-    npcs.Mario,
-    npcs.Toadstool,
-    npcs.Bowser,
-    npcs.Mallow,
-    npcs.Geno,
-    npcs.YellowYoshi,
-    npcs.PinkYoshi,
-    npcs.Boshi,
-    npcs.Croco,
-    npcs.RideYoshi,
-    npcs.Booster,
-    npcs.GreenYoshi,
-    npcs.KingNimbus,
-    npcs.QueenNimbus,
-    npcs.JohnnySmall,
-    npcs.ValentinaSmall,
-    npcs.MagikoopaSmall,
-    npcs.Frogfucius,
-    npcs.Tadpole,
-    npcs.Thwomp,
-    npcs.BigThwomp,
-    npcs.NimbusLandStatue,
-    npcs.RedSmallToad,
-    npcs.BlueToad,
-    npcs.PinkToad,
-    npcs.OldBlueToad,
-    npcs.OldRedToad,
-    npcs.GreenSmallToad,
-    npcs.Chancellor,
-    npcs.PaMole,
-    npcs.MaMole,
-    npcs.PinkMole,
-    npcs.YellowMole,
-    npcs.BlueNimbite,
-    npcs.RedNimbite,
-    npcs.BrownNimbite,
-    npcs.GreenNimbite,
-    npcs.NimbusGuard,
-    npcs.Toadofsky,
-    npcs.MallowDoll,
-    npcs.BlueStarPiece,
-    npcs.PurpleStarPiece,
-    npcs.RedStarPiece,
-    npcs.OrangeStarPiece,
-    npcs.GreenStarPiece,
-    npcs.IndigoStarPiece,
-    npcs.YellowStarPiece,
-    npcs.BowserDoll,
-    npcs.ToadstoolDoll,
-    npcs.TreasureChest,
-    npcs.MidasRiverMario,
-    npcs.Parachute,
-    npcs.Barrel,
-    npcs.WarpTrampoline,
-    npcs.JumpTrampoline,
-    npcs.Seesaw,
-    npcs.SavePoint,
-    npcs.Corkpedite,
-    npcs.JBlock,
-    npcs.YellowPlatform,
-    npcs.WhirlpoolBubble,
-    npcs.Hinopio,
-    npcs.FactoryNut,
-    npcs.GreenSwitch,
-    npcs.RedToad,
-    npcs.GreenToad,
-    npcs.YellowToad,
-    npcs.TurquoiseToad,
-    npcs.PinkSmallToad,
-    npcs.BlueSmallToad,
-    npcs.OldBrownToad,
-    npcs.OldGreenToad,
-    npcs.OldDarkGreenToad,
-    npcs.OldPinkToad,
-    npcs.FatYoshi,
-    npcs.PurpleSmallToad,
-    npcs.FrogDisciple,
-    npcs.ChompBehind,
-    npcs.WigglerHead,
-    npcs.BlockShadow,
-    npcs.RedMagikoopa,
-    npcs.WigglerBody,
-    npcs.ParsonDodo,
-    npcs.KnifeGuySmall,
-    npcs.KnifeGuySmall2,
-    npcs.Minecart,
-    npcs.FlatFireball,
-    npcs.PipePiranhaPlant,
-    npcs.ThumpGoomba,
-    npcs.BulletBill,
-    npcs.GoldenBulletBill,
-    npcs.ClerkSmall,
-    npcs.LandsEndCannon,
-    npcs.CommanderTroopa,
-    npcs.BelomeStatue,
-    npcs.ShyGuyClownCar,
-    npcs.MachineBowyer,
-    npcs.MachineYaridOverworld,
-    npcs.GunyolkTop,
-    npcs.GunyolkOuter,
-    npcs.Crane,
-    npcs.SpinningStarPiece,
-    npcs.SmithyHammer,
-    npcs.SmithyBodyOverworld,
-    npcs.PoisonGas,
-    npcs.DynaMite,
-    npcs.FakeToad,
-    npcs.FakeElder,
-    npcs.Elder,
-    npcs.Monstromama,
-    npcs.NimbusGuardPurple,
-    npcs.ManagerSmall,
-    npcs.DirectorSmall,
-    npcs.BoomerOverworld,
-    npcs.DrTopper,
-    npcs.StarPieceSparkle,
-    npcs.GenoDoll,
-    npcs.SmelterSection,
-    npcs.AeroShot,
-    npcs.GoldenChompBehind,
-    npcs.GrateGuySmall,
-    npcs.BlueStripedToad,
-    npcs.RedStripedToad,
-    npcs.PinkStripedToad,
-    npcs.YellowStripedToad,
-    npcs.OldBlueStripedToad,
-    npcs.OldRedStripedToad,
-    npcs.RedStripedSmallToad,
-    npcs.PinkStripedSmallToad,
-    npcs.Cannonball,
-    npcs.Croco2,
-    npcs.Jinx2,
-    npcs.BigCoin,
-    npcs.SmallCoin,
-    npcs.FrogCoin,
-    npcs.Ring,
-    npcs.SparkleSideways,
-    npcs.SparkleDown,
-    npcs.FryingPan,
-    npcs.Explosion,
-    npcs.MokuraCloud,
-    npcs.Shoes,
-    npcs.MicroBombItem,
-    npcs.Card,
-    npcs.Brooch,
-    npcs.Hammer,
-    npcs.FroggieStick,
-    npcs.ChompItem,
-    npcs.Fan,
-    npcs.RedMushroom,
-    npcs.Teleport,
-    npcs.GreenMushroom,
-    npcs.YellowMushroom,
-    npcs.Crown,
-    npcs.GreenCandy,
-    npcs.BlueCandy,
-    npcs.RedSyrup,
-    npcs.GreenSyrup,
-    npcs.YellowSyrup,
-    npcs.Banana,
-    npcs.BlueSyrup,
-    npcs.RedBomb,
-    npcs.TinyStar,
-    npcs.GreenBomb,
-    npcs.YellowBomb,
-    npcs.BlueBomb,
-    npcs.GreenJuice,
-    npcs.Egg,
-    npcs.RedJuice,
-    npcs.RDrink,
-    npcs.DDrink,
-    npcs.PDrink,
-    npcs.FrogDrink,
-    npcs.YellowMusicDrink,
-    npcs.BlueMusicDrink,
-    npcs.RedMusicDrink,
-    npcs.StarDrink,
-    npcs.RedShell,
-    npcs.GreenShell,
-    npcs.Parasol,
-    npcs.Feather,
-    npcs.Berry,
-    npcs.Cookie,
-    npcs.Beetle,
-    npcs.Terrapin,
-    npcs.Spikey,
-    npcs.SkyTroopa,
-    npcs.MadMallet,
-    npcs.Shaman,
-    npcs.Crook,
-    npcs.Goomba,
-    npcs.PiranhaPlant,
-    npcs.Amanita,
-    npcs.Goby,
-    npcs.Bloober,
-    npcs.BandanaRed,
-    npcs.Lakitu,
-    npcs.Birdy,
-    npcs.Pinwheel,
-    npcs.RatFunk,
-    npcs.K9,
-    npcs.Magmite,
-    npcs.BigBoo,
-    npcs.DryBones,
-    npcs.Greaper,
-    npcs.RedFireball,
-    npcs.Chomp,
-    npcs.PandoriteLarge,
-    npcs.BobOmb,
-    npcs.Spookum,
-    npcs.HammerBroLarge,
-    npcs.Buzzer,
-    npcs.Ameboid,
-    npcs.Gecko,
-    npcs.Wiggler,
-    npcs.Jawful,
-    npcs.Guerrilla,
-    npcs.Shogun,
-    npcs.HeavyTropa,
-    npcs.ClerkLarge,
-    npcs.BoomerLarge,
-    npcs.DodoLarge,
-    npcs.TerraCotta,
-    npcs.Spikester,
-    npcs.Malakoopa,
-    npcs.Pounder,
-    npcs.Poundette,
-    npcs.Sackit,
-    npcs.GuGoomba,
-    npcs.Chewy,
-    npcs.BlueFireball,
-    npcs.MrKipper,
-    npcs.FactoryChief,
-    npcs.BandanaBlue,
-    npcs.ManagerLarge,
-    npcs.Bluebird,
-    npcs.AlleyRat,
-    npcs.Chow,
-    npcs.Magmus,
-    npcs.LilBoo,
-    npcs.Vomer,
-    npcs.GlumReaper,
-    npcs.HidonLarge,
-    npcs.SlingShy,
-    npcs.RobOmb,
-    npcs.ShyGuy,
-    npcs.Ninja,
-    npcs.Stinger,
-    npcs.Geckit,
-    npcs.Jabit,
-    npcs.MagikoopaLarge,
-    npcs.DirectorLarge,
-    npcs.Apprentice,
-    npcs.GenoRedemption,
-    npcs.BoxBoyLarge,
-    npcs.Oerlikon,
-    npcs.ChesterLarge,
-    npcs.Torte,
-    npcs.ShyAway,
-    npcs.MachineShyster,
-    npcs.MachineDrillBit,
-    npcs.MarioClone,
-    npcs.PeachClone,
-    npcs.BowserClone,
-    npcs.GenoClone,
-    npcs.MallowClone,
-    npcs.Shyster,
-    npcs.HanginShy,
-    npcs.MachineMack,
-    npcs.MachineAxemPink,
-    npcs.MachineAxemBlack,
-    npcs.MachineAxemRed,
-    npcs.MachineAxemYellow,
-    npcs.MachineAxemGreen,
-    npcs.Starslap,
-    npcs.Mukumuku,
-    npcs.Zeostar,
-    npcs.Chompweed,
-    npcs.Microbomb,
-    npcs.Helio,
-    npcs.KnifeGuyLarge,
-    npcs.GrateGuyLarge,
-    npcs.BundtLarge,
-    npcs.Belome1Large,
-    npcs.Smilax,
-    npcs.Thrax,
-    npcs.Megasmilax,
-    npcs.BirdettaLarge,
-    npcs.Eggbert,
-    npcs.AxemYellow,
-    npcs.PunchinelloLarge,
-    npcs.AxemRed,
-    npcs.AxemGreen,
-    npcs.BundtSmall,
-    npcs.CloakerLarge,
-    npcs.MackLarge,
-    npcs.YaridovichLarge,
-    npcs.DrillBit,
-    npcs.AxemPink,
-    npcs.AxemBlack,
-    npcs.BowyerLarge,
-    npcs.AeroUpright,
-    npcs.Snifit,
-    npcs.JohnnyLarge,
-    npcs.ValentinaLarge,
-    npcs.CulexLarge,
-    npcs.CountDownGridplane,
-    npcs.MokuraLarge,
-    npcs.PandoriteSmall,
-    npcs.HidonSmall,
-    npcs.ChesterSmall,
-    npcs.BoxBoySmall,
-    npcs.HammerBroSmall,
-    npcs.MackSmall,
-    npcs.Belome1Small,
-    npcs.Belome2Small,
-    npcs.BowyerSmall,
-    npcs.PunchinelloSmall,
-    npcs.DodoSmall,
-    npcs.BirdettaSmall,
-    npcs.CzarDragonSmall,
-    npcs.BoomerSmall,
-    npcs.ExorSmall,
-    npcs.DominoSmall,
-    npcs.SmithySmall,
-    npcs.MarioDoll,
-    npcs.GoldGoomba,
-    npcs.BigFlower,
-    npcs.SmallFrogCoin,
-    npcs.Jinx1,
-    npcs.Jinx3,
-    npcs.TerrapinEnding,
-    npcs.StumpetHead,
-    npcs.StumpetRoot,
-    npcs.CzarBody,
-    npcs.VineBeanstalk,
-    npcs.BrownBrick,
-    npcs.SandWhirlpool,
-    npcs.Letter,
-    npcs.YaridOverworld,
-    npcs.TentacleExtending,
-    npcs.BackSnifit,
-    npcs.DonutLift,
-    npcs.NESProtagonist,
-    npcs.SplashWaterDroplets,
-    npcs.Fish,
-    npcs.Geyser,
-    npcs.BowyerOverworld,
-    npcs.MushroomLamp,
-    npcs.Link,
-    npcs.Samus,
-    npcs.GreyBlock,
-    npcs.PlaneModel,
-    npcs.GreyBrick,
-    npcs.CulexSmall,
-    npcs.CircularSparkle,
-    npcs.Flower,
-    npcs.RecoveryMushroom,
-    npcs.Key,
-    npcs.ItemBag,
-    npcs.Music,
-    npcs.TinyMushroom,
-    npcs.DingalingGridplane,
-    npcs.EggbertGridplane,
-    npcs.FireCrystal,
-    npcs.WaterCrystal,
-    npcs.EarthCrystal,
-    npcs.WindCrystal,
-    npcs.GenoBullet,
-    npcs.MackMedium,
-    npcs.KnifeGuyGridplane,
-    npcs.TinyBloober,
-    npcs.TinyBird,
-    npcs.SmithyLarge,
-    npcs.Goombette,
-    npcs.Empty,
+directions = [
+    "EAST",
+    "SOUTHEAST",
+    "SOUTH",
+    "SOUTHWEST",
+    "WEST",
+    "NORTHWEST",
+    "NORTH",
+    "NORTHEAST",
 ]
 
 
@@ -470,12 +60,61 @@ class Command(BaseCommand):
             help="If set, dumps to a gitignored folder instead of overwriting the scripts sourced by SMRPG Randomizer",
         )
 
+        parser.add_argument(
+            "--large-partition-table",
+            dest="large_partition_table",
+            action="store_true",
+            help="If true, will read 512 partitions from 0x1DEBE0 instead of 120 partitions from 0x1DDE00. Only use this if you've changed your ROM to use this range already.",
+        )
+
+    def _write_npcs_file(self, dest: str, npc_classes: list[NPC], npc_variable_names: dict[int, str]):
+        """Write all NPCs to a single file with proper variable names."""
+        import os
+        os.makedirs(dest, exist_ok=True)
+
+        file = open(f"{dest}/npcs.py", "w", encoding="utf-8")
+        writeline(file, "from smrpgpatchbuilder.datatypes.levels.classes import NPC, ShadowSize, VramStore")
+        writeline(file, "")
+
+        for npc_index, npc in enumerate(npc_classes):
+            var_name = npc_variable_names[npc_index]
+            writeline(file, f"{var_name} = NPC(")
+            writeline(file, f"    sprite_id={npc.sprite_id},")
+            writeline(file, f"    shadow_size=ShadowSize.{npc.shadow_size.name},")
+            writeline(file, f"    acute_axis={npc.acute_axis},")
+            writeline(file, f"    obtuse_axis={npc.obtuse_axis},")
+            writeline(file, f"    height={npc.height},")
+            writeline(file, f"    y_shift={npc.y_shift},")
+            writeline(file, f"    show_shadow={npc.show_shadow!r},")
+            writeline(file, f"    directions=VramStore.{npc.directions.name},")
+            writeline(file, f"    min_vram_size={npc.min_vram_size},")
+            writeline(file, f"    priority_0={npc.priority_0!r},")
+            writeline(file, f"    priority_1={npc.priority_1!r},")
+            writeline(file, f"    priority_2={npc.priority_2!r},")
+            writeline(file, f"    cannot_clone={npc.cannot_clone!r},")
+            writeline(file, f"    byte2_bit0={npc.byte2_bit0!r},")
+            writeline(file, f"    byte2_bit1={npc.byte2_bit1!r},")
+            writeline(file, f"    byte2_bit2={npc.byte2_bit2!r},")
+            writeline(file, f"    byte2_bit3={npc.byte2_bit3!r},")
+            writeline(file, f"    byte2_bit4={npc.byte2_bit4!r},")
+            writeline(file, f"    byte5_bit6={npc.byte5_bit6!r},")
+            writeline(file, f"    byte5_bit7={npc.byte5_bit7!r},")
+            writeline(file, f"    byte6_bit2={npc.byte6_bit2!r},")
+            writeline(file, ")")
+            writeline(file, "")
+
+        file.close()
+        self.stdout.write(self.style.SUCCESS(f"Successfully wrote {len(npc_classes)} NPCs to {dest}/npcs.py"))
+
     def handle(self, *args, **options):
         debug = options["debug"]
+        large_partition_table = options["large_partition_table"]
 
-        dest = "randomizer/data/rooms"
-        if debug:
-            dest = "randomizer/management/commands/output/disassembler/room"
+        # Create output directory
+        dest = "./src/disassembler_output/rooms"
+        shutil.rmtree(dest, ignore_errors=True)
+        os.makedirs(dest, exist_ok=True)
+        open(f"{dest}/__init__.py", "w").close()
 
         global rom
         rom = bytearray(open(options["rom"], "rb").read())
@@ -489,8 +128,11 @@ class Command(BaseCommand):
         roomevent_ptrs = []
         roomexit_ptrs = []
 
-        table_npcs = []
+        npc_classes: list[NPC] = []
+        npc_variable_names: dict[int, str] = {}  # Maps NPC index to variable name
+        sprite_usage_count: dict[int, int] = {}  # Tracks how many NPCs use each sprite
 
+        i = 0
         for offset in range(npctable_start, npctable_end + 1, 7):
             if offset + 7 > npctable_end:
                 break
@@ -524,33 +166,55 @@ class Command(BaseCommand):
 
             y_pixel_shift = y_pixel_shift + (-16 if shift_16_px_down else 0)
 
-            table_npcs.append(
-                npcs.TableNPC(
-                    sprite_val,
-                    priority0,
-                    priority1,
-                    priority2,
-                    show_shadow,
-                    shadow_val,
-                    y_pixel_shift,
-                    acute_axis,
-                    obtuse_axis,
-                    height,
-                    vram_store_val,
-                    vram_size,
-                    cannot_clone,
-                    byte2_bit0,
-                    byte2_bit1,
-                    byte2_bit2,
-                    byte2_bit3,
-                    byte2_bit4,
-                    byte5_bit6,
-                    byte5_bit7,
-                    byte6_bit2,
-                )
+            i += 1
+
+            npc = NPC(
+                sprite_val,
+                ShadowSize(shadow_val),
+                acute_axis,
+                obtuse_axis,
+                height,
+                y_pixel_shift,
+                show_shadow,
+                VramStore(vram_store_val),
+                vram_size,
+                priority0,
+                priority1,
+                priority2,
+                cannot_clone,
+                byte2_bit0,
+                byte2_bit1,
+                byte2_bit2,
+                byte2_bit3,
+                byte2_bit4,
+                byte5_bit6,
+                byte5_bit7,
+                byte6_bit2,
             )
 
-        for i in range(partitionstart, partitionend, 4):
+            # Generate variable name based on sprite name
+            sprite_name_full = sprite_id_to_name.get(sprite_val, f"SPR{sprite_val:04d}_UNKNOWN")
+            # Remove the SPRxxxx_ prefix to get the descriptive name
+            sprite_name = sprite_name_full.split('_', 1)[1] if '_' in sprite_name_full else sprite_name_full
+
+            # Track usage count for this sprite
+            sprite_usage_count[sprite_val] = sprite_usage_count.get(sprite_val, 0) + 1
+            usage_count = sprite_usage_count[sprite_val]
+
+            # Generate variable name: SpriteName_NPC or SpriteName_NPC_2, SpriteName_NPC_3, etc.
+            if usage_count == 1:
+                var_name = f"{sprite_name}_NPC"
+            else:
+                var_name = f"{sprite_name}_NPC_{usage_count}"
+
+            npc_index = len(npc_classes)
+            npc_variable_names[npc_index] = var_name
+            npc_classes.append(npc)
+
+        # Use larger partition table if flag is set
+        actual_partition_start = 0x1DEBE0 if large_partition_table else partitionstart
+        actual_partition_end = 0x1DF3DF if large_partition_table else partitionend
+        for i in range(actual_partition_start, actual_partition_end, 4):
             partition_data = rom[i : i + 4]
             allow_extra_sprite_buffer = partition_data[0] & 0x10 == 0x10
             full_palette_buffer = partition_data[0] & 0x80 == 0x80
@@ -572,18 +236,18 @@ class Command(BaseCommand):
                     extra_sprite_buffer_size,
                     [
                         Buffer(
-                            clone_buffer_a_type,
-                            clone_buffer_a_space,
+                            BufferType(clone_buffer_a_type),
+                            BufferSpace(clone_buffer_a_space),
                             clone_buffer_a_index_in_main,
                         ),
                         Buffer(
-                            clone_buffer_b_type,
-                            clone_buffer_b_space,
+                            BufferType(clone_buffer_b_type),
+                            BufferSpace(clone_buffer_b_space),
                             clone_buffer_b_index_in_main,
                         ),
                         Buffer(
-                            clone_buffer_c_type,
-                            clone_buffer_c_space,
+                            BufferType(clone_buffer_c_type),
+                            BufferSpace(clone_buffer_c_space),
                             clone_buffer_c_index_in_main,
                         ),
                     ],
@@ -628,19 +292,23 @@ class Command(BaseCommand):
 
         if len(rooms_raw_data) < 511:
             raise Exception(
-                "npc pointer table had %i entries (needs at least 509)"
+                "npc pointer table had %i entries (needs at least 511)"
                 % len(rooms_raw_data)
             )
         if len(roomevent_raw_data) < 511:
             raise Exception(
-                "event tile pointer table had %i entries (needs at least 509)"
-                % len(roomexit_raw_data)
+                "event tile pointer table had %i entries (needs at least 511)"
+                % len(roomevent_raw_data)
             )
         if len(roomexit_raw_data) < 511:
             raise Exception(
-                "exit field pointer table had %i entries (needs at least 509)"
+                "exit field pointer table had %i entries (needs at least 511)"
                 % len(roomexit_raw_data)
             )
+
+        # Write NPCs file before processing rooms
+        self._write_npcs_file(dest, npc_classes, npc_variable_names)
+
         for i in range(len(rooms_raw_data)):
             d = rooms_raw_data[i]
             r = roomevent_raw_data[i]
@@ -653,23 +321,47 @@ class Command(BaseCommand):
 
             file = open("%s/room_%i.py" % (dest, i), "w")
 
-            writeline(file, "# AUTOGENERATED DO NOT EDIT!!")
-            writeline(
-                file, "# Run the following command if you need to rebuild the table"
-            )
-            writeline(file, "# python manage.py objectdisassembler --rom ROM")
-            writeline(
-                file,
-                "from randomizer.helpers.roomobjecttables import ObjectType, Initiator, PostBattle, RadialDirection, Music, Edge, ExitType, Locations, Rooms, PartitionBufferTypes, PartitionMainSpace",
-            )
+            # Write room name as comment at the top
+            room_name = room_id_to_name.get(i, f"R{i:03d}_UNKNOWN")
+            writeline(file, "# %s" % room_name)
+
             writeline(
                 file,
-                "from randomizer.data.rooms.room import Buffer, Partition, DestinationProps, RoomExit, MapExit, Event, BattlePackNPC, RegularNPC, ChestNPC, BattlePackClone, RegularClone, ChestClone, Room",
+                "from smrpgpatchbuilder.datatypes.levels.classes import ObjectType, EventInitiator, PostBattleBehaviour, Direction, EdgeDirection, ExitType, BufferType, BufferSpace, VramStore, ShadowSize",
             )
-            writeline(file, "from randomizer.data import npcs")
             writeline(
                 file,
-                "from randomizer.helpers.npcmodeltables import SpriteName, VramStore, ShadowSize",
+                "from smrpgpatchbuilder.datatypes.levels.classes import Buffer, Partition, DestinationProps, RoomExit, MapExit, Event, BattlePackNPC, RegularNPC, ChestNPC, BattlePackClone, RegularClone, ChestClone, Room",
+            )
+            writeline(
+                file,
+                "from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *",
+            )
+            # Import all NPCs from the npcs.py file in the same directory
+            if dest.startswith("randomizer"):
+                writeline(file, "from randomizer.data.rooms import npcs")
+            else:
+                # For debug mode
+                writeline(file, "from . import npcs")
+            writeline(
+                file,
+                "from disassembler_output.variables.room_names import *",
+            )
+            writeline(
+                file,
+                "from disassembler_output.variables.overworld_area_names import *",
+            )
+            writeline(
+                file,
+                "from disassembler_output.variables.music_names import *",
+            )
+            writeline(
+                file,
+                "from disassembler_output.variables.event_script_names import *",
+            )
+            writeline(
+                file,
+                "from disassembler_output.variables.action_script_names import *",
             )
 
             if len(d) == 0 and len(r) == 0 and len(e) == 0:
@@ -702,14 +394,10 @@ class Command(BaseCommand):
             )
             writeline(file, "        buffers = [")
             writeline(file, "            Buffer(")
-            buffer_type, _ = byte(
-                prefix="PartitionBufferTypes", table=partition_buffer_table
-            )([partition.buffers[0].buffer_type])
-            writeline(file, "                buffer_type=%s," % buffer_type)
-            main_buffer_space, _ = byte(
-                prefix="PartitionMainSpace", table=partition_space_table
-            )([partition.buffers[0].main_buffer_space])
-            writeline(file, "                main_buffer_space=%s," % main_buffer_space)
+            buffer_type = BufferType(partition.buffers[0].buffer_type)
+            writeline(file, "                buffer_type=BufferType.%s," % buffer_type.name)
+            main_buffer_space = BufferSpace(partition.buffers[0].main_buffer_space)
+            writeline(file, "                main_buffer_space=BufferSpace.%s," % main_buffer_space.name)
             writeline(
                 file,
                 "                index_in_main_buffer=%r"
@@ -717,14 +405,10 @@ class Command(BaseCommand):
             )
             writeline(file, "            ),")
             writeline(file, "            Buffer(")
-            buffer_type, _ = byte(
-                prefix="PartitionBufferTypes", table=partition_buffer_table
-            )([partition.buffers[1].buffer_type])
-            writeline(file, "                buffer_type=%s," % buffer_type)
-            main_buffer_space, _ = byte(
-                prefix="PartitionMainSpace", table=partition_space_table
-            )([partition.buffers[1].main_buffer_space])
-            writeline(file, "                main_buffer_space=%s," % main_buffer_space)
+            buffer_type = BufferType(partition.buffers[1].buffer_type)
+            writeline(file, "                buffer_type=BufferType.%s," % buffer_type.name)
+            main_buffer_space = BufferSpace(partition.buffers[1].main_buffer_space)
+            writeline(file, "                main_buffer_space=BufferSpace.%s," % main_buffer_space.name)
             writeline(
                 file,
                 "                index_in_main_buffer=%r"
@@ -732,14 +416,10 @@ class Command(BaseCommand):
             )
             writeline(file, "            ),")
             writeline(file, "            Buffer(")
-            buffer_type, _ = byte(
-                prefix="PartitionBufferTypes", table=partition_buffer_table
-            )([partition.buffers[2].buffer_type])
-            writeline(file, "                buffer_type=%s," % buffer_type)
-            main_buffer_space, _ = byte(
-                prefix="PartitionMainSpace", table=partition_space_table
-            )([partition.buffers[2].main_buffer_space])
-            writeline(file, "                main_buffer_space=%s," % main_buffer_space)
+            buffer_type = BufferType(partition.buffers[2].buffer_type)
+            writeline(file, "                buffer_type=BufferType.%s," % buffer_type.name)
+            main_buffer_space = BufferSpace(partition.buffers[2].main_buffer_space)
+            writeline(file, "                main_buffer_space=BufferSpace.%s," % main_buffer_space.name)
             writeline(
                 file,
                 "                index_in_main_buffer=%r"
@@ -755,11 +435,13 @@ class Command(BaseCommand):
             # events
 
             if len(r) > 0:
-                music, _ = byte(prefix="Music", table=music_table)([r[0]])
-                writeline(file, "    music=%s," % music)
+                music_id = r[0]
+                music_name = music_id_to_name.get(music_id)
+                writeline(file, "    music=%s," % music_name)
                 loading_event = (r[2] << 8) + r[1]
-                writeline(file, "    entrance_event=%i," % loading_event)
-
+                event_name = event_script_id_to_name.get(loading_event, None)
+                writeline(file, "    entrance_event=%s," % event_name)
+                
                 j = 3
                 event_triggers = []
                 while j < len(r):
@@ -776,13 +458,15 @@ class Command(BaseCommand):
                         f_bit = (trigger_data[5] & 0x80) >> 7
                         byte_8_bit_4 = (trigger_data[5] & 0x10) >> 4
                         j += 6
+                    # Read event as a short (2 bytes little-endian) and mask with 0x0FFF (12 bits)
+                    event_value = (trigger_data[0] | (trigger_data[1] << 8)) & 0x0FFF
                     event_triggers.append(
                         Event(
-                            event=((trigger_data[1] & 0x7F) << 8) + trigger_data[0],
+                            event=event_value,
                             x=trigger_data[2] & 0x7F,
                             y=trigger_data[3] & 0x7F,
                             z=trigger_data[4] & 0x1F,
-                            f=f_bit,
+                            f=EdgeDirection(f_bit),
                             length=length,
                             height=(trigger_data[4] & 0xF0) >> 5,
                             nw_se_edge_active=trigger_data[2] & 0x80 == 0x80,
@@ -791,17 +475,19 @@ class Command(BaseCommand):
                         )
                     )
                 if len(event_triggers) > 0:
-                    writeline(file, "    event_tiles=[")
+                    writeline(file, "    events=[")
                     for event in event_triggers:
                         writeline(file, "        Event(")
-                        writeline(file, "            event=%i," % event.event)
+                        event_name = event_script_id_to_name.get(event.event, None)
+                        if event_name:
+                            writeline(file, "            event=%s," % event_name)
+                        else:
+                            writeline(file, "            event=%i," % event.event)
                         writeline(file, "            x=%i," % event.x)
                         writeline(file, "            y=%i," % event.y)
                         writeline(file, "            z=%i," % event.z)
-                        f, _ = byte(prefix="Edge", table=edge_table)([event.f])
-                        if i == 284:
-                            print(f)
-                        writeline(file, "            f=%s," % f)
+                        f_edge = EdgeDirection(event.f)
+                        writeline(file, "            f=EdgeDirection.%s," % f_edge.name)
                         writeline(file, "            height=%i," % event.height)
                         writeline(file, "            length=%i," % event.length)
                         writeline(
@@ -853,7 +539,7 @@ class Command(BaseCommand):
                                 x=field_data[2] & 0x7F,
                                 y=field_data[3] & 0x7F,
                                 z=field_data[4] & 0x1F,
-                                f=f_bit,
+                                f=EdgeDirection(f_bit),
                                 length=length,
                                 height=(field_data[4] & 0xF0) >> 5,
                                 nw_se_edge_active=field_data[2] & 0x80 == 0x80,
@@ -865,7 +551,7 @@ class Command(BaseCommand):
                                 dst_y=field_data[6] & 0x7F,
                                 dst_z=field_data[7] & 0x1F,
                                 dst_z_half=(field_data[6] & 0x80) == 0x80,
-                                dst_f=dst_f_val,
+                                dst_f=Direction(dst_f_val),
                                 x_bit_7=(field_data[5] & 0x80) == 0x80,
                             )
                         )
@@ -876,7 +562,7 @@ class Command(BaseCommand):
                                 x=field_data[2] & 0x7F,
                                 y=field_data[3] & 0x7F,
                                 z=field_data[4] & 0x1F,
-                                f=f_bit,
+                                f=EdgeDirection(f_bit),
                                 length=length,
                                 height=(field_data[4] & 0xF0) >> 5,
                                 nw_se_edge_active=field_data[2] & 0x80 == 0x80,
@@ -891,7 +577,7 @@ class Command(BaseCommand):
                     j += offset
 
                 if len(exit_fields) > 0:
-                    writeline(file, "    exit_fields=[")
+                    writeline(file, "    exits=[")
                     for ex in exit_fields:
                         if ex.destination_type == ExitType.ROOM:
                             writeline(file, "        RoomExit(")
@@ -900,8 +586,8 @@ class Command(BaseCommand):
                         writeline(file, "            x=%i," % ex.x)
                         writeline(file, "            y=%i," % ex.y)
                         writeline(file, "            z=%i," % ex.z)
-                        f, _ = byte(prefix="Edge", table=edge_table)([ex.f])
-                        writeline(file, "            f=%s," % f)
+                        f_edge = EdgeDirection(ex.f)
+                        writeline(file, "            f=EdgeDirection.%s," % f_edge.name)
                         writeline(file, "            length=%i," % ex.length)
                         writeline(file, "            height=%i," % ex.height)
                         writeline(
@@ -916,14 +602,11 @@ class Command(BaseCommand):
                             file, "            byte_2_bit_2=%r," % ex.byte_2_bit_2
                         )
                         if ex.destination_type == ExitType.ROOM:
-                            dst, _ = byte(prefix="Rooms", table=room_table)(
-                                [ex.destination]
-                            )
+                            dst_name = room_id_to_name.get(ex.destination, f"R{ex.destination:03d}_UNKNOWN")
+                            writeline(file, "            destination=%s," % dst_name)
                         else:
-                            dst, _ = byte(prefix="Locations", table=location_table)(
-                                [ex.destination]
-                            )
-                        writeline(file, "            destination=%s," % dst)
+                            dst_name = location_id_to_name.get(ex.destination, f"OW{ex.destination:02d}_UNKNOWN")
+                            writeline(file, "            destination=%s," % dst_name)
                         writeline(
                             file, "            show_message=%r," % ex.show_message
                         )
@@ -939,13 +622,11 @@ class Command(BaseCommand):
                             )
                             writeline(
                                 file,
-                                "            dst_z_half=%i,"
+                                "            dst_z_half=%r,"
                                 % ex.destination_props.z_half,
                             )
-                            dst_f, _ = byte(
-                                prefix="RadialDirection", table=radial_direction_table
-                            )([ex.destination_props.f])
-                            writeline(file, "            dst_f=%s," % dst_f)
+                            dst_f_direction = Direction(ex.destination_props.f)
+                            writeline(file, "            dst_f=%s," % directions[dst_f_direction])
                             writeline(
                                 file,
                                 "            x_bit_7=%r,"
@@ -966,6 +647,7 @@ class Command(BaseCommand):
                 room_objects = []
                 offset = 1
                 n = 0
+                event, upper_70a7, lower_70a7, after_battle, pack, base_event, base_pack = 0,0,0,0,0,0,0
                 while offset < len(d):
                     l = 12
                     otype = d[offset] >> 4
@@ -994,7 +676,7 @@ class Command(BaseCommand):
                     else:  # battle
                         assigned_npc = base_assigned_npc
                         action_script = base_action_script + (d[offset + 8] & 0x0F)
-                        after_battle = d[offset + 7] & 0x0F
+                        after_battle = (d[offset + 7] >> 1) & 0x07
                         base_pack = d[offset + 6]
                         pack = base_pack + (d[offset + 8] >> 4)
                     visible = bit_bool_from_num(d[offset + 9], 7)
@@ -1020,17 +702,7 @@ class Command(BaseCommand):
                     cant_move_if_in_air = bit_bool_from_num(d[offset + 3], 1)
                     byte7_upper2 = d[offset + 5] >> 6
 
-                    npc_from_table = table_npcs[assigned_npc]
-                    sprite_match = npc_from_table.sprite_id
-
-                    npc_class = next(
-                        (x for x in ELIGIBLE_NPCS if x.sprite_id == sprite_match), None
-                    )
-                    if npc_class is None:
-                        raise Exception(
-                            "could not find a NPC matching sprite with ID %i in room %i"
-                            % (sprite_match, i),
-                        )
+                    npc_from_table = npc_classes[assigned_npc]
 
                     ending_args = [
                         speed,
@@ -1039,7 +711,7 @@ class Command(BaseCommand):
                         y,
                         z,
                         z_half,
-                        direction,
+                        Direction(direction),
                         face_on_trigger,
                         cant_enter_doors,
                         byte2_bit5,
@@ -1056,71 +728,22 @@ class Command(BaseCommand):
                         slidable_along_walls,
                         cant_move_if_in_air,
                         byte7_upper2,
-                        npc_from_table.priority_0,
-                        npc_from_table.priority_1,
-                        npc_from_table.priority_2,
-                        None
-                        if npc_class.show_shadow == npc_from_table.show_shadow
-                        else npc_from_table.show_shadow,
-                        None
-                        if npc_class.acute_axis == npc_from_table.acute_axis
-                        else npc_from_table.acute_axis,
-                        None
-                        if npc_class.obtuse_axis == npc_from_table.obtuse_axis
-                        else npc_from_table.obtuse_axis,
-                        None
-                        if npc_class.height == npc_from_table.height
-                        else npc_from_table.height,
-                        None
-                        if npc_class.directions == npc_from_table.directions
-                        else npc_from_table.directions,
-                        None
-                        if npc_class.min_vram_size == npc_from_table.vram_size
-                        else npc_from_table.vram_size,
-                        npc_from_table.cannot_clone,
-                        None
-                        if npc_class.byte2_bit0 == npc_from_table.byte2_bit0
-                        else npc_from_table.byte2_bit0,
-                        None
-                        if npc_class.byte2_bit1 == npc_from_table.byte2_bit1
-                        else npc_from_table.byte2_bit1,
-                        None
-                        if npc_class.byte2_bit2 == npc_from_table.byte2_bit2
-                        else npc_from_table.byte2_bit2,
-                        None
-                        if npc_class.byte2_bit3 == npc_from_table.byte2_bit3
-                        else npc_from_table.byte2_bit3,
-                        None
-                        if npc_class.byte2_bit4 == npc_from_table.byte2_bit4
-                        else npc_from_table.byte2_bit4,
-                        None
-                        if npc_class.byte5_bit6 == npc_from_table.byte5_bit6
-                        else npc_from_table.byte5_bit6,
-                        None
-                        if npc_class.byte5_bit7 == npc_from_table.byte5_bit7
-                        else npc_from_table.byte5_bit7,
-                        None
-                        if npc_class.byte6_bit2 == npc_from_table.byte6_bit2
-                        else npc_from_table.byte6_bit2,
-                        None
-                        if npc_class.y_shift == npc_from_table.y_shift
-                        else npc_from_table.y_shift,
                     ]
-
+                    
                     # start comparing properties of npc_from_table vs npc_class
                     if otype == 0:  # regular
                         npcType = RegularNPC
                         args = [
-                            npc_class,
-                            initiator,
+                            npc_from_table,
+                            EventInitiator(initiator),
                             event,
                             action_script,
                         ] + ending_args
                     elif otype == 1:  # chest
                         npcType = ChestNPC
                         args = [
-                            npc_class,
-                            initiator,
+                            npc_from_table,
+                            EventInitiator(initiator),
                             event,
                             action_script,
                             upper_70a7,
@@ -1129,9 +752,9 @@ class Command(BaseCommand):
                     else:  # battle
                         npcType = BattlePackNPC
                         args = [
-                            npc_class,
-                            initiator,
-                            after_battle,
+                            npc_from_table,
+                            EventInitiator(initiator),
+                            PostBattleBehaviour(after_battle),
                             pack,
                             action_script,
                         ] + ending_args
@@ -1162,22 +785,8 @@ class Command(BaseCommand):
                                 action_script = base_action_script + (d[o] & 0x0F)
                                 pack = base_pack + (d[o] >> 4)
 
-                            npc_from_table = table_npcs[assigned_npc]
-                            sprite_match = npc_from_table.sprite_id
+                            npc_from_table = npc_classes[assigned_npc]
 
-                            npc_class = next(
-                                (
-                                    x
-                                    for x in ELIGIBLE_NPCS
-                                    if x.sprite_id == sprite_match
-                                ),
-                                None,
-                            )
-                            if npc_class is None:
-                                raise Exception(
-                                    "could not find a NPC matching sprite with ID %i in room %i",
-                                    (sprite_match, i),
-                                )
 
                             # print(npc_from_table.cannot_clone)
 
@@ -1187,64 +796,15 @@ class Command(BaseCommand):
                                 (d[o + 2] & 0x7F),
                                 (d[o + 3] & 0x1F),
                                 bit_bool_from_num(d[o + 2], 7),
-                                (d[o + 3] >> 5),
-                                npc_from_table.priority_0,
-                                npc_from_table.priority_1,
-                                npc_from_table.priority_2,
-                                None
-                                if npc_class.show_shadow == npc_from_table.show_shadow
-                                else npc_from_table.show_shadow,
-                                None
-                                if npc_class.y_shift == npc_from_table.y_shift
-                                else npc_from_table.y_shift,
-                                None
-                                if npc_class.acute_axis == npc_from_table.acute_axis
-                                else npc_from_table.acute_axis,
-                                None
-                                if npc_class.obtuse_axis == npc_from_table.obtuse_axis
-                                else npc_from_table.obtuse_axis,
-                                None
-                                if npc_class.height == npc_from_table.height
-                                else npc_from_table.height,
-                                None
-                                if npc_class.directions == npc_from_table.directions
-                                else npc_from_table.directions,
-                                None
-                                if npc_class.min_vram_size == npc_from_table.vram_size
-                                else npc_from_table.vram_size,
-                                npc_from_table.cannot_clone,
-                                None
-                                if npc_class.byte2_bit0 == npc_from_table.byte2_bit0
-                                else npc_from_table.byte2_bit0,
-                                None
-                                if npc_class.byte2_bit1 == npc_from_table.byte2_bit1
-                                else npc_from_table.byte2_bit1,
-                                None
-                                if npc_class.byte2_bit2 == npc_from_table.byte2_bit2
-                                else npc_from_table.byte2_bit2,
-                                None
-                                if npc_class.byte2_bit3 == npc_from_table.byte2_bit3
-                                else npc_from_table.byte2_bit3,
-                                None
-                                if npc_class.byte2_bit4 == npc_from_table.byte2_bit4
-                                else npc_from_table.byte2_bit4,
-                                None
-                                if npc_class.byte5_bit6 == npc_from_table.byte5_bit6
-                                else npc_from_table.byte5_bit6,
-                                None
-                                if npc_class.byte5_bit7 == npc_from_table.byte5_bit7
-                                else npc_from_table.byte5_bit7,
-                                None
-                                if npc_class.byte6_bit2 == npc_from_table.byte6_bit2
-                                else npc_from_table.byte6_bit2,
+                                Direction((d[o + 3] >> 5)),
                             ]
 
                             if otype == 0:  # regular
-                                args = [npc_class, event, action_script] + ending_args
+                                args = [npc_from_table, event, action_script] + ending_args
                             elif otype == 1:  # chest
-                                args = [npc_class, lower_70a7, upper_70a7] + ending_args
+                                args = [npc_from_table, lower_70a7, upper_70a7] + ending_args
                             else:  # battle
-                                args = [npc_class, pack, action_script] + ending_args
+                                args = [npc_from_table, pack, action_script] + ending_args
                             thisNPC = npcType(*args)
 
                             room_objects.append(thisNPC)
@@ -1252,69 +812,73 @@ class Command(BaseCommand):
 
                 writeline(file, "    objects=[")
                 for index, obj in enumerate(room_objects):
-                    if isclass_or_instance(obj, BattlePackNPC):
+                    if isinstance(obj, BattlePackNPC):
                         writeline(file, "        BattlePackNPC( # %i" % index)
-                    elif isclass_or_instance(obj, RegularNPC):
+                    elif isinstance(obj, RegularNPC):
                         writeline(file, "        RegularNPC( # %i" % index)
-                    elif isclass_or_instance(obj, ChestNPC):
+                    elif isinstance(obj, ChestNPC):
                         writeline(file, "        ChestNPC( # %i" % index)
-                    elif isclass_or_instance(obj, BattlePackClone):
+                    elif isinstance(obj, BattlePackClone):
                         writeline(file, "        BattlePackClone( # %i" % index)
-                    elif isclass_or_instance(obj, RegularClone):
+                    elif isinstance(obj, RegularClone):
                         writeline(file, "        RegularClone( # %i" % index)
-                    elif isclass_or_instance(obj, ChestClone):
+                    elif isinstance(obj, ChestClone):
                         writeline(file, "        ChestClone( # %i" % index)
                     else:
                         raise Exception("unknown class")
+                    # Use the variable name from npc_variable_names instead of class name
                     writeline(
                         file,
-                        "            occupant=npcs.%s," % obj.model.occupant.__name__,
+                        "            npc=npcs.%s," % npc_variable_names[npc_classes.index(obj._npc)],
                     )
                     if (
-                        isclass_or_instance(obj, BattlePackNPC)
-                        or isclass_or_instance(obj, RegularNPC)
-                        or isclass_or_instance(obj, ChestNPC)
+                        isinstance(obj, BattlePackNPC)
+                        or isinstance(obj, RegularNPC)
+                        or isinstance(obj, ChestNPC)
                     ):
-                        initiator, _ = byte(prefix="Initiator", table=event_initiator)(
-                            [obj.initiator]
-                        )
-                        writeline(file, "            initiator=%s," % initiator)
-                    if isclass_or_instance(obj, BattlePackNPC):
-                        postbattle, _ = byte(
-                            prefix="PostBattle", table=post_battle_behaviour
-                        )([obj.after_battle])
-                        writeline(file, "            after_battle=%s," % postbattle)
-                    if isclass_or_instance(obj, BattlePackNPC) or isclass_or_instance(
+                        obj_initiator = EventInitiator(obj.initiator)
+                        writeline(file, "            initiator=EventInitiator.%s," % obj_initiator.name)
+                    if isinstance(obj, BattlePackNPC):
+                        obj_postbattle = PostBattleBehaviour(obj.after_battle)
+                        writeline(file, "            after_battle=PostBattleBehaviour.%s," % obj_postbattle.name)
+                    if isinstance(obj, BattlePackNPC) or isinstance(
                         obj, BattlePackClone
                     ):
                         writeline(file, "            battle_pack=%i," % obj.battle_pack)
                     if (
-                        isclass_or_instance(obj, RegularNPC)
-                        or isclass_or_instance(obj, RegularClone)
-                        or isclass_or_instance(obj, ChestNPC)
+                        isinstance(obj, RegularNPC)
+                        or isinstance(obj, RegularClone)
+                        or isinstance(obj, ChestNPC)
                     ):
+                        event_name = event_script_id_to_name.get(obj.event_script)
                         writeline(
-                            file, "            event_script=%i," % obj.event_script
+                            file, "            event_script=%s," % event_name
                         )
                     if (
-                        isclass_or_instance(obj, RegularNPC)
-                        or isclass_or_instance(obj, BattlePackNPC)
-                        or isclass_or_instance(obj, ChestNPC)
-                        or isclass_or_instance(obj, RegularClone)
-                        or isclass_or_instance(obj, BattlePackClone)
+                        isinstance(obj, RegularNPC)
+                        or isinstance(obj, BattlePackNPC)
+                        or isinstance(obj, ChestNPC)
+                        or isinstance(obj, RegularClone)
+                        or isinstance(obj, BattlePackClone)
                     ):
-                        writeline(
-                            file, "            action_script=%i," % obj.action_script
-                        )
-                    if isclass_or_instance(obj, ChestNPC) or isclass_or_instance(
+                        action_name = action_script_id_to_name.get(obj.action_script, None)
+                        if action_name:
+                            writeline(
+                                file, "            action_script=%s," % action_name
+                            )
+                        else:
+                            writeline(
+                                file, "            action_script=%i," % obj.action_script
+                            )
+                    if isinstance(obj, ChestNPC) or isinstance(
                         obj, ChestClone
                     ):
                         writeline(file, "            lower_70a7=%i," % obj.lower_70a7)
                         writeline(file, "            upper_70a7=%i," % obj.upper_70a7)
                     if (
-                        isclass_or_instance(obj, BattlePackNPC)
-                        or isclass_or_instance(obj, RegularNPC)
-                        or isclass_or_instance(obj, ChestNPC)
+                        isinstance(obj, BattlePackNPC)
+                        or isinstance(obj, RegularNPC)
+                        or isinstance(obj, ChestNPC)
                     ):
                         if obj.speed != 0:
                             writeline(file, "            speed=%i," % obj.speed)
@@ -1323,14 +887,12 @@ class Command(BaseCommand):
                     writeline(file, "            y=%i," % obj.y)
                     writeline(file, "            z=%i," % obj.z)
                     writeline(file, "            z_half=%r," % obj.z_half)
-                    direction, _ = byte(
-                        prefix="RadialDirection", table=radial_direction_table
-                    )([obj.direction])
-                    writeline(file, "            direction=%s," % direction)
+                    obj_direction = Direction(obj.direction)
+                    writeline(file, "            direction=%s," % directions[obj_direction])
                     if (
-                        isclass_or_instance(obj, BattlePackNPC)
-                        or isclass_or_instance(obj, RegularNPC)
-                        or isclass_or_instance(obj, ChestNPC)
+                        isinstance(obj, BattlePackNPC)
+                        or isinstance(obj, RegularNPC)
+                        or isinstance(obj, ChestNPC)
                     ):
                         writeline(
                             file,
@@ -1386,69 +948,6 @@ class Command(BaseCommand):
                         writeline(
                             file, "            byte7_upper2=%r," % obj.byte7_upper2
                         )
-                    writeline(file, "            priority_0=%r," % obj.model.priority_0)
-                    writeline(file, "            priority_1=%r," % obj.model.priority_1)
-                    writeline(file, "            priority_2=%r," % obj.model.priority_2)
-                    if obj.model._show_shadow is not None:
-                        writeline(
-                            file, "            show_shadow=%r," % obj.model.show_shadow
-                        )
-                    if obj.model._acute_axis is not None:
-                        writeline(
-                            file, "            acute_axis=%i," % obj.model.acute_axis
-                        )
-                    if obj.model._obtuse_axis is not None:
-                        writeline(
-                            file, "            obtuse_axis=%i," % obj.model.obtuse_axis
-                        )
-                    if obj.model._height is not None:
-                        writeline(file, "            height=%i," % obj.model.height)
-                    if obj.model._vram_size is not None:
-                        writeline(
-                            file, "            vram_size=%i," % obj.model.vram_size
-                        )
-                    if obj.model._directions is not None:
-                        vram_store, _ = byte(
-                            prefix="VramStore", table=vram_store_table
-                        )([obj.model.directions])
-                        writeline(file, "            directions=%s," % vram_store)
-                    writeline(
-                        file, "            cannot_clone=%r," % obj.model.cannot_clone
-                    )
-                    if obj.model._byte2_bit0 is not None:
-                        writeline(
-                            file, "            byte2_bit0=%r," % obj.model.byte2_bit0
-                        )
-                    if obj.model._byte2_bit1 is not None:
-                        writeline(
-                            file, "            byte2_bit1=%r," % obj.model.byte2_bit1
-                        )
-                    if obj.model._byte2_bit2 is not None:
-                        writeline(
-                            file, "            byte2_bit2=%r," % obj.model.byte2_bit2
-                        )
-                    if obj.model._byte2_bit3 is not None:
-                        writeline(
-                            file, "            byte2_bit3=%r," % obj.model.byte2_bit3
-                        )
-                    if obj.model._byte2_bit4 is not None:
-                        writeline(
-                            file, "            byte2_bit4=%r," % obj.model.byte2_bit4
-                        )
-                    if obj.model._byte5_bit6 is not None:
-                        writeline(
-                            file, "            byte5_bit6=%r," % obj.model.byte5_bit6
-                        )
-                    if obj.model._byte5_bit7 is not None:
-                        writeline(
-                            file, "            byte5_bit7=%r," % obj.model.byte5_bit7
-                        )
-                    if obj.model._byte6_bit2 is not None:
-                        writeline(
-                            file, "            byte6_bit2=%r," % obj.model.byte6_bit2
-                        )
-                    if obj.model._y_shift is not None:
-                        writeline(file, "            y_shift=%i," % obj.model.y_shift)
                     writeline(file, "        ),")
 
                 writeline(file, "    ]")
@@ -1456,16 +955,30 @@ class Command(BaseCommand):
             writeline(file, ")")
             file.close()
 
-        file = open("%s/rooms.py" % dest, "w", encoding="utf-8")
+        # Create RoomCollection file
+        collection_file = open("%s/rooms.py" % dest, "w", encoding="utf-8")
+
+        # Write imports
+        writeline(collection_file, "from smrpgpatchbuilder.datatypes.levels.room_collection import RoomCollection")
         for i in range(512):
             writeline(
-                file,
-                "from randomizer.data.rooms.room_%i import room as room_%i" % (i, i),
+                collection_file,
+                "from .room_%i import room as room_%i" % (i, i),
             )
-        writeline(file, "rooms = [None]*512")
+
+        writeline(collection_file, "")
+        writeline(collection_file, "room_collection = RoomCollection(")
+        writeline(collection_file, "    rooms=[")
+
+        # Write room array using room_N variables with name comments
         for i in range(512):
-            writeline(file, "rooms[%i] = room_%i" % (i, i))
-        file.close()
+            room_name = room_id_to_name.get(i, f"R{i:03d}_UNKNOWN")
+            writeline(collection_file, "        room_%i,  # %i: %s" % (i, i, room_name))
+
+        writeline(collection_file, "    ],")
+        writeline(collection_file, "    large_partition_table=%r" % large_partition_table)
+        writeline(collection_file, ")")
+        collection_file.close()
 
         self.stdout.write(
             self.style.SUCCESS(

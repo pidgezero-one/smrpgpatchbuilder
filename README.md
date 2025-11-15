@@ -107,23 +107,14 @@ It is important to do these next because other things will use these. Event scri
 
 ### Step 4
 
-Disassemble battle animations (warning: this takes several hours)
+Disassemble monsters and battle animations (warning: this takes several hours)
 ```bash
-PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "/path/to/your/smrpg/rom"
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py combined_disassembler --rom "/path/to/your/smrpg/rom"
 ```
 
-These will produce `./src/disassembler_output/battle_animation/scripts.py`. It is important to do this next because monster definitions will need to read these scripts to figure out where their sprite behaviours are.
+These will produce `./src/disassembler_output/battle_animation/scripts.py` and `./src/disassembler_output/enemies/enemies.py`. It is important to do these together at first because they depend on each other (battle animations need to use enemy classes but enemy classes need a battle animation pointer label for Sprite Behaviour). (On subsequent runs you can disassemble them separately.)
 
 ### Step 5
-
-Disassemble monsters by running
-```bash
-PYTHONPATH=src python src/smrpgpatchbuilder/manage.py enemydisassembler --rom "/path/to/your/smrpg/rom"
-```
-
-These will produce `./src/disassembler_output/enemies/enemies.py`. It's important to do this next because battle packs use monsters.
-
-### Step 6
 
 Now you can disassemble whatever else you want. There are no more dependencies.
 
@@ -490,7 +481,76 @@ The disassembler creates a `SpellCollection` (in the same file) that instantiate
 
 ### Allies
 
-(coming soon)
+Disassemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py spelldisassembler --rom "path/to/your/smrpg/rom"
+```
+Assemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py spellassembler -r path/to/your/smrpg/rom -t -b
+# -r generates a ROM patch, -t generates a text file, -b generates a FlexHEX .bin
+```
+Writes to:
+```
+./src/disassembler_output/allies/allies.py
+```
+
+The disassembler creates an `AllyCollection` that instantiates all five of your allies. If you want to use these characters in another Python project, you'll need to import the `AllyCollection`. To prepare the patch data, run `collection.render()` to get a `dict[int, bytearray]` where each `int` is a ROM address to which the `bytearray` should be patched.
+
+Allies look like this:
+![alt text](image-15.png)
+
+```python
+MARIO_Ally = Ally(
+    index=0,
+    name="Mario",
+    starting_level=1,
+    starting_current_hp=20,
+    starting_max_hp=20,
+    starting_speed=20,
+    starting_attack=20,
+    starting_defense=0,
+    starting_mg_attack=10,
+    starting_mg_defense=2,
+    starting_experience=0,
+    starting_weapon=None,
+    starting_armor=None,
+    starting_accessory=None,
+    starting_magic=[
+        JumpSpell,
+    ],
+    levels=[
+        LevelUp(
+            level=2,
+            exp_needed=16,
+            spell_learned=None,
+            hp_plus=5,
+            attack_plus=3,
+            defense_plus=2,
+            mg_attack_plus=2,
+            mg_defense_plus=2,
+            hp_plus_bonus=3,
+            attack_plus_bonus=1,
+            defense_plus_bonus=1,
+            mg_attack_plus_bonus=3,
+            mg_defense_plus_bonus=1,
+        ),
+        ...
+    ],
+    coordinates=AllyCoordinate(
+        cursor_x=1,
+        cursor_y=3,
+        sprite_abxy_y=191,
+        cursor_x_scarecrow=1,
+        cursor_y_scarecrow=3,
+        sprite_abxy_y_scarecrow=192,
+    )
+)
+```
+
+where `coordinates` controls where the cursor and ABXY buttons will appear relative to their sprites in battle (the rest of the properties should be self explanatory).
+
+The assembler can rename your characters, but be aware that it will not change the point at which their names get cut off in the shop menu (such as when looking at who can equip an item). The renaming will also apply to the levelup screen, but their names will be written to 0x2F9B0 instead of 0x2D3AF (to be more forgiving with space for longer names). This assumes that you haven't added anything to the ROM at 0x2F9B0.
 
 <sub>([back to top](#how-this-works))</sub>
 
@@ -805,15 +865,262 @@ The assembler produces a `PackCollection`. If you want to use your packs in anot
 
 <sub>([back to top](#how-this-works))</sub>
 
-### Level NPCs, exits, and event blocks
+### Rooms and NPCs
 
-(coming soon)
+The room disassembler handles loading events, loading music, event tiles, exit fields, NPCs and clones, partitions, and standalone NPCs (indicated by NPC IDs in the room data).
 
-<sub>([back to top](#how-this-works))</sub>
+Disassemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py roomdisassembler --rom "path/to/your/smrpg/rom"  --large-partition-table
+# The --large-partition-table argument can be included or omitted. 
+# If included, it will try to read partitions from 0x1DEBE0 instead of 0x1DDE00. 
+# You should only use this if you've already assembled your rooms before such that the partitions have moved here.
+```
+Assemble:
+```bash
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py roomassembler -r path/to/your/smrpg/rom -t -b --large-partition-table
+# -r generates a ROM patch, -t generates a text file, -b generates a FlexHEX .bin
+# The --large-partition-table argument can be included or omitted. 
+# If included, it will write partitions from 0x1DEBE0 instead of 0x1DDE00. 
+# 0x1DEBE0 is normally a big block of empty space. Assumes you haven't made any custom changes to your ROM that have put other data here. 
+# 0x1DEBE0 is big enough to hold one partition per room.
+```
+Writes to:
+```
+./src/disassembler_output/rooms/npcs.py
+./src/disassembler_output/rooms/rooms.py
+```
 
-### NPC definitions
+If you want to use these in another project, you'll need to import the `RoomCollection` in rooms.py. Optionally, you can also import the NPCs in npcs.py. The `render` method of the `RoomCollection` will render everything on its own as a `dict[int, bytearray]` where each int is the address at which to patch the bytearray.
 
-(coming soon)
+![alt text](image-16.png) ![alt text](image-17.png) ![alt text](image-18.png)
+
+Example room:
+```python
+room = Room(
+    partition=Partition(
+        ally_sprite_buffer_size=1,
+        allow_extra_sprite_buffer=False,
+        extra_sprite_buffer_size=0,
+        buffers = [
+            Buffer(
+                buffer_type=BufferType.EMPTY_3,
+                main_buffer_space=BufferSpace.BYTES_0,
+                index_in_main_buffer=True
+            ),
+            Buffer(
+                buffer_type=BufferType.EMPTY_3,
+                main_buffer_space=BufferSpace.BYTES_0,
+                index_in_main_buffer=True
+            ),
+            Buffer(
+                buffer_type=BufferType.EMPTY_3,
+                main_buffer_space=BufferSpace.BYTES_0,
+                index_in_main_buffer=True
+            )
+        ],
+        full_palette_buffer=True
+    ),
+    music=M0011_BOWSER_SCASTLE_1STTIME,
+    entrance_event=E2498_EMPTY,
+    events=[
+        Event(
+            event=E2497_ADDITIONAL_GATING_LOGIC_START_PLAYING,
+            x=14,
+            y=70,
+            z=0,
+            f=EdgeDirection.SOUTHWEST,
+            height=7,
+            length=8,
+            nw_se_edge_active=True,
+            ne_sw_edge_active=False,
+            byte_8_bit_4=False,
+        ),
+    ],
+    exits=[
+        RoomExit(
+            x=17,
+            y=67,
+            z=0,
+            f=EdgeDirection.SOUTHWEST,
+            length=2,
+            height=0,
+            nw_se_edge_active=True,
+            ne_sw_edge_active=False,
+            byte_2_bit_2=False,
+            destination=R261_BOWSERS_KEEP_1ST_TIME_AREA_03_LAVA_ROOM_WBRIDGE,
+            show_message=False,
+            dst_x=4,
+            dst_y=66,
+            dst_z=5,
+            dst_z_half=False,
+            dst_f=NORTHEAST,
+            x_bit_7=False,
+        ),
+    ],
+    objects=[
+        RegularNPC( # 0
+            npc=npcs.TERRAPIN_NPC_2,
+            initiator=EventInitiator.NONE,
+            event_script=E2304_BANK_1F_RETURN_EVENT_2,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=16,
+            y=68,
+            z=0,
+            z_half=False,
+            direction=SOUTHWEST,
+            face_on_trigger=False,
+            cant_enter_doors=False,
+            byte2_bit5=False,
+            set_sequence_playback=True,
+            cant_float=False,
+            cant_walk_up_stairs=False,
+            cant_walk_under=False,
+            cant_pass_walls=False,
+            cant_jump_through=False,
+            cant_pass_npcs=False,
+            byte3_bit5=False,
+            cant_walk_through=False,
+            byte3_bit7=False,
+            slidable_along_walls=True,
+            cant_move_if_in_air=True,
+            byte7_upper2=3,
+        ),
+        RegularClone( # 1
+            npc=npcs.TERRAPIN_NPC_2,
+            event_script=E2304_BANK_1F_RETURN_EVENT_2,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=False,
+            x=16,
+            y=69,
+            z=0,
+            z_half=False,
+            direction=SOUTHWEST,
+        ),
+        RegularClone( # 2
+            npc=npcs.TERRAPIN_NPC_2,
+            event_script=E2304_BANK_1F_RETURN_EVENT_2,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=17,
+            y=71,
+            z=0,
+            z_half=False,
+            direction=SOUTHWEST,
+        ),
+        RegularClone( # 3
+            npc=npcs.TERRAPIN_NPC_2,
+            event_script=E2304_BANK_1F_RETURN_EVENT_2,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=False,
+            x=17,
+            y=70,
+            z=0,
+            z_half=False,
+            direction=SOUTHWEST,
+        ),
+        BattlePackNPC( # 4
+            npc=npcs.TERRAPIN_NPC_2,
+            initiator=EventInitiator.ANYTHING_EXCEPT_PRESS_A,
+            after_battle=PostBattleBehaviour.REMOVE_UNTIL_RELOAD,
+            battle_pack=0,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=10,
+            y=80,
+            z=0,
+            z_half=False,
+            direction=SOUTHEAST,
+            face_on_trigger=False,
+            cant_enter_doors=True,
+            byte2_bit5=False,
+            set_sequence_playback=True,
+            cant_float=False,
+            cant_walk_up_stairs=False,
+            cant_walk_under=False,
+            cant_pass_walls=True,
+            cant_jump_through=False,
+            cant_pass_npcs=True,
+            byte3_bit5=False,
+            cant_walk_through=True,
+            byte3_bit7=False,
+            slidable_along_walls=True,
+            cant_move_if_in_air=True,
+            byte7_upper2=3,
+        ),
+        BattlePackClone( # 5
+            npc=npcs.TERRAPIN_NPC_2,
+            battle_pack=0,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=14,
+            y=80,
+            z=0,
+            z_half=False,
+            direction=NORTHWEST,
+        ),
+        BattlePackClone( # 6
+            npc=npcs.TERRAPIN_NPC_2,
+            battle_pack=0,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=10,
+            y=88,
+            z=0,
+            z_half=False,
+            direction=NORTHWEST,
+        ),
+        BattlePackClone( # 7
+            npc=npcs.TERRAPIN_NPC_2,
+            battle_pack=0,
+            action_script=A0400_SEQUENCE_LOOPING_ON,
+            visible=True,
+            x=6,
+            y=88,
+            z=0,
+            z_half=False,
+            direction=SOUTHEAST,
+        ),
+    ]
+)
+```
+
+And here is TERRAPIN_NPC_2:
+ ![alt text](image-19.png)
+```python
+TERRAPIN_NPC_2 = NPC(
+    sprite_id=256,
+    shadow_size=ShadowSize.OVAL_MED,
+    acute_axis=4,
+    obtuse_axis=4,
+    height=11,
+    y_shift=1,
+    show_shadow=True,
+    directions=VramStore.DIR0_SWSE_NWNE,
+    min_vram_size=0,
+    priority_0=False,
+    priority_1=False,
+    priority_2=True,
+    cannot_clone=False,
+    byte2_bit0=False,
+    byte2_bit1=False,
+    byte2_bit2=False,
+    byte2_bit3=False,
+    byte2_bit4=False,
+    byte5_bit6=False,
+    byte5_bit7=False,
+    byte6_bit2=False,
+)
+```
+
+Here are some things to be aware of:
+- Partitions are disassembled as part of the room definition, not as a separate list you select an ID from. If you set `large_partition_table` in your RoomCollection, then every room can have its own partition, so you won't have to worry at all about picking partition IDs, you can just choose what will be the best for the room you're working on.
+- I don't have it doing anything like automatically selecting a partition for a room because nobody fully understands how they work, but someday I'd like to figure out how to make that happen.
+- NPCs work a little differently than in Lazy Shell. 
+  - Within a room, your NPC has an ID, and the ID points to a "standalone" NPC object that specifies its sprite ID, shadow size, height/acute/obtuse collision sizes, how many directions they should be able to face and how much vram they should be allowed to use, etc.
+  - In the disassembler, you'll see all these properties disassembled as part of your NPC list, but they can also be overridden at the room NPC level, which will _only_ change those properties in that room. 
+  - When assembled, having these overrides creates a separate NPC for that room. This is designed such that you don't need to worry about NPC IDs, the assembler will take care of that (you can actually have over 1300, not just 512, so the assembler takes advantage of that extra space to give you freedom to make the objects in your room as detached as possible from other rooms).
 
 <sub>([back to top](#how-this-works))</sub>
 
