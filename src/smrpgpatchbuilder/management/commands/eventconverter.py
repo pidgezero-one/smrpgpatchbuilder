@@ -2025,7 +2025,7 @@ class Command(BaseCommand):
         def produce_event_script(index, script, valid_identifiers):
             output = "# %s" % varnames["event_scripts"][index]
             output += (
-                "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts import *"
+                "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import EventScript"
             )
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands import *"
             output += (

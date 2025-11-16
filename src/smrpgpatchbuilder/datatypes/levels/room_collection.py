@@ -247,56 +247,42 @@ class RoomCollection:
         Raises:
             ValueError: If more than 128 unique partitions when large_partition_table is False
         """
-        if self._large_partition_table:
-            # Each room gets its own partition
-            partitions = []
-            room_to_partition_index = {}
+        # Collect unique partitions (max 128)
+        MAX_PARTITIONS = 128 if not self._large_partition_table else 256
+        unique_partitions: list[Partition] = []
+        partition_to_index: dict[int, int] = {}  # id(partition) -> index
+        room_to_partition_index: dict[int, int] = {}
 
-            for room_idx, room in enumerate(self._rooms):
-                if room is None or room.partition is None:
-                    partitions.append(None)
-                    room_to_partition_index[room_idx] = room_idx
-                else:
-                    partitions.append(room.partition)
-                    room_to_partition_index[room_idx] = room_idx
+        for room_idx, room in enumerate(self._rooms):
+            if room is None or room.partition is None:
+                room_to_partition_index[room_idx] = 0  # Default partition
+                if 0 not in partition_to_index:
+                    # Add default partition
+                    unique_partitions.append(Partition())
+                    partition_to_index[0] = 0
+                continue
 
-            return partitions, room_to_partition_index
-        else:
-            # Collect unique partitions (max 128)
-            unique_partitions: list[Partition] = []
-            partition_to_index: dict[int, int] = {}  # id(partition) -> index
-            room_to_partition_index: dict[int, int] = {}
+            # Check if we already have this partition
+            partition_id = None
+            for existing_idx, existing_partition in enumerate(unique_partitions):
+                if existing_partition.is_same(room.partition):
+                    partition_id = existing_idx
+                    break
 
-            for room_idx, room in enumerate(self._rooms):
-                if room is None or room.partition is None:
-                    room_to_partition_index[room_idx] = 0  # Default partition
-                    if 0 not in partition_to_index:
-                        # Add default partition
-                        unique_partitions.append(Partition())
-                        partition_to_index[0] = 0
-                    continue
+            if partition_id is None:
+                # New unique partition
+                if len(unique_partitions) >= MAX_PARTITIONS:
+                    raise ValueError(
+                        f"Too many unique partitions: {len(unique_partitions)} exceeds maximum of {MAX_PARTITIONS}. "
+                        f"Consider using --large-partition-table flag."
+                    )
+                partition_id = len(unique_partitions)
+                unique_partitions.append(room.partition)
+                partition_to_index[id(room.partition)] = partition_id
 
-                # Check if we already have this partition
-                partition_id = None
-                for existing_idx, existing_partition in enumerate(unique_partitions):
-                    if existing_partition.is_same(room.partition):
-                        partition_id = existing_idx
-                        break
+            room_to_partition_index[room_idx] = partition_id
 
-                if partition_id is None:
-                    # New unique partition
-                    if len(unique_partitions) >= 128:
-                        raise ValueError(
-                            f"Too many unique partitions: {len(unique_partitions)} exceeds maximum of 128. "
-                            f"Consider using --large-partition-table flag."
-                        )
-                    partition_id = len(unique_partitions)
-                    unique_partitions.append(room.partition)
-                    partition_to_index[id(room.partition)] = partition_id
-
-                room_to_partition_index[room_idx] = partition_id
-
-            return unique_partitions, room_to_partition_index
+        return unique_partitions, room_to_partition_index
 
     def render(self) -> dict[int, bytearray]:
         """Render all rooms to ROM patches.
@@ -322,15 +308,9 @@ class RoomCollection:
             patches[0x008BB0] = bytearray([0xE0, 0xEB])
             patches[0x008B9D] = bytearray([0xE0, 0xEB])
 
-            # Write partitions to 0x1DEBE0-0x1DF3DF (512 partitions * 4 bytes)
+            # Write partitions to 0x1DEBE0-0x1DF3DF (256 partitions * 4 bytes)
             partition_start = 0x1DEBE0
-            for idx in range(512):
-                offset = partition_start + (idx * 4)
-                if idx < len(partitions) and partitions[idx] is not None:
-                    patches[offset] = self._render_partition(partitions[idx])
-                else:
-                    # Default partition
-                    patches[offset] = bytearray([0x00, 0x00, 0x00, 0x00])
+            assert len(partitions) <= 256, f"Expected at most 256 partitions, got {len(partitions)}"
         else:
             # Write [0x00 0xDE] to 0x008BB0 and 0x008B9D
             patches[0x008BB0] = bytearray([0x00, 0xDE])
@@ -338,9 +318,11 @@ class RoomCollection:
 
             # Write partitions to 0x1DDE00-0x1DDFFF (128 partitions * 4 bytes)
             partition_start = 0x1DDE00
-            for idx, partition in enumerate(partitions):
-                offset = partition_start + (idx * 4)
-                patches[offset] = self._render_partition(partition)
+            assert len(partitions) <= 128, f"Expected at most 128 partitions, got {len(partitions)}"
+
+        for idx, partition in enumerate(partitions):
+            offset = partition_start + (idx * 4)
+            patches[offset] = self._render_partition(partition)
 
         # Write NPC table to 0x1DB800-0x1DDDFF (or 0x1DDFFF with large partition table)
         npc_start = 0x1DB800
@@ -430,50 +412,54 @@ class RoomCollection:
         """Render room object (NPC) data.
 
         Pointer table: 0x148000-0x1483FF (512 rooms * 2 bytes)
-        Data section: 0x148400-0x14FFFF
+        Base address: 0x140000
+        Data starts at: offset 0x8400 (ROM address 0x148400)
 
         Returns:
             Dictionary of patches
         """
         patches = {}
         pointer_table_start = 0x148000
-        data_section_start = 0x148400
-        data_offset = data_section_start
+        base_address = 0x140000
 
-        # Build all room data first
-        all_room_data = bytearray()
+        # Starting offset (without base) - matches LazyShell's offsetStart = 0x8400
+        offset_without_base = 0x8400
 
         for room_idx in range(512):
             room = self._rooms[room_idx]
 
-            # Write pointer (little-endian offset from start of data section)
-            pointer_value = data_offset - data_section_start
+            # Write pointer (offset without base address)
             patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                pointer_value & 0xFF,
-                (pointer_value >> 8) & 0xFF
+                offset_without_base & 0xFF,
+                (offset_without_base >> 8) & 0xFF
             ])
 
             if room is None or len(room.objects) == 0:
                 # Empty room - next room will have same pointer (zero delta)
                 continue
 
+            # Build this room's data
+            room_data = bytearray()
+
             # First byte: partition ID
             partition_id = room_to_partition_index.get(room_idx, 0)
-            all_room_data.append(partition_id)
-            data_offset += 1
+            room_data.append(partition_id)
 
-            # Render each object (track parent for clones and count extra_length)
+            # Render each object (track parent and base values for clones)
             last_parent = None
             last_parent_obj_idx = -1
+            last_base_values = None  # (base_npc, base_action, base_event/base_pack)
             obj_idx = 0
             while obj_idx < len(room.objects):
                 obj = room.objects[obj_idx]
 
                 if isinstance(obj, Clone):
-                    # This is a clone, render it
-                    obj_data = self._render_room_object(obj, clone_group_mapping, last_parent, None, room_idx, obj_idx, last_parent_obj_idx)
-                    all_room_data.extend(obj_data)
-                    data_offset += len(obj_data)
+                    # This is a clone, render it with base values from parent
+                    obj_data, _ = self._render_room_object(
+                        obj, clone_group_mapping, last_parent, None,
+                        room_idx, obj_idx, last_parent_obj_idx, last_base_values
+                    )
+                    room_data.extend(obj_data)
                     obj_idx += 1
                 else:
                     # This is a parent object - collect all consecutive clones
@@ -484,25 +470,32 @@ class RoomCollection:
                         check_idx += 1
 
                     # Render parent with clones (to calculate proper base values and offsets)
-                    obj_data = self._render_room_object(obj, clone_group_mapping, None, clones, room_idx, obj_idx, obj_idx)
+                    obj_data, base_values = self._render_room_object(
+                        obj, clone_group_mapping, None, clones,
+                        room_idx, obj_idx, obj_idx, None
+                    )
                     # Update byte 0 with clone count
                     obj_data[0] = (obj.object_type << 4) | (len(clones) & 0x0F)
-                    all_room_data.extend(obj_data)
-                    data_offset += len(obj_data)
+                    room_data.extend(obj_data)
 
                     last_parent = obj
                     last_parent_obj_idx = obj_idx
+                    last_base_values = base_values
                     obj_idx += 1
 
-        # Write all room data as a single patch
-        if len(all_room_data) > 0:
-            patches[data_section_start] = all_room_data
+            # Write this room's data at its ROM address (base + offset)
+            rom_address = base_address + offset_without_base
+            patches[rom_address] = room_data
+
+            # Update offset for next room
+            offset_without_base += len(room_data)
 
         return patches
 
     def _render_room_object(self, obj: BaseRoomObject, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
                            parent: Optional[RoomObject] = None, clones: Optional[list[Clone]] = None,
-                           room_idx: int = -1, obj_idx: int = -1, parent_obj_idx: int = -1) -> bytearray:
+                           room_idx: int = -1, obj_idx: int = -1, parent_obj_idx: int = -1,
+                           base_values: Optional[tuple] = None) -> tuple[bytearray, Optional[tuple]]:
         """Render a single room object to bytes.
 
         Args:
@@ -534,18 +527,25 @@ class RoomCollection:
 
             data = bytearray(4)
 
-            # Get parent NPC index for calculating offsets using the same mapping
-            parent_sig = self._get_npc_signature(parent._npc, parent)
-            parent_npc_index = sig_to_index[parent_sig]
-
             # Byte 0: Offsets (type-specific encoding)
+            # IMPORTANT: All offsets are relative to BASE values, not parent's individual values!
+            # LazyShell calculates: clone_value = base_value + clone_offset
+            if base_values is None:
+                raise ValueError(f"base_values required for clone rendering at room {room_idx} obj {obj_idx}")
+
             if isinstance(obj, RegularClone):
                 assert isinstance(parent, RegularNPC), "Parent must be RegularNPC for RegularClone"
                 # (event_offset << 5) + (action_offset << 3) + npc_offset
                 # Note: action_offset is only 2 bits (0-3 range) for RegularClone
-                npc_offset = npc_index - parent_npc_index
-                action_offset = obj.action_script - parent.action_script
-                event_offset = obj.event_script - parent.event_script
+
+                # Unpack base values: (base_assigned_npc, base_action_script, base_event_script)
+                base_assigned_npc, base_action_script, base_event_script = base_values
+
+                # Calculate offsets relative to BASE values
+                npc_offset = npc_index - base_assigned_npc
+                action_offset = obj.action_script - base_action_script
+                event_offset = obj.event_script - base_event_script
+
                 data[0] = ((event_offset & 0x07) << 5) | ((action_offset & 0x03) << 3) | (npc_offset & 0x07)
             elif isinstance(obj, ChestClone):
                 assert isinstance(parent, ChestNPC), "Parent must be ChestNPC for ChestClone"
@@ -554,15 +554,13 @@ class RoomCollection:
             elif isinstance(obj, BattlePackClone):
                 assert isinstance(parent, BattlePackNPC), "Parent must be BattlePackNPC for BattlePackClone"
                 # (pack_offset << 4) + action_offset
-                action_offset = obj.action_script - parent.action_script
-                pack_offset = obj.battle_pack - parent.battle_pack
 
-                # Pack offset must be positive (clone's pack must be >= parent's pack)
-                if pack_offset < 0 or pack_offset > 15:
-                    raise ValueError(
-                        f"BattlePackClone battle_pack offset {pack_offset} out of range [0, 15]. "
-                        f"Clone battle_pack={obj.battle_pack} must be >= parent battle_pack={parent.battle_pack}"
-                    )
+                # Unpack base values: (base_assigned_npc, base_action_script, base_battle_pack)
+                base_assigned_npc, base_action_script, base_battle_pack = base_values
+
+                # Calculate offsets relative to BASE values
+                action_offset = obj.action_script - base_action_script
+                pack_offset = obj.battle_pack - base_battle_pack
 
                 data[0] = ((pack_offset & 0x0F) << 4) | (action_offset & 0x0F)
             else:
@@ -577,7 +575,7 @@ class RoomCollection:
             # Byte 3: (direction << 5) | z
             data[3] = (obj.direction << 5) | (obj.z & 0x1F)
 
-            return data
+            return data, None  # Clones don't return base values
 
         else:
             assert isinstance(obj, RoomObject), "Parent object must be RoomObject"
@@ -639,6 +637,17 @@ class RoomCollection:
                         all_npc_indices.append(clone_npc_index)
                 base_assigned_npc = min(all_npc_indices)
                 assigned_npc_offset = npc_index - base_assigned_npc
+
+                if assigned_npc_offset > 7:
+                    import logging
+                    msg = (
+                        f"⚠️  Room {room_idx} object {obj_idx}: Large assigned_npc offset detected!\n"
+                        f"  assigned_npc offset: {assigned_npc_offset} out of range [0, 7]\n"
+                        f"  Parent assigned_npc: {obj.assigned_npc}\n"
+                        f"  Base action_script: {base_action_script}"
+                    )
+                    print(msg)
+                    logging.warning(msg)
             else:
                 # ChestNPC and BattlePackNPC: no assigned_npc offset, just use npc_index directly
                 base_assigned_npc = npc_index
@@ -655,9 +664,21 @@ class RoomCollection:
                 base_action_script = obj.action_script
                 action_script_offset = 0
 
+            if action_script_offset > (15 if isinstance(obj, BattlePackNPC) else 3):
+                import logging
+                msg = (
+                    f"⚠️  Room {room_idx} object {obj_idx}: Large action_script offset detected!\n"
+                    f"  action_script offset: {action_script_offset} out of range [0, 15]\n"
+                    f"  Parent action_script: {obj.action_script}\n"
+                    f"  Base action_script: {base_action_script}"
+                )
+                print(msg)
+                logging.warning(msg)
+
             # Bytes 3-5: NPC ID and action script (packed)
             # base_assigned_npc = ((d[offset + 4] & 0x0F) << 6) + (d[offset + 3] >> 2)
             # base_action_script = ((d[offset + 5] & 0x3F) << 4) + ((d[offset + 4] & 0xFF) >> 4)
+
 
             # Byte 3: (base_npc_id << 2) low 8 bits + slidable_along_walls (bit 0) + cant_move_if_in_air (bit 1)
             data[3] = ((base_assigned_npc << 2) & 0xFF) | (1 if obj.slidable_along_walls else 0) | ((1 if obj.cant_move_if_in_air else 0) << 1)
@@ -678,6 +699,28 @@ class RoomCollection:
                 base_battle_pack = min(all_battle_packs)
                 battle_pack_offset = obj.battle_pack - base_battle_pack
 
+                # Debug logging for battle_pack (LazyShell max is 255 for BattlePack NPCs!)
+                if base_battle_pack > 255:
+                    import logging
+                    msg = (
+                        f"⚠️  Room {room_idx} object {obj_idx}: Large battle_pack detected!\n"
+                        f"  base_battle_pack: {base_battle_pack} (LazyShell max for BattlePack NPC: 255)\n"
+                        f"  Parent battle_pack: {obj.battle_pack}\n"
+                        f"  All battle_packs in group: {all_battle_packs}"
+                    )
+                    print(msg)
+                    logging.warning(msg)
+                if battle_pack_offset > 15:
+                    import logging
+                    msg = (
+                        f"⚠️  Room {room_idx} object {obj_idx}: Large battle_pack offset detected!\n"
+                        f"  battle_pack offset: {battle_pack_offset} out of range [0, 15]\n"
+                        f"  Parent battle_pack: {obj.battle_pack}\n"
+                        f"  Base battle_pack: {base_battle_pack}"
+                    )
+                    print(msg)
+                    logging.warning(msg)
+
                 # Byte 6: base_battle_pack
                 data[6] = base_battle_pack & 0xFF
                 # Byte 7: (initiator << 4) + after_battle
@@ -697,6 +740,18 @@ class RoomCollection:
                     # ChestNPC
                     base_event_script = obj.event_script
                     event_script_offset = 0
+
+                # Debug logging for event_script
+                if event_script_offset > 7:
+                    import logging
+                    msg = (
+                        f"⚠️  Room {room_idx} object {obj_idx}: Large event_script offset detected!\n"
+                        f"  event_script offset: {event_script_offset} out of range [0, 7]\n"
+                        f"  Parent event_script: {obj.event_script}\n"
+                        f"  Base event_script: {base_event_script}"
+                    )
+                    print(msg)
+                    logging.warning(msg)
 
                 # Regular or Chest NPC
                 # Byte 6: base_event_id low 8 bits
@@ -776,58 +831,66 @@ class RoomCollection:
             # Byte 11: (direction << 5) | z
             data[11] = (obj.direction << 5) | (obj.z & 0x1F)
 
-            return data
+            # Return base values for clones to use
+            if isinstance(obj, RegularNPC):
+                return data, (base_assigned_npc, base_action_script, base_event_script)
+            elif isinstance(obj, BattlePackNPC):
+                return data, (base_assigned_npc, base_action_script, base_battle_pack)
+            else:  # ChestNPC
+                return data, (base_assigned_npc, base_action_script, base_event_script)
 
     def _render_events(self) -> dict[int, bytearray]:
         """Render event data.
 
         Pointer table: 0x20E000-0x20E3FF (512 rooms * 2 bytes)
-        Data section: 0x20E400-0x20FFFF
+        Base address: 0x200000
+        Data starts at: offset 0xE400 (ROM address 0x20E400)
 
         Returns:
             Dictionary of patches
         """
         patches = {}
         pointer_table_start = 0x20E000
-        data_section_start = 0x20E400
-        data_offset = data_section_start
+        base_address = 0x200000
 
-        # Build all event data first
-        all_event_data = bytearray()
+        # Starting offset (without base) - matches LazyShell's offsetStart = 0xE400
+        offset_without_base = 0xE400
 
         for room_idx in range(512):
             room = self._rooms[room_idx]
 
-            # Write pointer (little-endian offset from start of data section)
-            pointer_value = data_offset - data_section_start
+            # Write pointer (offset without base address)
             patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                pointer_value & 0xFF,
-                (pointer_value >> 8) & 0xFF
+                offset_without_base & 0xFF,
+                (offset_without_base >> 8) & 0xFF
             ])
+
+            # Build this room's data
+            room_data = bytearray()
 
             # Always write 3-byte header (music + entrance_event)
             if room is None:
                 # Default header
-                all_event_data.extend(bytearray([0x00, 0x00, 0x00]))
-                data_offset += 3
+                room_data.extend([0x00, 0x00, 0x00])
             else:
                 assert isinstance(room, Room), "Expected Room instance"
                 # Write music (byte 0) and entrance_event (bytes 1-2, little-endian)
-                all_event_data.append(room.music)
-                all_event_data.append(room.entrance_event & 0xFF)
-                all_event_data.append((room.entrance_event >> 8) & 0xFF)
-                data_offset += 3
+                room_data.append(room.music)
+                room_data.append(room.entrance_event & 0xFF)
+                room_data.append((room.entrance_event >> 8) & 0xFF)
 
                 # Write event tiles if any
                 if room.event_tiles:
                     for event in room.event_tiles:
                         event_data = self._render_event(event)
-                        all_event_data.extend(event_data)
-                        data_offset += len(event_data)
+                        room_data.extend(event_data)
 
-        # Write all event data as a single patch
-        if len(all_event_data) > 0:
-            patches[data_section_start] = all_event_data
+            # Write this room's data at its ROM address (base + offset)
+            rom_address = base_address + offset_without_base
+            patches[rom_address] = room_data
+
+            # Update offset for next room
+            offset_without_base += len(room_data)
 
         return patches
 
@@ -882,42 +945,46 @@ class RoomCollection:
         """Render exit data.
 
         Pointer table: 0x1D2D64-0x1D3165 (512 rooms * 2 bytes)
-        Data section: 0x1D3166-0x1D4904
+        Base address: 0x1D0000
+        Data starts at: offset 0x3166 (ROM address 0x1D3166)
 
         Returns:
             Dictionary of patches
         """
         patches = {}
         pointer_table_start = 0x1D2D64
-        data_section_start = 0x1D3166
-        data_offset = data_section_start
+        base_address = 0x1D0000
 
-        # Build all exit data first
-        all_exit_data = bytearray()
+        # Starting offset (without base) - matches LazyShell's offsetStart = 0x3166
+        offset_without_base = 0x3166
 
         for room_idx in range(512):
             room = self._rooms[room_idx]
 
-            # Write pointer (little-endian offset from start of data section)
-            pointer_value = data_offset - data_section_start
+            # Write pointer (offset without base address)
             patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                pointer_value & 0xFF,
-                (pointer_value >> 8) & 0xFF
+                offset_without_base & 0xFF,
+                (offset_without_base >> 8) & 0xFF
             ])
 
             if room is None or not room.exit_fields:
                 # Empty room - next room will have same pointer (zero delta)
                 continue
 
+            # Build this room's data
+            room_data = bytearray()
+
             # Render exits
             for exit_obj in room.exit_fields:
                 exit_data = self._render_exit(exit_obj)
-                all_exit_data.extend(exit_data)
-                data_offset += len(exit_data)
+                room_data.extend(exit_data)
 
-        # Write all exit data as a single patch
-        if len(all_exit_data) > 0:
-            patches[data_section_start] = all_exit_data
+            # Write this room's data at its ROM address (base + offset)
+            rom_address = base_address + offset_without_base
+            patches[rom_address] = room_data
+
+            # Update offset for next room
+            offset_without_base += len(room_data)
 
         return patches
 

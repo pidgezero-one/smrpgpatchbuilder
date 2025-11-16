@@ -71,10 +71,10 @@ class Command(BaseCommand):
             "from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import ("
         )
         output_lines.append("    MARIO,")
-        output_lines.append("    MALLOW,")
-        output_lines.append("    GENO,")
         output_lines.append("    TOADSTOOL,")
         output_lines.append("    BOWSER,")
+        output_lines.append("    GENO,")
+        output_lines.append("    MALLOW,")
         output_lines.append(")")
         output_lines.append(
             "from smrpgpatchbuilder.datatypes.spells.enums import Element, Status, TempStatBuff"
@@ -183,13 +183,13 @@ class Command(BaseCommand):
         if byte2 & 0x01:
             equip_chars.append("MARIO")
         if byte2 & 0x02:
-            equip_chars.append("MALLOW")
-        if byte2 & 0x04:
-            equip_chars.append("GENO")
-        if byte2 & 0x08:
             equip_chars.append("TOADSTOOL")
-        if byte2 & 0x10:
+        if byte2 & 0x04:
             equip_chars.append("BOWSER")
+        if byte2 & 0x08:
+            equip_chars.append("GENO")
+        if byte2 & 0x10:
+            equip_chars.append("MALLOW")
 
         # byte 3: targeting
         byte3 = data[3]
@@ -226,8 +226,11 @@ class Command(BaseCommand):
 
         # byte 16: inflict type and hide damage
         byte16 = data[16]
-        hide_damage = bool(byte16 & 0x04)
-        inflict_type = byte16 & 0xF3  # remove hide_damage bit
+        inflict_type = byte16  # remove hide_damage bit
+
+        # byte 17: hide damage
+        byte17 = data[17]
+        hide_damage = bool(byte17 & 0x04)
 
         # read price (2 bytes)
         price_offset = price_addr + (item_id * 2)
@@ -235,7 +238,7 @@ class Command(BaseCommand):
 
         # read weapon timing if this is a weapon (item_id 0-40)
         timing_data = None
-        if item_id <= 40 and type_value == 0:  # weapon
+        if item_id < 39 and type_value == 0:  # weapon
             timing_offset = timing_addr + (item_id * 4)
             timing_data = {
                 "half_time_begins": rom[timing_offset],
@@ -442,11 +445,11 @@ class Command(BaseCommand):
 
         # determine base class based on item_id ranges
         # 0-36: weapon, 37-73: armor, 74-95: accessory, 96+: regularitem
-        if item_id <= 36:
+        if data["type_value"] == 0:
             base_class = "Weapon"
-        elif item_id <= 73:
+        elif data["type_value"] == 1:
             base_class = "Armor"
-        elif item_id <= 95:
+        elif data["type_value"] == 2:
             base_class = "Accessory"
         else:
             base_class = "RegularItem"
@@ -520,7 +523,7 @@ class Command(BaseCommand):
                 lines.append(f"    _effect_type = {effect_map[data['effect_type']]}")
 
         # inflict type
-        if data["inflict_type"] != 0xDD and data["inflict_type"] != 0:
+        if 0 <= data["inflict_type"] < 8:
             inflict_map = {
                 0: "InflictFunction.ITEM_MORPH",
                 1: "InflictFunction.REVIVE",
@@ -531,8 +534,9 @@ class Command(BaseCommand):
                 6: "InflictFunction.RAISE_MAX_FP",
                 7: "InflictFunction.INSTANT_DEATH",
             }
-            if data["inflict_type"] in inflict_map:
-                lines.append(f"    _inflict_type = {inflict_map[data['inflict_type']]}")
+            lines.append(f"    _inflict_type = {inflict_map[data['inflict_type']]}")
+        else:
+            lines.append(f"    _inflict_type = None")
 
         # inflict element
         if data["inflict_element"] != 0:

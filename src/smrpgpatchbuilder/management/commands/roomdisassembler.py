@@ -718,10 +718,13 @@ class Command(BaseCommand):
                     initiator = d[offset + 7] >> 4
                     if otype == 0:  # regular
                         base_event = ((d[offset + 7] & 0x0F) << 8) + d[offset + 6]
-                        # For parent objects, byte 8 should be 0, so no offsets added
-                        event = base_event
-                        assigned_npc = base_assigned_npc
-                        action_script = base_action_script
+                        # Extract offsets from byte 8 for parent objects
+                        npc_offset = d[offset + 8] & 0x07
+                        action_offset = (d[offset + 8] >> 3) & 0x03
+                        event_offset = d[offset + 8] >> 5
+                        event = base_event + event_offset
+                        assigned_npc = base_assigned_npc + npc_offset
+                        action_script = base_action_script + action_offset
                     elif otype == 1:  # chest
                         base_event = ((d[offset + 7] & 0x0F) << 8) + d[offset + 6]
                         event = base_event
@@ -731,11 +734,13 @@ class Command(BaseCommand):
                         lower_70a7 = d[offset + 8] & 0x0F
                     else:  # battle
                         assigned_npc = base_assigned_npc
-                        action_script = base_action_script + (d[offset + 8] & 0x0F)
                         after_battle = (d[offset + 7] >> 1) & 0x07
                         base_pack = d[offset + 6]
-                        # For parent objects, byte 8 should be 0, so pack = base_pack
-                        pack = base_pack
+                        # Extract offsets from byte 8 for parent objects
+                        pack_offset = d[offset + 8] >> 4
+                        action_offset = d[offset + 8] & 0x0F
+                        pack = base_pack + pack_offset
+                        action_script = base_action_script + action_offset
                     visible = bit_bool_from_num(d[offset + 9], 7)
                     x = d[offset + 9] & 0x7F
                     y = d[offset + 10] & 0x7F

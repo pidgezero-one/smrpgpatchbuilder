@@ -475,12 +475,11 @@ class Item:
         data += ByteField(self.inflict).as_bytes()
 
         if self.inflict_type is None:
-            data += ByteField(0xDD).as_bytes()
+            data += ByteField(0xFF).as_bytes()
         else:
-            val = self.inflict_type
-            if self.hide_damage:
-                val |= 1 << 2
-            data += ByteField(val).as_bytes()
+            data += ByteField(self.inflict_type).as_bytes()
+
+        data += ByteField(0x04 if self.hide_damage else 0x00).as_bytes()
 
         patch[base_addr] = data
 

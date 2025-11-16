@@ -415,10 +415,7 @@ class CharacterSpell(Spell):
 
 class EnemySpell(Spell):
     """Grouping class for enemy-specific spells."""
-
-    @property
-    def title(self) -> str:
-        return self.__class__.__name__
+    pass
 
 
 class SpellCollection:

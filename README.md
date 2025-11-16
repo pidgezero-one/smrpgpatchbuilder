@@ -7,21 +7,24 @@ This is not a decomp.
 ## How this works
 
 Convert some contents of your ROM into Python code so you can freely edit it, then create a patch to get your changes into your ROM. You can do this for:
-- [event scripts](#event-and-action-scripts)
+- ✅ [event scripts](#event-and-action-scripts)
 - [battle animation scripts](#battle-animation-scripts)
 - [monsters](#monsters)
 - [monster AI scripts](#monster-ai-scripts)
-- [monster attacks](#monster-attacks)
-- [monster and ally spells](#monster-and-ally-spells)
-- [allies](#allies)
-- [items](#items)
-- [sprites](#sprites)
-- [shops](#shops)
-- [overworld dialogs](#overworld-dialogs)
-- [battle dialogs and battle messages](#battle-dialogs-and-messages)
+- ✅ [monster attacks](#monster-attacks)
+- ✅ [monster and ally spells](#monster-and-ally-spells)
+- ✅ [allies](#allies)
+- ✅ [items](#items)
+- ✅ [sprites](#sprites)
+- ✅ [shops](#shops)
+- ✅ [overworld dialogs](#overworld-dialogs)
+- ✅ [battle dialogs and battle messages](#battle-dialogs-and-messages)
 - [battle packs and formations](#battle-packs-and-formations)
-- [rooms and NPCs](#rooms-and-npcs)
-- [overworld location data](#overworld-location-data)
+- ✅ [packet NPCs](#packet-npcs)
+- ✅ [rooms and NPCs](#rooms-and-npcs)
+- ✅ [overworld location data](#overworld-location-data)
+
+(✅ = roundtrip tested and working)
 
 You can also take the contents of your disassembler_output folder and stick it in whatever Python project you want, as long as that project imports this package. (example: SMRPG randomizer)
 
@@ -1119,6 +1122,7 @@ Here are some things to be aware of:
   - Within a room, your NPC has an ID, and the ID points to a "standalone" NPC object that specifies its sprite ID, shadow size, height/acute/obtuse collision sizes, how many directions they should be able to face and how much vram they should be allowed to use, etc.
   - In the disassembler, you'll see all these properties disassembled as part of your NPC list, but they can also be overridden at the room NPC level, which will _only_ change those properties in that room. 
   - When assembled, having these overrides creates a separate NPC for that room. This is designed such that you don't need to worry about NPC IDs, the assembler will take care of that (you can actually have over 1300, not just 512, so the assembler takes advantage of that extra space to give you freedom to make the objects in your room as detached as possible from other rooms).
+  - Because you can have more than 511 NPCs, Lazy Shell will not load some of them correctly. (todo: add a pull request to LS that offers this flexibility)
 
 <sub>([back to top](#how-this-works))</sub>
 

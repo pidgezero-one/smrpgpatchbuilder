@@ -1960,6 +1960,8 @@ class Command(BaseCommand):
                 args["overcharge_end"] = str(cmd[5])
             elif opcode == 0xD5:
                 cls = "SummonMonster"
+                print(loaded_class_names["enemies"])
+                print(cmd[2])
                 args["monster"] = loaded_class_names["enemies"][cmd[2]]
                 args["position"] = cmd[3]
                 if cmd[1] & 0x01 == 0x01:
