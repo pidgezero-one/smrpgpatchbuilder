@@ -18,6 +18,8 @@ from smrpgpatchbuilder.utils.disassembler_common import (
 from smrpgpatchbuilder.management.commands.input_file_parser import (
     load_arrays_from_input_files,
 )
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
 import string, random, shutil, os
 
 PALETTE_OFFSET = 0x253000
@@ -405,21 +407,18 @@ class Command(BaseCommand):
         used_packs = [False] * 1024
         used_palettes = [False] * 819
 
-        for index, s in enumerate(sprites):
+        # Parallel processing of sprite files
+        def write_sprite_file(index, s):
+            """Write a single sprite file and return usage information."""
             palette_offset = s.palette_offset
             unknown = s.unknown
             i = images[s.image_num]
             if s.animation_num >= len(packs):
-                break
+                return None  # Skip this sprite
             p = packs[s.animation_num]
 
             palette_id_original = (i.palette_pointer - PALETTE_OFFSET) // 30
             palette_id = palette_id_original + palette_offset
-            used_palettes[palette_id] = True
-
-            used_images[s.image_num] = True
-
-            used_packs[s.animation_num] = True
 
             gfx_offset = i.graphics_pointer
 
@@ -507,10 +506,10 @@ class Command(BaseCommand):
                 writeline(file, "                ),")
             writeline(file, "            ],")
             writeline(file, "            sequences=[")
-            for s in p.properties.sequences:
+            for seq in p.properties.sequences:
                 writeline(file, "                AnimationSequence(")
                 writeline(file, "                    frames=[")
-                for f in s.frames:
+                for f in seq.frames:
                     writeline(
                         file,
                         "                        AnimationSequenceFrame(duration=%i, mold_id=%i),"
@@ -526,6 +525,22 @@ class Command(BaseCommand):
             writeline(file, "    unknown_num=%i" % unknown)
             writeline(file, ")")
             file.close()
+
+            # Return usage information
+            return (s.image_num, s.animation_num, palette_id)
+
+        # Execute sprite writing in parallel
+        num_workers = min(multiprocessing.cpu_count(), len(sprites))
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            futures = [executor.submit(write_sprite_file, idx, sprite)
+                      for idx, sprite in enumerate(sprites)]
+            for future in as_completed(futures):
+                result = future.result()
+                if result is not None:
+                    image_num, animation_num, palette_id = result
+                    used_images[image_num] = True
+                    used_packs[animation_num] = True
+                    used_palettes[palette_id] = True
 
         file = open(f"{output_path}/sprites.py", "w", encoding="utf-8")
         writeline(

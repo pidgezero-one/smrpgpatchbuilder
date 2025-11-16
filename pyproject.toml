@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "smrpgpatchbuilder"
-version = "0.1.0"
+version = "1.0.1"
 authors = [
   { name="pidgezero_one", email="s.kischak@gmail.com" },
 ]

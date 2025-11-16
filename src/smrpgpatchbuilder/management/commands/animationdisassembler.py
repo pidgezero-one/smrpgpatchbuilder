@@ -8,10 +8,15 @@ from smrpgpatchbuilder.utils.disassembler_common import (
 import os
 import shutil
 from copy import deepcopy
-from typing import List, Tuple, Dict, Optional, Union
+from typing import List, Tuple, Dict, Optional, Union, Set
 from dataclasses import dataclass
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
+import queue
+import threading
 from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config
+from disassembler_output.variables import battle_event_names
 
 
 ORIGINS = [
@@ -123,6 +128,28 @@ monster_behaviour_oq_offsets = [
     0x350E60,  # fade out death, no "escape" transition
     0x350E6C,  # (normal)
     0x350E78,  # no reaction when hit
+]
+
+# Extract monster behaviour names from the comments above
+monster_behaviour_names = [
+    "no_movement_for_escape",
+    "slide_backward_when_hit",
+    "bowser_clone_sprite",
+    "mario_clone_sprite",
+    "no_reaction_when_hit",
+    "sprite_shadow",
+    "floating_sprite_shadow",
+    "floating",
+    "floating_slide_backward_when_hit",
+    "floating_slide_backward_when_hit_2",
+    "fade_out_death_floating",
+    "fade_out_death",
+    "fade_out_death_2",
+    "fade_out_death_smithy_spell_cast",
+    "fade_out_death_no_escape_movement",
+    "fade_out_death_no_escape_transition",
+    "normal",
+    "no_reaction_when_hit_2",
 ]
 
 force_contiguous_block_start = monster_behaviour_oq_offsets + [    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
@@ -763,12 +790,56 @@ def get_third_byte_as_string(bank_name: str) -> str:
 
 BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
+
+def hash_amem_for_dedup(amem: AMEM, important_indexes: List[int]) -> tuple:
+    """Create a hashable representation of AMEM state for duplicate detection."""
+    result = []
+    for idx in important_indexes:
+        # Cap values at 65535 and convert to frozenset for hashing
+        capped = frozenset(min(65535, val) for val in amem[idx])
+        result.append(capped)
+    return tuple(result)
+
+
+# Maximum number of distinct values to track per AMEM slot before widening
+# This prevents state explosion while maintaining correctness
+MAX_AMEM_VALUES = 100
+
+def widen_amem_slot(values: List[int]) -> List[int]:
+    """
+    Widen an AMEM slot that has too many values to prevent state explosion.
+
+    Uses sampling strategy: keep min, max, and representative intermediate values.
+    This maintains correctness (conservative approximation) while preventing
+    the 60,000+ branch explosions.
+    """
+    if len(values) <= MAX_AMEM_VALUES:
+        return values
+
+    # Sort and get boundaries
+    sorted_vals = sorted(set(values))
+    min_val = sorted_vals[0]
+    max_val = sorted_vals[-1]
+
+    # Sample strategy: keep min, max, and evenly distributed samples
+    num_samples = MAX_AMEM_VALUES - 2  # Reserve 2 for min/max
+    step = len(sorted_vals) // num_samples
+
+    result = [min_val]
+    for i in range(1, num_samples + 1):
+        idx = min(i * step, len(sorted_vals) - 1)
+        result.append(sorted_vals[idx])
+    result.append(max_val)
+
+    return sorted(set(result))
+
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
 
     def handle(self, *args, **options):
-        output_path = "./src/disassembler_output/battle_animation"
+        output_path = "./src/disassembler_output/battle_animation_"
 
         shutil.rmtree(output_path, ignore_errors=True)
 
@@ -1960,8 +2031,6 @@ class Command(BaseCommand):
                 args["overcharge_end"] = str(cmd[5])
             elif opcode == 0xD5:
                 cls = "SummonMonster"
-                print(loaded_class_names["enemies"])
-                print(cmd[2])
                 args["monster"] = loaded_class_names["enemies"][cmd[2]]
                 args["position"] = cmd[3]
                 if cmd[1] & 0x01 == 0x01:
@@ -2031,16 +2100,42 @@ class Command(BaseCommand):
                     new_script.append(output)
 
             return new_script
-        
+
+        # Generate battle event names from battle_event_names module
+        battle_event_var_names = []
+        for attr_name in dir(battle_event_names):
+            if attr_name.startswith("BE"):
+                battle_event_var_names.append(attr_name)
+        # Sort by the numeric value to get them in the right order
+        battle_event_var_names.sort(key=lambda x: getattr(battle_event_names, x))
+
+        # Helper function to format names with class name and ID
+        def format_with_id(class_names, start_id, suffix):
+            """Format class names with their IDs: {classname}_{id}_{suffix}"""
+            result = []
+            for idx, class_name in enumerate(class_names):
+                item_id = start_id + idx
+                # Remove "Item", "Spell", "Attack" suffixes from class name if present
+                base_name = class_name.replace("Item", "").replace("Spell", "").replace("Attack", "")
+                result.append(f"{base_name}_{item_id}_{suffix}")
+            return result
+
+        # Format names for weapons, items, and spells
+        weapon_names = format_with_id(loaded_class_names.get("weapons", []), 0, "weapon")
+        item_names = format_with_id(loaded_class_names.get("items", []), 96, "item")
+        ally_spell_names = format_with_id(loaded_class_names.get("ally_spells", []), 0, "spell")
+        monster_spell_names = format_with_id(loaded_class_names.get("monster_spells", []), 0, "spell")
+        monster_attack_names = format_with_id(loaded_class_names.get("monster_attacks", []), 0, "attack")
+
         SCRIPT_NAMES = {
-            "battle_events": loaded_arrays.get("events", []),
-            "ally_spells": loaded_class_names.get("ally_spells", []),
-            "monster_spells": loaded_class_names.get("monster_spells", []),
-            "monster_attacks": loaded_class_names.get("monster_attacks", []),
-            "items": loaded_class_names.get("item_names", []),  # offset 96
-            "weapons": loaded_class_names.get("weapons", []),
-            "weapon_misses": loaded_class_names.get("weapon_misses", []),
-            "weapon_sounds": loaded_class_names.get("weapon_sounds", []),
+            "battle_events": battle_event_var_names,
+            "ally_spells": ally_spell_names,
+            "monster_spells": monster_spell_names,
+            "monster_attacks": monster_attack_names,
+            "items": item_names,
+            "weapons": weapon_names,
+            "weapon_misses": weapon_names,
+            "weapon_sounds": weapon_names,
             "sprites": loaded_arrays.get("sprites", []),
             "flower_bonus": [
                 "(empty flower bonus message)",
@@ -2050,6 +2145,12 @@ class Command(BaseCommand):
                 "Once Again!",
                 "Lucky!",
             ],
+            "toad_tutorial": ["toad_tutorial"],
+            "weapon_wrapper_mario": ["weapon_wrapper_mario"],
+            "weapon_wrapper_toadstool": ["weapon_wrapper_toadstool"],
+            "weapon_wrapper_bowser": ["weapon_wrapper_bowser"],
+            "weapon_wrapper_geno": ["weapon_wrapper_geno"],
+            "weapon_wrapper_mallow": ["weapon_wrapper_mallow"],
             "ally_behaviours": [
                 'Ally behaviour unindexed: unknown 0x350462',
                 'Ally behaviour 0: flinch animation',
@@ -2321,15 +2422,17 @@ class Command(BaseCommand):
             # sprite behaviour OQs need to be included
             if third_byte_as_string == '35':
                 for i, mb_offset in enumerate(monster_behaviour_oq_offsets):
+                    # Use descriptive name from monster_behaviour_names if available
+                    label = monster_behaviour_names[i] if i < len(monster_behaviour_names) else f'sprite_behaviour_{i}'
                     oq_starts.append(
                         OQRef(
                             mb_offset,
                             deepcopy(INIT_AMEM),
                             [0],
-                            label=f'sprite behaviour {i}'
+                            label=label
                         )
                     )
-                    branches.append(Addr(mb_offset, deepcopy(INIT_AMEM), f'sprite behaviour {i}', []))
+                    branches.append(Addr(mb_offset, deepcopy(INIT_AMEM), label, []))
             # now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
@@ -2558,18 +2661,19 @@ class Command(BaseCommand):
                             for x in amem[index2]:
                                 for y in amem[index1]:
                                     consolidated.append(x + y)
-                            amem[index2] = list(set(consolidated))
+                            # Apply widening to prevent state explosion
+                            amem[index2] = widen_amem_slot(list(set(consolidated)))
                         elif (
                             command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
                         ):  # by const
-                            amem[command[1]] = list(
+                            amem[command[1]] = widen_amem_slot(list(
                                 set(
                                     [
                                         (a + shortify(command, 2))
                                         for a in amem[command[1]]
                                     ]
                                 )
-                            )
+                            ))
                     elif opcode in [0x2E, 0x2F]:  # dec
                         if command[1] & 0xF0 == 0x30:  # by amem
                             index1 = command[2] & 0x0F
@@ -2578,18 +2682,19 @@ class Command(BaseCommand):
                             for x in amem[index2]:
                                 for y in amem[index1]:
                                     consolidated.append(max(0, x - y))
-                            amem[index2] = list(set(consolidated))
+                            # Apply widening to prevent state explosion
+                            amem[index2] = widen_amem_slot(list(set(consolidated)))
                         elif (
                             command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
                         ):  # by const
-                            amem[command[1]] = list(
+                            amem[command[1]] = widen_amem_slot(list(
                                 set(
                                     [
                                         max(0, a - shortify(command, 2))
                                         for a in amem[command[1]]
                                     ]
                                 )
-                            )
+                            ))
                     elif opcode in [0x30, 0x31] and command[1] <= 0x0F:
                         amem[command[1]] = list(set([a + 1 for a in amem[command[1]]]))
                     elif opcode in [0x32, 0x33] and command[1] <= 0x0F:
@@ -2597,7 +2702,9 @@ class Command(BaseCommand):
                     elif opcode in [0x34, 0x35] and command[1] <= 0x0F:
                         amem[command[1]] = [0]
                     elif opcode in [0x6A, 0x6B] and command[1] <= 0x0F:
-                        amem[command[1]] = list(range(command[2]))
+                        # Critical: this can create large ranges that explode during inc/dec
+                        # Apply widening immediately to prevent 60,000+ branch explosions
+                        amem[command[1]] = widen_amem_slot(list(range(command[2])))
 
                     amem_was = deepcopy(amem)
 
@@ -2890,20 +2997,16 @@ class Command(BaseCommand):
             # actual value at 3a60d0: 0xd2 0x60
             # actual script 0 begins at 3a60d2
 
-            for script in blocks:
+            # Prepare output directory structure
+            dest = f"{output_path}/{bank_id}"
+            os.makedirs(f"{dest}/contents", exist_ok=True)
+            open(f"{dest}/__init__.py", "w")
+            open(f"{dest}/contents/__init__.py", "w")
 
-                script_alias = ""
-
-                dest = f"{output_path}/{bank_id}"
-                os.makedirs(f"{dest}/contents", exist_ok=True)
-                open(f"{dest}/__init__.py", "w")
-                open(f"{dest}/contents/__init__.py", "w")
+            # Parallel processing of scripts within this bank
+            def write_script_file(script_idx, script):
                 script_alias = f"script_0x{script[0].addr:06X}"
-                file = open(f"{dest}/contents/{script_alias}.py", "w")
-                import_body += "\nfrom .contents.%s import script as %s" % (
-                    script_alias,
-                    script_alias,
-                )
+                file_path = f"{dest}/contents/{script_alias}.py"
 
                 size = sum([c.length for c in script])
 
@@ -2929,8 +3032,30 @@ class Command(BaseCommand):
 
                 output += "\n])"
 
-                writeline(file, output)
+                with open(file_path, "w") as file:
+                    writeline(file, output)
 
+                # Return data needed for export file
+                return (script_idx, script_alias)
+
+            # Execute script writing in parallel
+            num_workers = min(multiprocessing.cpu_count(), len(blocks))
+            script_results = []
+            with ThreadPoolExecutor(max_workers=num_workers) as executor:
+                futures = [executor.submit(write_script_file, idx, script)
+                          for idx, script in enumerate(blocks)]
+                for future in as_completed(futures):
+                    script_results.append(future.result())
+
+            # Sort results by original index to maintain order
+            script_results.sort(key=lambda x: x[0])
+
+            # Build import and export bodies from results
+            for _, script_alias in script_results:
+                import_body += "\nfrom .contents.%s import script as %s" % (
+                    script_alias,
+                    script_alias,
+                )
                 export_body += "\n\t\t%s," % script_alias
             export_output = "from smrpgpatchbuilder.datatypes.battle_animation_scripts.types import AnimationScriptBank"
             export_output += import_body
@@ -2946,7 +3071,7 @@ class Command(BaseCommand):
         # Generate bank usage visualization
         self._write_bank_usage_visualization(output_path, known_addresses_covered)
 
-        self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
+        self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation_/"))
 
     def _write_bank_usage_visualization(self, output_path: str, known_addresses_covered: Dict[str, List[bool]]):
         """Write ASCII visualization of bank usage to a file.

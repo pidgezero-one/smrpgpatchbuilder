@@ -15,7 +15,7 @@ Convert some contents of your ROM into Python code so you can freely edit it, th
 - ✅ [monster and ally spells](#monster-and-ally-spells)
 - ✅ [allies](#allies)
 - ✅ [items](#items)
-- ✅ [sprites](#sprites)
+- [sprites](#sprites)
 - ✅ [shops](#shops)
 - ✅ [overworld dialogs](#overworld-dialogs)
 - ✅ [battle dialogs and battle messages](#battle-dialogs-and-messages)

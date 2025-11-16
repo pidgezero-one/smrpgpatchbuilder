@@ -4,14 +4,16 @@ Combined Django management command to disassemble enemies and animations togethe
 This command resolves the circular dependency between enemies and animations:
 1. Enemies need AnimationScriptBank.build_command_address_mapping() for _monster_behaviour
 2. Animations need Enemy classes for SummonMonster commands
+3. Animation scripts need to import Enemy classes when being loaded
 
 The solution:
-1. Disassemble enemies first WITHOUT monster_behaviour set
+1. Disassemble enemies to temp location WITHOUT monster_behaviour set
 2. Load enemy classes into memory and build enemy_id -> class_name mapping
 3. Disassemble animations using the enemy class names for SummonMonster commands
+3.5. Copy preliminary enemies.py to final location (needed for animation script imports)
 4. Load AnimationScriptBank and run build_command_address_mapping()
-5. Update enemy classes with correct _monster_behaviour values
-6. Write final output files for both enemies and animations
+5. Re-disassemble enemies to final location WITH correct _monster_behaviour values
+6. Validate that all monster behaviours were populated correctly
 """
 
 from django.core.management.base import BaseCommand
@@ -76,27 +78,48 @@ class Command(BaseCommand):
             # ========== STAGE 3: Disassemble animations with enemy references ==========
             self.stdout.write(self.style.WARNING("\n[Stage 3/6] Disassembling animations..."))
 
-            # Import and run the animation disassembler with enemy class names
-            from .animationdisassembler import Command as AnimationCommand
-            anim_cmd = AnimationCommand()
+            # Import the modules we need to patch
+            import smrpgpatchbuilder.management.commands.animationdisassembler as anim_module
 
-            # Monkey-patch the loaded_class_names to include our enemies
-            import smrpgpatchbuilder.management.commands.input_file_parser as parser_module
-            original_load_func = parser_module.load_class_names_from_config
+            # Save the original function from the animationdisassembler module
+            original_load_func = anim_module.load_class_names_from_config
 
+            # Create patched function that includes enemy classes
             def patched_load_class_names():
                 result = original_load_func()
                 result["enemies"] = enemy_id_to_class
                 return result
 
-            parser_module.load_class_names_from_config = patched_load_class_names
+            # Patch the function in the animationdisassembler module's namespace
+            # This is crucial because animationdisassembler imported it with "from ... import"
+            anim_module.load_class_names_from_config = patched_load_class_names
 
             try:
-                # Run animation disassembler
+                # Now import and run the animation disassembler with patched function
+                from .animationdisassembler import Command as AnimationCommand
+                anim_cmd = AnimationCommand()
                 anim_cmd.handle(rom=rom_path)
             finally:
                 # Restore original function
-                parser_module.load_class_names_from_config = original_load_func
+                anim_module.load_class_names_from_config = original_load_func
+
+            # ========== STAGE 3.5: Copy preliminary enemies.py to final location ==========
+            self.stdout.write(self.style.WARNING("\n[Stage 3.5/6] Copying preliminary enemies.py to final location..."))
+
+            # The animation scripts need to import from disassembler_output.enemies
+            # So we need to write the preliminary enemies.py (without behaviour) to the final location
+            # before we try to load the animation bank in the next stage
+            output_dir = Path(enemy_output_path).parent
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create __init__.py to make it a proper Python package
+            init_file = output_dir / "__init__.py"
+            if not init_file.exists():
+                init_file.write_text("")
+                self.stdout.write(self.style.SUCCESS(f"Created {init_file}"))
+
+            shutil.copy(temp_enemy_file, enemy_output_path)
+            self.stdout.write(self.style.SUCCESS(f"Copied preliminary enemies.py to {enemy_output_path}"))
 
             # ========== STAGE 4: Load AnimationScriptBank and get command mappings ==========
             self.stdout.write(self.style.WARNING("\n[Stage 4/6] Building animation command address mapping..."))

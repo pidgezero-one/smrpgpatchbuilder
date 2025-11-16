@@ -3,6 +3,8 @@ import math
 
 def dbyte_str(offset=0):
     def inner_dbyte(args):
+        if len(args) < 1:
+            raise ValueError(f"dbyte_str: Expected at least 1 byte, got {len(args)} bytes")
         return "0x%04x" % (2 * args[0] + offset), args[1:]
 
     return inner_dbyte
@@ -10,6 +12,8 @@ def dbyte_str(offset=0):
 
 def hbyte_str(offset=0):
     def inner_hbyte(args):
+        if len(args) < 1:
+            raise ValueError(f"hbyte_str: Expected at least 1 byte, got {len(args)} bytes")
         return "0x%04x" % (0x20 * args[0] + offset), args[1:]
 
     return inner_hbyte
@@ -17,6 +21,8 @@ def hbyte_str(offset=0):
 
 def dbyte(offset=0):
     def inner_dbyte(args):
+        if len(args) < 1:
+            raise ValueError(f"dbyte: Expected at least 1 byte, got {len(args)} bytes")
         return (2 * args[0] + offset), args[1:]
 
     return inner_dbyte
@@ -24,16 +30,22 @@ def dbyte(offset=0):
 
 def hbyte(offset=0):
     def inner_hbyte(args):
+        if len(args) < 1:
+            raise ValueError(f"hbyte: Expected at least 1 byte, got {len(args)} bytes")
         return (0x20 * args[0] + offset), args[1:]
 
     return inner_hbyte
 
 
 def shortify(arr: bytearray, dex: int) -> int:
+    if len(arr) < dex + 2:
+        raise ValueError(f"shortify: Expected at least {dex + 2} bytes, got {len(arr)} bytes")
     return arr[dex] + (arr[dex + 1] << 8)
 
 
 def shortify_signed(arr, dex):
+    if len(arr) < dex + 2:
+        raise ValueError(f"shortify_signed: Expected at least {dex + 2} bytes, got {len(arr)} bytes")
     num = arr[dex] + (arr[dex + 1] << 8)
     if num > 32767:
         offset = num - 32767 - 1
@@ -60,6 +72,8 @@ def bit_bool_from_num(num, bit_num):
 
 def byte_str(offset=0, prefix="", table=None):
     def inner_byte(args):
+        if len(args) < 1:
+            raise ValueError(f"byte_str: Expected at least 1 byte, got {len(args)} bytes")
         if table and args[0] in table:
             return "%s%s" % (prefix and (prefix + "."), table[args[0]]), args[1:]
         return "0x%02x" % (args[0] + offset), args[1:]
@@ -69,6 +83,8 @@ def byte_str(offset=0, prefix="", table=None):
 
 def byte(offset=0, prefix="", table=None):
     def inner_byte(args):
+        if len(args) < 1:
+            raise ValueError(f"byte: Expected at least 1 byte, got {len(args)} bytes")
         return (args[0] + offset), args[1:]
 
     return inner_byte
@@ -76,6 +92,8 @@ def byte(offset=0, prefix="", table=None):
 
 def byte_int_str(offset=0):
     def inner_byte(args):
+        if len(args) < 1:
+            raise ValueError(f"byte_int_str: Expected at least 1 byte, got {len(args)} bytes")
         return "%i" % (args[0] + offset), args[1:]
 
     return inner_byte
@@ -83,6 +101,8 @@ def byte_int_str(offset=0):
 
 def byte_int(offset=0):
     def inner_byte(args):
+        if len(args) < 1:
+            raise ValueError(f"byte_int: Expected at least 1 byte, got {len(args)} bytes")
         return (args[0] + offset), args[1:]
 
     return inner_byte
@@ -90,6 +110,8 @@ def byte_int(offset=0):
 
 def short_int_Str(offset=0):
     def inner_short(args):
+        if len(args) < 2:
+            raise ValueError(f"short_int_Str: Expected at least 2 bytes, got {len(args)} bytes")
         return "%i" % (args[0] + (args[1] << 8) + offset), args[2:]
 
     return inner_short
@@ -97,6 +119,8 @@ def short_int_Str(offset=0):
 
 def short_int(offset=0):
     def inner_short(args):
+        if len(args) < 2:
+            raise ValueError(f"short_int: Expected at least 2 bytes, got {len(args)} bytes")
         return (args[0] + (args[1] << 8) + offset), args[2:]
 
     return inner_short
@@ -104,6 +128,8 @@ def short_int(offset=0):
 
 def short_str(offset=0):
     def inner_short(args):
+        if len(args) < 2:
+            raise ValueError(f"short_str: Expected at least 2 bytes, got {len(args)} bytes")
         return "0x%04x" % (args[0] + (args[1] << 8) + offset), args[2:]
 
     return inner_short
@@ -111,6 +137,8 @@ def short_str(offset=0):
 
 def short(offset=0):
     def inner_short(args):
+        if len(args) < 2:
+            raise ValueError(f"short: Expected at least 2 bytes, got {len(args)} bytes")
         return (args[0] + (args[1] << 8) + offset), args[2:]
 
     return inner_short
