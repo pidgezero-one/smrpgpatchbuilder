@@ -152,14 +152,20 @@ monster_behaviour_names = [
     "no_reaction_when_hit_2",
 ]
 
-# force_contiguous_block_start = monster_behaviour_oq_offsets + 
+monster_entrance_offsets = [
+    0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC
+]
+
+# force_contiguous_block_start = monster_behaviour_oq_offsets +
 force_contiguous_block_start = [    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
     0x02F455,
     0x02F4BF,
     0x350402,
     0x351026,
     0x351493,
+    # Monster entrance offsets - top ptr should start a new block
     0x352128,
+    #0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC,
     0x35816D,
     0x358271,
     0x358916,
@@ -171,11 +177,6 @@ force_contiguous_block_start = [    # there are other addresses that should get 
     0x35C992,
     0x35ECA2,
     0x3A6000,
-]
-
-
-monster_entrance_offsets = [
-    0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC
 ]
 
 
@@ -2981,6 +2982,7 @@ class Command(BaseCommand):
                 if started is not None and value and absolute_offset in force_contiguous_block_start:
                     # end the current block and start a new one
                     used[bank_id].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
+                    started = index  # Start new block at current position
                 elif value and started is None:
                     started = index
                     # started: 4 digit rom position at which current block started
