@@ -32,6 +32,10 @@ PSYCHOPATH_DATA_END = 0x39B643
 
 # enemy name base address
 ENEMY_NAME_BASE_ADDRESS = 0x3992D1
+
+# cursor position base address
+CURSOR_BASE_ADDRESS = 0x39B944
+
 from .enums import (
     ApproachSound,
     HitSound,
@@ -86,7 +90,6 @@ class Enemy:
     _sound_on_approach: ApproachSound = ApproachSound.NONE
     _coin_sprite: CoinSprite = CoinSprite.NONE
     _entrance_style: EntranceStyle = EntranceStyle.NONE
-    _monster_behaviour: str
     _elevate: int = 0
 
     # special status
@@ -97,6 +100,10 @@ class Enemy:
 
     # psychopath
     _psychopath_message: str = ""
+
+    # cursor
+    _cursor_x: int = 0
+    _cursor_y: int = 0
 
     @property
     def monster_id(self) -> UInt8:
@@ -387,15 +394,6 @@ class Enemy:
         self._entrance_style = entrance_style
 
     @property
-    def monster_behaviour(self) -> str:
-        """The monster behaviour collection setting."""
-        return self._monster_behaviour
-
-    def set_monster_behaviour(self, monster_behaviour: str) -> None:
-        """Set the monster behaviour collection setting."""
-        self._monster_behaviour = monster_behaviour
-
-    @property
     def elevate(self) -> int:
         """The elevation level of the enemy (0-3)."""
         return self._elevate
@@ -431,6 +429,26 @@ class Enemy:
     def set_psychopath_message(self, psychopath_message: str) -> None:
         """Set the psychopath message for this enemy."""
         self._psychopath_message = psychopath_message
+
+    @property
+    def cursor_x(self) -> int:
+        """The X position of the cursor when targeting this enemy (0-15)."""
+        return self._cursor_x
+
+    def set_cursor_x(self, cursor_x: int) -> None:
+        """Set the X position of the cursor when targeting this enemy (must be 0-15)."""
+        assert 0 <= cursor_x <= 15, "cursor_x must be 0-15"
+        self._cursor_x = cursor_x
+
+    @property
+    def cursor_y(self) -> int:
+        """The Y position of the cursor when targeting this enemy (0-15)."""
+        return self._cursor_y
+
+    def set_cursor_y(self, cursor_y: int) -> None:
+        """Set the Y position of the cursor when targeting this enemy (must be 0-15)."""
+        assert 0 <= cursor_y <= 15, "cursor_y must be 0-15"
+        self._cursor_y = cursor_y
 
     @property
     def address(self):
@@ -477,11 +495,10 @@ class Enemy:
             raise ValueError("name contains characters not encodable in latin-1")
         self._name = name
 
-    def render(self, animation_pointers: dict[str, int], enemy_address: Optional[int] = None, reward_address: Optional[int] = None) -> Dict[int, bytearray]:
+    def render(self, enemy_address: Optional[int] = None, reward_address: Optional[int] = None) -> Dict[int, bytearray]:
         """get data for this enemy in `{0x123456: bytearray([0x00])}` format.
 
         args:
-            animation_pointers: dictionary mapping animation behavior names to addresses
             enemy_address: optional override for where to write enemy data (defaults to self.address)
             reward_address: optional override for where to write reward data (defaults to self.reward_address)
         """
@@ -510,11 +527,11 @@ class Enemy:
         hit_special_defense = 1 if self.invincible else 0
         hit_special_defense |= (1 if self.ohko_immune else 0) << 1
         morph_chance: int = 0
-        if self.morph_chance == 0.25:
+        if self.morph_chance == 25:
             morph_chance = 1
-        elif self.morph_chance == 0.75:
+        elif self.morph_chance == 75:
             morph_chance = 2
-        if self.morph_chance == 1.0:
+        elif self.morph_chance == 100:
             morph_chance = 3
         hit_special_defense |= morph_chance << 2
         hit_special_defense |= self.sound_on_hit << 4
@@ -541,7 +558,7 @@ class Enemy:
         # other properties
         data = bytearray()
         data += ByteField((self.entrance_style & 0x0F) + ((self.elevate & 0x03) << 4) + (self.coin_sprite << 6)).as_bytes()
-        patch[addr + 12] = data
+        patch[addr + 15] = data
 
         # flower bonus.
         bonus_addr = FLOWER_BONUS_BASE_ADDRESS + self.monster_id
@@ -586,15 +603,10 @@ class Enemy:
             name_bytes.append(0x20)
         patch[name_addr] = name_bytes
 
-        # sprite behaviour
-        behaviour_pointer = animation_pointers.get(
-            self._monster_behaviour, 0x000000
-        )
-        if behaviour_pointer == 0x000000:
-            raise ValueError(
-                f"{self._monster_behaviour} not found in animation pointers"
-            )
-        patch[0x350202 + self.monster_id * 2] = bytearray([behaviour_pointer & 0xFF, (behaviour_pointer >> 8) & 0xFF])
+        # cursor position (1 byte: cursorX in upper 4 bits, cursorY in lower 4 bits)
+        cursor_addr = CURSOR_BASE_ADDRESS + self.monster_id
+        cursor_byte = (self.cursor_x << 4) | self.cursor_y
+        patch[cursor_addr] = bytearray([cursor_byte])
 
         return patch
 
@@ -617,11 +629,8 @@ class EnemyCollection:
             )
         self.enemies = enemies
 
-    def render(self, animation_pointers: dict[str, int]) -> Dict[int, bytearray]:
+    def render(self) -> Dict[int, bytearray]:
         """render all enemies including their psychopath messages and pointer table.
-
-        args:
-            animation_pointers: dictionary mapping animation behavior names to addresses
 
         returns:
             dictionary mapping rom addresses to bytearrays
@@ -651,7 +660,6 @@ class EnemyCollection:
 
             # render enemy data at current addresses
             enemy_patch = enemy.render(
-                animation_pointers,
                 enemy_address=current_enemy_addr,
                 reward_address=current_reward_addr
             )
@@ -709,7 +717,7 @@ class EnemyCollection:
             current_data_addr += len(message_bytes)
 
         # check if total message data exceeds available space
-        max_message_size = PSYCHOPATH_DATA_END - PSYCHOPATH_DATA_START
+        max_message_size = PSYCHOPATH_DATA_END + 1 - PSYCHOPATH_DATA_START
         if total_message_bytes > max_message_size:
             raise ValueError(
                 f"Psychopath messages total {total_message_bytes} bytes, "

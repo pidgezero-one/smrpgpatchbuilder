@@ -230,7 +230,7 @@ class Formation:
         # monster data.
         for index, member in enumerate(self.members):
             if member is not None:
-                data += ByteField(index).as_bytes()
+                data += ByteField(member.enemy().monster_id).as_bytes()
                 data += ByteField(member.x_pos).as_bytes()
                 data += ByteField(member.y_pos).as_bytes()
             else:

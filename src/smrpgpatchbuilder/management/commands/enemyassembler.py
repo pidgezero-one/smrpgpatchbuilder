@@ -71,7 +71,6 @@ class Command(BaseCommand):
             rom = deepcopy(original_rom)
 
         # load animation bank to get command address mappings
-        animation_pointers = self._load_animation_bank(animation_bank_path)
 
         # import the enemies module and get the enemycollection
         module = importlib.import_module(module_path)
@@ -79,7 +78,7 @@ class Command(BaseCommand):
 
         # render the collection to get the patch data
         try:
-            patch_data = collection.render(animation_pointers)
+            patch_data = collection.render()
         except ValueError as e:
             self.stderr.write(self.style.ERROR(f"error rendering enemies: {e}"))
             exit(1)
@@ -134,55 +133,3 @@ class Command(BaseCommand):
                         f"successfully created binary files at ./src/assembler_output/enemies/bin/"
                     )
                 )
-
-    def _load_animation_bank(self, animation_bank_path):
-        """load animation bank and build command address mapping.
-
-        args:
-            animation_bank_path: path to the animation bank export file
-
-        returns:
-            dict mapping command identifiers to addresses
-        """
-        # convert file path to module path
-        # e.g., "src/disassembler_output/battle_animation/35/export.py"
-        # -> "disassembler_output.battle_animation.35.export"
-
-        # normalize the path and remove .py extension
-        normalized_path = animation_bank_path.replace(os.sep, '/')
-        if normalized_path.endswith('.py'):
-            normalized_path = normalized_path[:-3]
-
-        # remove 'src/' prefix if present
-        if normalized_path.startswith('src/'):
-            normalized_path = normalized_path[4:]
-
-        # convert to module path
-        module_path = normalized_path.replace('/', '.')
-
-        # import the module
-        try:
-            module = importlib.import_module(module_path)
-        except ImportError as e:
-            raise ValueError(f"could not load animation bank from {animation_bank_path}: {e}")
-
-        # get the bank instance (usually named 'bank')
-        # first try the common name
-        bank = getattr(module, 'bank', None)
-
-        # if not found, search for an instance that has the method
-        if bank is None:
-            for attr_name in dir(module):
-                attr = getattr(module, attr_name)
-                # check if it's an instance (not a class or module) with the method
-                if (hasattr(attr, 'build_command_address_mapping') and
-                    not isinstance(attr, type) and
-                    callable(getattr(attr, 'build_command_address_mapping', None))):
-                    bank = attr
-                    break
-
-        if bank is None:
-            raise ValueError(f"could not find animationscriptbank instance in {animation_bank_path}")
-
-        # build and return the mapping
-        return bank.build_command_address_mapping()

@@ -18,13 +18,6 @@ class Command(BaseCommand):
             help="Path to a Mario RPG ROM file",
         )
         parser.add_argument(
-            "-a",
-            "--animation-bank",
-            dest="animation_bank",
-            default="src/disassembler_output/battle_animation/35/export.py",
-            help="Path to animation bank export file",
-        )
-        parser.add_argument(
             "-o",
             "--output",
             dest="output",
@@ -34,19 +27,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         rom_path = options["rom"]
-        animation_bank_path = options["animation_bank"]
         output_path = options["output"]
 
         # read rom
         with open(rom_path, "rb") as f:
             rom = bytearray(f.read())
-
-        # load animation bank to get command address mappings
-        # If animation_bank_path is "dummy", skip loading (for stage 1 of combined disassembly)
-        if animation_bank_path and animation_bank_path != "dummy":
-            address_to_identifier = self._load_animation_bank(animation_bank_path)
-        else:
-            address_to_identifier = {}  # Empty mapping for stage 1
 
         # load item collection to get item id to class name mappings
         item_id_to_class = self._load_item_mapping()
@@ -60,7 +45,6 @@ class Command(BaseCommand):
         ENEMY_NAME_BASE_ADDRESS = 0x3992D1
         PSYCHOPATH_POINTER_ADDRESS = 0x399FD1
         PSYCHOPATH_DATA_POINTER_OFFSET = 0x390000
-        BEHAVIOUR_POINTER_ADDRESS = 0x350202
         NUM_ENEMIES = 256
 
         # read the enemy pointer table (256 * 2-byte pointers)
@@ -102,9 +86,7 @@ class Command(BaseCommand):
                 enemy_pointers[enemy_id],  # use pointer from table
                 reward_pointers[enemy_id],  # use pointer from table
                 FLOWER_BONUS_BASE_ADDRESS,
-                ENEMY_NAME_BASE_ADDRESS,
-                BEHAVIOUR_POINTER_ADDRESS,
-                address_to_identifier
+                ENEMY_NAME_BASE_ADDRESS
             )
 
             # add psychopath message to enemy data
@@ -164,61 +146,6 @@ class Command(BaseCommand):
             self.style.SUCCESS(f"Successfully generated {NUM_ENEMIES} enemy definitions to {output_path}")
         )
 
-    def _load_animation_bank(self, animation_bank_path):
-        """load animation bank and build address to identifier mapping.
-
-        returns:
-            dict mapping addresses to command identifiers
-        """
-        # convert file path to module path
-        # e.g., "src/disassembler_output/battle_animation/35/export.py"
-        # -> "disassembler_output.battle_animation.35.export"
-        import os
-
-        # normalize the path and remove .py extension
-        normalized_path = animation_bank_path.replace(os.sep, '/')
-        if normalized_path.endswith('.py'):
-            normalized_path = normalized_path[:-3]
-
-        # remove 'src/' prefix if present
-        if normalized_path.startswith('src/'):
-            normalized_path = normalized_path[4:]
-
-        # convert to module path
-        module_path = normalized_path.replace('/', '.')
-
-        # import the module
-        try:
-            module = importlib.import_module(module_path)
-        except ImportError as e:
-            raise ValueError(f"Could not load animation bank from {animation_bank_path}: {e}")
-
-        # get the bank instance (usually named 'bank')
-        # first try the common name
-        bank = getattr(module, 'bank', None)
-
-        # if not found, search for an instance that has the method
-        if bank is None:
-            for attr_name in dir(module):
-                attr = getattr(module, attr_name)
-                # check if it's an instance (not a class or module) with the method
-                if (hasattr(attr, 'build_command_address_mapping') and
-                    not isinstance(attr, type) and
-                    callable(getattr(attr, 'build_command_address_mapping', None))):
-                    bank = attr
-                    break
-
-        if bank is None:
-            raise ValueError(f"Could not find AnimationScriptBank instance in {animation_bank_path}")
-
-        # build the mapping
-        identifier_to_address = bank.build_command_address_mapping()
-
-        # reverse the mapping (address -> identifier)
-        address_to_identifier = {v: k for k, v in identifier_to_address.items()}
-
-        return address_to_identifier
-
     def _load_item_mapping(self) -> Dict[int, str]:
         """load all_items and build item id to class name mapping.
 
@@ -248,7 +175,7 @@ class Command(BaseCommand):
         return item_id_to_class
 
     def _parse_enemy(self, rom, enemy_id, enemy_addr, reward_data_addr, flower_bonus_addr,
-                     name_addr, behaviour_addr, address_to_identifier):
+                     name_addr):
         """parse enemy data from rom.
 
         args:
@@ -258,8 +185,6 @@ class Command(BaseCommand):
             reward_data_addr: full rom address where reward data is stored
             flower_bonus_addr: base address for flower bonus data
             name_addr: base address for enemy names
-            behaviour_addr: base address for behaviour pointers
-            address_to_identifier: animation command address mapping
         """
         # read enemy name
         name_offset = name_addr + (enemy_id * 13)
@@ -354,17 +279,11 @@ class Command(BaseCommand):
         flower_bonus_chance = ((bonus_byte >> 4) & 0x0F) * 10
         flower_bonus_type_value = bonus_byte & 0x0F
 
-        # read behaviour pointer (2 bytes little-endian at behaviour_addr + enemy_id * 2)
-        behaviour_offset = behaviour_addr + (enemy_id * 2)
-        behaviour_pointer_low = rom[behaviour_offset]
-        behaviour_pointer_high = rom[behaviour_offset + 1]
-        behaviour_pointer = behaviour_pointer_low | (behaviour_pointer_high << 8)
-
-        # convert to full address (add 0x350000 for bank 0x35)
-        behaviour_full_address = 0x350000 | behaviour_pointer
-
-        # look up identifier from address mapping
-        monster_behaviour = address_to_identifier.get(behaviour_full_address)
+        # read cursor position (1 byte: cursorX in upper 4 bits, cursorY in lower 4 bits)
+        cursor_offset = 0x39B944 + enemy_id
+        cursor_byte = rom[cursor_offset]
+        cursor_x = (cursor_byte >> 4) & 0x0F
+        cursor_y = cursor_byte & 0x0F
 
         return {
             "name": name,
@@ -397,7 +316,8 @@ class Command(BaseCommand):
             "rare_item_drop": rare_item_drop,
             "flower_bonus_chance": flower_bonus_chance,
             "flower_bonus_type": flower_bonus_type_value,
-            "monster_behaviour": monster_behaviour,
+            "cursor_x": cursor_x,
+            "cursor_y": cursor_y,
         }
 
     def _read_psychopath_messages(self, rom, pointer_addr, pointer_offset, num_enemies):
@@ -648,16 +568,15 @@ class Command(BaseCommand):
         elif data["entrance_style"] != 0:
             lines.append(f"    # WARNING: Unknown entrance_style value: {data['entrance_style']}")
 
-        # monster behaviour
-        if data["monster_behaviour"] is not None:
-            lines.append(f'    _monster_behaviour: str = "{data["monster_behaviour"]}"')
-        else:
-            # Will be filled in during stage 5 of combined disassembly
-            lines.append('    _monster_behaviour: str = ""  # To be filled by combined_disassembler')
-
         # elevation
         if data["elevate"] > 0:
             lines.append(f"    _elevate: int = {data['elevate']}")
+
+        # cursor position
+        if data["cursor_x"] > 0:
+            lines.append(f"    _cursor_x: int = {data['cursor_x']}")
+        if data["cursor_y"] > 0:
+            lines.append(f"    _cursor_y: int = {data['cursor_y']}")
 
         # flags
         if data["invincible"]:
