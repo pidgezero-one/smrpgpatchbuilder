@@ -245,7 +245,7 @@ Notes:
 
 Disassemble:
 ```bash
-PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom" # be warned, this will probably take a few hours
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py animationdisassembler --rom "path/to/your/smrpg/rom"
 ```
 Assemble:
 ```bash
@@ -298,7 +298,7 @@ Battle animations however are NOT like event scripts and action scripts in that 
 This is still easily the most volatile part of the game that this repo lets you edit, so here are some considerations to be aware of:
 
 - You can Ctrl+F the name of a command in Lazy Shell in src/smrpgpatchbuilder/datatypes/battle_animation_scripts to find the documentation for how to use that command in Python.
-- This is still very, very much in alpha. You'll find that disassembly takes an extremely long time to complete, to the order of several hours, because the recursive tracer goes as far as trying to find object queue branches based on all possible AMEM $60 values there can be when trying to reach it. This is still an imperfect approximation and not completely comprehensive, because of things like `SetAMEMToRandomByte` or setting AMEM to non-AMEM $7E:xxxx vars. 
+- This is still very, very much in alpha. The recursive tracer will find every branch of every object queue it can detect as used to the best of my understanding. It is probably still an imperfect approximation and not completely comprehensive.
 - Every script file you get will include an address that it intends to patch to and an expected size that it shouldn't exceed. **Do not change these.** This is determined by what parts of the ROM the disassembler was able to access when reading your code. Changing this value means you might be overwriting something that wasn't hit by the recursive trace, aka something the assembler doesn't know exists and might be bad to overwrite.
 - If your changed script is shorter than the script's expected size, that's okay! It just can't be longer than the expected size.
 - I've done my best to make sure that pointers referenced outside of battle animations (such as monster definitions including pointers to where their sprite behaviours live) will stay intact, however it's possible that there are some I missed, which means those external pointers will no longer work if your code changes shape too much. Let me know if you come across anything like that and I can add it to the disassembler.

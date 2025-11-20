@@ -2591,6 +2591,8 @@ class Command(BaseCommand):
                         # if the destination branch already exists, verify that we don't have an exact copy with the same amem
                         for t in [t for t in branches if t.offset == offs]:
                             # debug
+                            # Not debug, actually! The trace graph was identical with and without AMEM tracing
+                            # which means my method for calculating object queue size is probably correct.
                             # jump_voided = True
                             same_amem_count = 0
                             #print(f"0x{offs:06x} comparing amem:")
