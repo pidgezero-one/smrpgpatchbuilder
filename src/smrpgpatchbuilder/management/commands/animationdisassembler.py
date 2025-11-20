@@ -152,16 +152,11 @@ monster_behaviour_names = [
     "no_reaction_when_hit_2",
 ]
 
-force_contiguous_block_start = monster_behaviour_oq_offsets + [    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
+# force_contiguous_block_start = monster_behaviour_oq_offsets + 
+force_contiguous_block_start = [    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
     0x02F455,
     0x02F4BF,
     0x350402,
-    0x35058A,
-    0x350898,
-    0x350985,
-    0x350AD3,
-    0x350CF2,
-    0x350E60,
     0x351026,
     0x351493,
     0x352128,
@@ -177,6 +172,7 @@ force_contiguous_block_start = monster_behaviour_oq_offsets + [    # there are o
     0x35ECA2,
     0x3A6000,
 ]
+
 
 monster_entrance_offsets = [
     0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC
@@ -226,13 +222,15 @@ banks: Dict[str, Bank] = {
     "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
     # gap
     "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
-    "ally_behaviours": Bank(0x350462, 0x35054D, 0x350402, 0x350461),
-    "monster_behaviours_1": Bank(0x3505C6, 0x350897, 0x35058A, 0x3505C5),
-    "monster_behaviours_2": Bank(0x3508A4, 0x350984, 0x350898, 0x3508A3),
-    "monster_behaviours_3": Bank(0x35099E, 0x350AD2, 0x350985, 0x35099D),
-    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1, 0x350AD3, 0x350AF6),
-    "monster_behaviours_5": Bank(0x350D22, 0x350E5F, 0x350CF2, 0x350D21),
-    "monster_behaviours_6": Bank(0x350E84, 0x351025, 0x350E60, 0x350E83),
+    "ally_behaviours": Bank(0x350462, 0x35054D),
+    "monster_behaviour_pointers": Bank(0x350202, 0x350261),
+    # Don't include the monster behaviour pointer table at 0x350202, that's controlled in the enemy class
+    "monster_behaviours_1": Bank(0x3505C6, 0x350897),
+    "monster_behaviours_2": Bank(0x3508A4, 0x350984),
+    "monster_behaviours_3": Bank(0x35099E, 0x350AD2),
+    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1),
+    "monster_behaviours_5": Bank(0x350D22, 0x350E5F),
+    "monster_behaviours_6": Bank(0x350E84, 0x351025),
     "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
     "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
     "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
@@ -609,7 +607,7 @@ def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_sta
             cmd = rom[dex]
             l = command_lens[cmd]
             if cmd == 0x02 or cmd == 0x47:
-                #print("warning: encountered 0x02 or 0x47 command at 0x%06x" % dex)
+                print("warning: encountered 0x02 or 0x47 command at 0x%06x" % dex)
                 pass
             if cmd == 0xC6 and l == 0:
                 l = 2 + rom[dex + 1]
@@ -839,7 +837,7 @@ class Command(BaseCommand):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
 
     def handle(self, *args, **options):
-        output_path = "./src/disassembler_output/battle_animation_"
+        output_path = "./src/disassembler_output/battle_animation"
 
         shutil.rmtree(output_path, ignore_errors=True)
 
@@ -865,6 +863,7 @@ class Command(BaseCommand):
             "35": [False] * 0x10000,
             "3A": [False] * 0x10000,
         }
+        
 
         collective_data: Dict[str, List[List[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
         
@@ -2349,7 +2348,7 @@ class Command(BaseCommand):
 
 
         for bank_id, blocks in banks.items():
-            #print(f'processing bank: {bank_id}')
+            print(f'processing bank: {bank_id}')
             third_byte_as_string = get_third_byte_as_string(bank_id)
             reference_label = bank_id
 
@@ -2362,8 +2361,17 @@ class Command(BaseCommand):
             branches: List[Addr] = []
             amem: AMEM = deepcopy(INIT_AMEM)
 
+
             # to start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
-            if blocks.has_pointers:
+            # treat pointers as an OQ because that's pretty much what it is
+            if blocks.has_pointers and bank_id not in ["battle_events"]:
+                oq_starts.append(
+                    OQRef(
+                        bank_as_upper_byte + blocks.pointer_table_start,
+                        deepcopy(amem),
+                        [0],
+                    )
+                )
                 for pointer_table_index, pointer in enumerate(
                     range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be none if has_pointers is true
                 ):
@@ -2380,10 +2388,85 @@ class Command(BaseCommand):
                         ),
                     )
                     bank_pointer_addresses.append(three_byte_pointer)
-                    #print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06x}")
+                    print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06x}")
                     branches.append(
                         Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
                     )
+                    known_addresses_covered[third_byte_as_string][three_byte_pointer & 0xFFFF] = True
+                    known_addresses_covered[third_byte_as_string][(three_byte_pointer & 0xFFFF) + 1] = True
+                    if third_byte_as_string == "35" and ((three_byte_pointer & 0xFFFF == 0x0452) or ((three_byte_pointer & 0xFFFF) + 1 == 0x0452)):
+                        raise("2")
+            elif bank_id == "monster_behaviour_pointers":
+                o = OQRef(
+                        blocks.start,
+                        deepcopy(INIT_AMEM),
+                        [0],
+                    )
+                o.length = 512
+                oq_starts.append(
+                    deepcopy(o)
+                )
+                for i in range(0, 512, 2):
+                    mb_offset = shortify(rom, blocks.start + i) + 0x350000
+                    o = OQRef(
+                            mb_offset,
+                            deepcopy(INIT_AMEM),
+                            [0],
+                            label=f'monster_{i//2}_sprite_behaviour'
+                        )
+                    o.length = 12
+                    oq_starts.append(
+                        deepcopy(o)
+                    )
+                    branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), "monster_behaviour_by_id", []))
+                for i in range(0x0202, 0x0202+512):
+                    known_addresses_covered["35"][i] = True
+            elif bank_id == "ally_behaviours":
+                o = OQRef(
+                        0x350000,
+                        deepcopy(INIT_AMEM),
+                        [0],
+                    )
+                o.length = 2
+                oq_starts.append(
+                    deepcopy(o)
+                )
+                known_addresses_covered[third_byte_as_string][0] = True
+                known_addresses_covered[third_byte_as_string][1] = True
+                branches.append(Addr(0x350000, deepcopy(INIT_AMEM), "ally_behaviours_root", []))
+                top_level_ally_ptr = shortify(rom, 0x350000) + 0x350000
+                branches.append(Addr(top_level_ally_ptr, deepcopy(INIT_AMEM), "ally_behaviours_subroot", ["ally_behaviours_root"]))
+                o = OQRef(
+                        top_level_ally_ptr,
+                        deepcopy(INIT_AMEM),
+                        [0],
+                    )
+                o.length = 12
+                oq_starts.append(
+                    deepcopy(o)
+                )
+                for i in range(0, 12, 2):
+                    cursor = top_level_ally_ptr + i
+                    known_addresses_covered[third_byte_as_string][cursor & 0xFFFF] = True
+                    known_addresses_covered[third_byte_as_string][(cursor & 0xFFFF) + 1] = True
+                    print(f"0x{cursor:06x}, {i}")
+                    a_offset = shortify(rom, cursor) + 0x350000
+                    print(f"0x{a_offset:06x}, {i}")
+                    o = OQRef(
+                            a_offset,
+                            deepcopy(INIT_AMEM),
+                            [0],
+                        )
+                    o.length = 16
+                    oq_starts.append(
+                        deepcopy(o)
+                    )
+                    print(o)
+                    print(i // 2)
+                    branches.append(Addr(a_offset, deepcopy(INIT_AMEM), f"ally_behaviour_set_{i}", ["ally_behaviours_root", "ally_behaviours_subroot"]))
+                print([f"0x{b.offset:06x}" for b in branches])
+                print([f"0x{b.addr:06x}, {b.length if hasattr(b, "length") else None}" for b in oq_starts])
+                
             elif bank_id == "battle_events":
                 tertiary_cursor = blocks.start
                 tertiary_cursor_short = tertiary_cursor & 0xFFFF
@@ -2394,7 +2477,7 @@ class Command(BaseCommand):
                     known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
                     if tertiary_points_to < tertiary_end:
                         tertiary_end = tertiary_points_to
-                    #print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06x}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06x}")
+                    print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06x}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06x}")
                     tertiary_cursor += 2
                     tertiary_cursor_short = tertiary_cursor & 0xFFFF
                     oq_idx_starts.append(
@@ -2416,8 +2499,9 @@ class Command(BaseCommand):
                     o
                 )
             else:
-                #print(f"    adding {bank_id} 0x{blocks.start:06x}")
+                print(f"    adding {bank_id} 0x{blocks.start:06x}")
                 branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
+                
 
             # sprite behaviour OQs need to be included
             if third_byte_as_string == '35':
@@ -2437,7 +2521,7 @@ class Command(BaseCommand):
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                #print(f'    tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06x}): {this_branch}')
+                print(f'    tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06x}): {this_branch}')
                 # amem can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
                 absolute_offset = this_branch.offset 
@@ -2452,12 +2536,17 @@ class Command(BaseCommand):
 
                 # process every command in the script until we find a terminating byte.
                 end_found = False
+                print(this_branch)
                 while not end_found:
-                    #print(f'        current_addr: 0x{cursor:06x}')
+                    print(f'        current_addr: 0x{cursor:06x}')
                     def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
+                        
+                        print("raw", important_amem_indexes_raw)
                         if important_amem_indexes_raw is None:
                             important_amem_indexes_raw = [0]
+                        print("raw", important_amem_indexes_raw)
                         important_amem_indexes = list(set(important_amem_indexes_raw))
+                        print("important", important_amem_indexes)
 
                         # ?
                         jump_voided = False
@@ -2486,8 +2575,12 @@ class Command(BaseCommand):
 
                         # if the destination branch already exists, verify that we don't have an exact copy with the same amem
                         for t in [t for t in branches if t.offset == offs]:
+                            # debug
+                            jump_voided = True
                             same_amem_count = 0
+                            print(f"0x{offs:06x} comparing amem:")
                             for a in important_amem_indexes:
+                                print(a)
                                 capped_amem = list(set([min(65535, b) for b in t.amem[a]]))
                                 capped_amem_comp = list(set([min(65535, b) for b in am[a]]))
                                 if set(capped_amem) == set(capped_amem_comp):
@@ -2498,16 +2591,15 @@ class Command(BaseCommand):
 
                         if not jump_voided:
                             branches.append(destination_branch)
-                            #print(f'            --> adding new branch entry for 0x{destination_branch.offset:06x}: {destination_branch}')
 
                         return destination_branch
 
                     def create_object_queue(base_addr: int, label_override: Optional[str] = None) -> int:
+                        nonlocal end_found
                         temp_cursor_addr = base_addr
                         length = 0
                         for s in [s for s in oq_starts if s.addr == base_addr]:
                             temp_cursor_addr = base_addr
-                            tbl_ends_at = 0x10000
                             temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
                             i = 0
                             length = 0
@@ -2517,13 +2609,17 @@ class Command(BaseCommand):
                             # check if this is a monster behaviour object queue (should have exactly 6 pointers)
                             is_monster_behaviour = base_addr in monster_behaviour_oq_offsets
                             max_pointers = 6 if is_monster_behaviour else None
+                            max_pointers = 256 if (base_addr == 0x350202 or base_addr == 0x350002) else max_pointers
+                            max_pointers = s.length // 2 if hasattr(s, 'length') and s.length is not None else max_pointers
+                            tbl_ends_at = ((base_addr + (max_pointers * 2)) & 0xFFFF) if max_pointers is not None else 0x10000
                             while temp_cursor_addr_short < tbl_ends_at:
+                                print(f"{base_addr:06x} ends: {tbl_ends_at:06x}, {temp_cursor_addr_short:06x}, {i}")
                                 cursor_points_to = shortify(rom, temp_cursor_addr)
                                 known_addresses_covered[third_byte_as_string][temp_cursor_addr_short] = True
                                 known_addresses_covered[third_byte_as_string][temp_cursor_addr_short + 1] = True
                                 if cursor_points_to < tbl_ends_at:
                                     tbl_ends_at = cursor_points_to
-                                #print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06x}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06x}")
+                                print("            reading base_iterator_addr", f"0x{temp_cursor_addr:06x}", "points to", f"0x{bank_as_upper_byte + cursor_points_to:06x}")
                                 temp_cursor_addr += 2
                                 temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
                                 amem = deepcopy(INIT_AMEM)
@@ -2536,42 +2632,54 @@ class Command(BaseCommand):
                                         label = s.label
                                 ref = bank_as_upper_byte + cursor_points_to
                                 validate_addr(ref, amem, label)
+                                # if ref == 0x350336:
+                                #     raise ValueError(f"found 0x350336 pointer in oq at 0x{s.addr:06x}, index {i}")
                                 ptrs.append(ref)
                                 i += 1
                                 length += 2
                                 # for monster behaviours, stop after exactly 6 pointers
-                                if max_pointers is not None and i >= max_pointers:
+                                if (max_pointers is not None and i >= max_pointers) or temp_cursor_addr in force_contiguous_block_start or temp_cursor_addr in SPECIAL_CASE_BREAKS:
+                                    end_found = True
                                     break
                                 if not (temp_cursor_addr_short < tbl_ends_at):
                                     break
                             s.length = length
                             s.pointers = ptrs
+                            print([f"{ptr:06x}" for ptr in ptrs])
+                        print(end_found, length, f"{base_addr:06x}")
                         return length
 
                     # get the bytes for whatever command begins at current_addr.
                     # check first if this is the start of an oq pointer table. add branches if so, and mark table range as used.
+                    print(f"        cursor at 0x{cursor:06x}")
                     if cursor in [s.addr for s in oq_starts]:
                         s = next((s for s in oq_starts if s.addr == cursor), None)
                         if not s:
                             raise ValueError("how did you get here?")
-                        #print("        this is a one-tier oq")
-                        cursor += create_object_queue(s.addr)
-                        continue
+                        print("        this is a one-tier oq")
+                        length = create_object_queue(s.addr)
+                        
                     elif cursor in [s.addr for s in oq_idx_starts]:
-                        #print("        this is a two-tier oq")
+                        is_ally_queue = cursor == 0x350002
+                        print("        this is a two-tier oq")
                         complex_oq = next((s for s in oq_idx_starts if s.addr == cursor), None)
                         if not complex_oq:
                             raise ValueError("how did you get here?")
                         tbl_ends_at = 0x10000
                         cursor_short = cursor & 0xFFFF
+                        baddr = cursor
                         i = 0
                         if not hasattr(complex_oq, "pointers"):
                             complex_oq.pointers = []
+                        print(cursor_short)
                         length = 0
                         while cursor_short < tbl_ends_at:
                             length += 2
+                            print(f"            coq: reading at 0x{cursor:06x}, ends at {tbl_ends_at:06x}, index {i}")
                             # figure out where every basic oq in the complex oq starts
                             # by iterating through short pointers until we hit the start of a basic oq
+                            # complex_oq.relevant_indexes is relevant INDEXES, aka relevant values of amem $60
+                            print(complex_oq.relevant_indexes)
                             if i in complex_oq.relevant_indexes:
                                 # relevant indexes are ones that we know are actually referenced by a script
                                 # and therefore need to carry possible amem values and a label
@@ -2582,6 +2690,7 @@ class Command(BaseCommand):
                                 amem = deepcopy(INIT_AMEM)
                                 amem[0] = [i]
                                 label = ""
+                            print(amem)
                             # if this basic oq is a lower pointer than any others, it's probably where the complex oq table ends
                             cursor_points_to = shortify(rom, cursor)
                             if cursor_points_to < tbl_ends_at:
@@ -2594,16 +2703,20 @@ class Command(BaseCommand):
                             relevant_indexes = list(set([x for sub in amem for x in sub]))
                             pointed_addr = bank_as_upper_byte + cursor_points_to
                             ref = OQRef(pointed_addr, amem, relevant_indexes, label)
+                            if is_ally_queue:
+                                ref.length = 16
                             oq_starts.append(ref)
+                            print(f"about to validate {pointed_addr:06x} from complex oq at 0x{cursor:06x} with amem", amem, "and relevant indexes", relevant_indexes)
+                            validate_addr(pointed_addr, amem, label)
                             complex_oq.pointers.append(pointed_addr)
                             # parse the basic oq to add its branches
-                            #print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))
+                            print("        reading at 0x%06x: points to 0x%04x" % (cursor, shortify(rom, cursor)))
                             if this_branch.offset == BATTLE_EVENT_INDEXES_START_AT:
                                 battle_event_index = (cursor - BATTLE_EVENT_INDEXES_START_AT) // 2
                                 label = SCRIPT_NAMES["battle_events"][battle_event_index]
                                 create_object_queue(pointed_addr, label_override=label)
                             elif this_branch.offset == UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:
-                                #print(f"cursor: 0x{cursor:06x}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06x}")
+                                print(f"cursor: 0x{cursor:06x}, base to: 0x{UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT:06x}")
                                 label = f"unknown_battle_event_adjacent"
                                 create_object_queue(pointed_addr, label_override=label)
                             else:
@@ -2612,199 +2725,214 @@ class Command(BaseCommand):
                             cursor_short = cursor & 0xFFFF
                             i += 1
                         complex_oq.length = length
-                        continue
-
-                    opcode = rom[cursor]
-                    length = command_lens[opcode]
-                    #print(f'            opcode: {opcode:02x}, cursor: 0x{cursor:06x}, length: {length}, data: {" ".join([f"0x{b:02x}" for b in rom[cursor:cursor+length]])}, {this_branch.ref_label} ({this_branch.referenced_by})')
-                    if opcode == 0xC6:
-                        length = rom[cursor + 1] + 2
-                    elif opcode == 0xBA:    
-                        length = rom[cursor + 1] * 2 + 2
-                    command = rom[cursor : cursor + length]
-                    cvr_range = cursor & 0xFFFF
-
-                    if command == bytearray([0,0,0,0,0,0,0,0,0]):
                         end_found = True
-                        break
-                    # i have no idea why the branch array length is being compared to the script size length, but it worked before
-                    # here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
-                    elif blocks.has_pointers and (branch_index < len(script_sizes)):
-                        for tok_output in range(
-                            cvr_range, cvr_range + length
-                        ):
-                            known_addresses_covered[third_byte_as_string][tok_output] = True
+                        print(f"        complex oq length: {length} bytes")
                     else:
-                        for tok_output in range(cvr_range, cvr_range + length):
-                            known_addresses_covered[third_byte_as_string][tok_output] = True
 
-                    # if this is a command that changes amem $60-$6f, or could change them, we need to keep track of what its possible values could be in case an amem-based object queue comes up.
-                    if opcode in [0x20, 0x21]:  # set amem 8 bit to...
-                        if command[1] & 0xF0 == 0x30:  # copy
-                            src = command[2] & 0x0F
-                            dst = command[1] & 0x0F
-                            amem[dst] = amem[src]
-                        elif command[1] & 0xF0 == 0x00 and command[1] <= 0x0F:  # const
-                            amem[command[1]] = [shortify(command, 2)]
-                        # impossible to evaluate other value sources
-                    elif (
-                        opcode in [0x22, 0x23] and command[1] & 0xF0 == 0x30
-                    ):  # copy, other way around
-                        dst = command[2] & 0x0F
-                        src = command[1] & 0x0F
-                        amem[dst] = amem[src]
-                    elif opcode in [0x2C, 0x2D]:  # inc
-                        if command[1] & 0xF0 == 0x30:  # by amem
-                            index1 = command[2] & 0x0F
-                            index2 = command[1] & 0x0F
-                            consolidated: List[int] = []
-                            for x in amem[index2]:
-                                for y in amem[index1]:
-                                    consolidated.append(x + y)
-                            # Apply widening to prevent state explosion
-                            amem[index2] = widen_amem_slot(list(set(consolidated)))
-                        elif (
-                            command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
-                        ):  # by const
-                            amem[command[1]] = widen_amem_slot(list(
-                                set(
-                                    [
-                                        (a + shortify(command, 2))
-                                        for a in amem[command[1]]
-                                    ]
-                                )
-                            ))
-                    elif opcode in [0x2E, 0x2F]:  # dec
-                        if command[1] & 0xF0 == 0x30:  # by amem
-                            index1 = command[2] & 0x0F
-                            index2 = command[1] & 0x0F
-                            consolidated: List[int] = []
-                            for x in amem[index2]:
-                                for y in amem[index1]:
-                                    consolidated.append(max(0, x - y))
-                            # Apply widening to prevent state explosion
-                            amem[index2] = widen_amem_slot(list(set(consolidated)))
-                        elif (
-                            command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
-                        ):  # by const
-                            amem[command[1]] = widen_amem_slot(list(
-                                set(
-                                    [
-                                        max(0, a - shortify(command, 2))
-                                        for a in amem[command[1]]
-                                    ]
-                                )
-                            ))
-                    elif opcode in [0x30, 0x31] and command[1] <= 0x0F:
-                        amem[command[1]] = list(set([a + 1 for a in amem[command[1]]]))
-                    elif opcode in [0x32, 0x33] and command[1] <= 0x0F:
-                        amem[command[1]] = list(set([a - 1 for a in amem[command[1]]]))
-                    elif opcode in [0x34, 0x35] and command[1] <= 0x0F:
-                        amem[command[1]] = [0]
-                    elif opcode in [0x6A, 0x6B] and command[1] <= 0x0F:
-                        # Critical: this can create large ranges that explode during inc/dec
-                        # Apply widening immediately to prevent 60,000+ branch explosions
-                        amem[command[1]] = widen_amem_slot(list(range(command[2])))
 
-                    amem_was = deepcopy(amem)
+                        print(f"        now cursor at 0x{cursor:06x}")
+                        print(f"        processing command at 0x{cursor:06x}")
 
-                    # if this command includes a goto, need to add the destinations to the branch array and process them separately
-                    if opcode in jmp_cmds or opcode in jmp_cmds_1:
-                        if opcode in jmp_cmds_1:
-                            address_byte = command[-3:-1]
+                        opcode = rom[cursor]
+                        length = command_lens[opcode]
+                        print(f'            opcode: {opcode:02x}, cursor: 0x{cursor:06x}, length: {length}, data: {" ".join([f"0x{b:02x}" for b in rom[cursor:cursor+length]])}, {this_branch.ref_label} ({this_branch.referenced_by})')
+                        if opcode == 0xC6:
+                            length = rom[cursor + 1] + 2
+                        elif opcode == 0xBA:    
+                            length = rom[cursor + 1] * 2 + 2
+                        command = rom[cursor : cursor + length]
+                        cvr_range = cursor & 0xFFFF
+
+                        if command == bytearray([0,0,0,0,0,0,0,0,0]):
+                            end_found = True
+                            break
+                        # i have no idea why the branch array length is being compared to the script size length, but it worked before
+                        # here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
+                        elif blocks.has_pointers and (branch_index < len(script_sizes)):
+                            for tok_output in range(
+                                cvr_range, cvr_range + length
+                            ):
+                                known_addresses_covered[third_byte_as_string][tok_output] = True
                         else:
-                            address_byte = command[-2:]
+                            for tok_output in range(cvr_range, cvr_range + length):
+                                known_addresses_covered[third_byte_as_string][tok_output] = True
+                                print(f"{cvr_range:04x} command: {' '.join([f'{b:02x}' for b in command])}")
 
-                        branch_addr = (
-                            bank_as_upper_byte
-                            + (address_byte[1] << 8)
-                            + address_byte[0]
-                        )
-
-                        if branch_addr == 0x35053C:
-                            # experimental: reroute jump that goes to partway through command in the original game
-                            # and change it to point to another instance of 0x02 instead
-                            # which is treated as terminating
-                            branch_addr = 0x350532
-
-                        # which of amem $60-$6f are part of the branch condition? ie if amem $64 bit 1 = ... then ...
-                        # clean up what the amems can be at the target branch, and then add it to the array.
-                        # only really tracking constants and other amem. not really possible to track $7exxxx and $7fxxxx or omem
-                        important_amem_indexes = [0]
-
-                        if opcode in [0x24, 0x25]:  # if amem =
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            var_type = (command[1] & 0xF0) >> 4
-                            if var_type == 0:
-                                amem[index1] = [shortify(command, 2)]
-                            elif var_type == 3:
-                                index2 = command[2] & 0x0F
-                                amem[index1] = amem[index2]
-                        elif opcode in [0x26, 0x27]:  # if amem !=
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            var_type = (command[1] & 0xF0) >> 4
-                            if var_type == 0:
-                                amem[index1] = [a for a in amem[index1] if a != shortify(command, 2)]
-                            elif var_type == 3:
-                                index2 = command[2] & 0x0F
-                                if amem[index1] == amem[index2]:
-                                    amem[index1] = []
-                        elif opcode in [0x28, 0x29]:  # if amem <
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            var_type = (command[1] & 0xF0) >> 4
-                            if var_type == 0:
-                                amem[index1] = [a for a in amem[index1] if a < shortify(command, 2)]
-                            elif var_type == 3:
-                                index2 = command[2] & 0x0F
-                                amem[index1] = [a for a in amem[index1] if a < max([0] if not amem[index2] else amem[index2])]
-                        elif opcode in [0x2A, 0x2B]:  # if amem >=
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            var_type = (command[1] & 0xF0) >> 4
-                            if var_type == 0:
-                                amem[index1] = [a for a in amem[index1] if a >= shortify(command, 2)]
-                            elif var_type == 3:
-                                index2 = command[2] & 0x0F
-                                amem[index1] = [a for a in amem[index1] if a >= max([0] if not amem[index2] else amem[index2])]
-                        elif opcode == 0x38:  # if amem bits set
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            amem[index1] = [a for a in amem[index1] if a & command[2] == command[2]]
-                        elif opcode == 0x39:  # if amem bits clear
-                            index1 = command[1] & 0x0F
-                            important_amem_indexes.append(index1)
-                            amem[index1] = [a for a in amem[index1] if ~a & command[2] == command[2]]
-                        elif opcode == 0x64 or opcode == 0x47:  # object queue, command index = amem 60 or experimental
-                            oq_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
+                        # if this is a command that changes amem $60-$6f, or could change them, we need to keep track of what its possible values could be in case an amem-based object queue comes up.
+                        if opcode in [0x20, 0x21]:  # set amem 8 bit to...
+                            if command[1] & 0xF0 == 0x30:  # copy
+                                src = command[2] & 0x0F
+                                dst = command[1] & 0x0F
+                                amem[dst] = amem[src]
+                            elif command[1] & 0xF0 == 0x00 and command[1] <= 0x0F:  # const
+                                amem[command[1]] = [shortify(command, 2)]
+                            # impossible to evaluate other value sources
                         elif (
-                            opcode == 0x68
-                        ):  # object queue, pointer table index = amem $60, command index is an arg
-                            oq_idx_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
+                            opcode in [0x22, 0x23] and command[1] & 0xF0 == 0x30
+                        ):  # copy, other way around
+                            dst = command[2] & 0x0F
+                            src = command[1] & 0x0F
+                            amem[dst] = amem[src]
+                        elif opcode in [0x2C, 0x2D]:  # inc
+                            if command[1] & 0xF0 == 0x30:  # by amem
+                                index1 = command[2] & 0x0F
+                                index2 = command[1] & 0x0F
+                                consolidated: List[int] = []
+                                for x in amem[index2]:
+                                    for y in amem[index1]:
+                                        consolidated.append(x + y)
+                                # Apply widening to prevent state explosion
+                                amem[index2] = widen_amem_slot(list(set(consolidated)))
+                            elif (
+                                command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
+                            ):  # by const
+                                amem[command[1]] = widen_amem_slot(list(
+                                    set(
+                                        [
+                                            (a + shortify(command, 2))
+                                            for a in amem[command[1]]
+                                        ]
+                                    )
+                                ))
+                        elif opcode in [0x2E, 0x2F]:  # dec
+                            if command[1] & 0xF0 == 0x30:  # by amem
+                                index1 = command[2] & 0x0F
+                                index2 = command[1] & 0x0F
+                                consolidated: List[int] = []
+                                for x in amem[index2]:
+                                    for y in amem[index1]:
+                                        consolidated.append(max(0, x - y))
+                                # Apply widening to prevent state explosion
+                                amem[index2] = widen_amem_slot(list(set(consolidated)))
+                            elif (
+                                command[1] & 0xF0 == 0x00 and command[1] <= 0x0F
+                            ):  # by const
+                                amem[command[1]] = widen_amem_slot(list(
+                                    set(
+                                        [
+                                            max(0, a - shortify(command, 2))
+                                            for a in amem[command[1]]
+                                        ]
+                                    )
+                                ))
+                        elif opcode in [0x30, 0x31] and command[1] <= 0x0F:
+                            amem[command[1]] = list(set([a + 1 for a in amem[command[1]]]))
+                        elif opcode in [0x32, 0x33] and command[1] <= 0x0F:
+                            amem[command[1]] = list(set([a - 1 for a in amem[command[1]]]))
+                        elif opcode in [0x34, 0x35] and command[1] <= 0x0F:
+                            amem[command[1]] = [0]
+                        elif opcode in [0x6A, 0x6B] and command[1] <= 0x0F:
+                            # Critical: this can create large ranges that explode during inc/dec
+                            # Apply widening immediately to prevent 60,000+ branch explosions
+                            amem[command[1]] = widen_amem_slot(list(range(command[2])))
+
+                        amem_was = deepcopy(amem)
+
+                        # if this command includes a goto, need to add the destinations to the branch array and process them separately
+                        if opcode in jmp_cmds or opcode in jmp_cmds_1:
+                            if opcode in jmp_cmds_1:
+                                address_byte = command[-3:-1]
+                            else:
+                                address_byte = command[-2:]
+
+                            branch_addr = (
+                                bank_as_upper_byte
+                                + (address_byte[1] << 8)
+                                + address_byte[0]
+                            )
+
+                            if branch_addr == 0x35053C:
+                                # experimental: reroute jump that goes to partway through command in the original game
+                                # and change it to point to another instance of 0x02 instead
+                                # which is treated as terminating
+                                branch_addr = 0x350532
+
+                            # which of amem $60-$6f are part of the branch condition? ie if amem $64 bit 1 = ... then ...
+                            # clean up what the amems can be at the target branch, and then add it to the array.
+                            # only really tracking constants and other amem. not really possible to track $7exxxx and $7fxxxx or omem
+                            important_amem_indexes = [0]
+
+                            if opcode in [0x24, 0x25]:  # if amem =
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                var_type = (command[1] & 0xF0) >> 4
+                                if var_type == 0:
+                                    amem[index1] = [shortify(command, 2)]
+                                elif var_type == 3:
+                                    index2 = command[2] & 0x0F
+                                    amem[index1] = amem[index2]
+                            elif opcode in [0x26, 0x27]:  # if amem !=
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                var_type = (command[1] & 0xF0) >> 4
+                                if var_type == 0:
+                                    amem[index1] = [a for a in amem[index1] if a != shortify(command, 2)]
+                                elif var_type == 3:
+                                    index2 = command[2] & 0x0F
+                                    if amem[index1] == amem[index2]:
+                                        amem[index1] = []
+                            elif opcode in [0x28, 0x29]:  # if amem <
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                var_type = (command[1] & 0xF0) >> 4
+                                if var_type == 0:
+                                    amem[index1] = [a for a in amem[index1] if a < shortify(command, 2)]
+                                elif var_type == 3:
+                                    index2 = command[2] & 0x0F
+                                    amem[index1] = [a for a in amem[index1] if a < max([0] if not amem[index2] else amem[index2])]
+                            elif opcode in [0x2A, 0x2B]:  # if amem >=
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                var_type = (command[1] & 0xF0) >> 4
+                                if var_type == 0:
+                                    amem[index1] = [a for a in amem[index1] if a >= shortify(command, 2)]
+                                elif var_type == 3:
+                                    index2 = command[2] & 0x0F
+                                    amem[index1] = [a for a in amem[index1] if a >= max([0] if not amem[index2] else amem[index2])]
+                            elif opcode == 0x38:  # if amem bits set
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                amem[index1] = [a for a in amem[index1] if a & command[2] == command[2]]
+                            elif opcode == 0x39:  # if amem bits clear
+                                index1 = command[1] & 0x0F
+                                important_amem_indexes.append(index1)
+                                amem[index1] = [a for a in amem[index1] if ~a & command[2] == command[2]]
+                            elif opcode == 0x64 or opcode == 0x47:  # object queue, command index = amem 60 or experimental
+                                oq_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
+                            elif (
+                                opcode == 0x68
+                            ):  # object queue, pointer table index = amem $60, command index is an arg
+                                oq_idx_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
 
 
-                        validate_addr(branch_addr, amem, important_amem_indexes_raw=important_amem_indexes)
+                            # if branch_addr == 0x350336:
+                            #     raise ValueError(f"found 0x350336 pointer at 0x{cursor:06x}")
+                            validate_addr(branch_addr, amem, important_amem_indexes_raw=important_amem_indexes)
 
-                        amem = deepcopy(amem_was)
+                            amem = deepcopy(amem_was)
 
-                    # terminating conditions
-                    if opcode in TERMINATING_OPCODES:
-                        end_found = True
-                    elif (
+                        # terminating conditions
+                        if opcode in TERMINATING_OPCODES:
+                            end_found = True
+                    
+                    if (
                         branch_index < len(script_sizes)
                         and (cursor + length >= absolute_offset + script_sizes[branch_index])
                     ):
                         end_found = True
                     elif cursor + length in SPECIAL_CASE_BREAKS:
-                        #print(f"        hit special case break at 0x{cursor + length:06x}")
+                        print(f"        hit special case break at 0x{cursor + length:06x}")
                         end_found = True
                     elif 0x3A0000 <= cursor + length < 0x3A60D0:
                         end_found = True
 
                     # if not terminated, move on to the next command
                     cursor += length
+                    print(f"        moving cursor to 0x{cursor:06x}, {end_found}")
+                    # if cursor == 0x350336:
+                    #     raise ValueError(f"found 0x350336 pointer at {this_branch}")
+                print(f"        broken at 0x{cursor:06x}, {end_found}")
+                print("")
 
                 # move on to the next branch
                 branch_index += 1
@@ -2812,7 +2940,7 @@ class Command(BaseCommand):
                     break
                 this_branch = branches[branch_index]
 
-        #print("done tracing branches, collecting data...")
+        print("done tracing branches, collecting data...")
         # collect contiguous known bytes
         used: Dict[str, List[ContiguousBlock]] = {
             "02": [],
@@ -2836,7 +2964,6 @@ class Command(BaseCommand):
                 if started is not None and value and absolute_offset in force_contiguous_block_start:
                     # end the current block and start a new one
                     used[bank_id].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
-                    started = index
                 elif value and started is None:
                     started = index
                     # started: 4 digit rom position at which current block started
@@ -2850,15 +2977,18 @@ class Command(BaseCommand):
         for bank_id, blocks in used.items():
             data: List[List[ProtoCommand]] = []
             for block in blocks:
-                #print(f'block.start, block.end: 0x{block.start:06x}, 0x{block.end:06x} (size {block.size})')
+                print(f'block.start, block.end: 0x{block.start:06x}, 0x{block.end:06x} (size {block.size})')
                 split_block = tok(
                     rom, block.start, block.end, oq_starts, oq_idx_starts
                 )
                 offset_within_block = 0
                 this_script: List[ProtoCommand] = []
+                debug = True if block.start <= 0x350462 < block.end else False
                 for tok_output in split_block:
-                    #print(tok_output)
+                    print(tok_output)
                     absolute_offset = block.start + offset_within_block
+                    if debug:
+                        print(f"0x{absolute_offset:06x}: {' '.join([f'0x{b:02x}' for b in tok_output[0]])}")
                     identifier = f"command_0x{absolute_offset:06X}"
                     possible_rename = [b.ref_label for b in branches if b.offset == absolute_offset and b.ref_label != ""]
                     if len(possible_rename) > 0:
@@ -2869,10 +2999,10 @@ class Command(BaseCommand):
                         identifier = f"monster_entrance_{monster_entrance_offsets.index(absolute_offset)}"
                     named_proto_command = ProtoCommand(identifier, absolute_offset, tok_output[0], tok_output[2], len(tok_output[0]))
                     this_script.append(named_proto_command)
-                    #print(f'    parsed command {named_proto_command}')
+                    print(f'    parsed command {named_proto_command}')
                     offset_within_block += len(tok_output[0])
                 data.append(this_script)
-            #print(data)
+            print(data)
             collective_data[bank_id].extend(data)
 
         # associate jump pointers with command ids
@@ -2892,7 +3022,7 @@ class Command(BaseCommand):
                     address_data = None
                     if command.oq:
                         address_data = deepcopy(command.raw_data)
-                        #print([f"0x{b:02x}" for b in address_data])
+                        print(f"oq addr data at 0x{command.addr:06X}: ", [f"0x{b:02x}" for b in address_data])
                         del command.raw_data[0:]
                     elif (
                         command.raw_data[0] in jmp_cmds_1
@@ -2904,17 +3034,17 @@ class Command(BaseCommand):
                     ):
                         address_data = command.raw_data[-2:]
                         del command.raw_data[-2:]
-                        #print(2)
-                    #print(address_data)
+                        print(2)
+                    print(address_data)
 
                     if address_data is None:
                         continue
 
                     addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
-                    #print("")
-                    #print(addresses)
+                    print("")
+                    print(addresses)
                     for address in addresses:
-                        #print(address)
+                        print(address)
                         dest = (
                             (command.addr & 0xFF0000)
                             + (int(address[1]) << 8)
@@ -2929,7 +3059,7 @@ class Command(BaseCommand):
                             dest = 0x350532
                         for search_script in script:
                             for search_command in search_script:
-                                #print(f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
+                                print(f'searching for 0x{dest:06X}, checking command {search_command.id} at 0x{search_command.addr:06X}')
                                 if search_command.addr == dest:
                                     found = search_command.id
                                     break
@@ -2939,7 +3069,7 @@ class Command(BaseCommand):
                             command.parsed_data.append(found)
                             jump_pointers.append(found)
                         else:
-                            raise Exception("couldn't find jump target 0x%06x" % dest)
+                            raise Exception(f"couldn't find jump target 0x{dest:06x} targeted by "f"command {command} {command.id} at 0x{command.addr:06x}")
 
                         script[index][cmd_index].raw_data = command.raw_data
         
@@ -2978,7 +3108,7 @@ class Command(BaseCommand):
         # also need to adjust how oq command classes work. idx type is just a pointer collection
 
         for bank_id, blocks in collective_data.items():
-            #print(f"exporting {bank_id}...")
+            print(f"exporting {bank_id}...")
 
             third_byte_as_string = get_third_byte_as_string(bank_id)
 
@@ -3071,7 +3201,7 @@ class Command(BaseCommand):
         # Generate bank usage visualization
         self._write_bank_usage_visualization(output_path, known_addresses_covered)
 
-        self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation_/"))
+        self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
 
     def _write_bank_usage_visualization(self, output_path: str, known_addresses_covered: Dict[str, List[bool]]):
         """Write ASCII visualization of bank usage to a file.
