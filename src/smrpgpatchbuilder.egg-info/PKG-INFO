@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: smrpgpatchbuilder
-Version: 1.0.1
+Version: 1.1.0
 Summary: Patchable base class support for some SMRPG concepts similar to their definitions in Lazy Shell
 Author-email: pidgezero_one <s.kischak@gmail.com>
 License-Expression: MIT
@@ -24,23 +24,23 @@ This is not a decomp.
 
 Convert some contents of your ROM into Python code so you can freely edit it, then create a patch to get your changes into your ROM. You can do this for:
 - ✅ [event scripts](#event-and-action-scripts)
-- [battle animation scripts](#battle-animation-scripts)
-- [monsters](#monsters)
-- [monster AI scripts](#monster-ai-scripts)
+- ✅ [battle animation scripts](#battle-animation-scripts)
+- ✅ [monsters](#monsters)
+- ✅ [monster AI scripts](#monster-ai-scripts)
 - ✅ [monster attacks](#monster-attacks)
 - ✅ [monster and ally spells](#monster-and-ally-spells)
 - ✅ [allies](#allies)
 - ✅ [items](#items)
-- [sprites](#sprites)
+- ✅ [sprites](#sprites)
 - ✅ [shops](#shops)
 - ✅ [overworld dialogs](#overworld-dialogs)
 - ✅ [battle dialogs and battle messages](#battle-dialogs-and-messages)
-- [battle packs and formations](#battle-packs-and-formations)
+- ✅ [battle packs and formations](#battle-packs-and-formations)
 - ✅ [packet NPCs](#packet-npcs)
 - ✅ [rooms and NPCs](#rooms-and-npcs)
 - ✅ [overworld location data](#overworld-location-data)
 
-(✅ = roundtrip tested and working)
+(✅ = roundtrip tested and working. Roundtrips will not be 100% identical bytewise because monster pointers are rearranged, dialogs are optimized, etc, but they will look the same in Lazy Shell.)
 
 You can also take the contents of your disassembler_output folder and stick it in whatever Python project you want, as long as that project imports this package. (example: SMRPG randomizer)
 
@@ -124,12 +124,12 @@ It is important to do these next because other things will use these. Event scri
 
 ### Step 4
 
-Disassemble monsters and battle animations (warning: this takes several hours)
+Disassemble monsters:
 ```bash
-PYTHONPATH=src python src/smrpgpatchbuilder/manage.py combined_disassembler --rom "/path/to/your/smrpg/rom"
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py enemydisassembler --rom "/path/to/your/smrpg/rom"
 ```
 
-These will produce `./src/disassembler_output/battle_animation/scripts.py` and `./src/disassembler_output/enemies/enemies.py`. It is important to do these together at first because they depend on each other (battle animations need to use enemy classes but enemy classes need a battle animation pointer label for Sprite Behaviour). (On subsequent runs you can disassemble them separately.)
+These will produce `./src/disassembler_output/enemies/enemies.py`. It is important to do this now because other data types (battle animations, monster AI, battle packs) depend on this data.
 
 ### Step 5
 
@@ -393,6 +393,8 @@ ALL_ENEMIES = EnemyCollection([
 Other things like battle packs will import these classes.
 
 If you want to use these in another Python project, you'll need to import the `EnemyCollection`. To build a patch for it, you will _also_ need an `AnimationScriptBank` (so that it can figure out what pointers to use for your monsters' sprite behaviours). `enemycollection.render(animationscriptbank.build_command_address_mapping())` produces a `dict[int, bytearray]` where each `int` is a ROM address where its corresponding `bytearray` should be patched.
+
+NOTE: You can't change the Sprite Behaviour property in these Enemy classes. Those are completely taken care of by the battle animation assembler. When disassembling battle animations, you will see a file (usually with 0x350202 in the filename) that has an object queue of 256 pointer names. These match up to the enemy's ID and they indicate where their sprite behaviour table starts. If you want to change an entrance style then you will just have to change which pointer to use at that index.
 
 <sub>([back to top](#how-this-works))</sub>
 

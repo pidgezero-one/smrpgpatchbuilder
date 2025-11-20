@@ -171,7 +171,6 @@ src/smrpgpatchbuilder/management/commands/battledialogassembler.py
 src/smrpgpatchbuilder/management/commands/battledialogdisassembler.py
 src/smrpgpatchbuilder/management/commands/battledisassembler.py
 src/smrpgpatchbuilder/management/commands/bowser_tile_rearranger.py
-src/smrpgpatchbuilder/management/commands/combined_disassembler.py
 src/smrpgpatchbuilder/management/commands/comboassembler.py
 src/smrpgpatchbuilder/management/commands/combodisassembler.py
 src/smrpgpatchbuilder/management/commands/dialogassembler.py
