@@ -2593,7 +2593,7 @@ class Command(BaseCommand):
                             # debug
                             # Not debug, actually! The trace graph was identical with and without AMEM tracing
                             # which means my method for calculating object queue size is probably correct.
-                            # jump_voided = True
+                            jump_voided = True
                             same_amem_count = 0
                             #print(f"0x{offs:06x} comparing amem:")
                             for a in important_amem_indexes:
