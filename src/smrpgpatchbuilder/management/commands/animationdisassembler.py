@@ -3176,7 +3176,8 @@ class Command(BaseCommand):
 
                 size = sum([c.length for c in script])
 
-                output = "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
+                output = "# pyright: reportWildcardImportFromLibrary=false"
+                output += "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts import *"
 
                 # Add imports from disassembler_output - variables
                 output += "\nfrom ....variables.sprite_names import *"
@@ -3189,6 +3190,7 @@ class Command(BaseCommand):
                 output += "\nfrom ....items.items import *"
                 output += "\nfrom ....enemies.enemies import *"
                 output += "\nfrom ....enemy_attacks.attacks import *"
+                output += "\nfrom smrpgpatchbuilder.datatypes.battle_animation_scripts.arguments.battle_targets import *"
 
                 output += f"\n\nscript = AnimationScriptBlock(expected_size={size}, expected_beginning=0x{script[0].addr:06X}, script=[\n\t"
 

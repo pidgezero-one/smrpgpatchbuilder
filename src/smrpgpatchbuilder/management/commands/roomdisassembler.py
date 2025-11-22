@@ -6,15 +6,9 @@ from smrpgpatchbuilder.utils.disassembler_common import (
     bit_bool_from_num,
 )
 import shutil, os
-from disassembler_output.variables import room_names, overworld_area_names, music_names, sprite_names, event_script_names, action_script_names
+from .input_file_parser import load_arrays_from_input_files
 
 # Build lookup dictionaries from the imported name modules
-room_id_to_name = {v: k for k, v in vars(room_names).items() if isinstance(v, int) and not k.startswith('_')}
-location_id_to_name = {v: k for k, v in vars(overworld_area_names).items() if isinstance(v, int) and not k.startswith('_')}
-music_id_to_name = {v: k for k, v in vars(music_names).items() if isinstance(v, int) and not k.startswith('_')}
-sprite_id_to_name = {v: k for k, v in vars(sprite_names).items() if isinstance(v, int) and not k.startswith('_')}
-event_script_id_to_name = {v: k for k, v in vars(event_script_names).items() if isinstance(v, int) and not k.startswith('_')}
-action_script_id_to_name = {v: k for k, v in vars(action_script_names).items() if isinstance(v, int) and not k.startswith('_')}
 
 start = 0x148400
 end = 0x14FFFF
@@ -68,19 +62,22 @@ class Command(BaseCommand):
             help="If true, will read 512 partitions from 0x1DEBE0 instead of 120 partitions from 0x1DDE00. Only use this if you've changed your ROM to use this range already.",
         )
 
-    def _write_npcs_file(self, dest: str, npc_classes: list[NPC], npc_variable_names: dict[int, str]):
+    def _write_npcs_file(self, dest: str, npc_classes: list[NPC], npc_variable_names: dict[int, str], sprite_names_array: list[str]):
         """Write all NPCs to a single file with proper variable names."""
         import os
         os.makedirs(dest, exist_ok=True)
 
         file = open(f"{dest}/npcs.py", "w", encoding="utf-8")
         writeline(file, "from smrpgpatchbuilder.datatypes.levels.classes import NPC, ShadowSize, VramStore")
+        writeline(file, "from ..variables.sprite_names import *")
         writeline(file, "")
 
         for npc_index, npc in enumerate(npc_classes):
             var_name = npc_variable_names[npc_index]
             writeline(file, f"{var_name} = NPC(")
-            writeline(file, f"    sprite_id={npc.sprite_id},")
+            # Use sprite name from array, falling back to numeric ID if not found
+            sprite_name = sprite_names_array[npc.sprite_id] if npc.sprite_id < len(sprite_names_array) and sprite_names_array[npc.sprite_id] else str(npc.sprite_id)
+            writeline(file, f"    sprite_id={sprite_name},")
             writeline(file, f"    shadow_size=ShadowSize.{npc.shadow_size.name},")
             writeline(file, f"    acute_axis={npc.acute_axis},")
             writeline(file, f"    obtuse_axis={npc.obtuse_axis},")
@@ -110,6 +107,25 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         debug = options["debug"]
         large_partition_table = options["large_partition_table"]
+
+        # Load all name arrays from input files
+        varnames = load_arrays_from_input_files()
+        sprite_names_array = varnames.get("sprites", [])
+        room_names_array = varnames.get("rooms", [])
+        music_names_array = varnames.get("music", [])
+        event_script_names_array = varnames.get("event_scripts", [])
+        action_script_names_array = varnames.get("action_scripts", [])
+        area_names_array = varnames.get("areas", [])
+
+        # Build lookup dictionaries from arrays (id -> name)
+        def build_id_to_name(arr):
+            return {i: name for i, name in enumerate(arr) if name}
+
+        room_id_to_name = build_id_to_name(room_names_array)
+        music_id_to_name = build_id_to_name(music_names_array)
+        event_script_id_to_name = build_id_to_name(event_script_names_array)
+        action_script_id_to_name = build_id_to_name(action_script_names_array)
+        location_id_to_name = build_id_to_name(area_names_array)
 
         # Create output directory
         dest = "./src/disassembler_output/rooms"
@@ -253,8 +269,8 @@ class Command(BaseCommand):
                 byte6_bit2,
             )
 
-            # Generate variable name based on sprite name
-            sprite_name_full = sprite_id_to_name.get(sprite_val, f"SPR{sprite_val:04d}_UNKNOWN")
+            # Generate variable name based on sprite name from input files
+            sprite_name_full = sprite_names_array[sprite_val]
             # Remove the SPRxxxx_ prefix to get the descriptive name
             sprite_name = sprite_name_full.split('_', 1)[1] if '_' in sprite_name_full else sprite_name_full
 
@@ -368,7 +384,7 @@ class Command(BaseCommand):
             )
 
         # Write NPCs file before processing rooms
-        self._write_npcs_file(dest, npc_classes, npc_variable_names)
+        self._write_npcs_file(dest, npc_classes, npc_variable_names, sprite_names_array)
 
         for i in range(len(rooms_raw_data)):
             d = rooms_raw_data[i]
@@ -385,6 +401,7 @@ class Command(BaseCommand):
             # Write room name as comment at the top
             room_name = room_id_to_name.get(i, f"R{i:03d}_UNKNOWN")
             writeline(file, "# %s" % room_name)
+            writeline(file, "# pyright: reportWildcardImportFromLibrary=false")
 
             writeline(
                 file,
@@ -402,23 +419,23 @@ class Command(BaseCommand):
             writeline(file, "from . import npcs")
             writeline(
                 file,
-                "from disassembler_output.variables.room_names import *",
+                "from ..variables.room_names import *",
             )
             writeline(
                 file,
-                "from disassembler_output.variables.overworld_area_names import *",
+                "from ..variables.overworld_area_names import *",
             )
             writeline(
                 file,
-                "from disassembler_output.variables.music_names import *",
+                "from ..variables.music_names import *",
             )
             writeline(
                 file,
-                "from disassembler_output.variables.event_script_names import *",
+                "from ..variables.event_script_names import *",
             )
             writeline(
                 file,
-                "from disassembler_output.variables.action_script_names import *",
+                "from ..variables.action_script_names import *",
             )
 
             if len(d) == 0 and len(r) == 0 and len(e) == 0:
@@ -1048,6 +1065,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Successfully disassembled 512 rooms to disassembler_output/rooms"
+                "Successfully disassembled 512 rooms to ./rooms"
             )
         )
