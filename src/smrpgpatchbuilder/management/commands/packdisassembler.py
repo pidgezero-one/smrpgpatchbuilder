@@ -1,7 +1,7 @@
 """Disassembler for ROM's PackCollection (formation packs).
 
 This disassembler reads the formation pack data from a Super Mario RPG ROM
-and outputs a Python file containing the PackCollection with all 255 packs
+and outputs a Python file containing the PackCollection with all 256 packs
 and their associated formations.
 
 Usage:
@@ -16,7 +16,7 @@ Prerequisites:
 
 The output file will contain:
     - Formation definitions for all formations used by packs
-    - FormationPack definitions for all 255 packs
+    - FormationPack definitions for all 256 packs
     - A PackCollection instance containing all packs
 
 Note:
@@ -73,7 +73,7 @@ class Command(BaseCommand):
 
         # Then, disassemble all packs
         packs_data = []
-        for pack_id in range(255):  # Only 255 packs (0-254)
+        for pack_id in range(256):  # Only 256 packs (0-254)
             pack_data = self.read_pack(rom, pack_id)
             packs_data.append(pack_data)
 
@@ -169,13 +169,13 @@ class Command(BaseCommand):
         formation_2 = data[1]
         formation_3 = data[2]
         hi_bank = data[3]
-
-        # Check if high bank is used
-        if hi_bank == 7:
-            formation_1 += 256
-            formation_2 += 256
-            formation_3 += 256
-
+        if (hi_bank & 0x01 == 0x01):
+           formation_1 += 0x100
+        if (hi_bank & 0x02 == 0x02):
+           formation_2 += 0x100
+        if (hi_bank & 0x04 == 0x04):
+           formation_3 += 0x100
+           
         return {
             'id': pack_id,
             'formations': [formation_1, formation_2, formation_3]
@@ -222,7 +222,7 @@ class Command(BaseCommand):
 
             writeline(f, "")
             writeline(f, "# Pack Collection")
-            writeline(f, "pack_collection = PackCollection(packs[:255])")
+            writeline(f, "pack_collection = PackCollection(packs[:256])")
 
     def write_formation_inline(self, f, formation, indent="    "):
         """Write a formation definition inline."""
