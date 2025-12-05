@@ -3172,13 +3172,16 @@ class CompareVarToConst(
 
     def __init__(
         self,
-        address: ShortVar,
+        address: Union[ShortVar, ByteVar],
         value: Union[int, Type[Item]],
         identifier: Optional[str] = None,
     ) -> None:
         if not isinstance(value, int) and issubclass(value, Item):
             value = value().item_id
-        super().__init__(address, value, identifier)
+        addr = deepcopy(address)
+        if isinstance(addr, ByteVar):
+            addr = ShortVar(addr)
+        super().__init__(addr, value, identifier)
 
 
 class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
