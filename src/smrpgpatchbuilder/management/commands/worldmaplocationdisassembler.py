@@ -32,7 +32,6 @@ from smrpgpatchbuilder.datatypes.world_map_locations.classes import (
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
 
-
 class Command(BaseCommand):
     help = "Disassembles world map locations from a ROM file"
 

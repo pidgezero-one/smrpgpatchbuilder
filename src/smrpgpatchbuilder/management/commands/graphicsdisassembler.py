@@ -24,17 +24,13 @@ import string, random, shutil, os
 
 PALETTE_OFFSET = 0x253000
 
-
 def get_animation_pack_data_offset_from_third_byte(short, b):
     return ((b - 0xC0) << 16) + short
 
-
 alphabet = string.ascii_lowercase + string.digits
-
 
 def random_tile_id():
     return "".join(random.choices(alphabet, k=8))
-
 
 def load_animation_banks(filename: str) -> list[AnimationBank]:
     animation_banks = []
@@ -53,7 +49,6 @@ def load_animation_banks(filename: str) -> list[AnimationBank]:
 
     return animation_banks
 
-
 def load_tuples(filename: str) -> list[tuple[int, int]]:
     tuples: list[tuple[int, int]] = []
     with open(filename, "r") as f:
@@ -70,7 +65,6 @@ def load_tuples(filename: str) -> list[tuple[int, int]]:
                 print(f"Skipping malformed line: {line}")
 
     return tuples
-
 
 class Command(BaseCommand):
 

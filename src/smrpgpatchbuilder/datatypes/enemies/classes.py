@@ -1,7 +1,6 @@
 """Base classes for enemies encountered in battle and their overworld representations."""
 
 from copy import deepcopy
-from typing import List, Type, Dict, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     BitMapSet,
@@ -44,7 +43,6 @@ from .enums import (
     EntranceStyle,
 )
 
-
 class Enemy:
     """Class representing an enemy in the game."""
 
@@ -65,20 +63,20 @@ class Enemy:
     _magic_evade: int = 0
 
     # effect nullification
-    _status_immunities: List[Status] = []
+    _status_immunities: list[Status] = []
 
     # element weaknesses
-    _weaknesses: List[Element] = []
+    _weaknesses: list[Element] = []
 
     # element resistances
-    _resistances: List[Element] = []
+    _resistances: list[Element] = []
 
     # rewards
     _xp: int = 0
     _coins: int = 0
-    _rare_item_drop: Optional[Type[RegularItem]] = None
-    _common_item_drop: Optional[Type[RegularItem]] = None
-    _yoshi_cookie_item: Type[RegularItem]
+    _rare_item_drop: type[RegularItem] | None = None
+    _common_item_drop: type[RegularItem] | None = None
+    _yoshi_cookie_item: type[RegularItem]
 
     # flower bonus
     _flower_bonus_type: FlowerBonusType = FlowerBonusType.NONE
@@ -201,11 +199,11 @@ class Enemy:
         self._magic_evade = magic_evade
 
     @property
-    def status_immunities(self) -> List[Status]:
+    def status_immunities(self) -> list[Status]:
         """The list of status effects that the enemy is unaffected by."""
         return deepcopy(self._status_immunities)
 
-    def set_status_immunities(self, status_immunities: List[Status]) -> None:
+    def set_status_immunities(self, status_immunities: list[Status]) -> None:
         """Overwrite the list of status effects that the enemy is unaffected by."""
         self._status_immunities = deepcopy(status_immunities)
 
@@ -220,11 +218,11 @@ class Enemy:
             self._status_immunities.remove(immunity)
 
     @property
-    def weaknesses(self) -> List[Element]:
+    def weaknesses(self) -> list[Element]:
         """The list of elements that cause double damage to the enemy."""
         return deepcopy(self._weaknesses)
 
-    def set_weaknesses(self, weaknesses: List[Element]) -> None:
+    def set_weaknesses(self, weaknesses: list[Element]) -> None:
         """Overwrite the list of elements that cause double damage to the enemy."""
         self._weaknesses = deepcopy(weaknesses)
 
@@ -239,11 +237,11 @@ class Enemy:
             self._weaknesses.remove(element)
 
     @property
-    def resistances(self) -> List[Element]:
+    def resistances(self) -> list[Element]:
         """The list of elements which will have their damage to the enemy reduced by 50%."""
         return deepcopy(self._resistances)
 
-    def set_resistances(self, resistances: List[Element]) -> None:
+    def set_resistances(self, resistances: list[Element]) -> None:
         """overwrite the list of elements which will have their damage to the enemy reduced
         by 50%."""
         self._resistances = deepcopy(resistances)
@@ -282,29 +280,29 @@ class Enemy:
         self._coins = coins
 
     @property
-    def rare_item_drop(self) -> Optional[Type[RegularItem]]:
+    def rare_item_drop(self) -> type[RegularItem] | None:
         """A single item that the enemy has a very small chance of dropping."""
         return self._rare_item_drop
 
-    def set_rare_item_drop(self, rare_item_drop: Optional[Type[RegularItem]]) -> None:
+    def set_rare_item_drop(self, rare_item_drop: type[RegularItem] | None) -> None:
         """Set the single item that the enemy has a very small chance of dropping."""
         self._rare_item_drop = rare_item_drop
 
     @property
-    def common_item_drop(self) -> Optional[Type[RegularItem]]:
+    def common_item_drop(self) -> type[RegularItem] | None:
         """A single item that the enemy has a high chance of dropping."""
         return self._common_item_drop
 
-    def set_common_item_drop(self, common_item_drop: Optional[Type[RegularItem]]) -> None:
+    def set_common_item_drop(self, common_item_drop: type[RegularItem] | None) -> None:
         """Set the single item that the enemy has a high chance of dropping."""
         self._common_item_drop = common_item_drop
 
     @property
-    def yoshi_cookie_item(self) -> Type[RegularItem]:
+    def yoshi_cookie_item(self) -> type[RegularItem]:
         """The item to be granted if a Yoshi Cookie on this enemy is successful."""
         return self._yoshi_cookie_item
 
-    def set_yoshi_cookie_item(self, yoshi_cookie_item: Type[RegularItem]) -> None:
+    def set_yoshi_cookie_item(self, yoshi_cookie_item: type[RegularItem]) -> None:
         """Set the item to be granted if a Yoshi Cookie on this enemy is successful."""
         self._yoshi_cookie_item = yoshi_cookie_item
 
@@ -495,14 +493,14 @@ class Enemy:
             raise ValueError("name contains characters not encodable in latin-1")
         self._name = name
 
-    def render(self, enemy_address: Optional[int] = None, reward_address: Optional[int] = None) -> Dict[int, bytearray]:
+    def render(self, enemy_address: int | None = None, reward_address: int | None = None) -> dict[int, bytearray]:
         """get data for this enemy in `{0x123456: bytearray([0x00])}` format.
 
         args:
             enemy_address: optional override for where to write enemy data (defaults to self.address)
             reward_address: optional override for where to write reward data (defaults to self.reward_address)
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # use provided addresses or calculate from monster_id
         addr = enemy_address if enemy_address is not None else self.address
@@ -610,11 +608,10 @@ class Enemy:
 
         return patch
 
-
 class EnemyCollection:
     """Collection of enemies with rendering support for psychopath messages and pointer tables."""
 
-    def __init__(self, enemies: List[Enemy]):
+    def __init__(self, enemies: list[Enemy]):
         """initialize the collection with a list of enemies.
 
         args:
@@ -629,13 +626,13 @@ class EnemyCollection:
             )
         self.enemies = enemies
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """render all enemies including their psychopath messages and pointer table.
 
         returns:
             dictionary mapping rom addresses to bytearrays
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # build enemy pointer table and write enemy data sequentially
         enemy_pointer_table = bytearray()

@@ -20,7 +20,6 @@ class Command(BaseCommand):
         f.write(alleventbytes)
         f.close()
 
-
         allexitbytes = exits[0] + exits[1]
         print("combined length", hex(len(allexitbytes)), len(allexitbytes))
 

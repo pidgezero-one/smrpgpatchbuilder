@@ -1,6 +1,5 @@
 """Base class for battle music."""
 
-
 class Music:
     """Base class for music"""
 

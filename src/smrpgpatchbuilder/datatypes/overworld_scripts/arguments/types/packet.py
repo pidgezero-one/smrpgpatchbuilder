@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, UInt16
 
@@ -20,7 +20,7 @@ class Packet:
     _sprite_id: UInt16 = UInt16(0)
     _shadow: bool = False
     _action_script_id: UInt16 = UInt16(0)
-    _unknown_bits: List[bool] = [False] * 3
+    _unknown_bits: list[bool] = [False] * 3
     _unknown_bytes: bytearray = bytearray()
 
     @property
@@ -60,11 +60,11 @@ class Packet:
         self._action_script_id = UInt16(action_script_id)
 
     @property
-    def unknown_bits(self) -> List[bool]:
+    def unknown_bits(self) -> list[bool]:
         """(unknown)"""
         return self._unknown_bits
 
-    def _set_unknown_bits(self, unknown_bits: List[bool]) -> None:
+    def _set_unknown_bits(self, unknown_bits: list[bool]) -> None:
         """(unknown)"""
         for bit in unknown_bits:
             assert 0 <= bit <= 7
@@ -85,8 +85,8 @@ class Packet:
         sprite_id: int = 524,
         shadow: bool = False,
         action_script_id: int = 15,
-        unknown_bits: Optional[List[bool]] = None,
-        unknown_bytes: Optional[bytearray] = None,
+        unknown_bits: list[bool] | None = None,
+        unknown_bytes: bytearray | None = None,
     ) -> None:
         if unknown_bits is None:
             unknown_bits = [False, False, False]
@@ -108,7 +108,6 @@ class Packet:
         output.append(((self.action_script_id >> 8) & 0x03) + (self.unknown_bytes[6] << 4))
         return output
 
-
 class PacketCollection:
     """Collection of up to 256 packets with rendering support.
 
@@ -116,7 +115,7 @@ class PacketCollection:
     it is represented by 5 0xFF bytes.
     """
 
-    def __init__(self, packets: List[Optional[Packet]]):
+    def __init__(self, packets: list[Packet | None]):
         """Initialize the collection with a list of up to 256 optional packets.
 
         Args:
@@ -134,7 +133,7 @@ class PacketCollection:
         # Pad with None to ensure exactly 256 entries
         self.packets = packets + [None] * (256 - len(packets))
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all packets to ROM format.
 
         Returns:

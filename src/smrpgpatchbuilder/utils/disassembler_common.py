@@ -1,6 +1,5 @@
 import math
 
-
 def dbyte_str(offset=0):
     def inner_dbyte(args):
         if len(args) < 1:
@@ -8,7 +7,6 @@ def dbyte_str(offset=0):
         return "0x%04x" % (2 * args[0] + offset), args[1:]
 
     return inner_dbyte
-
 
 def hbyte_str(offset=0):
     def inner_hbyte(args):
@@ -18,7 +16,6 @@ def hbyte_str(offset=0):
 
     return inner_hbyte
 
-
 def dbyte(offset=0):
     def inner_dbyte(args):
         if len(args) < 1:
@@ -26,7 +23,6 @@ def dbyte(offset=0):
         return (2 * args[0] + offset), args[1:]
 
     return inner_dbyte
-
 
 def hbyte(offset=0):
     def inner_hbyte(args):
@@ -36,12 +32,10 @@ def hbyte(offset=0):
 
     return inner_hbyte
 
-
 def shortify(arr: bytearray, dex: int) -> int:
     if len(arr) < dex + 2:
         raise ValueError(f"shortify: Expected at least {dex + 2} bytes, got {len(arr)} bytes")
     return arr[dex] + (arr[dex + 1] << 8)
-
 
 def shortify_signed(arr, dex):
     if len(arr) < dex + 2:
@@ -53,7 +47,6 @@ def shortify_signed(arr, dex):
     assert -32768 <= num <= 32767
     return num
 
-
 def byte_signed(num):
     if num > 127:
         offset = num - 127 - 1
@@ -61,14 +54,11 @@ def byte_signed(num):
     assert -128 <= num <= 127
     return num
 
-
 def bit(arr, dex, bit_num):
     return (arr[dex] & (1 << bit_num)) >> bit_num
 
-
 def bit_bool_from_num(num, bit_num):
     return ((num & 1 << bit_num) >> bit_num) == 1
-
 
 def byte_str(offset=0, prefix="", table=None):
     def inner_byte(args):
@@ -80,7 +70,6 @@ def byte_str(offset=0, prefix="", table=None):
 
     return inner_byte
 
-
 def byte(offset=0, prefix="", table=None):
     def inner_byte(args):
         if len(args) < 1:
@@ -88,7 +77,6 @@ def byte(offset=0, prefix="", table=None):
         return (args[0] + offset), args[1:]
 
     return inner_byte
-
 
 def byte_int_str(offset=0):
     def inner_byte(args):
@@ -98,7 +86,6 @@ def byte_int_str(offset=0):
 
     return inner_byte
 
-
 def byte_int(offset=0):
     def inner_byte(args):
         if len(args) < 1:
@@ -106,7 +93,6 @@ def byte_int(offset=0):
         return (args[0] + offset), args[1:]
 
     return inner_byte
-
 
 def short_int_Str(offset=0):
     def inner_short(args):
@@ -116,7 +102,6 @@ def short_int_Str(offset=0):
 
     return inner_short
 
-
 def short_int(offset=0):
     def inner_short(args):
         if len(args) < 2:
@@ -124,7 +109,6 @@ def short_int(offset=0):
         return (args[0] + (args[1] << 8) + offset), args[2:]
 
     return inner_short
-
 
 def short_str(offset=0):
     def inner_short(args):
@@ -134,7 +118,6 @@ def short_str(offset=0):
 
     return inner_short
 
-
 def short(offset=0):
     def inner_short(args):
         if len(args) < 2:
@@ -143,13 +126,11 @@ def short(offset=0):
 
     return inner_short
 
-
 def con_str(constant):
     def inner_con(args):
         return "0x%02x" % (constant), args
 
     return inner_con
-
 
 def con(constant):
     def inner_con(args):
@@ -157,13 +138,11 @@ def con(constant):
 
     return inner_con
 
-
 def con_int_str(constant):
     def inner_con(args):
         return "%i" % (constant), args
 
     return inner_con
-
 
 def con_int(constant):
     def inner_con(args):
@@ -171,20 +150,17 @@ def con_int(constant):
 
     return inner_con
 
-
 def con_bitarray_str(arr):
     def inner_con(args):
         return "%r" % (arr), args
 
     return inner_con
 
-
 def con_bitarray(arr):
     def inner_con(args):
         return arr, args
 
     return inner_con
-
 
 def named(name, *arg_parsers):
     def inner_named(args):
@@ -196,22 +172,17 @@ def named(name, *arg_parsers):
 
     return inner_named
 
-
 def build_table(list):
     return {i.index: i.name for i in list}
-
 
 def use_table_name(prefix, table, val):
     return "%s%s" % (prefix and (prefix + "."), table[val])
 
-
 def flags_short(prefix="", table=None, bits=None):
     return flags(prefix, table, bits, size=2)
 
-
 def flags_short_str(prefix="", table=None, bits=None):
     return flags_str(prefix, table, bits, size=2)
-
 
 def flags_str(prefix="", table=None, bits=None, size=None):
     def inner_flags(args):
@@ -226,7 +197,6 @@ def flags_str(prefix="", table=None, bits=None, size=None):
 
     return inner_flags
 
-
 def flags(prefix="", table=None, bits=None, size=None):
     def inner_flags(args):
         if size:
@@ -240,14 +210,12 @@ def flags(prefix="", table=None, bits=None, size=None):
 
     return inner_flags
 
-
 def get_flag_string(value, prefix="", table=None, bits=None):
     b = parse_flags_as_str(value, prefix, table, bits)
     if len(b) > 0:
         return "[%s]" % (", ".join(b))
     else:
         return "[]"
-
 
 def parse_flags_as_str(value, prefix="", table=None, bits=None):
     val = 0x00
@@ -269,7 +237,6 @@ def parse_flags_as_str(value, prefix="", table=None, bits=None):
                 b.append("%i" % i)
     return b
 
-
 def parse_flags(value, prefix="", table=None, bits=None):
     val = 0x00
     if isinstance(value, bytearray):
@@ -287,10 +254,8 @@ def parse_flags(value, prefix="", table=None, bits=None):
             b.append(i)
     return b
 
-
 def writeline(f, ln):
     print(ln.replace("\x00", ""), file=f)
-
 
 def writeline_dialog(f, ln):
     print(ln, file=f)

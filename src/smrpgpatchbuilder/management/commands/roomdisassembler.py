@@ -43,7 +43,6 @@ directions = [
     "NORTHEAST",
 ]
 
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
@@ -865,7 +864,6 @@ class Command(BaseCommand):
                                 pack = base_pack + (d[o] >> 4)
 
                             npc_from_table = npc_classes[assigned_npc]
-
 
                             # print(npc_from_table.cannot_clone)
 

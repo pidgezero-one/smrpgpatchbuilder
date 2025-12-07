@@ -23,7 +23,6 @@ class AnimationBank:
         self.end = end
         self.tiles = bytearray([])
 
-
 class Effect:
     index = 0
     image_bytes = bytearray([])
@@ -99,7 +98,6 @@ class Command(BaseCommand):
                 e.index = len(effects)
                 effects.append(e)
 
-
         output_image_data = bytearray([])
         output_pointer_data = bytearray([])
 
@@ -146,7 +144,6 @@ class Command(BaseCommand):
         f.write(output_image_data)
         f.close()
 
-
 # This needs to be improved
 # Make sure no data is overflowing from 0x33FFFF into 0x340000
 # What to do: Have 2 banks (one of any size, one of exactly 0x10000 bytes)
@@ -157,5 +154,4 @@ class Command(BaseCommand):
 # Do this also for NPC sprite data assembler.
 # The concept will be to assign sprites into whichever bank has the most remaining space.
         
-
 

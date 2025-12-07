@@ -1,6 +1,6 @@
 """Base classes supporting monster battle script assembly."""
 
-from typing import List, Optional, Sequence, Tuple, Type
+from collections.abc import Sequence
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
@@ -19,29 +19,28 @@ from .ids.misc import (
     POINTER_TABLE_START,
 )
 
-
 class MonsterScript(Script[UsableMonsterScriptCommand]):
     """Base class for a single monster battle script, a list of script command subclasses."""
 
-    _contents: List[UsableMonsterScriptCommand]
+    _contents: list[UsableMonsterScriptCommand]
 
     @property
-    def contents(self) -> List[UsableMonsterScriptCommand]:
+    def contents(self) -> list[UsableMonsterScriptCommand]:
         return self._contents
 
     def append(self, command: UsableMonsterScriptCommand) -> None:
         super().append(command)
 
-    def extend(self, commands: List[UsableMonsterScriptCommand]) -> None:
+    def extend(self, commands: list[UsableMonsterScriptCommand]) -> None:
         super().extend(commands)
 
     def set_contents(
-        self, script: Optional[List[UsableMonsterScriptCommand]] = None
+        self, script: list[UsableMonsterScriptCommand] | None = None
     ) -> None:
         super().set_contents(script)
 
     def __init__(
-        self, script: Optional[Sequence[UsableMonsterScriptCommand]] = None
+        self, script: Sequence[UsableMonsterScriptCommand] | None = None
     ) -> None:
         super().__init__(list(script) if script is not None else None)
 
@@ -58,7 +57,7 @@ class MonsterScript(Script[UsableMonsterScriptCommand]):
     def insert_before_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableMonsterScriptCommand],
+        cls: type[UsableMonsterScriptCommand],
         command: UsableMonsterScriptCommand,
     ) -> None:
         super().insert_before_nth_command_of_type(ordinality, cls, command)
@@ -66,7 +65,7 @@ class MonsterScript(Script[UsableMonsterScriptCommand]):
     def insert_after_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableMonsterScriptCommand],
+        cls: type[UsableMonsterScriptCommand],
         command: UsableMonsterScriptCommand,
     ) -> None:
         super().insert_after_nth_command_of_type(ordinality, cls, command)
@@ -84,13 +83,12 @@ class MonsterScript(Script[UsableMonsterScriptCommand]):
     def replace_at_index(self, index: int, content: UsableMonsterScriptCommand) -> None:
         super().replace_at_index(index, content)
 
-
 class MonsterScriptBank(ScriptBank[MonsterScript]):
     """Base class for the collection of monster battle scripts.
     Battle scripts are not stored in a contiguous range, but
     rather two separate ranges that share a pointer table."""
 
-    _scripts: List[MonsterScript]
+    _scripts: list[MonsterScript]
     _range_1_start: int = BANK_RANGE_1_START
     _range_1_end: int = BANK_RANGE_1_END
     _range_2_start: int = BANK_RANGE_2_START
@@ -123,10 +121,10 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         return UInt16((self.range_1_start - self.pointer_table_start) // 2)
 
     @property
-    def scripts(self) -> List[MonsterScript]:
+    def scripts(self) -> list[MonsterScript]:
         return self._scripts
 
-    def set_contents(self, scripts: Optional[List[MonsterScript]] = None) -> None:
+    def set_contents(self, scripts: list[MonsterScript] | None = None) -> None:
         if scripts is None:
             scripts = []
         assert len(scripts) == self.script_count
@@ -138,7 +136,7 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
 
     def __init__(
         self,
-        scripts: Optional[List[MonsterScript]] = None,
+        scripts: list[MonsterScript] | None = None,
         range_1_start: int = BANK_RANGE_1_START,
         range_1_end: int = BANK_RANGE_1_END,
         range_2_start: int = BANK_RANGE_2_START,
@@ -152,7 +150,7 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         self._pointer_table_start = pointer_table_start
         super().__init__(scripts)
 
-    def render(self) -> Tuple[bytearray, bytearray]:
+    def render(self) -> tuple[bytearray, bytearray]:
         """return this script as two bytearrays
         (one per range, the first including the pointer table)
         which are to be included in the ROM patch."""

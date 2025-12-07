@@ -8,7 +8,6 @@ from bps.io import write_bps
 from bps.util import bps_progress
 from datetime import datetime
 
-
 class Command(BaseCommand):
     help = "assemble enemies from disassembler output and generate rom patches"
 

@@ -38,7 +38,6 @@ for category in CATEGORIES:
 
 ALL_FLAGS = ' '.join(ALL_FLAGS)
 
-
 class Command(BaseCommand):
     help = 'Generate a statistical sampling of seeds to compare randomization spreads.'
 

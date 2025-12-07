@@ -1,6 +1,5 @@
 """Base classes that inform argument typing in action script command classes."""
 
-
 class SequenceSpeed(int):
     """The playback speed for a sprite sequence."""
 
@@ -8,7 +7,6 @@ class SequenceSpeed(int):
         num = args[0]
         assert 0 <= num <= 6
         return super(SequenceSpeed, cls).__new__(cls, num)
-
 
 class VRAMPriority(int):
     """Describes how a drawn sprite for an object behaves when overlapping with the player."""

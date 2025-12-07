@@ -1,7 +1,5 @@
 """ "Miscellaeous constants used for item classes and functions."""
 
-from typing import List
-
 from .enums import EquipStats
 
 # Global item address info.
@@ -20,7 +18,7 @@ ITEMS_BASE_NAME_ADDRESS: int = 0x3A46EF
 NUM_ITEMS: int = 256
 
 # Stats used during equipment randomization.
-EQUIP_STATS: List[EquipStats] = [
+EQUIP_STATS: list[EquipStats] = [
     EquipStats.SPEED,
     EquipStats.ATTACK,
     EquipStats.DEFENSE,

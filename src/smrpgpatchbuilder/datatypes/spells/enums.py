@@ -19,7 +19,6 @@ STATUS_NAME_MUSHROOM = "Mushroom"
 STATUS_NAME_SCARECROW = "Scarecrow"
 STATUS_NAME_INVINCIBLE = "Invincible"
 
-
 class DescribableAttribute:
     """Base class for attributes like statuses or elements
     that may be assembled differently depending on what
@@ -72,7 +71,6 @@ class DescribableAttribute:
         self._stat_char = stat_char
         self._dialog_char = dialog_char
 
-
 class Element(DescribableAttribute, Enum):
     """Enum of elements."""
 
@@ -86,7 +84,6 @@ class Element(DescribableAttribute, Enum):
         obj = object.__new__(cls)
         DescribableAttribute.__init__(obj, name, stat_value, spell_value, stat_char, dialog_char)
         return obj
-
 
 class Status(DescribableAttribute, Enum):
     """Enum of status effects."""
@@ -104,20 +101,17 @@ class Status(DescribableAttribute, Enum):
         DescribableAttribute.__init__(obj, name, stat_value, spell_value, stat_char, dialog_char)
         return obj
 
-
 class SpellType(IntEnum):
     """Enum of damage vs. heal spell types."""
 
     DAMAGE = 0
     HEAL = 1
 
-
 class EffectType(IntEnum):
     """Enum of influct vs. nullify spell effect types."""
 
     INFLICT = 2
     NULLIFY = 4
-
 
 class InflictFunction(IntEnum):
     """Enum of additional miscellaneous spell effects upon inflict."""
@@ -127,7 +121,6 @@ class InflictFunction(IntEnum):
     NO_DMG = 2
     REVIVE = 3
     INC_JUMP = 4
-
 
 class TempStatBuff(IntEnum):
     """Enumeration for in-battle temporary buffs applies to offensive and defensive stats."""

@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 import shutil
 import os
 
-
 class Command(BaseCommand):
 
     def add_arguments(self, parser):

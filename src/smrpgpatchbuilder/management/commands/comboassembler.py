@@ -8,7 +8,6 @@ assemblers with the same output options.
 from django.core.management.base import BaseCommand
 from pathlib import Path
 
-
 class Command(BaseCommand):
     help = "Run all assemblers with the same options"
 

@@ -1,5 +1,5 @@
 import pytest
-from typing import Optional, Type, List
+
 from smrpgpatchbuilder.datatypes.battle_animation_scripts import *
 
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.commands import Enemy
@@ -24,16 +24,14 @@ class RareFrogCoinItem(RegularItem):
 class YARIDOVICH(Enemy):
     _monster_id: int = 226
 
-
 @dataclass
 class Case:
     label: str
     commands_factory: callable
-    expected_bytes: Optional[List[int]] = None
-    exception: Optional[str] = None
-    exception_type: Optional[Type] = None
-    expected_length: Optional[int] = None
-
+    expected_bytes: list[int] | None = None
+    exception: str | None = None
+    exception_type: type | None = None
+    expected_length: int | None = None
 
 test_cases = [
     Case(
@@ -1806,7 +1804,6 @@ test_cases = [
         exception_type=ScriptBankTooLongException,
     ),
 ]
-
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):

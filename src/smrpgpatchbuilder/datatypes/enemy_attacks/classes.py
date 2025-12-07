@@ -1,7 +1,5 @@
 """Base classes for enemy attack data."""
 
-from typing import List, Dict, Optional
-
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     BitMapSet,
@@ -14,22 +12,21 @@ from smrpgpatchbuilder.datatypes.spells.enums import TempStatBuff, Status
 
 from .constants import ENEMY_ATTACK_BASE_ADDRESS, ENEMY_ATTACK_NAME_ADDRESS, ENEMY_ATTACK_NAME_LENGTH
 
-
 class EnemyAttack:
     """Class representing an enemy attack."""
 
     # default instance attributes.
     _index: int = 0
     _name: str = ""
-    _prefix: Optional[ItemPrefix] = None
+    _prefix: ItemPrefix | None = None
     _attack_level: int = 0
     _ohko: bool = False
     _damageless_flag_1: bool = False
     _hide_numbers: bool = False
     _damageless_flag_2: bool = False
     _hit_rate: int = 0
-    _status_effects: List[Status] = []
-    _buffs: List[TempStatBuff] = []
+    _status_effects: list[Status] = []
+    _buffs: list[TempStatBuff] = []
 
     @property
     def index(self) -> UInt8:
@@ -47,11 +44,11 @@ class EnemyAttack:
         self._name = name
 
     @property
-    def prefix(self) -> Optional[ItemPrefix]:
+    def prefix(self) -> ItemPrefix | None:
         """The icon prefix that appears before the attack name."""
         return self._prefix
 
-    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+    def set_prefix(self, prefix: ItemPrefix | None) -> None:
         """Set the icon prefix for this attack."""
         self._prefix = prefix
 
@@ -112,24 +109,24 @@ class EnemyAttack:
         self._hit_rate = hit_rate
 
     @property
-    def status_effects(self) -> List[Status]:
+    def status_effects(self) -> list[Status]:
         """the list of status effects that are induced by this attack.
         since a party member can only have one status at a time, effectively only the
         status occupying the highest bit (referenced by stat_value) will be applied."""
         return self._status_effects
 
-    def set_status_effects(self, status_effects: List[Status]) -> None:
+    def set_status_effects(self, status_effects: list[Status]) -> None:
         """overwrite the list of status effects that are induced by this attack.
         since a party member can only have one status at a time, effectively only the
         status occupying the highest bit (referenced by stat_value) will be applied."""
         self._status_effects = status_effects
 
     @property
-    def buffs(self) -> List[TempStatBuff]:
+    def buffs(self) -> list[TempStatBuff]:
         """The list of temporary buffs to be applied by this attack."""
         return self._buffs
 
-    def set_buffs(self, buffs: List[TempStatBuff]) -> None:
+    def set_buffs(self, buffs: list[TempStatBuff]) -> None:
         """Overwrite the list of temporary buffs to be applied by this attack."""
         self._buffs = buffs
 
@@ -144,11 +141,11 @@ class EnemyAttack:
         """Attack's default name"""
         return self.__class__.__name__
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Return attack stats and name as bytearrays with their ROM addresses.
 
         Returns:
-            Dict[int, bytearray]: {stats_addr: stats_data, name_addr: name_data}
+            dict[int, bytearray]: {stats_addr: stats_data, name_addr: name_data}
         """
         # Attack stats data
         base_addr = ENEMY_ATTACK_BASE_ADDRESS + (self.index * 4)
@@ -204,11 +201,10 @@ class EnemyAttack:
             name_addr: name_bytes
         }
 
-
 class EnemyAttackCollection:
     """Collection of enemy attacks with rendering support."""
 
-    def __init__(self, attacks: List[EnemyAttack]):
+    def __init__(self, attacks: list[EnemyAttack]):
         """Initialize the collection with a list of enemy attacks.
 
         Args:
@@ -224,13 +220,13 @@ class EnemyAttackCollection:
             )
         self.attacks = attacks
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all enemy attacks.
 
         Returns:
             dictionary mapping ROM addresses to bytearrays
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # Render each attack individually
         for attack in self.attacks:

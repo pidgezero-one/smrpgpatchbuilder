@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 from pathlib import Path
 from smrpgpatchbuilder.datatypes.items.encoding import decode_item_description
 
-
 class Command(BaseCommand):
     help = "Disassemble items from ROM and generate Python item definitions"
 
@@ -47,7 +46,6 @@ class Command(BaseCommand):
         output_lines.append("# Run the following command to rebuild:")
         output_lines.append(f"# python manage.py itemdisassembler --rom <ROM_PATH>")
         output_lines.append("")
-        output_lines.append("from typing import List")
         output_lines.append("from smrpgpatchbuilder.datatypes.items.classes import (")
         output_lines.append("    RegularItem,")
         output_lines.append("    Weapon,")
@@ -491,7 +489,7 @@ class Command(BaseCommand):
         # equip chars
         if data["equip_chars"]:
             chars_str = ", ".join(data["equip_chars"])
-            lines.append(f"    _equip_chars: List[PartyCharacter] = [{chars_str}]")
+            lines.append(f"    _equip_chars: list[PartyCharacter] = [{chars_str}]")
 
         # stats
         if data["speed"] != 0:
@@ -586,22 +584,22 @@ class Command(BaseCommand):
         # elemental immunities
         if data["elemental_immunities"]:
             immunities_str = ", ".join(data["elemental_immunities"])
-            lines.append(f"    _elemental_immunities: List[Element] = [{immunities_str}]")
+            lines.append(f"    _elemental_immunities: list[Element] = [{immunities_str}]")
 
         # elemental resistances
         if data["elemental_resistances"]:
             resistances_str = ", ".join(data["elemental_resistances"])
-            lines.append(f"    _elemental_resistances: List[Element] = [{resistances_str}]")
+            lines.append(f"    _elemental_resistances: list[Element] = [{resistances_str}]")
 
         # status immunities
         if data["status_immunities"]:
             immunities_str = ", ".join(data["status_immunities"])
-            lines.append(f"    _status_immunities: List[Status] = [{immunities_str}]")
+            lines.append(f"    _status_immunities: list[Status] = [{immunities_str}]")
 
         # temp buffs
         if data["temp_buffs"]:
             buffs_str = ", ".join(data["temp_buffs"])
-            lines.append(f"    _temp_buffs: List[TempStatBuff] = [{buffs_str}]")
+            lines.append(f"    _temp_buffs: list[TempStatBuff] = [{buffs_str}]")
 
         # weapon timing data
         if data["timing_data"]:

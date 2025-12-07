@@ -3,8 +3,6 @@
 from django.core.management.base import BaseCommand
 from pathlib import Path
 import importlib
-from typing import Set, Dict
-
 
 class Command(BaseCommand):
     help = "Disassemble enemies from ROM and generate Python enemy definitions"
@@ -76,7 +74,7 @@ class Command(BaseCommand):
         # process each enemy
         used_class_names = {}
         class_names = []  # store class names for enemycollection
-        used_item_classes: Set[str] = set()  # track which item classes are used
+        used_item_classes: set[str] = set()  # track which item classes are used
 
         enemy_definitions = []
         for enemy_id in range(NUM_ENEMIES):
@@ -103,7 +101,6 @@ class Command(BaseCommand):
 
         # generate output with imports
         output_lines = []
-        output_lines.append("from typing import List, Type")
         output_lines.append("from smrpgpatchbuilder.datatypes.enemies.classes import (")
         output_lines.append("    Enemy,")
         output_lines.append("    EnemyCollection,")
@@ -146,7 +143,7 @@ class Command(BaseCommand):
             self.style.SUCCESS(f"Successfully generated {NUM_ENEMIES} enemy definitions to {output_path}")
         )
 
-    def _load_item_mapping(self) -> Dict[int, str]:
+    def _load_item_mapping(self) -> dict[int, str]:
         """load all_items and build item id to class name mapping.
 
         returns:
@@ -340,7 +337,6 @@ class Command(BaseCommand):
             (key, bytearray(value)) for key, value in COMPRESSION_TABLE[17:]
         ]
 
-
         messages = []
 
         for enemy_id in range(num_enemies):
@@ -494,7 +490,7 @@ class Command(BaseCommand):
         # status immunities
         if data["status_immunities"]:
             immunities_str = ", ".join(data["status_immunities"])
-            lines.append(f"    _status_immunities: List[Status] = [{immunities_str}]")
+            lines.append(f"    _status_immunities: list[Status] = [{immunities_str}]")
 
         # weaknesses (convert bit positions to elements)
         if data["weaknesses"]:
@@ -502,12 +498,12 @@ class Command(BaseCommand):
             weaknesses_list = [weakness_map[w] for w in data["weaknesses"] if w in weakness_map]
             if weaknesses_list:
                 weaknesses_str = ", ".join(weaknesses_list)
-                lines.append(f"    _weaknesses: List[Element] = [{weaknesses_str}]")
+                lines.append(f"    _weaknesses: list[Element] = [{weaknesses_str}]")
 
         # resistances
         if data["elemental_resistances"]:
             resistances_str = ", ".join(data["elemental_resistances"])
-            lines.append(f"    _resistances: List[Element] = [{resistances_str}]")
+            lines.append(f"    _resistances: list[Element] = [{resistances_str}]")
 
         # rewards
         lines.append(f"    _xp: int = {data['xp']}")

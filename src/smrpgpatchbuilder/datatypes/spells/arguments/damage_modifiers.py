@@ -2,7 +2,6 @@
 
 from .types.classes import DamageModifiers
 
-
 NO_MODIFIERS = DamageModifiers(0xD09B)
 X00625_MODIFIER = DamageModifiers(0xD09C)
 X05_MODIFIER = DamageModifiers(0xD177)

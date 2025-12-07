@@ -44,7 +44,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-
         global rom
         rom = bytearray(open(options['rom'], 'rb').read())
 
@@ -104,7 +103,6 @@ class Command(BaseCommand):
             elif i not in anim_subtiles[0] and i not in anim_subtiles[1] and i in anim_subtiles[2]:
                 anim3_only.append(i)
 
-
         def replace_subtile(anim_index, old_ind, new_ind):
             for mold_index, a in enumerate(animations[anim_index].properties.molds):
 
@@ -124,11 +122,9 @@ class Command(BaseCommand):
                                 # print(new_ind)
                 
 
-
         blank_at_start = 512 - (len(anim1_only) + len(anim1_and_anim2_only) + len(anim2_only) + len(anim1_and_anim3) + len(anim_all))
 
         output_gfx = bytearray([0] * blank_at_start * 0x20)
-
 
         anim1_index = blank_at_start
         anim2_index = 0
@@ -193,7 +189,6 @@ class Command(BaseCommand):
             gfx_offset = bowser_gfx_offset + 0x20 * (subt - 1)
             output_gfx += rom[gfx_offset:gfx_offset+0x20]
 
-
         for ind, subt in enumerate(anim2_and_anim3):
             anim1_index += 1
             anim2_index += 1
@@ -245,7 +240,6 @@ class Command(BaseCommand):
 
                     #print(animations[a_id].properties.molds[mold_index].tiles[tile_index].subtile_bytes)
 
-
         images[297].graphics_pointer = anim1_offset
         images[338].graphics_pointer = -1
         images[339].graphics_pointer = -1
@@ -272,7 +266,6 @@ class Command(BaseCommand):
             print(hex(offset), hex(next_offset), hex(START + len(gfx_data)))
             if offset in [anim1_offset, anim2_offset, anim3_offset]:
                 print("")
-
 
             for img_index, image in enumerate(images):
                 if image.graphics_pointer == offset:
@@ -312,7 +305,4 @@ class Command(BaseCommand):
         f = open(f'write_to_0x360000.img', 'wb')
         f.write(animation_data_bank_2)
         f.close()
-
-
-
 

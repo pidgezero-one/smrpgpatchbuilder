@@ -1,6 +1,5 @@
 """Base classes related to dialogs and dialog collections"""
 
-from typing import List, Dict
 from smrpgpatchbuilder.datatypes.dialogs.ids.misc import (
     DIALOG_BANK_22_BEGINS,
     DIALOG_BANK_22_ENDS,
@@ -17,7 +16,6 @@ from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
 from .utils import compress, COMPRESSION_TABLE
-
 
 class Dialog:
     """An individual dialog in the overworld"""
@@ -51,12 +49,11 @@ class Dialog:
         self._index = index
         self.set_position(pos)
 
-
 class DialogCollection:
     """Houses all dialog banks to allow retrieval and manipulation of any dialog."""
 
-    _dialogs: List[Dialog]
-    _raw_data: List[list[str]]
+    _dialogs: list[Dialog]
+    _raw_data: list[list[str]]
     _dialog_bank_22_begins: int = DIALOG_BANK_22_BEGINS
     _dialog_bank_22_ends: int = DIALOG_BANK_22_ENDS
     _dialog_bank_23_begins: int = DIALOG_BANK_23_BEGINS
@@ -65,21 +62,21 @@ class DialogCollection:
     _dialog_bank_24_ends: int = DIALOG_BANK_24_ENDS
 
     @property
-    def dialogs(self) -> List[Dialog]:
+    def dialogs(self) -> list[Dialog]:
         """The dialogs belonging to this seed."""
         return self._dialogs
 
-    def _set_dialogs(self, dialogs: List[Dialog]) -> None:
+    def _set_dialogs(self, dialogs: list[Dialog]) -> None:
         """Overwrite the dialogs belonging to this seed."""
         assert len(dialogs) == 4096
         self._dialogs = dialogs
 
     @property
-    def raw_data(self) -> List[list[str]]:
+    def raw_data(self) -> list[list[str]]:
         """The raw string data comprising dialogs."""
         return self._raw_data
 
-    def _set_raw_data(self, raw_data: List[list[str]]) -> None:
+    def _set_raw_data(self, raw_data: list[list[str]]) -> None:
         """Overwrite the raw string data comprising dialogs."""
         assert len(raw_data) == 3
         self._raw_data = raw_data
@@ -97,21 +94,21 @@ class DialogCollection:
                 self.raw_data[bank_index][index] = string.replace(search, replace)
 
     def _set_compression_table(
-        self, compression_table: List[tuple[str, bytearray]]
+        self, compression_table: list[tuple[str, bytearray]]
     ) -> None:
         """Set the compression table for this dialog collection."""
         self._compression_table = compression_table
 
     @property
-    def compression_table(self) -> List[tuple[str, bytearray]]:
+    def compression_table(self) -> list[tuple[str, bytearray]]:
         """Get the compression table for this dialog collection."""
         return self._compression_table
 
     def __init__(
         self,
-        dialogs: List[Dialog],
-        raw_data: List[list[str]],
-        compression_table: List[tuple[str, bytearray]],
+        dialogs: list[Dialog],
+        raw_data: list[list[str]],
+        compression_table: list[tuple[str, bytearray]],
         dialog_bank_22_begins=DIALOG_BANK_22_BEGINS,
         dialog_bank_22_ends=DIALOG_BANK_22_ENDS,
         dialog_bank_23_begins=DIALOG_BANK_23_BEGINS,
@@ -129,14 +126,14 @@ class DialogCollection:
         self._dialog_bank_24_begins = dialog_bank_24_begins
         self._dialog_bank_24_ends = dialog_bank_24_ends
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Get all dialog data in `{0x123456: bytearray([0x00])}` format."""
         if len(self.dialogs) != 4096:
             raise ValueError("must be exactly 4096 dialogs")
         if len(self.raw_data) != 3:
             raise ValueError("must be exactly 3 dialog banks")
 
-        new_pointer_table: List[int] = [-1] * 4096
+        new_pointer_table: list[int] = [-1] * 4096
 
         compressed_text = [
             [compress(d, self.compression_table) for d in self._raw_data[0]],

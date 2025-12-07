@@ -13,8 +13,6 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
 
 from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config, load_flags_from_input_files, load_variables_from_input_files
 
-
-
 DIRECTIONS = [
     "EAST",
     "SOUTHEAST",
@@ -156,7 +154,6 @@ searchable_vars = globals()
 actions_jumped_to = []
 events_jumped_to = []
 
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
@@ -166,7 +163,6 @@ class Command(BaseCommand):
         classnames = load_class_names_from_config()
         vars_lookup = load_variables_from_input_files()
         flags_lookup = load_flags_from_input_files()
-
 
         def convert_event_script_command(cmd, valid_identifiers):
             use_identifier: bool = cmd["identifier"] in valid_identifiers
@@ -1208,7 +1204,6 @@ class Command(BaseCommand):
 
             return cls, args, use_identifier, include_argnames
 
-
         def convert_action_script_command(cmd, valid_identifiers):
             use_identifier: bool = cmd["identifier"] in valid_identifiers
             args = {}
@@ -1961,7 +1956,6 @@ class Command(BaseCommand):
 
             return cls, args, use_identifier, include_argnames
 
-
         def convert_script(script, valid_identifiers, converter):
             new_script = []
 
@@ -1990,7 +1984,6 @@ class Command(BaseCommand):
 
             return new_script
 
-
         def produce_action_script(index, script, valid_identifiers):
             output = "#%s" % varnames["action_scripts"][index]
             output += (
@@ -2003,7 +1996,6 @@ class Command(BaseCommand):
             )
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *"
-
 
             output += "\nfrom ....variables.action_script_names import *"
             output += "\nfrom ....variables.event_script_names import *"
@@ -2020,7 +2012,6 @@ class Command(BaseCommand):
             output += "\n])"
 
             return output
-
 
         def produce_event_script(index, script, valid_identifiers):
             output = "# %s" % varnames["event_scripts"][index]

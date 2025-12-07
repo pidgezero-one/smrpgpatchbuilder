@@ -1,6 +1,5 @@
 """Base classes supporting battle animation script assembly."""
 
-from typing import List, Optional, Type
 from smrpgpatchbuilder.datatypes.items.classes import Item
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptCommand,
@@ -9,7 +8,6 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 )
 from smrpgpatchbuilder.datatypes.numbers.classes import Int16, UInt16, UInt8
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.arguments.types import Origin
-
 
 class AnimationScriptCommand(ScriptCommand):
     """Base class that all animation script command classes inherit from."""
@@ -28,14 +26,11 @@ class AnimationScriptCommand(ScriptCommand):
                 except ValueError:
                     pass
 
-
 class AnimationScriptCommandNoArgs(AnimationScriptCommand, ScriptCommandNoArgs):
     """Base class of animation script command classes that take no arguments."""
 
-
 class AnimationScriptCommandWithJmps(AnimationScriptCommand, ScriptCommandWithJmps):
     """Base class of animation script command classes that use gotos."""
-
 
 class AnimationScriptAMEMCommand(AnimationScriptCommand):
     """Base class of animation script command classes that target AMEM."""
@@ -55,26 +50,23 @@ class AnimationScriptAMEMCommand(AnimationScriptCommand):
     def _amem_bits(self) -> int:
         return self.amem & 0x0F
 
-
 class AnimationScriptAMEM6XSoloCommand(AnimationScriptAMEMCommand):
     """base class of animation script command classes that target amem $6x
     and take no other arguments."""
 
     _size: int = 2
 
-    def __init__(self, amem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits())
 
-
 class AnimationScriptAMEM6XCommand(AnimationScriptAMEMCommand):
     """Base class of animation script command classes that target AMEM $6X."""
 
     _size: int = 4
-
 
 class AnimationScriptAMEMAndConst(AnimationScriptAMEM6XCommand):
     """Perform an AND operation between an AMEM in range $60-$6F and a constant value."""
@@ -89,7 +81,6 @@ class AnimationScriptAMEMAndConst(AnimationScriptAMEM6XCommand):
     def set_value(self, value: int) -> None:
         """Set the const value to perform the AND operation against"""
         self._value = UInt16(value)
-
 
 class AnimationScriptAMEMAnd7E(AnimationScriptAMEM6XCommand):
     """Perform an AND operation between an AMEM in range $60-$6F and a value stored at $7Exxxx."""
@@ -106,7 +97,6 @@ class AnimationScriptAMEMAnd7E(AnimationScriptAMEM6XCommand):
         assert 0x7E0000 <= address <= 0x7EFFFF
         self._address = address
 
-
 class AnimationScriptAMEMAnd7F(AnimationScriptAMEM6XCommand):
     """Perform an AND operation between an AMEM in range $60-$6F and a value stored at $7Fxxxx."""
 
@@ -121,7 +111,6 @@ class AnimationScriptAMEMAnd7F(AnimationScriptAMEM6XCommand):
         """Set the address containing the value to perform the AND operation against, $7Fxxxx"""
         assert 0x7F0000 <= address <= 0x7FFFFF
         self._address = address
-
 
 class AnimationScriptAMEMAndAMEM(AnimationScriptAMEM6XCommand):
     """perform an and operation between an amem in range $60-$6f
@@ -149,7 +138,6 @@ class AnimationScriptAMEMAndAMEM(AnimationScriptAMEM6XCommand):
         assert 0x60 <= amem <= 0x6F
         self._source_amem = UInt8(amem)
 
-
 class AnimationScriptAMEMAndOMEM(AnimationScriptAMEM6XCommand):
     """perform an and operation between an amem in range $60-$6f
     and the value at an OMEM address."""
@@ -164,7 +152,6 @@ class AnimationScriptAMEMAndOMEM(AnimationScriptAMEM6XCommand):
     def set_omem(self, omem: int) -> None:
         """Set the OMEM address being compared against"""
         self._omem = UInt8(omem)
-
 
 class AnimationScriptUnknownJmp2X(AnimationScriptCommandWithJmps):
     """Performs a Goto. Context of other parameters is unknown."""
@@ -195,8 +182,8 @@ class AnimationScriptUnknownJmp2X(AnimationScriptCommandWithJmps):
         self,
         param_1: int,
         param_2: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_param_1(param_1)
@@ -204,7 +191,6 @@ class AnimationScriptUnknownJmp2X(AnimationScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(self.param_1, self.param_2, *self.destinations)
-
 
 class SetAMEMToXYZCoords(AnimationScriptCommand):
     """Stores coordinates relative to a given origin to AMEM."""
@@ -291,7 +277,7 @@ class SetAMEMToXYZCoords(AnimationScriptCommand):
         set_x: bool = False,
         set_y: bool = False,
         set_z: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_origin(origin)
@@ -311,7 +297,6 @@ class SetAMEMToXYZCoords(AnimationScriptCommand):
         )
         return super().render(byte1, self.x, self.y, self.z)
 
-
 class AnimationScriptFadeObject(AnimationScriptCommand):
     """Base class for commands that fade objects."""
 
@@ -329,10 +314,9 @@ class AnimationScriptFadeObject(AnimationScriptCommand):
         """Set fade duration, in frames."""
         self._duration = UInt8(duration)
 
-    def __init__(self, duration: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, duration: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
-
 
 class AnimationScriptShakeObject(AnimationScriptCommand):
     """Base class for commands that shake objects."""
@@ -362,7 +346,7 @@ class AnimationScriptShakeObject(AnimationScriptCommand):
         self._speed = UInt16(speed)
 
     def __init__(
-        self, amount: int, speed: int, identifier: Optional[str] = None
+        self, amount: int, speed: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amount(amount)
@@ -371,7 +355,6 @@ class AnimationScriptShakeObject(AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         header = args[0]
         return super().render(header, 0, 0, self.amount, self.speed)
-
 
 class AnimationScriptCommandInventory(AnimationScriptCommand):
     """Base class for commands that act on an inventory item."""
@@ -385,15 +368,14 @@ class AnimationScriptCommandInventory(AnimationScriptCommand):
         """Item ID."""
         return self._item_id
 
-    def set_item_id(self, item: Type[Item]) -> None:
+    def set_item_id(self, item: type[Item]) -> None:
         """Set item ID."""
         assert issubclass(item, Item)
         self._item_id = UInt8(item().item_id)
 
-    def __init__(self, item: Type[Item], identifier: Optional[str] = None) -> None:
+    def __init__(self, item: type[Item], identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_item_id(item)
-
 
 class UsableAnimationScriptCommand(AnimationScriptCommand):
     """subclass for commands that can actually be used in a script

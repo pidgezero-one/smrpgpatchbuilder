@@ -1,6 +1,5 @@
 """Item description encoding/decoding utilities"""
 
-
 # item description character mapping (byte -> string)
 ITEM_DESC_BYTE_TO_STR = {
     0x01: '\n',
@@ -21,7 +20,6 @@ ITEM_DESC_STR_TO_BYTE = {
     '"': 0x23,
 }
 
-
 def encode_item_description(desc: str) -> bytearray:
     """encode a description string to bytes using item description character mapping.
 
@@ -39,7 +37,6 @@ def encode_item_description(desc: str) -> bytearray:
             # use latin-1 encoding for regular characters
             result.extend(char.encode('latin-1'))
     return result
-
 
 def decode_item_description(data: bytes) -> str:
     """decode description bytes to string using item description character mapping.

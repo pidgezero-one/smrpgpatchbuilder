@@ -8,7 +8,6 @@ from smrpgpatchbuilder.utils.disassembler_common import (
 import os
 import shutil
 from copy import deepcopy
-from typing import List, Tuple, Dict, Optional, Union, Set
 from dataclasses import dataclass
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,7 +16,6 @@ import queue
 import threading
 from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config
 from disassembler_output.variables import battle_event_names
-
 
 ORIGINS = [
     "ABSOLUTE_POSITION",
@@ -102,7 +100,6 @@ MASKS = [
 
 searchable_vars = globals()
 
-
 def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] == obj]
 
@@ -179,11 +176,10 @@ force_contiguous_block_start = [    # there are other addresses that should get 
     0x3A6000,
 ]
 
-
 @dataclass
 class Bank:
-    pointer_table_start: Optional[int]
-    pointer_table_end: Optional[int]
+    pointer_table_start: int | None
+    pointer_table_end: int | None
     start: int
     end: int
 
@@ -197,8 +193,8 @@ class Bank:
         self,
         start: int,
         end: int,
-        pointer_table_start: Optional[int] = None,
-        pointer_table_end: Optional[int] = None,
+        pointer_table_start: int | None = None,
+        pointer_table_end: int | None = None,
     ):
         self.pointer_table_start = pointer_table_start
         self.pointer_table_end = pointer_table_end
@@ -217,8 +213,7 @@ class Bank:
             else "None",
         )
 
-
-banks: Dict[str, Bank] = {
+banks: dict[str, Bank] = {
 
     "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
     # gap
@@ -264,7 +259,6 @@ banks: Dict[str, Bank] = {
 
 BATTLE_EVENT_INDEXES_START_AT = 0x3A6004
 UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT = 0x3AECF7
-
 
 command_lens = [
     9,
@@ -547,7 +541,6 @@ command_lens = [
 rom_coverage = [None] * 0x400000
 addresses_to_track = []
 
-
 class AMEM(list):
     """Base class representing a battlefield layout as a list of 16 lists of ints."""
 
@@ -578,12 +571,12 @@ class AMEM(list):
 class OQRef:
     addr: int
     amem: AMEM
-    relevant_indexes: List[int]
+    relevant_indexes: list[int]
     label: str
     length: int
-    pointers: List[int]
+    pointers: list[int]
 
-    def __init__(self, addr: int, amem: AMEM, relevant_indexes: List[int], label: str = ""):
+    def __init__(self, addr: int, amem: AMEM, relevant_indexes: list[int], label: str = ""):
         self.addr = addr
         self.amem = deepcopy(amem)
         self.relevant_indexes = deepcopy (relevant_indexes)
@@ -592,10 +585,9 @@ class OQRef:
     def __repr__(self) -> str:
         return f"OQRef(addr=0x{self.addr:06X}, label={self.label}, length={self.length if hasattr(self, 'length') else None}, pointers={[f'0x{p:06X}' for p in self.pointers] if hasattr(self, 'pointers') else None}, relevant_indexes={self.relevant_indexes}, amem={self.amem})"
 
-
-def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_starts: List[OQRef]) -> List[Tuple[bytearray, int, bool]]:
+def tok(rom: bytearray, start: int, end: int, oq_starts: list[OQRef], oq_idx_starts: list[OQRef]) -> list[tuple[bytearray, int, bool]]:
     dex = start
-    script: List[Tuple[bytearray, int, bool]] = []
+    script: list[tuple[bytearray, int, bool]] = []
     combo_oq = oq_starts + oq_idx_starts
     while dex < end:
         if dex in [s.addr for s in combo_oq]:
@@ -617,7 +609,6 @@ def tok(rom: bytearray, start: int, end: int, oq_starts: List[OQRef], oq_idx_sta
             script.append((rom[dex : dex + l], dex, False))
             dex += l
     return script
-
 
 jmp_cmds = [
     0x09,
@@ -669,7 +660,6 @@ SPECIAL_CASE_BREAKS = [
     0x3A8C8A,
 ]
 
-
 @dataclass
 class Addr:
     offset: int
@@ -678,10 +668,10 @@ class Addr:
     _referenced_by: list[str]
 
     @property
-    def referenced_by(self) -> List[str]:
+    def referenced_by(self) -> list[str]:
         return [r for r in self._referenced_by if r != ""]
 
-    def __init__(self, offset: int, amem: AMEM, ref_label: str, refs: Optional[List[str]] = None):
+    def __init__(self, offset: int, amem: AMEM, ref_label: str, refs: list[str] | None = None):
         self.offset = offset
         self.amem = amem
         self.ref_label = ref_label
@@ -693,23 +683,21 @@ class Addr:
             f"ref_label={self.ref_label}, referenced_by={self.referenced_by})"
         )
 
-
 @dataclass
 class ObjectQueue:
     offset: int
-    destination_offsets: List[int]
+    destination_offsets: list[int]
 
-    def __init__(self, offset: int, destination_offsets: List[int]):
+    def __init__(self, offset: int, destination_offsets: list[int]):
         self.offset = offset
         self.destination_offsets = destination_offsets
-
 
 @dataclass
 class ObjectQueueWithIndex:
     offset: int
-    destination_offsets: List[List[int]]
+    destination_offsets: list[list[int]]
 
-    def __init__(self, offset: int, destination_offsets: List[List[int]]):
+    def __init__(self, offset: int, destination_offsets: list[list[int]]):
         self.offset = offset
         self.destination_offsets = destination_offsets
 
@@ -718,8 +706,8 @@ class ProtoCommand:
     id: str 
     addr: int
     raw_data: bytearray
-    parsed_data: List[Union[int, str]]
-    length: Optional[int]
+    parsed_data: list[int | str]
+    length: int | None
     oq: bool
 
     def __init__(
@@ -728,7 +716,7 @@ class ProtoCommand:
         addr: int,
         data: bytearray,
         oq: bool = False,
-        length: Optional[int] = None
+        length: int | None = None
     ):
         self.id = id
         self.addr = addr
@@ -763,13 +751,11 @@ class ContiguousBlock:
     def __str__(self) -> str:
         return f"ContiguousBlock(start=0x{self.start:06X}, size={self.size}, end=0x{self.end:06X})"
 
-
 def string_byte(word):
     if type(word) == str:
         return '''"%s"''' % word
     else:
         return "0x%02x" % word
-
 
 INIT_AMEM: AMEM = AMEM([[0]] * 16)
 
@@ -786,11 +772,9 @@ def get_third_byte_as_string(bank_name: str) -> str:
     else:
         return "35"
 
-
 BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
-
-def hash_amem_for_dedup(amem: AMEM, important_indexes: List[int]) -> tuple:
+def hash_amem_for_dedup(amem: AMEM, important_indexes: list[int]) -> tuple:
     """Create a hashable representation of AMEM state for duplicate detection."""
     result = []
     for idx in important_indexes:
@@ -799,12 +783,11 @@ def hash_amem_for_dedup(amem: AMEM, important_indexes: List[int]) -> tuple:
         result.append(capped)
     return tuple(result)
 
-
 # Maximum number of distinct values to track per AMEM slot before widening
 # This prevents state explosion while maintaining correctness
 MAX_AMEM_VALUES = 100
 
-def widen_amem_slot(values: List[int]) -> List[int]:
+def widen_amem_slot(values: list[int]) -> list[int]:
     """
     Widen an AMEM slot that has too many values to prevent state explosion.
 
@@ -832,7 +815,6 @@ def widen_amem_slot(values: List[int]) -> List[int]:
 
     return sorted(set(result))
 
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-r", "--rom", dest="rom", help="Path to a Mario RPG rom")
@@ -856,8 +838,8 @@ class Command(BaseCommand):
 
         jump_pointers = []
 
-        oq_starts: List[OQRef] = []
-        oq_idx_starts: List[OQRef] = []
+        oq_starts: list[OQRef] = []
+        oq_idx_starts: list[OQRef] = []
 
         known_addresses_covered = {
             "02": [False] * 0x10000,
@@ -866,9 +848,9 @@ class Command(BaseCommand):
         }
         
 
-        collective_data: Dict[str, List[List[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
+        collective_data: dict[str, list[list[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
         
-        references: Dict[int, List[str]] = {}
+        references: dict[int, list[str]] = {}
 
         # Load data from config input files
         loaded_arrays = load_arrays_from_input_files()
@@ -2361,8 +2343,6 @@ class Command(BaseCommand):
             ],
         }
 
-
-
         for bank_id, blocks in banks.items():
             #print(f'processing bank: {bank_id}')
             third_byte_as_string = get_third_byte_as_string(bank_id)
@@ -2370,13 +2350,12 @@ class Command(BaseCommand):
 
             bank_as_upper_byte = blocks.start & 0xFF0000
 
-            bank_pointer_addresses: List[int] = []
-            script_sizes: List[int] = []
+            bank_pointer_addresses: list[int] = []
+            script_sizes: list[int] = []
 
             # this is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
-            branches: List[Addr] = []
+            branches: list[Addr] = []
             amem: AMEM = deepcopy(INIT_AMEM)
-
 
             # to start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
             # treat pointers as an OQ because that's pretty much what it is
@@ -2555,7 +2534,7 @@ class Command(BaseCommand):
                 #print(this_branch)
                 while not end_found:
                     #print(f'        current_addr: 0x{cursor:06x}')
-                    def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: Optional[List[int]] = None):
+                    def validate_addr(offs: int, am: AMEM, lbl: str = "", important_amem_indexes_raw: list[int] | None = None):
                         
                         #print("raw", important_amem_indexes_raw)
                         if important_amem_indexes_raw is None:
@@ -2612,7 +2591,7 @@ class Command(BaseCommand):
 
                         return destination_branch
 
-                    def create_object_queue(base_addr: int, label_override: Optional[str] = None) -> int:
+                    def create_object_queue(base_addr: int, label_override: str | None = None) -> int:
                         nonlocal end_found
                         temp_cursor_addr = base_addr
                         length = 0
@@ -2621,7 +2600,7 @@ class Command(BaseCommand):
                             temp_cursor_addr_short = temp_cursor_addr & 0xFFFF
                             i = 0
                             length = 0
-                            ptrs: List[int] = []
+                            ptrs: list[int] = []
                             if label_override is not None:
                                 label = label_override
                             # check if this is a monster behaviour object queue (should have exactly 6 pointers)
@@ -2747,7 +2726,6 @@ class Command(BaseCommand):
                         #print(f"        complex oq length: {length} bytes")
                     else:
 
-
                         #print(f"        now cursor at 0x{cursor:06x}")
                         #print(f"        processing command at 0x{cursor:06x}")
 
@@ -2795,7 +2773,7 @@ class Command(BaseCommand):
                             if command[1] & 0xF0 == 0x30:  # by amem
                                 index1 = command[2] & 0x0F
                                 index2 = command[1] & 0x0F
-                                consolidated: List[int] = []
+                                consolidated: list[int] = []
                                 for x in amem[index2]:
                                     for y in amem[index1]:
                                         consolidated.append(x + y)
@@ -2816,7 +2794,7 @@ class Command(BaseCommand):
                             if command[1] & 0xF0 == 0x30:  # by amem
                                 index1 = command[2] & 0x0F
                                 index2 = command[1] & 0x0F
-                                consolidated: List[int] = []
+                                consolidated: list[int] = []
                                 for x in amem[index2]:
                                     for y in amem[index1]:
                                         consolidated.append(max(0, x - y))
@@ -2922,7 +2900,6 @@ class Command(BaseCommand):
                             ):  # object queue, pointer table index = amem $60, command index is an arg
                                 oq_idx_starts.append(OQRef(branch_addr, amem, amem[0], this_branch.ref_label))
 
-
                             # if branch_addr == 0x350336:
                             #     raise ValueError(f"found 0x350336 pointer at 0x{cursor:06x}")
                             validate_addr(branch_addr, amem, important_amem_indexes_raw=important_amem_indexes)
@@ -2960,17 +2937,16 @@ class Command(BaseCommand):
 
         #print("done tracing branches, collecting data...")
         # collect contiguous known bytes
-        used: Dict[str, List[ContiguousBlock]] = {
+        used: dict[str, list[ContiguousBlock]] = {
             "02": [],
             "35": [],
             "3A": [],
         }
 
-
         for bank_id, bank_contents in known_addresses_covered.items():
             # bank_name: str (02, 35, 3a)
             # bank_contents: list[bool] (0x10000 length)
-            started: Optional[int] = None
+            started: int | None = None
             upper = (int(bank_id, 16)) << 16
             # upper: 0x020000, 0x350000, 0x3a0000
             for index, value in enumerate(bank_contents):
@@ -2994,14 +2970,14 @@ class Command(BaseCommand):
 
         # turn contiguous blocks into proto-commands
         for bank_id, blocks in used.items():
-            data: List[List[ProtoCommand]] = []
+            data: list[list[ProtoCommand]] = []
             for block in blocks:
                 #print(f'block.start, block.end: 0x{block.start:06x}, 0x{block.end:06x} (size {block.size})')
                 split_block = tok(
                     rom, block.start, block.end, oq_starts, oq_idx_starts
                 )
                 offset_within_block = 0
-                this_script: List[ProtoCommand] = []
+                this_script: list[ProtoCommand] = []
                 debug = True if block.start <= 0x350462 < block.end else False
                 for tok_output in split_block:
                     #print(tok_output)
@@ -3076,7 +3052,7 @@ class Command(BaseCommand):
                     if address_data is None:
                         continue
 
-                    addresses: List[List[int]] = np.array(address_data).reshape(-1, 2)
+                    addresses: list[list[int]] = np.array(address_data).reshape(-1, 2)
                     #print("")
                     #print(addresses)
                     for address in addresses:
@@ -3114,7 +3090,7 @@ class Command(BaseCommand):
         for bank_id, blocks in banks.items():
             if not blocks.has_pointers:
                 continue
-            this_script: List[ProtoCommand] = []
+            this_script: list[ProtoCommand] = []
             makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, blocks.pointer_table_end - blocks.pointer_table_start + 1)  # type: ignore - these can never be none if has_pointers is true
             third_byte_as_string = get_third_byte_as_string(bank_id)
             for pointer_table_index, pointer in enumerate(
@@ -3241,7 +3217,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Successfully disassembled battle animation scripts to ./src/disassembler_output/battle_animation/"))
 
-    def _write_bank_usage_visualization(self, output_path: str, known_addresses_covered: Dict[str, List[bool]]):
+    def _write_bank_usage_visualization(self, output_path: str, known_addresses_covered: dict[str, list[bool]]):
         """Write ASCII visualization of bank usage to a file.
 
         Args:
@@ -3318,8 +3294,6 @@ class Command(BaseCommand):
                 f.write("\n" + "=" * 80 + "\n\n")
 
         self.stdout.write(f"Bank usage visualization written to {usage_file_path}")
-
-
 
 # empty space filler: 0x11
 

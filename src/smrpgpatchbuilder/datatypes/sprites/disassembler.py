@@ -4,7 +4,6 @@ from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt4, UInt8
 
 # disassembler classes
 
-
 class Sprite:
     """A sprite as it is represented in SMRPG (a collection of IDs)."""
 
@@ -73,7 +72,6 @@ class Sprite:
         self.set_palette_offset(palette_offset)
         self.set_animation_num(animation_num)
         self.set_unknown(unknown)
-
 
 class ImagePack:
     """An image definition as it is represented in SMRPG (a collection of pointers)."""

@@ -6,7 +6,6 @@ from .generatesample import ALL_FLAGS
 
 from randomizer.logic.main import GameWorld, Settings
 
-
 class Command(BaseCommand):
     help = 'Generate a statistical sampling of seeds to compare randomization spreads.'
 

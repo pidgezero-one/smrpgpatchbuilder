@@ -11,7 +11,6 @@ from smrpgpatchbuilder.datatypes.battles.battle_dialog_collection import (
     BattleDialogCollection,
 )
 
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("-t", "--text", action='store_true', dest="text", help="use -t if you want to output your assembled bytes as plain text files.")

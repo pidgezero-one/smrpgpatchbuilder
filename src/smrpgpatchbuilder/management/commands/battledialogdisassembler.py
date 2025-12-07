@@ -11,7 +11,6 @@ from smrpgpatchbuilder.datatypes.battles.battle_dialog_collection import (
 import shutil
 import os
 
-
 class Command(BaseCommand):
 
     def add_arguments(self, parser):

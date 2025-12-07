@@ -1,9 +1,8 @@
-from typing import Dict, Optional, Union
+
 from django.core.management.base import BaseCommand
 import math, functools, copy, string, random
 
 from smrpgpatchbuilder.datatypes.sprites.ids.misc import SPRITE_PTRS_END, UNCOMPRESSED_GFX_START, PALETTE_OFFSET, IMAGE_PTRS_END, ANIMATION_PTRS_END, SPRITE_PTRS_START, IMAGE_PTRS_START, ANIMATION_PTRS_START, UNCOMPRESSED_GFX_END
-
 
 class ImagePack:
     index: int = 0
@@ -14,7 +13,6 @@ class ImagePack:
         self.graphics_pointer = graphics_pointer
         self.palette_pointer = palette_pointer
 
-
 class AnimationSequenceFrame:
     duration: int = 0
     mold_id: int = 0
@@ -22,12 +20,10 @@ class AnimationSequenceFrame:
         self.duration = duration
         self.mold_id = mold_id
 
-
 class AnimationSequence:
     frames: list[AnimationSequenceFrame] = []
     def __init__(self, frames: list[AnimationSequenceFrame]):
         self.frames = frames
-
 
 class Tile:
     mirror: bool = False
@@ -38,12 +34,12 @@ class Tile:
     y_minus: int = 0
     y: int = 0
     x: int = 0
-    subtile_bytes: list[Optional[bytearray]]
+    subtile_bytes: list[bytearray | None]
     length: int = 0
     offset: int = 0
     is_clone: bool = False
     subtile_ids: list[int]
-    def __init__(self, mirror: bool, invert: bool, format: int, length: int, subtile_bytes: list[Optional[bytearray]], is_16bit: bool = False, y_plus: int = 0, y_minus: int = 0, x: int = 0, y: int = 0, is_clone: bool = False):
+    def __init__(self, mirror: bool, invert: bool, format: int, length: int, subtile_bytes: list[bytearray | None], is_16bit: bool = False, y_plus: int = 0, y_minus: int = 0, x: int = 0, y: int = 0, is_clone: bool = False):
         self.mirror = mirror
         self.invert = invert
         self.format = format
@@ -57,7 +53,6 @@ class Tile:
     def __str__(self):
         return "<Tile mirror=%r invert=%r x=%i y=%i subtiles=%r>" % (self.mirror, self.invert, self.x, self.y, self.subtile_bytes)
 
-
 class Clone:
     is_clone: bool = True
     offset: int = 0
@@ -66,7 +61,7 @@ class Clone:
     mirror: bool = False
     invert: bool = False
     tiles: list[Tile] = []
-    def __init__(self, x: int = 0, y: int = 0, mirror: bool = False, invert: bool = False, tiles: Optional[list[Tile]] = None):
+    def __init__(self, x: int = 0, y: int = 0, mirror: bool = False, invert: bool = False, tiles: list[Tile] | None = None):
         self.y = y
         self.x = x
         self.tiles = tiles if tiles is not None else []
@@ -74,20 +69,18 @@ class Clone:
     def __str__(self):
         return "<Clone mirror=%r invert=%r x=%i y=%i tiles=[\n    %s\n  ]>" % (self.mirror, self.invert, self.x, self.y, "\n    ".join([t.__str__() for t in self.tiles]))
 
-
 class Mold:
     index: int
     gridplane: bool
     offset: int
-    tiles: list[Union[Tile, Clone]]
-    def __init__(self, index: int, gridplane: bool, tiles: list[Union[Tile, Clone]]):
+    tiles: list[Tile | Clone]
+    def __init__(self, index: int, gridplane: bool, tiles: list[Tile | Clone]):
         self.index = index
         self.gridplane = gridplane
         self.tiles = tiles
 
     def __str__(self):
         return "<Mold %i gridplane=%r tiles=[\n  %s\n]>" % (self.index, self.gridplane, "\n  ".join([t.__str__() for t in self.tiles]))
-
 
 class AnimationPackProperties:
     molds: list[Mold] = []
@@ -97,7 +90,6 @@ class AnimationPackProperties:
         self.molds = molds # gridplanemold or nongridplanemold
         self.sequences = sequences
         self.vram_size = vram_size
-
 
 class AnimationPack:
     index: int
@@ -109,7 +101,6 @@ class AnimationPack:
         self.properties = properties
         self.length = length
         self.unknown = unknown
-
 
 class Sprite:
     index: int = 0
@@ -124,7 +115,6 @@ class Sprite:
         self.palette_offset = palette_offset
         self.unknown = unknown
 
-
 class CompleteSprite:
     animation: AnimationPack
     palette_id: int
@@ -136,7 +126,6 @@ class CompleteSprite:
         self.palette_id = palette_id
         self.palette_offset = palette_offset
         self.unknown_num = unknown_num
-
 
 def sortByUsedSprites(tup1: tuple[tuple[int, ...], list[int]], tup2: tuple[tuple[int, ...], list[int]]) -> int:
     l1 = tup1[1]
@@ -153,10 +142,8 @@ def sortByUsedSprites(tup1: tuple[tuple[int, ...], list[int]], tup2: tuple[tuple
             return 1
     return 0
 
-
 def is_significant_tile(tiledata: tuple[int, ...]) -> bool:
     return len([a for a in tiledata if a > 0]) > 4
-
 
 def tileset_similarity(tileset1: list[tuple[int, ...]], tileset2: list[tuple[int, ...]]) -> int:
     sanitized_t1 = [t for t in tileset1 if is_significant_tile(t)]
@@ -166,13 +153,10 @@ def tileset_similarity(tileset1: list[tuple[int, ...]], tileset2: list[tuple[int
     similarity = len(set(t1).intersection(set(t2)))
     return similarity
 
-
 alphabet = string.ascii_lowercase + string.digits
-
 
 def random_tile_id() -> str:
     return ''.join(random.choices(alphabet, k=8))
-
 
 class AnimationBank:
     start = 0
@@ -191,7 +175,6 @@ class AnimationBank:
         self.start = start
         self.end = end
         self.tiles = bytearray([])
-
 
 def is_same_animation(animation1: AnimationPack, animation2: AnimationPack) -> bool:
     if animation1.unknown != animation2.unknown:
@@ -261,8 +244,7 @@ def is_same_animation(animation1: AnimationPack, animation2: AnimationPack) -> b
                 return False
     return True
 
-
-def is_clone_start(tile: Union[Tile, Clone], compare_tile: Union[Tile, Clone]) -> tuple[bool, int, int]:
+def is_clone_start(tile: Tile | Clone, compare_tile: Tile | Clone) -> tuple[bool, int, int]:
     if isinstance(compare_tile, Clone):
         return False, 0, 0
     if isinstance(tile, Tile) and tile.subtile_bytes != compare_tile.subtile_bytes:
@@ -275,8 +257,7 @@ def is_clone_start(tile: Union[Tile, Clone], compare_tile: Union[Tile, Clone]) -
         return False, 0, 0
     return True, tile.x - compare_tile.x, tile.y - compare_tile.y
 
-
-def is_clone_continuation(tile: Union[Tile, Clone], compare_tile: Union[Tile, Clone], x_offset: int, y_offset: int) -> bool:
+def is_clone_continuation(tile: Tile | Clone, compare_tile: Tile | Clone, x_offset: int, y_offset: int) -> bool:
     if isinstance(compare_tile, Clone) or isinstance(tile, Clone):
         return False
     if tile.subtile_bytes != compare_tile.subtile_bytes:
@@ -288,7 +269,6 @@ def is_clone_continuation(tile: Union[Tile, Clone], compare_tile: Union[Tile, Cl
     if tile.invert != compare_tile.invert:
         return False
     return True
-
 
 class CloneCandidate:
     mold_id: int
@@ -321,9 +301,8 @@ class CloneCandidate:
         """Hash compatible with __eq__ so instances can be used in sets/dicts."""
         return hash((self.mold_id, self.start_index, self.end_index, self.x_offset, self.y_offset))
 
-
 # find all possible clones of the tile within the given mold tileset
-def get_clone_ranges(mold_id: int, tiles: list[Union[Tile, Clone]], tile_index: int, compare_tiles: list[Union[Tile, Clone]], index: int=0, index2: int=0) -> list[CloneCandidate]:
+def get_clone_ranges(mold_id: int, tiles: list[Tile | Clone], tile_index: int, compare_tiles: list[Tile | Clone], index: int=0, index2: int=0) -> list[CloneCandidate]:
     tile = tiles[tile_index]
     clone_candidates: list[CloneCandidate] = []
     # don't compare to self
@@ -387,10 +366,9 @@ def get_clone_ranges(mold_id: int, tiles: list[Union[Tile, Clone]], tile_index: 
 
     return clone_candidates
 
-
-def find_clones(tiles: list[Union[Tile, Clone]], molds: list[Mold], index: int = 0, index2: int = 0) -> list[Union[Tile, Clone]]:
-    output: list[Union[Tile, Clone]] = []
-    tmp_output: list[Union[Tile, Clone]] = []
+def find_clones(tiles: list[Tile | Clone], molds: list[Mold], index: int = 0, index2: int = 0) -> list[Tile | Clone]:
+    output: list[Tile | Clone] = []
+    tmp_output: list[Tile | Clone] = []
 
     tile_index = len(tiles) - 1
     # iterate backwards thru tiles in the mold we're currently forming
@@ -468,7 +446,6 @@ def find_clones(tiles: list[Union[Tile, Clone]], molds: list[Mold], index: int =
 
     return output
 
-
 class WIPSprite:
     tiles: list[tuple[int, ...]]
     tile_group: str 
@@ -477,7 +454,6 @@ class WIPSprite:
 
     def __init__(self, sprite_data: CompleteSprite):
         self.sprite_data = sprite_data
-
 
 class TileGroup:
     tiles: list[tuple[int, ...]]
@@ -491,8 +467,6 @@ class TileGroup:
         self.used_by = used_by
         self.extra = extra
 
-
-
 class SpriteCollection:
     sprites: list[CompleteSprite]
     sprite_data_begins: int 
@@ -505,7 +479,6 @@ class SpriteCollection:
         sprite_data: list[int] = []
         image_data: list[int] = []
         animation_pointers: list[int] = []
-
 
         def place_bytes(these_bytes: bytearray) -> int:
             # find bank with most space
@@ -546,7 +519,7 @@ class SpriteCollection:
             image_data.append(palette_ptr >> 8)
 
         animations_ready_to_place: list[tuple[int, bytearray]] = []
-        animation_pointers_wip: list[Optional[int]] = [None] * len(animations)
+        animation_pointers_wip: list[int | None] = [None] * len(animations)
 
         for anim_id, animation in enumerate(animations):
 
@@ -563,7 +536,6 @@ class SpriteCollection:
                         ),
                     ]
                 ))
-
 
             length_bytes = bytearray()
             sequence_offset = bytearray([0x0C, 0x00])
@@ -722,7 +694,6 @@ class SpriteCollection:
             assert anim_ptr is not None
             animation_pointers.extend([anim_ptr & 0xFF, (anim_ptr >> 8) & 0xFF, (anim_ptr >> 16) & 0xFF])
 
-
         anim_tile_ranges: list[tuple[int, bytearray]] = []
         anim_data = bytearray([])
         for bank_index, b in enumerate(self.animation_data_banks):
@@ -740,13 +711,12 @@ class SpriteCollection:
         
         return bytearray(sprite_data), bytearray(image_data), bytearray(animation_pointers), anim_tile_ranges, output_tile_ranges
 
-
     def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
-        tile_groups: Dict[str, TileGroup] = {}
+        tile_groups: dict[str, TileGroup] = {}
         wip_sprites: list[WIPSprite] = []
 
-        def get_most_similar_tileset(ts: list[tuple[int, ...]]) -> tuple[Optional[str], float]:
-            best: Optional[str] = None
+        def get_most_similar_tileset(ts: list[tuple[int, ...]]) -> tuple[str | None, float]:
+            best: str | None = None
             best_similarity: int = 0
             for k in tile_groups:
                 similarity = tileset_similarity(ts, tile_groups[k].tiles)
@@ -785,7 +755,6 @@ class SpriteCollection:
             )
 
         unique_tiles_length = 0
-
 
         def place_bytes(these_bytes: bytearray) -> int:
             # find bank with most space
@@ -913,7 +882,6 @@ class SpriteCollection:
 
             wip_sprites[sprite_index].relative_offset = lowest_subtile_index
 
-
         # start placing tile groups and get offsets for them
         sortable_tile_groups: list[tuple[str, TileGroup]] = []
         for key in tile_groups:
@@ -949,7 +917,6 @@ class SpriteCollection:
             # check if this tile group has already been placed
             offset = tile_groups[tile_key].offset + sprite.relative_offset * 0x20
 
-
             if len(available_tiles) > 510:
                 subtile_subtract = lowest_subtile_index
             else:
@@ -966,7 +933,6 @@ class SpriteCollection:
             if image_index_to_use == len(complete_images):
                 complete_images.append(ImagePack(image_index_to_use, offset, palette_ptr))
 
-
             # get animation #, or create new
             animation_num_to_use = len(complete_animations)
             for prev_sprite_index, prev_sprite in enumerate(wip_sprites[0:sprite_index]):
@@ -977,7 +943,7 @@ class SpriteCollection:
                 molds: list[Mold] = []
                 for mold_index, m in enumerate(sprite.sprite_data.animation.properties.molds):
                     # build numerical subtile bytes
-                    these_tiles: list[Union[Tile, Clone]] = []
+                    these_tiles: list[Tile | Clone] = []
                     for tile in [t for t in m.tiles if isinstance(t, Tile)]:
                         subtile_ids: list[int] = []
                         for subtile in tile.subtile_bytes:
@@ -1038,7 +1004,6 @@ class SpriteCollection:
                 ind += 1
 
         return self.assemble_from_tables_(complete_sprites, complete_images, complete_animations, output_tile_ranges)
-
 
     def render(self, whitespace: bool = False) -> list[tuple[int, bytearray]]:
         sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace)

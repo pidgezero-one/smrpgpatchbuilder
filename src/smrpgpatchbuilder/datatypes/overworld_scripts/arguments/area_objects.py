@@ -2,7 +2,6 @@
 that can be used in action and event script commands.\n
 The first 11 are in the range specifiable as party characters."""
 
-from typing import List
 from .types.area_object import (
     AreaObject,
 )
@@ -59,7 +58,7 @@ NPC_25 = AreaObject(0x2D)
 NPC_26 = AreaObject(0x2E)
 NPC_27 = AreaObject(0x2F)
 
-AREAOBJECT_FROM_NPC_ID: List[AreaObject] = [
+AREAOBJECT_FROM_NPC_ID: list[AreaObject] = [
     NPC_0,
     NPC_1,
     NPC_2,

@@ -9,7 +9,6 @@ from smrpgpatchbuilder.datatypes.spells.enums import Status, TempStatBuff
 import shutil
 import os
 
-
 class Command(BaseCommand):
 
     def add_arguments(self, parser):

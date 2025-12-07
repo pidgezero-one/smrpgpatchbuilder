@@ -1,6 +1,5 @@
 """Dialog bank definition"""
 
-
 class DialogBankID(int):
     """A section of the ROM, starting with the same uppermost byte, that contains dialogs"""
 

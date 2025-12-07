@@ -2,8 +2,6 @@
 
 from random import choices
 import statistics
-from typing import List, Tuple, Type, Optional, Dict, Union
-
 
 from smrpgpatchbuilder.datatypes.battles.enums import BattleMusic, Battlefields
 from smrpgpatchbuilder.datatypes.battles.types.classes import Music
@@ -23,12 +21,11 @@ from smrpgpatchbuilder.datatypes.battles.ids.misc import (
     PACK_BASE_ADDRESS,
 )
 
-
 class FormationMember:
     """Class representing a single enemy in a formation with metadata."""
 
     _hidden_at_start: bool
-    _enemy: Type[Enemy]
+    _enemy: type[Enemy]
     _x_pos: UInt8
     _y_pos: UInt8
     _anchor: bool
@@ -44,11 +41,11 @@ class FormationMember:
         self._hidden_at_start = hidden_at_start
 
     @property
-    def enemy(self) -> Type[Enemy]:
+    def enemy(self) -> type[Enemy]:
         """The class of the enemy being included in the formation."""
         return self._enemy
 
-    def set_enemy(self, enemy: Type[Enemy]) -> None:
+    def set_enemy(self, enemy: type[Enemy]) -> None:
         """Set the class of the enemy being included in the formation."""
         self._enemy = enemy
 
@@ -94,7 +91,7 @@ class FormationMember:
 
     def __init__(
         self,
-        enemy: Type[Enemy],
+        enemy: type[Enemy],
         x_pos: int,
         y_pos: int,
         hidden_at_start: bool = False,
@@ -108,35 +105,34 @@ class FormationMember:
         self.set_anchor(anchor)
         self.set_include_in_stat_totaling(include_in_stat_totaling)
 
-
 class Formation:
     """A subclass that defines an arrangement of enemies in a battle."""
 
-    _members: List[Optional[FormationMember]]
-    _run_event_at_load: Optional[UInt8]
-    _music: Optional[Music]
+    _members: list[FormationMember | None]
+    _run_event_at_load: UInt8 | None
+    _music: Music | None
     _can_run_away: bool
     _unknown_byte: UInt8
     _unknown_bit: bool
     _battlefield: Battlefield
 
     @property
-    def members(self) -> List[Optional[FormationMember]]:
+    def members(self) -> list[FormationMember | None]:
         """A list of containers including info about enemies and their positioning."""
         return self._members
 
-    def set_members(self, members: List[Optional[FormationMember]]) -> None:
+    def set_members(self, members: list[FormationMember | None]) -> None:
         """Overwrite the list of containers including info about enemies and their positioning."""
         self._members = members
         self._members.extend([None] * (8 - len(self._members)))
 
     @property
-    def run_event_at_load(self) -> Optional[UInt8]:
+    def run_event_at_load(self) -> UInt8 | None:
         """the event that should run at the start of the battle when this formation is used.
         If not set, no event will run."""
         return self._run_event_at_load
 
-    def set_run_event_at_load(self, run_event_at_load: Optional[int]) -> None:
+    def set_run_event_at_load(self, run_event_at_load: int | None) -> None:
         """set the event that should run at the start of the battle when this formation is used.
         If not set, no event will run."""
         if run_event_at_load is None:
@@ -145,11 +141,11 @@ class Formation:
             self._run_event_at_load = UInt8(run_event_at_load)
 
     @property
-    def music(self) -> Optional[Music]:
+    def music(self) -> Music | None:
         """The battle music that should accompany this formation."""
         return self._music
 
-    def set_music(self, music: Optional[Music]) -> None:
+    def set_music(self, music: Music | None) -> None:
         """Set the battle music that should accompany this formation."""
         self._music = music
 
@@ -193,9 +189,9 @@ class Formation:
         
     def __init__(
         self,
-        members: List[Optional[FormationMember]],
-        run_event_at_load: Optional[int] = None,
-        music: Optional[Music] = None,
+        members: list[FormationMember | None],
+        run_event_at_load: int | None = None,
+        music: Music | None = None,
         can_run_away: bool = True,
         unknown_byte: int = 0,
         unknown_bit: bool = False,
@@ -207,10 +203,10 @@ class Formation:
         self.set_unknown_byte(unknown_byte)
         self.set_unknown_bit(unknown_bit)
 
-    def render(self, formation_index: int) -> Dict[int, bytearray]:
+    def render(self, formation_index: int) -> dict[int, bytearray]:
         """Get formation data in `{0x123456: bytearray([0x00])}` format."""
         assert 0 <= formation_index < TOTAL_FORMATIONS
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
         data = bytearray()
 
         # monsters present bitmap.
@@ -256,14 +252,13 @@ class Formation:
 
         return patch
 
-
 class FormationPack:
     """A pack containing either 1 or 3 Formation instances for battle."""
 
-    _formations: List[Formation]
+    _formations: list[Formation]
 
     @property
-    def formations(self) -> List[Formation]:
+    def formations(self) -> list[Formation]:
         """The list of formations in this pack (either 1 or 3 formations)."""
         return self._formations
 
@@ -287,18 +282,17 @@ class FormationPack:
             # Store the 3 different formations
             self._formations = list(formations)
 
-
 class PackCollection:
     """Collection of 255 FormationPacks that manages formation deduplication and rendering."""
 
-    _packs: List[FormationPack]
+    _packs: list[FormationPack]
 
     @property
-    def packs(self) -> List[FormationPack]:
+    def packs(self) -> list[FormationPack]:
         """The list of 255 FormationPacks in this collection."""
         return self._packs
 
-    def __init__(self, packs: List[FormationPack]) -> None:
+    def __init__(self, packs: list[FormationPack]) -> None:
         """Initialize a PackCollection with exactly 255 FormationPacks.
 
         Args:
@@ -318,7 +312,7 @@ class PackCollection:
         render2 = f2.render(0)
         return render1 == render2
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all packs and formations, deduplicating identical formations.
 
         This method:
@@ -330,16 +324,16 @@ class PackCollection:
         Returns:
             A dictionary mapping ROM addresses to bytearrays for patching
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # Collect all formations from all packs
-        all_formations: List[Formation] = []
+        all_formations: list[Formation] = []
         for pack in self._packs:
             all_formations.extend(pack.formations)
 
         # Deduplicate formations and assign IDs
-        unique_formations: List[Formation] = []
-        formation_to_id: Dict[int, int] = {}  # Maps id(formation) to formation_id
+        unique_formations: list[Formation] = []
+        formation_to_id: dict[int, int] = {}  # Maps id(formation) to formation_id
 
         for formation in all_formations:
             # Check if this formation is identical to any existing unique formation

@@ -54,7 +54,6 @@ insert_before_offset = 0x324CE0  # mallow
 
 insert_at_offsets = [(0x3204A0, 352), (0x3230A0, 226)]  # Geno normal  # Geno attack
 
-
 class Command(BaseCommand):
 
     def add_arguments(self, parser):

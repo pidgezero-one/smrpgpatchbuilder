@@ -33,7 +33,6 @@ from randomizer.helpers.roomobjecttables import (
     partition_buffer_table,
 )
 
-
 start = 0x148400
 end = 0x14FFFF
 ptrstart = 0x148000
@@ -51,7 +50,6 @@ roomexit_ptrend = 0x1D3165
 
 partitionstart = 0x1DDE00
 partitionend = 0x1DDFFF  # bumped up from 0x1ddfdf
-
 
 class Command(BaseCommand):
 

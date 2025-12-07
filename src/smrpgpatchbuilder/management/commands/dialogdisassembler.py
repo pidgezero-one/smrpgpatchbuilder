@@ -4,7 +4,6 @@ from smrpgpatchbuilder.datatypes.dialogs.utils import decompress, COMPRESSION_TA
 import shutil
 import os
 
-
 banks = [
     {
         "id": 0x22,
@@ -28,7 +27,6 @@ banks = [
         "pointers": {"start": 0x37F800, "end": 0x37FFFF},
     },
 ]
-
 
 class Command(BaseCommand):
 
@@ -185,7 +183,6 @@ class Command(BaseCommand):
 
             file.write(("dialog_data = [\"\"]*%i\n" % len(raw_data)).encode("utf8"))
 
-
             for i in range(len(raw_data)):
                 s = decompress(raw_data[i], COMPRESSION_TABLE + compression_table)
                 file.write(("dialog_data[%i] = '''%s'''\n" % (i, s)).encode("utf8"))
@@ -205,7 +202,6 @@ class Command(BaseCommand):
                 "utf8"
             )
         )
-        file.write("from typing import Optional\n".encode("utf8"))
         file.write("from ..variables.dialog_names import *\n".encode("utf8"))
         file.write(("pointers: list[Dialog] = [None]*%i # type: ignore\n" % len(pointers_relative)).encode("utf8"))
         for i in range(len(pointers_relative)):

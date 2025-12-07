@@ -1,8 +1,6 @@
 """Individual battle animation script command classes.
 These are the building blocks of battle animation scripts."""
 
-from typing import List, Optional, Set, Tuple, Type, Union
-
 from smrpgpatchbuilder.datatypes.enemies.classes import Enemy
 from smrpgpatchbuilder.datatypes.numbers.classes import (
     Int16,
@@ -67,7 +65,6 @@ from .types import (
     UsableAnimationScriptCommand,
 )
 
-
 class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draws a new sprite by absolute ID at the given coords with the given properties.
 
@@ -94,7 +91,7 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         invert_sprite (bool): If true, the sprite will be drawn vertically flipped.
         behind_all_sprites (bool): If true, the sprite will be drawn behind all other sprites.
         overlap_all_sprites (bool): If true, the sprite will be drawn over all other sprites.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x00
@@ -248,7 +245,7 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         invert_sprite: bool = False,
         behind_all_sprites: bool = False,
         overlap_all_sprites: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_sprite_id(sprite_id)
@@ -287,7 +284,6 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
             byte1, byte2, self.sprite_id, self.sequence, byte6, self.vram_address
         )
 
-
 class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """Store XYZ coords of sprite to AMEM $32.
 
@@ -308,11 +304,10 @@ class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
         do_set_x (bool): X coord will only be committed to AMEM if this is set to true.
         do_set_y (bool): Y coord will only be committed to AMEM if this is set to true.
         do_set_z (bool): Z coord will only be committed to AMEM if this is set to true.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x01
-
 
 class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw sprite at XYZ coords stored at AMEM 32.
@@ -333,7 +328,7 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         looping (bool): Decides if the sprite sequence should loop.
         store_palette (bool): (unknown).
         bit_4 (bool): (unknown).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 6
@@ -442,7 +437,7 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         overlap_all_sprites: bool = False,
         bit_4: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_sprite_id(sprite_id)
@@ -469,7 +464,6 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
         )
         return super().render(byte1, byte2, self.sprite_id, self.sequence + (self.bit_7 * 0x80))
 
-
 class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Pause the active script until a certain condition is met.
 
@@ -485,20 +479,20 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
         4 bytes or 3 bytes depending on the condition
 
     Args:
-        condition (Union[int, PauseUntil, bytearray]): The condition that ends the pause.
+        condition (int | PauseUntil | bytearray): The condition that ends the pause.
         frames (int): The number of frames to pause for.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _condition: Union[PauseUntil, bytearray]
+    _condition: PauseUntil | bytearray
     _frames: UInt16
 
     @property
-    def condition(self) -> Union[PauseUntil, bytearray]:
+    def condition(self) -> PauseUntil | bytearray:
         """The condition that ends the pause."""
         return self._condition
 
-    def set_condition(self, condition: Union[int, PauseUntil, bytearray]) -> None:
+    def set_condition(self, condition: int | PauseUntil | bytearray) -> None:
         """Set the condition that ends the pause."""
         if isinstance(condition, PauseUntil):
             self._size = 4
@@ -527,9 +521,9 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def __init__(
         self,
-        condition: Union[int, PauseUntil, bytearray],
+        condition: int | PauseUntil | bytearray,
         frames: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_frames(frames)
@@ -541,7 +535,6 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
         if self.opcode == 0x74:
             return super().render(self.condition)
         raise InvalidOpcodeException(f"invalid opcode {self.opcode}")
-
 
 class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Removes the sprite queue target from the scene entirely.
@@ -556,11 +549,10 @@ class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x05
-
 
 class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """End object queue script.
@@ -575,11 +567,10 @@ class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x07
-
 
 class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Move this object along the given axes.
@@ -603,7 +594,7 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         should_set_start_position (bool): If true, provided start position will be used.
         should_set_end_position (bool): If true, provided end position will be used.
         should_set_speed (bool): Movement speed.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x08
@@ -711,7 +702,7 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         should_set_start_position: bool = False,
         should_set_end_position: bool = False,
         should_set_speed: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
@@ -740,7 +731,6 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.speed,
         )
 
-
 class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """A simple goto with no conditions.
 
@@ -754,8 +744,8 @@ class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x09
@@ -763,7 +753,6 @@ class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Pause for exactly one frame.
@@ -778,11 +767,10 @@ class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0A
-
 
 class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """Store XYZ coords of sprite to AMEM $40.
@@ -804,11 +792,10 @@ class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
         do_set_x (bool): X coord will only be committed to AMEM if this is set to true.
         do_set_y (bool): Y coord will only be committed to AMEM if this is set to true.
         do_set_z (bool): Z coord will only be committed to AMEM if this is set to true.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0B
-
 
 class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Move sprite to coords stored at AMEM $40.
@@ -826,7 +813,7 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         shift_type (ShiftType): Describes the movement type (shift, transfer, etc).
         speed (int): Movement speed.
         arch_height (int): Is zero if the movement has no Z axis.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0C
@@ -870,7 +857,7 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         shift_type: ShiftType,
         speed: int,
         arch_height: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_shift_type(shift_type)
@@ -879,7 +866,6 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.shift_type, self.speed, self.arch_height)
-
 
 class ResetTargetMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -896,11 +882,10 @@ class ResetTargetMappingMemory(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0E
-
 
 class ResetObjectMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -917,11 +902,10 @@ class ResetObjectMappingMemory(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0F
-
 
 class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Launches the section of code beginning with this goto as a subroutine.
@@ -936,8 +920,8 @@ class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command where you want the subroutine to begin.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command where you want the subroutine to begin.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x10
@@ -945,7 +929,6 @@ class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Ends code intended to be run as a subroutine.
@@ -960,11 +943,10 @@ class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x11
-
 
 class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object visible.
@@ -980,7 +962,7 @@ class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         unknown_byte (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x1A
@@ -997,13 +979,12 @@ class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
         """(unknown)"""
         self._unknown_byte = UInt8(unknown_byte)
 
-    def __init__(self, unknown_byte: int = 0, identifier: Optional[str] = None) -> None:
+    def __init__(self, unknown_byte: int = 0, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_unknown_byte(unknown_byte)
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte)
-
 
 class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object invisible.
@@ -1019,7 +1000,7 @@ class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         unknown_byte (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x1B
@@ -1036,13 +1017,12 @@ class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
         """(unknown)"""
         self._unknown_byte = UInt8(unknown_byte)
 
-    def __init__(self, unknown_byte: int = 0, identifier: Optional[str] = None) -> None:
+    def __init__(self, unknown_byte: int = 0, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_unknown_byte(unknown_byte)
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte)
-
 
 class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Set 8bit AMEM $60-6F to the given const value.
@@ -1059,19 +1039,18 @@ class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to compare AMEM against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
-    def __init__(self, amem: int, value: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, value: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_value(value)
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
-
 
 class SetAMEM16BitToConst(SetAMEM8BitToConst):
     """Set 16bit AMEM $60-6F to the given const value.
@@ -1088,11 +1067,10 @@ class SetAMEM16BitToConst(SetAMEM8BitToConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to perform the AND operation against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class JmpIfAMEM8BitEqualsConst(
     UsableAnimationScriptCommand,
@@ -1113,8 +1091,8 @@ class JmpIfAMEM8BitEqualsConst(
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -1124,8 +1102,8 @@ class JmpIfAMEM8BitEqualsConst(
         self,
         amem: int,
         value: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -1133,7 +1111,6 @@ class JmpIfAMEM8BitEqualsConst(
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value, *self.destinations)
-
 
 class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F equals the given const value, go to destination indicated by name.
@@ -1150,12 +1127,11 @@ class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
@@ -1172,12 +1148,11 @@ class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
@@ -1194,12 +1169,11 @@ class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
@@ -1216,12 +1190,11 @@ class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
@@ -1238,12 +1211,11 @@ class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
@@ -1260,12 +1232,11 @@ class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
@@ -1282,12 +1253,11 @@ class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Increase 8bit AMEM $60-6F by given const value.
@@ -1304,19 +1274,18 @@ class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
-    def __init__(self, amem: int, value: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, value: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_value(value)
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
-
 
 class IncAMEM16BitByConst(IncAMEM8BitByConst):
     """Increase 16bit AMEM $60-6F by given const value.
@@ -1333,11 +1302,10 @@ class IncAMEM16BitByConst(IncAMEM8BitByConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitByConst(IncAMEM8BitByConst):
     """Decrease 8bit AMEM $60-6F by given const value.
@@ -1354,11 +1322,10 @@ class DecAMEM8BitByConst(IncAMEM8BitByConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitByConst(IncAMEM8BitByConst):
     """Decrease 16bit AMEM $60-6F by given const value.
@@ -1375,11 +1342,10 @@ class DecAMEM16BitByConst(IncAMEM8BitByConst):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
@@ -1396,13 +1362,13 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -1411,7 +1377,6 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
-
 
 class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
     """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
@@ -1428,11 +1393,10 @@ class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
     """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
@@ -1449,16 +1413,15 @@ class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
 
     def __init__(
-        self, address: int, amem: int, identifier: Optional[str] = None
+        self, address: int, amem: int, identifier: str | None = None
     ) -> None:
         super().__init__(amem, address, identifier)
-
 
 class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
     """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
@@ -1475,11 +1438,10 @@ class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEquals7E1x(
     UsableAnimationScriptCommand,
@@ -1500,8 +1462,8 @@ class JmpIfAMEM8BitEquals7E1x(
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -1511,8 +1473,8 @@ class JmpIfAMEM8BitEquals7E1x(
         self,
         amem: int,
         address: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -1521,7 +1483,6 @@ class JmpIfAMEM8BitEquals7E1x(
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr, *self.destinations)
-
 
 class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
@@ -1538,12 +1499,11 @@ class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
@@ -1560,12 +1520,11 @@ class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
@@ -1582,12 +1541,11 @@ class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
@@ -1604,12 +1562,11 @@ class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
@@ -1626,12 +1583,11 @@ class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
@@ -1648,12 +1604,11 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
@@ -1670,12 +1625,11 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -1692,13 +1646,13 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -1707,7 +1661,6 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
-
 
 class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
     """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -1724,11 +1677,10 @@ class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -1745,11 +1697,10 @@ class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -1766,11 +1717,10 @@ class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     """Set 8bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
@@ -1787,13 +1737,13 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -1802,7 +1752,6 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
-
 
 class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
     """Set 16bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
@@ -1819,11 +1768,10 @@ class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
     """Set given $7Fxxxx memory address to value at 8bit AMEM $60-6F.
@@ -1840,16 +1788,15 @@ class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
 
     def __init__(
-        self, address: int, amem: int, identifier: Optional[str] = None
+        self, address: int, amem: int, identifier: str | None = None
     ) -> None:
         super().__init__(amem, address, identifier)
-
 
 class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
     """Set given $7Fxxxx memory address to value at 16bit AMEM $60-6F.
@@ -1866,11 +1813,10 @@ class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEquals7F(
     UsableAnimationScriptCommand,
@@ -1891,8 +1837,8 @@ class JmpIfAMEM8BitEquals7F(
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -1902,8 +1848,8 @@ class JmpIfAMEM8BitEquals7F(
         self,
         amem: int,
         address: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -1912,7 +1858,6 @@ class JmpIfAMEM8BitEquals7F(
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr, *self.destinations)
-
 
 class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Fxxxx memory address.
@@ -1929,12 +1874,11 @@ class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
@@ -1951,12 +1895,11 @@ class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
@@ -1973,12 +1916,11 @@ class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
@@ -1995,12 +1937,11 @@ class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
@@ -2017,12 +1958,11 @@ class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
@@ -2039,12 +1979,11 @@ class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
@@ -2061,12 +2000,11 @@ class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     """Increase 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
@@ -2083,13 +2021,13 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -2098,7 +2036,6 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
-
 
 class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
     """Increase 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
@@ -2115,11 +2052,10 @@ class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
@@ -2136,11 +2072,10 @@ class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
@@ -2157,11 +2092,10 @@ class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 8bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2179,7 +2113,7 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         amem (int): AMEM target address in range $60-$6F to copy to
         source_amem (int): AMEM target address in range $60-$6F to copy from
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
@@ -2189,7 +2123,7 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         amem: int,
         source_amem: int,
         upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -2200,7 +2134,6 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
-
 
 class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 16bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2218,11 +2151,10 @@ class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
         amem (int): AMEM target address in range $60-$6F to copy to
         source_amem (int): AMEM target address in range $60-$6F to copy from
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value of the amem $60-6F 8bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2240,7 +2172,7 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         dest_amem (int): AMEM target address in range $60-$6F to copy to
         amem (int): AMEM target address in range $60-$6F to copy from
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
@@ -2250,7 +2182,7 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         dest_amem: int,
         amem: int,
         upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -2261,7 +2193,6 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
-
 
 class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
     """Copy the value of the amem $60-6F 16bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2279,11 +2210,10 @@ class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
         dest_amem (int): AMEM target address in range $60-$6F to copy to
         amem (int): AMEM target address in range $60-$6F to copy from
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEqualsAMEM(
     UsableAnimationScriptCommand,
@@ -2305,8 +2235,8 @@ class JmpIfAMEM8BitEqualsAMEM(
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -2316,9 +2246,9 @@ class JmpIfAMEM8BitEqualsAMEM(
         self,
         amem: int,
         source_amem: int,
-        destinations: List[str],
+        destinations: list[str],
         upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -2331,7 +2261,6 @@ class JmpIfAMEM8BitEqualsAMEM(
             UInt16((self.source_amem & 0x0F) + self.upper),
             *self.destinations,
         )
-
 
 class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
@@ -2349,12 +2278,11 @@ class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at source AMEM $60-6F.
@@ -2372,12 +2300,11 @@ class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
@@ -2395,12 +2322,11 @@ class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
@@ -2418,12 +2344,11 @@ class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
@@ -2441,12 +2366,11 @@ class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
@@ -2464,12 +2388,11 @@ class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
@@ -2487,12 +2410,11 @@ class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
         amem (int): AMEM target address in range $60-$6F controlling the goto
         source_amem (int): AMEM target address in range $60-$6F to compare against
         upper (int): The optional upper bits on the source amem
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Increase 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2510,7 +2432,7 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         amem (int): AMEM target address in range $60-$6F to increase
         source_amem (int): AMEM target address in range $60-$6F to increase it by
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
@@ -2520,7 +2442,7 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         amem: int,
         source_amem: int,
         upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -2531,7 +2453,6 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
         return super().render(
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
-
 
 class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """Increase 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2549,11 +2470,10 @@ class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
         amem (int): AMEM target address in range $60-$6F to increase
         source_amem (int): AMEM target address in range $60-$6F to increase it by
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
     """Decrease 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2571,11 +2491,10 @@ class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
         amem (int): AMEM target address in range $60-$6F to decrease
         source_amem (int): AMEM target address in range $60-$6F to decrease it by
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """Decrease 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2593,11 +2512,10 @@ class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
         amem (int): AMEM target address in range $60-$6F to decrease
         source_amem (int): AMEM target address in range $60-$6F to decrease it by
         upper (int): The optional upper bits on the source amem
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitToOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
@@ -2616,19 +2534,18 @@ class SetAMEM8BitToOMEMCurrent(
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to set the value of AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
-    def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, omem: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
     def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
-
 
 class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
     """Set 16bit AMEM $60-6F to value stored at OMEM (current).
@@ -2645,11 +2562,10 @@ class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to set the value of AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
     """Set OMEM (current) to value of 8bit AMEM $60-6F.
@@ -2666,14 +2582,13 @@ class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
     Args:
         omem (int): The OMEM to be set to an AMEM value
         amem (int): The AMEM to set the value of OMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
 
-    def __init__(self, omem: int, amem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, omem: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, omem, identifier)
-
 
 class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
     """Set OMEM (current) to value of 16bit AMEM $60-6F.
@@ -2690,11 +2605,10 @@ class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
     Args:
         omem (int): The OMEM to be set to an AMEM value
         amem (int): The AMEM to set the value of OMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEqualsOMEMCurrent(
     UsableAnimationScriptCommand,
@@ -2715,8 +2629,8 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -2726,8 +2640,8 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
         self,
         amem: int,
         omem: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -2737,7 +2651,6 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
         return super().render(
             0x40 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
-
 
 class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (current).
@@ -2754,12 +2667,11 @@ class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (current).
@@ -2776,12 +2688,11 @@ class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (current).
@@ -2798,12 +2709,11 @@ class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
@@ -2820,12 +2730,11 @@ class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
@@ -2842,12 +2751,11 @@ class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (current).
@@ -2864,12 +2772,11 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent)
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (current).
@@ -2886,12 +2793,11 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitByOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
@@ -2910,19 +2816,18 @@ class IncAMEM8BitByOMEMCurrent(
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
-    def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, omem: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
     def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
-
 
 class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Increase 16bit AMEM $60-6F by value stored at OMEM (current).
@@ -2939,11 +2844,10 @@ class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Decrease 8bit AMEM $60-6F by value stored at OMEM (current).
@@ -2960,11 +2864,10 @@ class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Decrease 16bit AMEM $60-6F by value stored at OMEM (current).
@@ -2981,11 +2884,10 @@ class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
@@ -3002,13 +2904,13 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -3017,7 +2919,6 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
-
 
 class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
     """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
@@ -3034,11 +2935,10 @@ class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         address (int): The address containing the value to set AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
     """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
@@ -3055,16 +2955,15 @@ class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
 
     def __init__(
-        self, address: int, amem: int, identifier: Optional[str] = None
+        self, address: int, amem: int, identifier: str | None = None
     ) -> None:
         super().__init__(amem, address, identifier)
-
 
 class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
     """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
@@ -3081,11 +2980,10 @@ class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
     Args:
         address (int): The address to copy the AMEM value to
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEquals7E5x(
     UsableAnimationScriptCommand,
@@ -3106,8 +3004,8 @@ class JmpIfAMEM8BitEquals7E5x(
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -3117,8 +3015,8 @@ class JmpIfAMEM8BitEquals7E5x(
         self,
         amem: int,
         address: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -3127,7 +3025,6 @@ class JmpIfAMEM8BitEquals7E5x(
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr, *self.destinations)
-
 
 class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
@@ -3144,12 +3041,11 @@ class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
@@ -3166,12 +3062,11 @@ class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
@@ -3188,12 +3083,11 @@ class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
@@ -3210,12 +3104,11 @@ class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
@@ -3232,12 +3125,11 @@ class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
@@ -3254,12 +3146,11 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
@@ -3276,12 +3167,11 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
     Args:
         amem (int): The AMEM to check
         address (int): The variable holding the value to check AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -3298,13 +3188,13 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
     def __init__(
-        self, amem: int, address: int, identifier: Optional[str] = None
+        self, amem: int, address: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -3313,7 +3203,6 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
-
 
 class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
     """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -3330,11 +3219,10 @@ class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -3351,11 +3239,10 @@ class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
@@ -3372,11 +3259,10 @@ class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
     Args:
         amem (int): AMEM target address in range $60-$6F
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
     """Set 8bit AMEM $60-6F to value stored at OMEM (main).
@@ -3393,19 +3279,18 @@ class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to set the value of AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
 
-    def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, omem: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
     def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
-
 
 class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
     """Set 16bit AMEM $60-6F to value stored at OMEM (main).
@@ -3422,11 +3307,10 @@ class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to set the value of AMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
     """Set OMEM (main) to value of 8bit AMEM $60-6F.
@@ -3443,14 +3327,13 @@ class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
     Args:
         omem (int): The OMEM to be set to an AMEM value
         amem (int): The AMEM to set the value of OMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
 
-    def __init__(self, omem: int, amem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, omem: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, omem, identifier)
-
 
 class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
     """Set OMEM (main) to value of 16bit AMEM $60-6F.
@@ -3467,11 +3350,10 @@ class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
     Args:
         omem (int): The OMEM to be set to an AMEM value
         amem (int): The AMEM to set the value of OMEM to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEqualsOMEMMain(
     UsableAnimationScriptCommand,
@@ -3492,8 +3374,8 @@ class JmpIfAMEM8BitEqualsOMEMMain(
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -3503,8 +3385,8 @@ class JmpIfAMEM8BitEqualsOMEMMain(
         self,
         amem: int,
         omem: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -3514,7 +3396,6 @@ class JmpIfAMEM8BitEqualsOMEMMain(
         return super().render(
             0x60 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
-
 
 class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (main).
@@ -3531,12 +3412,11 @@ class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (main).
@@ -3553,12 +3433,11 @@ class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (main).
@@ -3575,12 +3454,11 @@ class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (main).
@@ -3597,12 +3475,11 @@ class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at OMEM (main).
@@ -3619,12 +3496,11 @@ class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (main).
@@ -3641,12 +3517,11 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (main).
@@ -3663,12 +3538,11 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     Args:
         amem (int): The AMEM to check
         omem (int): The OMEM to check the AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
     """Increase 8bit AMEM $60-6F by value stored at OMEM (main).
@@ -3685,19 +3559,18 @@ class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
 
-    def __init__(self, amem: int, omem: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amem: int, omem: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_omem(omem)
 
     def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
-
 
 class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Increase 16bit AMEM $60-6F by value stored at OMEM (main).
@@ -3714,11 +3587,10 @@ class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
-
 
 class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Decrease 8bit AMEM $60-6F by value stored at OMEM (main).
@@ -3735,11 +3607,10 @@ class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
-
 
 class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Decrease 16bit AMEM $60-6F by value stored at OMEM (main).
@@ -3756,11 +3627,10 @@ class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     Args:
         amem (int): AMEM target address in range $60-$6F
         omem (int): The OMEM to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
-
 
 class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Set 8bit AMEM $60-6F to the given value of the given type
@@ -3778,7 +3648,7 @@ class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAME
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x20
@@ -3792,7 +3662,7 @@ class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAME
         self._type = type
 
     def __init__(
-        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+        self, amem: int, type: int, value: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -3801,7 +3671,6 @@ class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAME
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
-
 
 class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
     """Set 16bit AMEM $60-6F to the given value of the given type
@@ -3819,11 +3688,10 @@ class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScriptCommand):
     """Set variable type 0x7-0xB to AMEM 8 bit
@@ -3841,7 +3709,7 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScri
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
@@ -3855,7 +3723,7 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScri
         self._type = type
 
     def __init__(
-        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+        self, amem: int, type: int, value: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -3864,7 +3732,6 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScri
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
-
 
 class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
     """Set variable type 0x7-0xB to AMEM 16 bit
@@ -3882,11 +3749,10 @@ class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x23
-
 
 class JmpIfAMEM8BitEqualsUnknownShort(
     UsableAnimationScriptCommand,
@@ -3908,8 +3774,8 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x24
@@ -3928,8 +3794,8 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         amem: int,
         type: int,
         value: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -3940,7 +3806,6 @@ class JmpIfAMEM8BitEqualsUnknownShort(
         return super().render(
             self._amem_bits() + (self.type << 4), self.value, *self.destinations
         )
-
 
 class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name.
@@ -3958,12 +3823,11 @@ class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x25
-
 
 class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
@@ -3981,12 +3845,11 @@ class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x26
-
 
 class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
@@ -4004,12 +3867,11 @@ class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x27
-
 
 class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
@@ -4027,12 +3889,11 @@ class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x28
-
 
 class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
@@ -4050,12 +3911,11 @@ class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x29
-
 
 class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
@@ -4073,12 +3933,11 @@ class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShor
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
@@ -4096,12 +3955,11 @@ class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownSho
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to compare AMEM against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2B
-
 
 class IncAMEM8BitByUnknownShort(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndConst
@@ -4121,7 +3979,7 @@ class IncAMEM8BitByUnknownShort(
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2C
@@ -4135,7 +3993,7 @@ class IncAMEM8BitByUnknownShort(
         self._type = type
 
     def __init__(
-        self, amem: int, type: int, value: int, identifier: Optional[str] = None
+        self, amem: int, type: int, value: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -4144,7 +4002,6 @@ class IncAMEM8BitByUnknownShort(
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
-
 
 class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Increase 26bit AMEM $60-6F by given value of the given type.
@@ -4162,12 +4019,11 @@ class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to increase AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2D
     _type: int
-
 
 class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Decrease 8bit AMEM $60-6F by given value of the given type.
@@ -4185,12 +4041,11 @@ class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2E
     _type: int
-
 
 class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Decrease 16bit AMEM $60-6F by given value of the given type.
@@ -4208,12 +4063,11 @@ class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
         amem (int): AMEM target address in range $60-$6F
         type (int): (unknown)
         value (int): The const value to decrease AMEM by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2F
     _type: int
-
 
 class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Increase 8bit AMEM $60-6F by 1.
@@ -4229,11 +4083,10 @@ class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x30
-
 
 class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Increase 16bit AMEM $60-6F by 1.
@@ -4249,11 +4102,10 @@ class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x31
-
 
 class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Decrease 8bit AMEM $60-6F by 1.
@@ -4269,11 +4121,10 @@ class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x32
-
 
 class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Decrease 16bit AMEM $60-6F by 1.
@@ -4289,11 +4140,10 @@ class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x33
-
 
 class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Set specified 8bit AMEM $60-6F to 0.
@@ -4309,11 +4159,10 @@ class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComma
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x34
-
 
 class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Set specified 16bit AMEM $60-6F to 0.
@@ -4329,11 +4178,10 @@ class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComm
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x35
-
 
 class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set the specified bits to high in specified AMEM $60-6F.
@@ -4349,24 +4197,24 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        bits (List[int]): The bits being set on the specified AMEM.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits being set on the specified AMEM.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x36
     _size: int = 3
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """The bits being set on the specified AMEM."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Set these bits on the specified AMEM."""
         self._bits = set(bits)
 
     def __init__(
-        self, amem: int, bits: List[int], identifier: Optional[str] = None
+        self, amem: int, bits: list[int], identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -4375,7 +4223,6 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
-
 
 class ClearAMEMBits(SetAMEMBits):
     """Set the specified bits to low in specified AMEM $60-6F.
@@ -4391,12 +4238,11 @@ class ClearAMEMBits(SetAMEMBits):
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        bits (List[int]): The bits being set on the specified AMEM.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits being set on the specified AMEM.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x37
-
 
 class JmpIfAMEMBitsSet(
     UsableAnimationScriptCommand,
@@ -4416,20 +4262,20 @@ class JmpIfAMEMBitsSet(
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        bits (List[int]): The bits of interest for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits of interest for the goto to happen.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x38
     _size: int = 5
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """The bits of interest for the goto to happen."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Set the bits of interest for the goto to happen."""
         for bit in bits:
             assert 0 <= bit <= 7
@@ -4438,9 +4284,9 @@ class JmpIfAMEMBitsSet(
     def __init__(
         self,
         amem: int,
-        bits: List[int],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        bits: list[int],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_amem(amem)
@@ -4449,7 +4295,6 @@ class JmpIfAMEMBitsSet(
     def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags, *self.destinations)
-
 
 class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
     """Goto destination indicated by name if AMEM $60-6F specified bits are all clear.
@@ -4465,13 +4310,12 @@ class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
 
     Args:
         amem (int): AMEM target address in range $60-$6F
-        bits (List[int]): The bits of interest for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits of interest for the goto to happen.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x39
-
 
 class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Start the attack timer.
@@ -4486,11 +4330,10 @@ class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3A
-
 
 class PauseScriptUntilAMEMBitsSet(
     UsableAnimationScriptCommand, AnimationScriptAMEMCommand
@@ -4508,24 +4351,24 @@ class PauseScriptUntilAMEMBitsSet(
 
     Args:
         amem (int): Description here to be filled out by me
-        bits (List[int]): The bits of interest for the script to resume.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits of interest for the script to resume.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x40
     _size: int = 3
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """The bits of interest for the script to resume."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Set the bits of interest for the script to resume."""
         self._bits = set(bits)
 
     def __init__(
-        self, amem: int, bits: List[int], identifier: Optional[str] = None
+        self, amem: int, bits: list[int], identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -4534,7 +4377,6 @@ class PauseScriptUntilAMEMBitsSet(
     def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
-
 
 class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
     """Pause the active script until specified bits in AMEM $60-6F are clear.
@@ -4550,12 +4392,11 @@ class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
 
     Args:
         amem (int): Description here to be filled out by me
-        bits (List[int]): The bits of interest for the script to resume.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits of interest for the script to resume.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x41
-
 
 class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Run a specific sequence for the sprite this command is applied to.
@@ -4575,7 +4416,7 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         looping_off (bool): If true, the sequence will play only once.
         bit_6 (bool): (unknown)
         mirror (bool): If true, the sprite will be displayed flipped horizontally from default.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x43
@@ -4639,7 +4480,7 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         looping_off: bool = False,
         bit_6: bool = False,
         mirror: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_sequence(sequence)
@@ -4660,7 +4501,6 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(UInt8(byte1))
 
-
 class SetAMEM60ToCurrentTarget(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -4676,11 +4516,10 @@ class SetAMEM60ToCurrentTarget(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x45
-
 
 class GameOverIfNoAlliesStanding(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -4697,11 +4536,10 @@ class GameOverIfNoAlliesStanding(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x46
-
 
 class PauseScriptUntilSpriteSequenceDone(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -4718,11 +4556,10 @@ class PauseScriptUntilSpriteSequenceDone(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4E
-
 
 class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Goto destination indicated by name if target is disabled.
@@ -4737,8 +4574,8 @@ class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWi
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x50
@@ -4746,7 +4583,6 @@ class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWi
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Goto destination indicated by name if target is enabled.
@@ -4761,8 +4597,8 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x51
@@ -4770,7 +4606,6 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Perform a set of script commands at the specified address on the specified field target.
@@ -4794,8 +4629,8 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         bit_5 (bool): (unknown)
         current_target (bool): (unknown)
         bit_7 (bool): (unknown)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5D
@@ -4896,7 +4731,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
     def __init__(
         self,
         field_object: int,
-        destinations: List[str],
+        destinations: list[str],
         bit_0: bool = False,
         bit_1: bool = False,
         bit_2: bool = False,
@@ -4905,7 +4740,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         bit_5: bool = False,
         current_target: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_field_object(field_object)
@@ -4932,7 +4767,6 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         )
         return super().render(byte1, self.field_object, *self.destinations)
 
-
 class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Terminate a series of commands intended to be run as a animation for a specific object.
 
@@ -4946,11 +4780,10 @@ class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5E
-
 
 class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the context under which to run the dialog ID corresponding to the current value at AMEM $60.
@@ -4966,7 +4799,7 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
 
     Args:
         message_type (MessageType): The context in which to display the dialog.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x63
@@ -4984,14 +4817,13 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
         self._message_type = message_type
 
     def __init__(
-        self, message_type: MessageType, identifier: Optional[str] = None
+        self, message_type: MessageType, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_message_type(message_type)
 
     def render(self, *args) -> bytearray:
         return super().render(self.message_type)
-
 
 class UseObjectQueueAtOffsetWithAMEM60Index(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -5008,8 +4840,8 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the `CreateObjectQueue` to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the `CreateObjectQueue` to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x64
@@ -5017,8 +4849,8 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
 
     def __init__(
         self,
-        destinations: Optional[List[str]] = None,
-        identifier: Optional[str] = None,
+        destinations: list[str] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if not destinations:
             raise InvalidCommandArgumentException(
@@ -5028,7 +4860,6 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -5047,8 +4878,8 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
 
     Args:
         index (int): The index value to be applied on top of the target address.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x68
@@ -5068,8 +4899,8 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     def __init__(
         self,
         index: int,
-        destinations: Optional[List[str]] = None,
-        identifier: Optional[str] = None,
+        destinations: list[str] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if not destinations:
             raise InvalidCommandArgumentException(
@@ -5081,13 +4912,12 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations, self.index)
 
-
 class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """This structure should only contain destinations.  
     If destinations point to other object queues, then this should be targeted with `UseObjectQueueAtOffsetWithAMEM60PointerOffset`.
 
     Args:
-        destinations (List[str]): The commands that this queue's indexes should start at, in order of index.
+        destinations (list[str]): The commands that this queue's indexes should start at, in order of index.
         identifier (str): The label that an `UseObjectQueueAtOffsetWithAMEM60Index` will use to refer to this.
     """
 
@@ -5095,7 +4925,7 @@ class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWith
     def size(self) -> int:
         return len(self.destinations) * 2
 
-    def __init__(self, destinations: List[str], identifier: str) -> None:
+    def __init__(self, destinations: list[str], identifier: str) -> None:
         if not destinations:
             raise InvalidCommandArgumentException(
                 "object queue needs at least one destination label"
@@ -5106,7 +4936,6 @@ class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """(unknown)
@@ -5121,11 +4950,10 @@ class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x69
-
 
 class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
@@ -5142,7 +4970,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
     Args:
         amem (int): AMEM target address in range $60-$6F
         upper_bound (int): The upper bound for this command's random number generator.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6A
@@ -5160,7 +4988,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
         self._upper_bound = UInt8(upper_bound)
 
     def __init__(
-        self, amem: int, upper_bound: int, identifier: Optional[str] = None
+        self, amem: int, upper_bound: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -5168,7 +4996,6 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
-
 
 class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
@@ -5185,7 +5012,7 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
     Args:
         amem (int): AMEM target address in range $60-$6F
         upper_bound (int): The upper bound for this command's random number generator.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6B
@@ -5203,7 +5030,7 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
         self._upper_bound = UInt16(upper_bound)
 
     def __init__(
-        self, amem: int, upper_bound: int, identifier: Optional[str] = None
+        self, amem: int, upper_bound: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
@@ -5211,7 +5038,6 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
 
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
-
 
 class EnableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -5228,11 +5054,10 @@ class EnableSpritesOnSubscreen(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x70
-
 
 class DisableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -5249,11 +5074,10 @@ class DisableSpritesOnSubscreen(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x71
-
 
 class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a new effect (by ID) on screen. It is recommended to use effect constants for this.
@@ -5273,7 +5097,7 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         playback_off (bool): If true, the effect will be drawn statically with no animation playback.
         looping_off (bool): If true, the effect's animation will play only once.
         bit_3 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x72
@@ -5338,7 +5162,7 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         playback_off: bool = False,
         looping_off: bool = False,
         bit_3: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_effect(effect)
@@ -5356,7 +5180,6 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1, self.effect)
 
-
 class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Pause the script for exactly 2 frames.
 
@@ -5370,11 +5193,10 @@ class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x73
-
 
 class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Pause the active script until specified bits (belonging to unknown var) are clear.
@@ -5390,7 +5212,7 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
 
     Args:
         bits (int): The bits of interest.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x75
@@ -5407,13 +5229,12 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
         """Set the bits of interest."""
         self._bits = UInt16(bits)
 
-    def __init__(self, bits: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, bits: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bits(bits)
 
     def render(self, *args) -> bytearray:
         return super().render(self.bits)
-
 
 class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """(unknown, something regarding an active drawn effect)
@@ -5428,11 +5249,10 @@ class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x76
-
 
 class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Turn on layer 3
@@ -5452,7 +5272,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         bpp4 (bool): bpp4 gfx
         bpp2 (bool): bpp2 gfx
         invisible (bool): Draw invisible if true
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x77
@@ -5516,7 +5336,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         bpp4: bool = False,
         bpp2: bool = False,
         invisible: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_prop(property)
@@ -5531,7 +5351,6 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1)
 
-
 class Layer3Off(Layer3On):
     """Turn off layer 3
 
@@ -5545,11 +5364,10 @@ class Layer3Off(Layer3On):
         *No `_size` found*
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x78
-
 
 class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a dialog in battle with a given context.
@@ -5566,7 +5384,7 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         message_type (MessageType): The context in which to display the dialog.
         dialog_id (int): The ID of the dialog to display.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7A
@@ -5597,7 +5415,7 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         self,
         message_type: MessageType,
         dialog_id: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_type(message_type)
@@ -5605,7 +5423,6 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.message_type, self.dialog_id)
-
 
 class PauseScriptUntilDialogClosed(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -5622,11 +5439,10 @@ class PauseScriptUntilDialogClosed(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7B
-
 
 class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Fade out the object on which this queue is running.
@@ -5642,7 +5458,7 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         duration (int): The desired length of the fade animation, in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7E
@@ -5658,13 +5474,12 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         """Set the desired length of the fade animation, in frames."""
         self._duration = UInt8(duration)
 
-    def __init__(self, duration: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, duration: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration)
-
 
 class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Reset the active sprite sequence for the object on which this queue is running.
@@ -5679,11 +5494,10 @@ class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNo
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7F
-
 
 class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a shine effect on screen.
@@ -5703,7 +5517,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         glow_duration (int): The length, in frames, that the effect should last for.
         east (bool): If true, shine direction is eastward.
         west (bool): If true, shine direction is westward.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x80
@@ -5758,7 +5572,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     def _set_west(self, west: bool) -> None:
         self._west = west
 
-    def set_direction(self, east: Optional[bool], west: Optional[bool]) -> None:
+    def set_direction(self, east: bool | None, west: bool | None) -> None:
         """Decide if the shine effect will shine eastward or westward.."""
         if east is None:
             east = self.east
@@ -5778,7 +5592,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         glow_duration: int,
         east: bool = False,
         west: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_colour_count(colour_count)
@@ -5792,7 +5606,6 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.colour_count + (self.starting_colour_index << 4),
             self.glow_duration,
         )
-
 
 class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the active effect for a given duration in frames.
@@ -5808,12 +5621,11 @@ class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(0, self.duration)
-
 
 class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the active sprite for a given duration in frames.
@@ -5829,12 +5641,11 @@ class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(0x10, self.duration)
-
 
 class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the screen for a given duration in frames.
@@ -5850,12 +5661,11 @@ class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(0x20, self.duration)
-
 
 class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the active effect for a given duration in frames.
@@ -5871,12 +5681,11 @@ class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(2, self.duration)
-
 
 class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the active sprite for a given duration in frames.
@@ -5892,12 +5701,11 @@ class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(0x12, self.duration)
-
 
 class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the screen for a given duration in frames.
@@ -5913,12 +5721,11 @@ class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     Args:
         duration (int): Fade duration in frames.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(0x22, self.duration)
-
 
 class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the screen for a given number of times at a given speed.
@@ -5935,12 +5742,11 @@ class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     Args:
         amount (int): Number of shakes.
         speed (int): Shake speed.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(1)
-
 
 class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the visible sprites for a given number of times at a given speed.
@@ -5957,12 +5763,11 @@ class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     Args:
         amount (int): Number of shakes.
         speed (int): Shake speed.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(2)
-
 
 class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the screen AND visible sprites for a given number of times at a given speed.
@@ -5979,12 +5784,11 @@ class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeOb
     Args:
         amount (int): Number of shakes.
         speed (int): Shake speed.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         return super().render(4)
-
 
 class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Halt an active shake command.
@@ -5999,11 +5803,10 @@ class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x87
-
 
 class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Flash a colour over the screen for a given duration.
@@ -6021,7 +5824,7 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
         colour (FlashColour): The screen flash colour.
         duration (int): The duration of the flash, in frames.
         unknown_upper (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x8E
@@ -6064,7 +5867,7 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
         colour: FlashColour,
         duration: int,
         unknown_upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_colour(colour)
@@ -6073,7 +5876,6 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour, self.duration)
-
 
 class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Briefly flash a colour over the screen.
@@ -6090,7 +5892,7 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         colour (FlashColour): The screen flash colour.
         unknown_upper (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x8F
@@ -6122,7 +5924,7 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
         self,
         colour: FlashColour,
         unknown_upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_colour(colour)
@@ -6130,7 +5932,6 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour)
-
 
 class InitializeBonusMessageSequence(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -6147,11 +5948,10 @@ class InitializeBonusMessageSequence(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x95
-
 
 class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a pre-set bonus message, usually for bonus flowers and certain items.
@@ -6169,7 +5969,7 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         message (BonusMessage): The message ID to display.
         x (int): The X coord at which to render the message.
         y (int): The Y coord at which to render the message.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x96
@@ -6207,7 +6007,7 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
         self._y = Int8(y)
 
     def __init__(
-        self, message: BonusMessage, x: int, y: int, identifier: Optional[str] = None
+        self, message: BonusMessage, x: int, y: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_message(message)
@@ -6216,7 +6016,6 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(0, self.message, self.x, self.y)
-
 
 class PauseScriptUntilBonusMessageComplete(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -6233,11 +6032,10 @@ class PauseScriptUntilBonusMessageComplete(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x97
-
 
 class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Wave effect animation
@@ -6261,7 +6059,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_4 (bool): The fourth bit flag for wave effect configuration.
         bit_5 (bool): The fifth bit flag for wave effect configuration.
         byte_1 (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9C
@@ -6369,7 +6167,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_4: bool = False,
         bit_5: bool = False,
         byte_1: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ):
         super().__init__(identifier)
         self.set_layer(layer)
@@ -6395,7 +6193,6 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.byte_1, UInt8(arg_1), self.depth, self.intensity, self.speed
         )
 
-
 class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Stop an existing wave effect
 
@@ -6410,7 +6207,7 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9D
@@ -6427,13 +6224,12 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         """(unknown)"""
         self._bit_7 = bit_7
 
-    def __init__(self, bit_7: bool = False, identifier: Optional[str] = None):
+    def __init__(self, bit_7: bool = False, identifier: str | None = None):
         super().__init__(identifier)
         self.set_bit_7(bit_7)
 
     def render(self, *args) -> bytearray:
         return super().render(2 + (self.bit_7 << 7))
-
 
 class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a screen effect by ID.
@@ -6449,7 +6245,7 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         effect (int): The ID of the effect to run
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA3
@@ -6467,13 +6263,12 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         assert 0 <= effect <= 20
         self._effect = UInt8(effect)
 
-    def __init__(self, effect: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, effect: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_effect(effect)
 
     def render(self, *args) -> bytearray:
         return super().render(self.effect)
-
 
 class JmpIfTimedHitSuccess(
     UsableAnimationScriptCommand,
@@ -6491,8 +6286,8 @@ class JmpIfTimedHitSuccess(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA7
@@ -6500,7 +6295,6 @@ class JmpIfTimedHitSuccess(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a sound by ID.
@@ -6519,7 +6313,7 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         sound (int): The sound ID to play.
         channel (int): The channel on which to play the sound. Needs to be 4 or 6
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -6552,7 +6346,7 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
         self._channel = UInt4(channel)
 
     def __init__(
-        self, sound: int, channel: int = 6, identifier: Optional[str] = None
+        self, sound: int, channel: int = 6, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -6560,7 +6354,6 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound)
-
 
 class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID without changing volume.
@@ -6576,7 +6369,7 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
 
     Args:
         music (int): ID of the music to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB0
@@ -6594,13 +6387,12 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
         assert 0 <= music <= 73
         self._music = UInt8(music)
 
-    def __init__(self, music: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, music: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music(music)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
-
 
 class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID at specified volume.
@@ -6617,7 +6409,7 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         music (int): ID of the music to play.
         volume (int): Volume of the music to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB1
@@ -6645,7 +6437,7 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
         self._volume = UInt16(volume)
 
     def __init__(
-        self, music: int, volume: int, identifier: Optional[str] = None
+        self, music: int, volume: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_music(music)
@@ -6653,7 +6445,6 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.music, self.volume)
-
 
 class StopCurrentSoundEffect(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -6670,11 +6461,10 @@ class StopCurrentSoundEffect(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB2
-
 
 class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Gradually modify the volume of the current music from the current volume to the specified volume.
@@ -6691,7 +6481,7 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
     Args:
         speed (int): The speed at which the volume adjustment should complete.
         volume (int): Volume for the music to reach.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB6
@@ -6719,7 +6509,7 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
         self._volume = UInt8(volume)
 
     def __init__(
-        self, speed: int, volume: int, identifier: Optional[str] = None
+        self, speed: int, volume: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
@@ -6727,7 +6517,6 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
 
     def render(self, *args) -> bytearray:
         return super().render(self.speed, self.volume)
-
 
 class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set battle target so a specific object.
@@ -6743,7 +6532,7 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         target (BattleTarget): The object ID to target.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBB
@@ -6760,13 +6549,12 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
         """Set the object ID to target."""
         self._target = target
 
-    def __init__(self, target: BattleTarget, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: BattleTarget, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target)
-
 
 class AddItemToStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
@@ -6783,15 +6571,14 @@ class AddItemToStandardInventory(
         3 bytes
 
     Args:
-        item (Type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBC
 
     def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
-
 
 class RemoveItemFromStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
@@ -6808,15 +6595,14 @@ class RemoveItemFromStandardInventory(
         3 bytes
 
     Args:
-        item (Type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBC
 
     def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
-
 
 class AddItemToKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
@@ -6833,15 +6619,14 @@ class AddItemToKeyItemInventory(
         3 bytes
 
     Args:
-        item (Type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to store (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBD
 
     def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
-
 
 class RemoveItemFromKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
@@ -6858,15 +6643,14 @@ class RemoveItemFromKeyItemInventory(
         3 bytes
 
     Args:
-        item (Type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to remove (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBD
 
     def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
-
 
 class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Gain coins according to the specified amount.
@@ -6882,7 +6666,7 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         amount (int): The amount of coins to add.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 3
@@ -6899,13 +6683,12 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
         """Set the amount of coins to add."""
         self._amount = UInt16(amount)
 
-    def __init__(self, amount: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amount: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amount(amount)
 
     def render(self, *args) -> bytearray:
         return super().render(self.amount)
-
 
 class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Add Yoshi Cookies to your inventory according to the specified amount.
@@ -6921,7 +6704,7 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
 
     Args:
         amount (int): The amount of Yoshi Cookies to add.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -6938,13 +6721,12 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
         """Set the amount of Yoshi Cookies to add."""
         self._amount = UInt8(amount)
 
-    def __init__(self, amount: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amount: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amount(amount)
 
     def render(self, *args) -> bytearray:
         return super().render(self.amount)
-
 
 class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a specific screen mask effect by ID.
@@ -6961,7 +6743,7 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         effect (MaskEffect): The effect to draw.
         unknown_upper (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -6993,7 +6775,7 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
         self,
         effect: MaskEffect,
         unknown_upper: int = 0,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_effect(effect)
@@ -7001,7 +6783,6 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.effect)
-
 
 class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the coords at which to draw a four-pointed mask effect. Not sure if anyone really knows how this works.
@@ -7016,23 +6797,23 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         (varies depending on the number of points)
 
     Args:
-        points (List[Tuple[int, int]]): The x,y coords for the 1st point.
-        extra_byte (Optional[int]): Description here to be filled out by me
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        points (list[tuple[int, int]]): The x,y coords for the 1st point.
+        extra_byte (int | None): Description here to be filled out by me
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _count: int = 0
     _opcode = 0xC6
 
-    _points: List[MaskPoint]
-    _extra_byte: Optional[Int8] = None
+    _points: list[MaskPoint]
+    _extra_byte: Int8 | None = None
 
     @property
-    def points(self) -> List[MaskPoint]:
+    def points(self) -> list[MaskPoint]:
         """The x,y coords for the 1st point."""
         return self._points
 
-    def set_points(self, points: List[Tuple[int, int]]) -> None:
+    def set_points(self, points: list[tuple[int, int]]) -> None:
         """Set the x,y coords for the 1st point."""
         self._points = [MaskPoint(*point) for point in points]
 
@@ -7041,7 +6822,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
         return len(self.points) * 2 + 2 + (1 if self.extra_byte is not None else 0)
 
     @property
-    def extra_byte(self) -> Optional[Int8]:
+    def extra_byte(self) -> Int8 | None:
         return self._extra_byte
 
     def set_extra_byte(self, extra_byte: int) -> None:
@@ -7049,9 +6830,9 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def __init__(
         self,
-        points: List[Tuple[int, int]],
-        extra_byte: Optional[int] = None,
-        identifier: Optional[str] = None,
+        points: list[tuple[int, int]],
+        extra_byte: int | None = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_points(points)
@@ -7069,7 +6850,6 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
             *points,
         )
 
-
 class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the speed at which the sprite animation should run.
 
@@ -7084,7 +6864,7 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         speed (int): The speed a numerical value.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -7101,13 +6881,12 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
         """Set the speed as a value from 0 to 15."""
         self._speed = UInt4(speed)
 
-    def __init__(self, speed: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, speed: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
 
     def render(self, *args) -> bytearray:
         return super().render(self.speed)
-
 
 class StartTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -7124,11 +6903,10 @@ class StartTrackingAllyButtonInputs(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCC
-
 
 class EndTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -7145,11 +6923,10 @@ class EndTrackingAllyButtonInputs(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCD
-
 
 class TimingForOneTieredButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -7171,8 +6948,8 @@ class TimingForOneTieredButtonPress(
         partial_start (int): The number of frames after initiation at which to start considering the hit
         perfect_start (int): The number of frames after initiation at which to start considering the hit
         perfect_end (int): The number of frames after initiation at which to no longer consider the hit
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCE
@@ -7186,11 +6963,11 @@ class TimingForOneTieredButtonPress(
 
     def set_input_windows(
         self,
-        start_accepting_input: Optional[int] = None,
-        end_accepting_input: Optional[int] = None,
-        partial_start: Optional[int] = None,
-        perfect_start: Optional[int] = None,
-        perfect_end: Optional[int] = None,
+        start_accepting_input: int | None = None,
+        end_accepting_input: int | None = None,
+        partial_start: int | None = None,
+        perfect_start: int | None = None,
+        perfect_end: int | None = None,
     ):
         """Set any and all of the frame window cutoffs for this timed hit."""
         if start_accepting_input is None:
@@ -7276,8 +7053,8 @@ class TimingForOneTieredButtonPress(
         partial_start: int,
         perfect_start: int,
         perfect_end: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_input_windows(
@@ -7298,7 +7075,6 @@ class TimingForOneTieredButtonPress(
             *self.destinations,
         )
 
-
 class TimingForOneBinaryButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
@@ -7317,8 +7093,8 @@ class TimingForOneBinaryButtonPress(
         start_accepting_input (int): The number of frames after initiation at which to begin accepting a timed hit.
         end_accepting_input (int): The number of frames after initiation at which to stop accepting a timed hit.
         timed_hit_ends (int): The number of frames after initiation at which the input no longer registers as
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCF
@@ -7330,9 +7106,9 @@ class TimingForOneBinaryButtonPress(
 
     def set_input_windows(
         self,
-        start_accepting_input: Optional[int] = None,
-        end_accepting_input: Optional[int] = None,
-        timed_hit_ends: Optional[int] = None,
+        start_accepting_input: int | None = None,
+        end_accepting_input: int | None = None,
+        timed_hit_ends: int | None = None,
     ):
         """Set any and all of the frame window cutoffs for this timed hit."""
         if start_accepting_input is None:
@@ -7380,8 +7156,8 @@ class TimingForOneBinaryButtonPress(
         start_accepting_input: int,
         end_accepting_input: int,
         timed_hit_ends: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_input_windows(
@@ -7395,7 +7171,6 @@ class TimingForOneBinaryButtonPress(
             self.timed_hit_ends,
             *self.destinations,
         )
-
 
 class TimingForMultipleButtonPresses(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -7413,8 +7188,8 @@ class TimingForMultipleButtonPresses(
 
     Args:
         start_accepting_input (int): The number of frames after initiation at which to begin accepting input.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD0
@@ -7434,15 +7209,14 @@ class TimingForMultipleButtonPresses(
     def __init__(
         self,
         start_accepting_input: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_start_accepting_input(start_accepting_input)
 
     def render(self, *args) -> bytearray:
         return super().render(self.start_accepting_input, *self.destinations)
-
 
 class TimingForButtonMashUnknown(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -7459,11 +7233,10 @@ class TimingForButtonMashUnknown(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD1
-
 
 class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Determine the cap for a timed hit that counts up to a certain number of A/B/X/Y inputs of an indiscriminate window.
@@ -7479,7 +7252,7 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
 
     Args:
         max_presses (int): The number of button presses at which the timed hit is capped.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD2
@@ -7496,13 +7269,12 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
         """Set the number of button presses at which the timed hit is capped."""
         self._max_presses = UInt8(max_presses)
 
-    def __init__(self, max_presses: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, max_presses: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_max_presses(max_presses)
 
     def render(self, *args) -> bytearray:
         return super().render(self.max_presses)
-
 
 class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Define a timed hit that counts up to a certain number of D-pad inputs within a specified frame window.
@@ -7520,7 +7292,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         start_accepting_input (int): The number of frames after initiation at which inputs can begin
         end_accepting_input (int): The number of frames after initiation at which to no longer accept inputs.
         max_presses (int): The number of button presses at which the timed hit is capped.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD3
@@ -7532,8 +7304,8 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
 
     def set_input_windows(
         self,
-        start_accepting_input: Optional[int] = None,
-        end_accepting_input: Optional[int] = None,
+        start_accepting_input: int | None = None,
+        end_accepting_input: int | None = None,
     ):
         """Set any and all of the frame window cutoffs for this timed hit."""
         if start_accepting_input is None:
@@ -7578,7 +7350,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         start_accepting_input: int,
         end_accepting_input: int,
         max_presses: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_input_windows(start_accepting_input, end_accepting_input)
@@ -7588,7 +7360,6 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         return super().render(
             self.end_accepting_input, self.start_accepting_input, self.max_presses
         )
-
 
 class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Define a timed hit that requires you to hold down one of A/B/X/Y for a continuous interval, with results differing based on how long it is held.
@@ -7608,7 +7379,7 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
         charge_level_3_end (int): The number of frames after initiation at which the button can be released
         charge_level_4_end (int): The number of frames after initiation at which the button can be released
         overcharge_end (int): The number of frames after initiation at which the button can be released, having
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD4
@@ -7622,11 +7393,11 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
 
     def set_input_windows(
         self,
-        charge_level_1_end: Optional[int] = None,
-        charge_level_2_end: Optional[int] = None,
-        charge_level_3_end: Optional[int] = None,
-        charge_level_4_end: Optional[int] = None,
-        overcharge_end: Optional[int] = None,
+        charge_level_1_end: int | None = None,
+        charge_level_2_end: int | None = None,
+        charge_level_3_end: int | None = None,
+        charge_level_4_end: int | None = None,
+        overcharge_end: int | None = None,
     ):
         """Set any and all of the charge window cutoffs for this timed hit."""
         if charge_level_1_end is None:
@@ -7715,7 +7486,7 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
         charge_level_3_end: int,
         charge_level_4_end: int,
         overcharge_end: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_input_windows(
@@ -7735,7 +7506,6 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
             self.overcharge_end,
         )
 
-
 class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Summon a monster of a specified enemy class.
 
@@ -7749,7 +7519,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         4 bytes
 
     Args:
-        monster (Type['Enemy']): The class of the monster type to summon.
+        monster (type['Enemy']): The class of the monster type to summon.
         position (int): The formation position to summon the monster to.
         bit_0 (bool): (unknown)
         bit_1 (bool): (unknown)
@@ -7759,13 +7529,13 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_5 (bool): (unknown)
         bit_6 (bool): (unknown)
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD5
     _size: int = 4
 
-    _monster: Type["Enemy"]
+    _monster: type["Enemy"]
     _position: UInt4
     _bit_0: bool
     _bit_1: bool
@@ -7777,11 +7547,11 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
     _bit_7: bool
 
     @property
-    def monster(self) -> Type["Enemy"]:
+    def monster(self) -> type["Enemy"]:
         """The class of the monster type to summon."""
         return self._monster
 
-    def set_monster(self, monster: Type["Enemy"]) -> None:
+    def set_monster(self, monster: type["Enemy"]) -> None:
         """Set the class of the monster type to summon."""
         self._monster = monster
 
@@ -7869,7 +7639,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def __init__(
         self,
-        monster: Type["Enemy"],
+        monster: type["Enemy"],
         position: int,
         bit_0: bool = False,
         bit_1: bool = False,
@@ -7879,7 +7649,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         bit_5: bool = False,
         bit_6: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_monster(monster)
@@ -7906,7 +7676,6 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1, self.monster().monster_id, self.position)
 
-
 class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """(unknown, related somehow to Mute attack timing)
 
@@ -7920,8 +7689,8 @@ class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD8
@@ -7929,7 +7698,6 @@ class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Display the "Can't Run" dialog
@@ -7944,11 +7712,10 @@ class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandN
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD9
-
 
 class StoreOMEM60ToItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -7965,11 +7732,10 @@ class StoreOMEM60ToItemInventory(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE0
-
 
 class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Run a battle event (battle animation script type) by ID.
@@ -7986,7 +7752,7 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
     Args:
         script_id (int): The ID of the battle event to run.
         offset (int): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE1
@@ -8015,7 +7781,7 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
         self._offset = UInt8(offset)
 
     def __init__(
-        self, script_id: int, offset: int = 0, identifier: Optional[str] = None
+        self, script_id: int, offset: int = 0, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_script_id(script_id)
@@ -8023,7 +7789,6 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.script_id, self.offset)
-
 
 class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Catch-all command class representing any command not represented by other AnimationScriptCommand subclasses.
@@ -8040,7 +7805,7 @@ class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     Args:
         contents (bytearray): The whole contents of the command as bytes, including the opcode.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _contents: bytearray
@@ -8058,13 +7823,12 @@ class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
     def size(self) -> int:
         return len(self.contents)
 
-    def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
+    def __init__(self, contents: bytearray, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_contents(contents)
 
     def render(self, *args) -> bytearray:
         return super().render(self.contents)
-
 
 class ActorExitBattleEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Run opcode 0x02, which is only used in animations where an actor is leaving the battle (escape, deaths, etc).
@@ -8077,11 +7841,10 @@ class ActorExitBattleEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptC
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
     
     _opcode = 0x02
-
 
 class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Run opcode 0x47. Treating it as a sprite queue pointer to see if it solves any animation code mysteries.
@@ -8094,8 +7857,8 @@ class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationSc
 
     Args:   
         unknown_byte (int): (unknown)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
     
     _opcode = 0x47
@@ -8115,8 +7878,8 @@ class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationSc
     def __init__(
         self,
         unknown_byte: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_destinations(destinations)
@@ -8124,7 +7887,6 @@ class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationSc
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte, *self.destinations)
-
 
 commands = [
     NewSpriteAtCoords,

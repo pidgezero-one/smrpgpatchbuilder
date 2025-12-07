@@ -1,5 +1,5 @@
 import pytest
-from typing import Optional, Type, List
+
 from dataclasses import dataclass
 
 from disassembler_output.spells.spells import CharacterSpell, EnemySpell
@@ -20,7 +20,6 @@ class DUMMYAttack2(EnemyAttack):
 class FangsAttack(EnemyAttack):
     _index = 67
 
-
 class BigBangSpell(EnemySpell):
     _index = 103
 
@@ -29,7 +28,6 @@ class KnockOutSpell(EnemySpell):
 
 class DrainSpell(EnemySpell):
     _index = 64
-
 
 class SuperJumpSpell(CharacterSpell):
     _index = 2
@@ -53,10 +51,9 @@ class FireBombItem(RegularItem):
 class Case:
     label: str
     commands_factory: callable
-    expected_bytes: Optional[List[int]] = None
-    exception: Optional[str] = None
-    exception_type: Optional[Type] = None
-
+    expected_bytes: list[int] | None = None
+    exception: str | None = None
+    exception_type: type | None = None
 
 test_cases = [
     Case(
@@ -354,7 +351,6 @@ test_cases = [
         expected_bytes=[0x82, 0xFF],
     ),
 ]
-
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):

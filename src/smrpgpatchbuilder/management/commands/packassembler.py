@@ -29,7 +29,6 @@ from bps.io import write_bps
 from bps.util import bps_progress
 from datetime import datetime
 
-
 class Command(BaseCommand):
     help = "Assemble formation packs from disassembler output and generate ROM patches"
 

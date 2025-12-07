@@ -8,8 +8,6 @@ from bps.io import write_bps
 from bps.util import bps_progress
 from datetime import datetime
 
-
-
 class Command(BaseCommand):
 	def add_arguments(self, parser):
 		parser.add_argument("-t", "--text", action='store_true', dest="text", help="use -t if you want to output your assembled bytes as plain text files.")

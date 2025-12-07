@@ -1,8 +1,5 @@
 """Base classes for numbers and numerical operations."""
 
-from typing import Union
-
-
 class UInt4(int):
     """Unsigned 4-bit int"""
 
@@ -15,7 +12,6 @@ class UInt4(int):
         """Single byte representation as an int"""
         return self
 
-
 class UInt8(int):
     """Unsigned 8-bit int"""
 
@@ -27,7 +23,6 @@ class UInt8(int):
     def to_byte(self) -> int:
         """Single byte representation as an int"""
         return int(self)
-
 
 class Int8(int):
     """Signed 8-bit int"""
@@ -48,7 +43,6 @@ class Int8(int):
             val = int(self)
         return val
 
-
 class UInt16(int):
     """Unsigned 16-bit int"""
 
@@ -64,7 +58,6 @@ class UInt16(int):
     def little_endian(self) -> bytearray:
         """This number as a little-endian bytearray"""
         return bytearray([(self & 0xFF), ((self >> 8))])
-
 
 class Int16(int):
     """Signed 16-bit int"""
@@ -90,7 +83,6 @@ class Int16(int):
         val = self.to_bytes()
         return bytearray([(val & 0xFF), ((val >> 8))])
 
-
 class BitMapSet(set):
     """a class representing a bitmap of a certain length using the set built-in type to track
     which bits are set."""
@@ -113,11 +105,10 @@ class BitMapSet(set):
     def __str__(self):
         return f"BitMapSet({super().__str__()})"
 
-
 class ByteField:
     """Base class for an integer value field spanning one or more bytes."""
 
-    def __init__(self, value: Union[UInt8, UInt16, int], num_bytes: int = 1) -> None:
+    def __init__(self, value: UInt8 | UInt16 | int, num_bytes: int = 1) -> None:
         """
         :type value: int
         :type num_bytes: int

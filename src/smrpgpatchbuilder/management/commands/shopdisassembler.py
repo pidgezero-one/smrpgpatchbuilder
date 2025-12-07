@@ -29,7 +29,6 @@ from smrpgpatchbuilder.datatypes.shops.classes import (
     ITEMS_PER_SHOP,
 )
 
-
 class Command(BaseCommand):
     help = "Disassembles shops from a ROM file"
 

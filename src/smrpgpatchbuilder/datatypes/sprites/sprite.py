@@ -1,14 +1,13 @@
 """Base classes for sprite development."""
 
 from enum import IntEnum
-from typing import Generic, List, Optional, TypeVar, Union
+from typing import Generic, TypeVar
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt4, UInt8
 
 from .exceptions import (
     InvalidSpriteConstructionException,
 )
-
 
 class GridplaneFormats(IntEnum):
     """Enum for the various legal sizes of flat gridplane sprites."""
@@ -18,14 +17,13 @@ class GridplaneFormats(IntEnum):
     FOUR_WIDE_THREE_HIGH = 2
     FOUR_WIDE_FOUR_HIGH = 3
 
-
 class Tile:
     """A grouping of subtiles, the building blocks of a mold."""
 
     _mirror: bool = False
     _invert: bool = False
     _format: int = 0
-    _subtiles: List[Optional[bytearray]] = []
+    _subtiles: list[bytearray | None] = []
 
     @property
     def mirror(self) -> bool:
@@ -55,11 +53,11 @@ class Tile:
         self._format = fmt
 
     @property
-    def subtiles(self) -> List[Optional[bytearray]]:
+    def subtiles(self) -> list[bytearray | None]:
         """A list of 32-byte bytearrays representing graphical data."""
         return self._subtiles
 
-    def set_subtiles(self, subtiles: List[Optional[bytearray]]) -> None:
+    def set_subtiles(self, subtiles: list[bytearray | None]) -> None:
         """A list of 32-byte bytearrays representing graphical data."""
         for subtile in subtiles:
             if subtile is not None:
@@ -71,13 +69,12 @@ class Tile:
         mirror: bool,
         invert: bool,
         fmt: int,
-        subtiles: List[Optional[bytearray]],
+        subtiles: list[bytearray | None],
     ) -> None:
         self.set_mirror(mirror)
         self.set_invert(invert)
         self.set_format(fmt)
         self.set_subtiles(subtiles)
-
 
 class GridplaneArrangement(Tile):
     """A tile that can be used in a gridplane sprite.\n
@@ -141,8 +138,8 @@ class GridplaneArrangement(Tile):
 
     def set_subtiles(
         self,
-        subtiles: List[Optional[bytearray]],
-        fmt: Optional[GridplaneFormats] = None,
+        subtiles: list[bytearray | None],
+        fmt: GridplaneFormats | None = None,
     ) -> None:
         if fmt is None:
             if self.format in [GridplaneFormats.THREE_WIDE_THREE_HIGH]:
@@ -179,7 +176,7 @@ class GridplaneArrangement(Tile):
     def __init__(
         self,
         fmt: GridplaneFormats,
-        subtiles: List[Optional[bytearray]],
+        subtiles: list[bytearray | None],
         mirror: bool = False,
         invert: bool = False,
         y_plus: bool = False,
@@ -195,7 +192,6 @@ class GridplaneArrangement(Tile):
     def length(self):
         """The number of bytes this sprite is expected to occupy"""
         return 1 + len(self.subtiles) + (2 * self.is_16bit)
-
 
 class NonGridplaneArrangement(Tile):
     """A tile that can be used in a gridplane sprite.\n
@@ -227,7 +223,7 @@ class NonGridplaneArrangement(Tile):
     def __init__(
         self,
         fmt: int,
-        subtiles: List[Optional[bytearray]],
+        subtiles: list[bytearray | None],
         x: int,
         y: int,
         mirror: bool = False,
@@ -245,16 +241,14 @@ class NonGridplaneArrangement(Tile):
         """The number of bytes this sprite is expected to occupy"""
         return 3 + len([s for s in self.subtiles if s is not None])
 
-
 TileT = TypeVar("TileT", bound=Tile)
-
 
 class Mold(Generic[TileT]):
     """A mold is a single frame of a sprite, which consists of one or more tiles."""
 
     _gridplane: bool
     _offset: UInt8
-    _tiles: List[TileT]
+    _tiles: list[TileT]
 
     @property
     def gridplane(self) -> bool:
@@ -271,24 +265,23 @@ class Mold(Generic[TileT]):
         self._offset = UInt8(offset)
 
     @property
-    def tiles(self) -> List[TileT]:
+    def tiles(self) -> list[TileT]:
         """The list of all the tiles in the mold."""
         return self._tiles
 
-    def set_tiles(self, tiles: List[TileT]) -> None:
+    def set_tiles(self, tiles: list[TileT]) -> None:
         """Overwrite the list of all the tiles in the mold."""
         self._tiles = tiles
 
     def __init__(
         self,
-        tiles: List[TileT],
+        tiles: list[TileT],
     ) -> None:
         self.set_tiles(tiles)
 
     def __str__(self):
         tiles = ("\n  ".join([t.__str__() for t in self.tiles]),)
         return f"<gridplane={self.gridplane} tiles=[\n  {tiles}\n]>"
-
 
 class GridplaneMold(Mold[GridplaneArrangement]):
     """A single frame of a sprite that consists of exactly one gridplane tile."""
@@ -310,25 +303,23 @@ class GridplaneMold(Mold[GridplaneArrangement]):
     ) -> None:
         super().__init__([tile])
 
-
 class NonGridplaneMold(Mold[NonGridplaneArrangement]):
     """A single frame of a sprite that consists of any number of non-gridplane tiles."""
 
     _gridplane: bool = False
 
     @property
-    def tiles(self) -> List[NonGridplaneArrangement]:
+    def tiles(self) -> list[NonGridplaneArrangement]:
         return super().tiles
 
-    def set_tiles(self, tiles: List[NonGridplaneArrangement]) -> None:
+    def set_tiles(self, tiles: list[NonGridplaneArrangement]) -> None:
         super().set_tiles(tiles)
 
     def __init__(
         self,
-        tiles: List[NonGridplaneArrangement],
+        tiles: list[NonGridplaneArrangement],
     ) -> None:
         super().__init__(tiles)
-
 
 class SpriteSequenceFrame:
     """A single frame in an animation sequence for the sprite.\n
@@ -362,49 +353,47 @@ class SpriteSequenceFrame:
         self.set_duration(duration)
         self.set_mold_id(mold_id)
 
-
 class SpriteSequence:
     """An animation sequence belonging to a sprite, that uses the sprite's molds."""
 
-    _frames: List[SpriteSequenceFrame] = []
+    _frames: list[SpriteSequenceFrame] = []
 
     @property
-    def frames(self) -> List[SpriteSequenceFrame]:
+    def frames(self) -> list[SpriteSequenceFrame]:
         """The list of frame data for this animation sequence."""
         return self._frames
 
-    def set_frames(self, frames: List[SpriteSequenceFrame]) -> None:
+    def set_frames(self, frames: list[SpriteSequenceFrame]) -> None:
         """Overwrite the list of frame data for this animation sequence."""
         self._frames = frames
 
-    def __init__(self, frames: List[SpriteSequenceFrame]) -> None:
+    def __init__(self, frames: list[SpriteSequenceFrame]) -> None:
         self.set_frames(frames)
-
 
 class AnimationData:
     """A container for mold, animation, and vram properties of the sprite."""
 
-    _molds: List[Union[GridplaneMold, NonGridplaneMold]]
-    _sequences: List[SpriteSequence]
+    _molds: list[GridplaneMold | NonGridplaneMold]
+    _sequences: list[SpriteSequence]
     _vram_size: int
     _unknown: UInt4 = UInt4(0)
 
     @property
-    def molds(self) -> List[Union[GridplaneMold, NonGridplaneMold]]:
+    def molds(self) -> list[GridplaneMold | NonGridplaneMold]:
         """The molds belonging to this sprite."""
         return self._molds
 
-    def set_molds(self, molds: List[Union[GridplaneMold, NonGridplaneMold]]) -> None:
+    def set_molds(self, molds: list[GridplaneMold | NonGridplaneMold]) -> None:
         """Overwrite the molds belonging to this sprite."""
         assert len(molds) <= 32
         self._molds = molds
 
     @property
-    def sequences(self) -> List[SpriteSequence]:
+    def sequences(self) -> list[SpriteSequence]:
         """The animation sequences belonging to this sprite."""
         return self._sequences
 
-    def set_sequences(self, sequences: List[SpriteSequence]) -> None:
+    def set_sequences(self, sequences: list[SpriteSequence]) -> None:
         """Overwrite the animation sequences belonging to this sprite."""
         assert len(sequences) <= 16
         self._sequences = sequences
@@ -431,8 +420,8 @@ class AnimationData:
 
     def __init__(
         self,
-        molds: List[Union[GridplaneMold, NonGridplaneMold]],
-        sequences: List[SpriteSequence],
+        molds: list[GridplaneMold | NonGridplaneMold],
+        sequences: list[SpriteSequence],
         vram_size: int,
         unknown: int,
     ) -> None:
@@ -440,7 +429,6 @@ class AnimationData:
         self.set_sequences(sequences)
         self.set_vram_size(vram_size)
         self.set_unknown(unknown)
-
 
 class SpriteContainer:
     """An entire sprite with all associated data."""

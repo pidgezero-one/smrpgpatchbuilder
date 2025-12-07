@@ -1,15 +1,12 @@
 """WorldMapLocation class for SMRPG world map location data."""
 
-from typing import Dict, Optional
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
-
 
 # Constants
 WORLD_MAP_LOCATION_BASE_ADDRESS = 0x3EF830
 WORLD_MAP_NAME_POINTER_BASE_ADDRESS = 0x3EFD00
 WORLD_MAP_NAME_DATA_BASE_ADDRESS = 0x3EFD80
 TOTAL_WORLD_MAP_LOCATIONS = 56
-
 
 class WorldMapLocation:
     """A world map location in Super Mario RPG."""
@@ -18,24 +15,24 @@ class WorldMapLocation:
     _name: str
     _x: int
     _y: int
-    _show_check_flag: Optional[Flag]
+    _show_check_flag: Flag | None
     _go_location: bool
-    _run_event: Optional[int]
-    _which_location_check_flag: Optional[Flag]
-    _go_location_a: Optional[int]
-    _go_location_b: Optional[int]
+    _run_event: int | None
+    _which_location_check_flag: Flag | None
+    _go_location_a: int | None
+    _go_location_b: int | None
     _enabled_to_east: bool
     _enabled_to_south: bool
     _enabled_to_west: bool
     _enabled_to_north: bool
-    _check_flag_to_east: Optional[Flag]
-    _check_flag_to_south: Optional[Flag]
-    _check_flag_to_west: Optional[Flag]
-    _check_flag_to_north: Optional[Flag]
-    _location_to_east: Optional[int]
-    _location_to_south: Optional[int]
-    _location_to_west: Optional[int]
-    _location_to_north: Optional[int]
+    _check_flag_to_east: Flag | None
+    _check_flag_to_south: Flag | None
+    _check_flag_to_west: Flag | None
+    _check_flag_to_north: Flag | None
+    _location_to_east: int | None
+    _location_to_south: int | None
+    _location_to_west: int | None
+    _location_to_north: int | None
 
     @property
     def index(self) -> int:
@@ -78,11 +75,11 @@ class WorldMapLocation:
         self._y = y
 
     @property
-    def show_check_flag(self) -> Optional[Flag]:
+    def show_check_flag(self) -> Flag | None:
         """Flag that controls whether this location is shown."""
         return self._show_check_flag
 
-    def set_show_check_flag(self, flag: Optional[Flag]) -> None:
+    def set_show_check_flag(self, flag: Flag | None) -> None:
         """Set the show check flag."""
         self._show_check_flag = flag
 
@@ -96,31 +93,31 @@ class WorldMapLocation:
         self._go_location = value
 
     @property
-    def run_event(self) -> Optional[int]:
+    def run_event(self) -> int | None:
         """Event to run (only if go_location is False)."""
         return self._run_event
 
-    def set_run_event(self, event: Optional[int]) -> None:
+    def set_run_event(self, event: int | None) -> None:
         """Set the event to run."""
         if event is not None:
             assert 0 <= event <= 0xFFFF, "Event must be 0-0xFFFF"
         self._run_event = event
 
     @property
-    def which_location_check_flag(self) -> Optional[Flag]:
+    def which_location_check_flag(self) -> Flag | None:
         """Flag that determines which location to go to (only if go_location is True)."""
         return self._which_location_check_flag
 
-    def set_which_location_check_flag(self, flag: Optional[Flag]) -> None:
+    def set_which_location_check_flag(self, flag: Flag | None) -> None:
         """Set the which location check flag."""
         self._which_location_check_flag = flag
 
     @property
-    def go_location_a(self) -> Optional[int]:
+    def go_location_a(self) -> int | None:
         """First location option (only if go_location is True)."""
         return self._go_location_a
 
-    def set_go_location_a(self, location: Optional[int]) -> None:
+    def set_go_location_a(self, location: int | None) -> None:
         """Set the first location option."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -128,11 +125,11 @@ class WorldMapLocation:
         self._go_location_a = location
 
     @property
-    def go_location_b(self) -> Optional[int]:
+    def go_location_b(self) -> int | None:
         """Second location option (only if go_location is True)."""
         return self._go_location_b
 
-    def set_go_location_b(self, location: Optional[int]) -> None:
+    def set_go_location_b(self, location: int | None) -> None:
         """Set the second location option."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -176,47 +173,47 @@ class WorldMapLocation:
         self._enabled_to_north = value
 
     @property
-    def check_flag_to_east(self) -> Optional[Flag]:
+    def check_flag_to_east(self) -> Flag | None:
         """Flag that controls travel to the east."""
         return self._check_flag_to_east
 
-    def set_check_flag_to_east(self, flag: Optional[Flag]) -> None:
+    def set_check_flag_to_east(self, flag: Flag | None) -> None:
         """Set the check flag for travel to the east."""
         self._check_flag_to_east = flag
 
     @property
-    def check_flag_to_south(self) -> Optional[Flag]:
+    def check_flag_to_south(self) -> Flag | None:
         """Flag that controls travel to the south."""
         return self._check_flag_to_south
 
-    def set_check_flag_to_south(self, flag: Optional[Flag]) -> None:
+    def set_check_flag_to_south(self, flag: Flag | None) -> None:
         """Set the check flag for travel to the south."""
         self._check_flag_to_south = flag
 
     @property
-    def check_flag_to_west(self) -> Optional[Flag]:
+    def check_flag_to_west(self) -> Flag | None:
         """Flag that controls travel to the west."""
         return self._check_flag_to_west
 
-    def set_check_flag_to_west(self, flag: Optional[Flag]) -> None:
+    def set_check_flag_to_west(self, flag: Flag | None) -> None:
         """Set the check flag for travel to the west."""
         self._check_flag_to_west = flag
 
     @property
-    def check_flag_to_north(self) -> Optional[Flag]:
+    def check_flag_to_north(self) -> Flag | None:
         """Flag that controls travel to the north."""
         return self._check_flag_to_north
 
-    def set_check_flag_to_north(self, flag: Optional[Flag]) -> None:
+    def set_check_flag_to_north(self, flag: Flag | None) -> None:
         """Set the check flag for travel to the north."""
         self._check_flag_to_north = flag
 
     @property
-    def location_to_east(self) -> Optional[int]:
+    def location_to_east(self) -> int | None:
         """Location index to the east."""
         return self._location_to_east
 
-    def set_location_to_east(self, location: Optional[int]) -> None:
+    def set_location_to_east(self, location: int | None) -> None:
         """Set the location to the east."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -224,11 +221,11 @@ class WorldMapLocation:
         self._location_to_east = location
 
     @property
-    def location_to_south(self) -> Optional[int]:
+    def location_to_south(self) -> int | None:
         """Location index to the south."""
         return self._location_to_south
 
-    def set_location_to_south(self, location: Optional[int]) -> None:
+    def set_location_to_south(self, location: int | None) -> None:
         """Set the location to the south."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -236,11 +233,11 @@ class WorldMapLocation:
         self._location_to_south = location
 
     @property
-    def location_to_west(self) -> Optional[int]:
+    def location_to_west(self) -> int | None:
         """Location index to the west."""
         return self._location_to_west
 
-    def set_location_to_west(self, location: Optional[int]) -> None:
+    def set_location_to_west(self, location: int | None) -> None:
         """Set the location to the west."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -248,11 +245,11 @@ class WorldMapLocation:
         self._location_to_west = location
 
     @property
-    def location_to_north(self) -> Optional[int]:
+    def location_to_north(self) -> int | None:
         """Location index to the north."""
         return self._location_to_north
 
-    def set_location_to_north(self, location: Optional[int]) -> None:
+    def set_location_to_north(self, location: int | None) -> None:
         """Set the location to the north."""
         if location is not None:
             assert 0 <= location < TOTAL_WORLD_MAP_LOCATIONS, \
@@ -265,24 +262,24 @@ class WorldMapLocation:
         name: str = "",
         x: int = 0,
         y: int = 0,
-        show_check_flag: Optional[Flag] = None,
+        show_check_flag: Flag | None = None,
         go_location: bool = False,
-        run_event: Optional[int] = None,
-        which_location_check_flag: Optional[Flag] = None,
-        go_location_a: Optional[int] = None,
-        go_location_b: Optional[int] = None,
+        run_event: int | None = None,
+        which_location_check_flag: Flag | None = None,
+        go_location_a: int | None = None,
+        go_location_b: int | None = None,
         enabled_to_east: bool = False,
         enabled_to_south: bool = False,
         enabled_to_west: bool = False,
         enabled_to_north: bool = False,
-        check_flag_to_east: Optional[Flag] = None,
-        check_flag_to_south: Optional[Flag] = None,
-        check_flag_to_west: Optional[Flag] = None,
-        check_flag_to_north: Optional[Flag] = None,
-        location_to_east: Optional[int] = None,
-        location_to_south: Optional[int] = None,
-        location_to_west: Optional[int] = None,
-        location_to_north: Optional[int] = None,
+        check_flag_to_east: Flag | None = None,
+        check_flag_to_south: Flag | None = None,
+        check_flag_to_west: Flag | None = None,
+        check_flag_to_north: Flag | None = None,
+        location_to_east: int | None = None,
+        location_to_south: int | None = None,
+        location_to_west: int | None = None,
+        location_to_north: int | None = None,
     ) -> None:
         """Initialize a WorldMapLocation.
 
@@ -333,7 +330,7 @@ class WorldMapLocation:
         self.set_location_to_west(location_to_west)
         self.set_location_to_north(location_to_north)
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render the world map location data to ROM format.
 
         Returns:
@@ -438,7 +435,6 @@ class WorldMapLocation:
 
         return {offset: data}
 
-
 class WorldMapLocationCollection:
     """Collection of all world map locations in the game."""
 
@@ -463,13 +459,13 @@ class WorldMapLocationCollection:
             f"got {len(locations)}"
         self._locations = locations
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all world map locations to ROM format.
 
         Returns:
             A dictionary mapping ROM addresses to bytearrays for patching
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         for location in self._locations:
             location_patch = location.render()

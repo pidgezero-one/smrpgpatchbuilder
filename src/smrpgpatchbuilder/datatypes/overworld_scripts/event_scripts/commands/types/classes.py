@@ -1,6 +1,6 @@
 """Base classes supporting event script assembly."""
 
-from typing import TYPE_CHECKING, List, Optional, Type, cast, Union
+from typing import TYPE_CHECKING, cast
 from copy import deepcopy
 
 if TYPE_CHECKING:
@@ -26,28 +26,23 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object i
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 
-
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8
-
 
 class EventScriptCommand(ScriptCommand):
     """Base class for any command in an event script."""
 
-
 class EventScriptCommandWithJmps(EventScriptCommand, ScriptCommandWithJmps):
     """Base class for any command in an event script that contains at least one goto."""
 
-
 class EventScriptCommandNoArgs(EventScriptCommand, ScriptCommandNoArgs):
     """Base class for any command in an event script that takes no arguments."""
-
 
 class EventScriptCommandAnySizeMem(EventScriptCommand, ScriptCommandAnySizeMem):
     """base class for any command in an event script that can accept either an
     8 bit or 16 bit var."""
 
     def __init__(
-        self, address: Union[ByteVar, ShortVar], identifier: Optional[str] = None
+        self, address: ByteVar | ShortVar, identifier: str | None = None
     ) -> None:
         super().__init__(address, identifier)
 
@@ -56,11 +51,9 @@ class EventScriptCommandAnySizeMem(EventScriptCommand, ScriptCommandAnySizeMem):
         else:
             self._size = 2
 
-
 class EventScriptCommandShortMem(EventScriptCommand, ScriptCommandShortMem):
     """base class for any command in an event script that accepts only
     an 8 bit var."""
-
 
 class EventScriptCommandShortAddrAndValueOnly(
     EventScriptCommand, ScriptCommandShortAddrAndValueOnly
@@ -71,8 +64,8 @@ class EventScriptCommandShortAddrAndValueOnly(
     def __init__(
         self,
         address: ShortVar,
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(address, value, identifier)
 
@@ -81,13 +74,11 @@ class EventScriptCommandShortAddrAndValueOnly(
         else:
             self._size = 4
 
-
 class EventScriptCommandBasicShortOperation(
     EventScriptCommand, ScriptCommandBasicShortOperation
 ):
     """base class for any command in an event script that performs math
     on an 8 bit var."""
-
 
 class EventScriptCommandActionScriptContainer(EventScriptCommand):
     """base class for commands in an event script that includes
@@ -112,12 +103,10 @@ class EventScriptCommandActionScriptContainer(EventScriptCommand):
         """The length of this command as a whole."""
         return self.header_size + self.subscript.length
 
-
 # Import here to avoid circular dependency at module level
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.classes import (
     ActionScript,
 )
-
 
 class Subscript(ActionScript):
     """base class for an action script to be used as typing for
@@ -130,15 +119,14 @@ class Subscript(ActionScript):
         super()._insert(index, command)
 
     def set_contents(
-        self, script: Optional[List[UsableActionScriptCommand]] = None
+        self, script: list[UsableActionScriptCommand] | None = None
     ) -> None:
         """Overwrite the contents of the action script command list."""
         if script is None:
             script = []
-        contents_length = sum(cast(List[int], [c.size for c in script]))
+        contents_length = sum(cast(list[int], [c.size for c in script]))
         assert contents_length <= 0x7F
         super().set_contents(script)
-
 
 class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
     """Base class for action queues, must be 127 bytes or less."""
@@ -173,7 +161,7 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
         """The collection of NPC action script commands to be run."""
         return self._subscript
 
-    def set_subscript(self, subscript: List[UsableActionScriptCommand]) -> None:
+    def set_subscript(self, subscript: list[UsableActionScriptCommand]) -> None:
         """Overwrite the collection of NPC action script commands to be run."""
         self.subscript.set_contents(subscript)
 
@@ -181,8 +169,8 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
         self,
         target: AreaObject,
         sync: bool = False,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -193,7 +181,6 @@ class ActionSubcriptCommandPrototype(EventScriptCommandActionScriptContainer):
             ss = deepcopy(subscript)
         self._subscript = Subscript(ss)
 
-
 class ActionQueuePrototype(ActionSubcriptCommandPrototype):
     """base class for action queues, must be 127 bytes or less.
     Cannot be forcibly stopped, overall command length is shorter."""
@@ -201,7 +188,6 @@ class ActionQueuePrototype(ActionSubcriptCommandPrototype):
     def render(self, *args) -> bytearray:
         header_byte: UInt8 = UInt8(self.subscript.length + ((not self.sync) << 7))
         return super().render(self.target, header_byte, self.subscript.render())
-
 
 class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
     """base class for action queues, must be 127 bytes or less.
@@ -225,8 +211,8 @@ class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
         target: AreaObject,
         prefix: int,
         sync: bool = False,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(target, sync, subscript, identifier)
         self.set_prefix(prefix)
@@ -236,7 +222,6 @@ class StartEmbeddedActionScriptPrototype(ActionSubcriptCommandPrototype):
         return super().render(
             self.target, self.prefix, header_byte, self.subscript.render()
         )
-
 
 class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
     """non-embedded action queues are commands representing code that the game
@@ -259,15 +244,15 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
         """The contents to be run by this queue."""
         return self._subscript
 
-    def set_subscript(self, subscript: List[UsableActionScriptCommand]) -> None:
+    def set_subscript(self, subscript: list[UsableActionScriptCommand]) -> None:
         """Overwrite the contents to be run by this queue."""
         self.subscript.set_contents(subscript)
 
     def __init__(
         self,
         required_offset: int,
-        subscript: Optional[List[UsableActionScriptCommand]],
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None,
+        identifier: str | None = None,
     ) -> None:
         if subscript is None:
             subscript = []
@@ -278,7 +263,6 @@ class NonEmbeddedActionQueuePrototype(EventScriptCommandActionScriptContainer):
 
     def render(self, *args) -> bytearray:
         return super().render(self.subscript.render())
-
 
 class UsableEventScriptCommand(EventScriptCommand):
     """subclass for commands that can actually be used in a script

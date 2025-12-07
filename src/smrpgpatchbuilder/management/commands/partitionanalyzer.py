@@ -30,7 +30,6 @@ class Command(BaseCommand):
             worksheet.write(row, col, item)
         row += 1
 
-
         for room_index, room in enumerate(roomdata):
             if room is not None and room["partition"] is not None:
                 partition = room["partition"]
@@ -55,7 +54,6 @@ class Command(BaseCommand):
                     column += 1
                 worksheet.write(row, column, partition["full_palette_buffer"])
                 column += 1
-
 
                 for o in room["objects"]:
                     model_id = o["model"]
@@ -89,11 +87,7 @@ class Command(BaseCommand):
                     
                     column += 1
 
-
-
                 row += 1
 
         workbook.close()
-
-
 

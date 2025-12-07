@@ -1,7 +1,5 @@
 """Base classes supporting battle animation script assembly."""
 
-from typing import List, Optional, Dict, Type, Union, Tuple
-
 from .commands.types.classes import (
     UsableAnimationScriptCommand,
 )
@@ -22,29 +20,28 @@ from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.commands impo
     ReturnSubroutine,
 )
 
-
 class AnimationScript(Script[UsableAnimationScriptCommand]):
     """Base class for a single animation script, a list of script command subclasses."""
 
-    _contents: List[UsableAnimationScriptCommand] = []
+    _contents: list[UsableAnimationScriptCommand] = []
 
     @property
-    def contents(self) -> List[UsableAnimationScriptCommand]:
+    def contents(self) -> list[UsableAnimationScriptCommand]:
         return self._contents
 
     def append(self, command: UsableAnimationScriptCommand) -> None:
         super().append(command)
 
-    def extend(self, commands: List[UsableAnimationScriptCommand]) -> None:
+    def extend(self, commands: list[UsableAnimationScriptCommand]) -> None:
         super().extend(commands)
 
     def set_contents(
-        self, script: Optional[List[UsableAnimationScriptCommand]] = None
+        self, script: list[UsableAnimationScriptCommand] | None = None
     ) -> None:
         super().set_contents(script)
 
     def __init__(
-        self, script: Optional[List[UsableAnimationScriptCommand]] = None
+        self, script: list[UsableAnimationScriptCommand] | None = None
     ) -> None:
         super().__init__(script)
 
@@ -61,7 +58,7 @@ class AnimationScript(Script[UsableAnimationScriptCommand]):
     def insert_before_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableAnimationScriptCommand],
+        cls: type[UsableAnimationScriptCommand],
         command: UsableAnimationScriptCommand,
     ) -> None:
         super().insert_before_nth_command_of_type(ordinality, cls, command)
@@ -69,7 +66,7 @@ class AnimationScript(Script[UsableAnimationScriptCommand]):
     def insert_after_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableAnimationScriptCommand],
+        cls: type[UsableAnimationScriptCommand],
         command: UsableAnimationScriptCommand,
     ) -> None:
         super().insert_after_nth_command_of_type(ordinality, cls, command)
@@ -89,13 +86,12 @@ class AnimationScript(Script[UsableAnimationScriptCommand]):
     ) -> None:
         super().replace_at_index(index, content)
 
-    def render(self, _: Optional[int] = None) -> bytearray:
+    def render(self, _: int | None = None) -> bytearray:
         output = bytearray()
         command: UsableAnimationScriptCommand
         for command in self._contents:
             output += command.render()
         return output
-
 
 class AnimationScriptBlock(AnimationScript):
     """Covers a range of known animation data in the ROM."""
@@ -134,13 +130,13 @@ class AnimationScriptBlock(AnimationScript):
         self,
         expected_size: int,
         expected_beginning: int,
-        script: Optional[List[UsableAnimationScriptCommand]] = None,
+        script: list[UsableAnimationScriptCommand] | None = None,
     ) -> None:
         super().__init__(script)
         self._expected_size = expected_size
         self._expected_beginning = expected_beginning
 
-    def render(self, _: Optional[int] = None) -> bytearray:
+    def render(self, _: int | None = None) -> bytearray:
         output = super().render(_)
         # fill empty bytes
         if len(output) == self.expected_size:
@@ -150,21 +146,20 @@ class AnimationScriptBlock(AnimationScript):
             raise ScriptBankTooLongException(
                 f"animation script output too long: got {len(output)} expected {self.expected_size}"
             )
-        buffer: List[UsableAnimationScriptCommand] = [ReturnSubroutine()] * (self.expected_size - len(output))
+        buffer: list[UsableAnimationScriptCommand] = [ReturnSubroutine()] * (self.expected_size - len(output))
         self.set_contents(self.contents + buffer)
         output = super().render(_)
         return output
-
 
 class AnimationScriptBank(ScriptBank[AnimationScript]):
     """Base class for a collection of scripts that belong to the same bank (ie 0x##0000)
     and are separated by IDs."""
 
-    _scripts: List[Union[AnimationScript, AnimationScriptBlock]]
+    _scripts: list[AnimationScript | AnimationScriptBlock]
     _name: str
 
     @property
-    def scripts(self) -> List[Union[AnimationScript, AnimationScriptBlock]]:
+    def scripts(self) -> list[AnimationScript | AnimationScriptBlock]:
         return self._scripts
 
     @property
@@ -178,7 +173,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         the contents of this bank externally."""
         self._name = name
 
-    def set_contents(self, scripts: Optional[List[AnimationScript]] = None) -> None:
+    def set_contents(self, scripts: list[AnimationScript] | None = None) -> None:
         """Overwrite the entire list of scripts belonging to this bank."""
         if scripts is None:
             scripts = []
@@ -203,7 +198,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
                     return
         raise IdentifierException(f"{identifier} not found")
 
-    def set_addresses(self, addrs: Dict[str, int]) -> None:
+    def set_addresses(self, addrs: dict[str, int]) -> None:
         """This should ONLY be used when the parent ScriptBankCollection is rendering
         all of its constituent banks. Replaces the identifier-address dict."""
         self._addresses = addrs
@@ -211,7 +206,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
     def __init__(
         self,
         name: str,
-        scripts: Optional[List[AnimationScript]] = None,
+        scripts: list[AnimationScript] | None = None,
     ) -> None:
         self.set_name(name)
         super().__init__(scripts)
@@ -227,19 +222,19 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         position += command.size
         return position
 
-    def build_command_address_mapping(self) -> Dict[str, int]:
+    def build_command_address_mapping(self) -> dict[str, int]:
         """Build and return the command identifier to address mapping.
 
         This method populates the internal addresses dict and pointer_bytes
         by iterating through all AnimationScriptBlock instances in this bank.
 
         Returns:
-            Dict[str, int]: Mapping of command identifiers to their ROM addresses.
+            dict[str, int]: Mapping of command identifiers to their ROM addresses.
         """
         self.addresses.clear()
         self._pointer_bytes = bytearray()
 
-        scripts: List[AnimationScriptBlock] = [
+        scripts: list[AnimationScriptBlock] = [
             s for s in self.scripts if isinstance(s, AnimationScriptBlock)
         ]
 
@@ -252,11 +247,11 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         return self.addresses
 
-    def render(self) -> List[Tuple[int, bytearray]]:
+    def render(self) -> list[tuple[int, bytearray]]:
         """generate the bytes representing the current state of this bank to be written
         to the ROM."""
 
-        scripts: List[AnimationScriptBlock] = [
+        scripts: list[AnimationScriptBlock] = [
             s for s in self.scripts if isinstance(s, AnimationScriptBlock)
         ]
 

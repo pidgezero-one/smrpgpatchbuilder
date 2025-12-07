@@ -2,7 +2,6 @@
 
 from enum import IntEnum
 
-
 class HitSound(IntEnum):
     """Enum for the default sound an enemy will make when attacking you."""
 
@@ -21,7 +20,6 @@ class HitSound(IntEnum):
     BLAST_1 = 12
     BLAST_2 = 13
 
-
 class FlowerBonusType(IntEnum):
     """Enum for the type of flower bonus the enemy will award you."""
 
@@ -31,7 +29,6 @@ class FlowerBonusType(IntEnum):
     HP_MAX = 3
     ONCE_AGAIN = 4
     LUCKY = 5
-
 
 class ApproachSound(IntEnum):
     """Enum for the default sound an enemy will make when approaching you."""
@@ -45,14 +42,12 @@ class ApproachSound(IntEnum):
     DRY_BONES = 6
     TORTE = 7
 
-
 class CoinSprite(IntEnum):
     """Enum for the type of coin sprite displayed when enemy is defeated."""
 
     NONE = 0
     SMALL = 1
     BIG = 2
-
 
 class EntranceStyle(IntEnum):
     """Enum for the entrance animation style of the enemy."""

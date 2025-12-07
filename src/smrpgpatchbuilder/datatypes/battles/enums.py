@@ -50,7 +50,6 @@ class Battlefields(IntEnum):
     FACTORY = 0x30
     BEAN_VALLEY_UNDERGROUND = 0x31
 
-
 class BattleMusic(Music, Enum):
     """Enumeration for ID values for battle music."""
 

@@ -1,13 +1,11 @@
 """AllyCollection class for assembling ally/character data to ROM."""
 
-from typing import Dict, List, Optional
 from smrpgpatchbuilder.datatypes.allies.ally import Ally, LevelUp, AllyCoordinate
-
 
 class AllyCollection:
     """Collection of all 5 allies for rendering to ROM."""
 
-    def __init__(self, allies: List[Ally]):
+    def __init__(self, allies: list[Ally]):
         """Initialize the AllyCollection.
 
         Args:
@@ -18,7 +16,7 @@ class AllyCollection:
 
         self._allies = allies
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all ally data to patches.
 
         Based on Character.Assemble() lines 121-149.
@@ -38,7 +36,7 @@ class AllyCollection:
 
         return patches
 
-    def _render_ally(self, ally: Ally) -> Dict[int, bytearray]:
+    def _render_ally(self, ally: Ally) -> dict[int, bytearray]:
         """Render a single ally to patches.
 
         Based on Character.Assemble() lines 121-149.
@@ -125,7 +123,7 @@ class AllyCollection:
 
         return patches
 
-    def _render_level_up(self, level_up: LevelUp, owner: int) -> Dict[int, bytearray]:
+    def _render_level_up(self, level_up: LevelUp, owner: int) -> dict[int, bytearray]:
         """Render level-up data for a specific level.
 
         Based on LevelUp.Assemble() lines 233-253.
@@ -176,7 +174,7 @@ class AllyCollection:
 
         return patches
 
-    def _render_coordinates(self, coords: AllyCoordinate, index: int) -> Dict[int, bytearray]:
+    def _render_coordinates(self, coords: AllyCoordinate, index: int) -> dict[int, bytearray]:
         """Render ally battle coordinates.
 
         Based on AllyCoordinate.Assemble() lines 313-323.
@@ -197,7 +195,7 @@ class AllyCollection:
 
         return patches
 
-    def _render_levelup_screen_name_pointers(self) -> Dict[int, bytearray]:
+    def _render_levelup_screen_name_pointers(self) -> dict[int, bytearray]:
         """Render ally name pointers and strings.
 
         Writes ally names starting at 0x2F9B0, each null-terminated.

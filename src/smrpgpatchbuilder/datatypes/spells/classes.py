@@ -1,12 +1,10 @@
 """Base classes fors spells."""
 
 from copy import deepcopy
-from typing import List, Dict, Optional
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
 from smrpgpatchbuilder.datatypes.items.encoding import encode_item_description
-
 
 from .arguments.types.classes import DamageModifiers, TimingProperties
 from .ids.misc import (
@@ -27,7 +25,6 @@ from .enums import (
     TempStatBuff,
 )
 
-
 class Spell:
     """Class representing a magic spell to be randomized."""
 
@@ -38,11 +35,11 @@ class Spell:
     _hit_rate: int = 0
 
     _title: str = ""
-    _prefix: Optional[ItemPrefix] = None
+    _prefix: ItemPrefix | None = None
 
     _spell_type: SpellType = SpellType.DAMAGE
-    _effect_type: Optional[EffectType] = None
-    _inflict: Optional[InflictFunction] = None
+    _effect_type: EffectType | None = None
+    _inflict: InflictFunction | None = None
     _element = Element.NONE
 
     _check_stats: bool = False
@@ -58,8 +55,8 @@ class Spell:
     _target_wounded: bool = False
     _target_one_party: bool = False
     _target_not_self: bool = False
-    _status_effects: List[Status] = []
-    _boosts: List[TempStatBuff] = []
+    _status_effects: list[Status] = []
+    _boosts: list[TempStatBuff] = []
 
     @property
     def fp(self) -> UInt8:
@@ -102,11 +99,11 @@ class Spell:
         return self._title
 
     @property
-    def prefix(self) -> Optional[ItemPrefix]:
+    def prefix(self) -> ItemPrefix | None:
         """The icon prefix that appears before the spell name."""
         return self._prefix
 
-    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+    def set_prefix(self, prefix: ItemPrefix | None) -> None:
         """Set the icon prefix for this spell."""
         self._prefix = prefix
 
@@ -120,20 +117,20 @@ class Spell:
         self._spell_type = spell_type
 
     @property
-    def effect_type(self) -> Optional[EffectType]:
+    def effect_type(self) -> EffectType | None:
         """Inflict vs. nullify."""
         return self._effect_type
 
-    def set_effect_type(self, effect_type: Optional[EffectType]) -> None:
+    def set_effect_type(self, effect_type: EffectType | None) -> None:
         """Inflict vs. nullify."""
         self._effect_type = effect_type
 
     @property
-    def inflict(self) -> Optional[InflictFunction]:
+    def inflict(self) -> InflictFunction | None:
         """A special property of the spell on contact, i.e. jump counter."""
         return self._inflict
 
-    def set_inflict(self, inflict: Optional[InflictFunction]) -> None:
+    def set_inflict(self, inflict: InflictFunction | None) -> None:
         """A special property of the spell on contact, i.e. jump counter."""
         self._inflict = inflict
 
@@ -255,20 +252,20 @@ class Spell:
         self._target_not_self = target_not_self
 
     @property
-    def status_effects(self) -> List[Status]:
+    def status_effects(self) -> list[Status]:
         """A list of status effects inflicted by this spell."""
         return deepcopy(self._status_effects)
 
-    def set_status_effects(self, status_effects: List[Status]) -> None:
+    def set_status_effects(self, status_effects: list[Status]) -> None:
         """Overwrite the list of status effects inflicted by this spell."""
         self._status_effects = deepcopy(status_effects)
 
     @property
-    def boosts(self) -> List[TempStatBuff]:
+    def boosts(self) -> list[TempStatBuff]:
         """A list of stat boosts applied by this spell."""
         return deepcopy(self._boosts)
 
-    def set_boosts(self, boosts: List[TempStatBuff]) -> None:
+    def set_boosts(self, boosts: list[TempStatBuff]) -> None:
         """Overwrite the list of stat boosts applied by this spell."""
         assert len(boosts) == len(set(boosts))
         self._boosts = deepcopy(boosts)
@@ -290,9 +287,9 @@ class Spell:
         """The class name of this spell."""
         return self.__class__.__name__
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # Build spell name with prefix
         name_bytes = bytearray()
@@ -359,7 +356,6 @@ class Spell:
 
         return patch
 
-
 class CharacterSpell(Spell):
     """Grouping class for character-specific spells."""
 
@@ -397,7 +393,7 @@ class CharacterSpell(Spell):
         """Update the description as it appears in the in-game menu"""
         self._description = description
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch = super().render()
 
@@ -412,16 +408,14 @@ class CharacterSpell(Spell):
 
         return patch
 
-
 class EnemySpell(Spell):
     """Grouping class for enemy-specific spells."""
     pass
 
-
 class SpellCollection:
     """Collection of spells with rendering support for character spell descriptions."""
 
-    def __init__(self, spells: List[Spell]):
+    def __init__(self, spells: list[Spell]):
         """Initialize the collection with a list of spells.
 
         Args:
@@ -440,13 +434,13 @@ class SpellCollection:
                 f"but {len(character_spells)} were found."
             )
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all spells including character spell descriptions and pointer table.
 
         Returns:
             dictionary mapping ROM addresses to bytearrays
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # First, render each spell individually (stats, names, etc.)
         for spell in self.spells:

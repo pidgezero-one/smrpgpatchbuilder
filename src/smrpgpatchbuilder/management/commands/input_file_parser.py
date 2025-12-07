@@ -4,9 +4,8 @@ from pathlib import Path
 import re
 import string
 import importlib
-from typing import Dict, List, Tuple, Optional
-from smrpgpatchbuilder.datatypes.spells.classes import Spell
 
+from smrpgpatchbuilder.datatypes.spells.classes import Spell
 
 # Constants for name normalization
 NAME_KEEP = {"-", "_"}
@@ -14,7 +13,6 @@ RE_SPACES = re.compile(r"[ \-_]+")
 RE_LEADING_DIGITS = re.compile(r"^\d+")
 RE_HEX = re.compile(r"^[0-9A-Fa-f]+$")
 RE_FLAG_DIGIT = re.compile(r"^[0-9]$")
-
 
 def normalize_label(raw: str) -> str:
     """Normalize a raw label string into a valid Python identifier.
@@ -36,8 +34,7 @@ def normalize_label(raw: str) -> str:
         s = "_" + s
     return s or "_"
 
-
-def parse_standard_lines(lines: List[str]) -> List[Tuple[str, str]]:
+def parse_standard_lines(lines: list[str]) -> list[tuple[str, str]]:
     """Parse standard input file lines into (name, index) tuples.
 
     Args:
@@ -57,8 +54,7 @@ def parse_standard_lines(lines: List[str]) -> List[Tuple[str, str]]:
         out.append((name, str(idx)))
     return out
 
-
-def parse_variable_names_lines(lines: List[str]) -> List[Tuple[str, str]]:
+def parse_variable_names_lines(lines: list[str]) -> list[tuple[str, str]]:
     """Parse variable_names.input lines into (name, value) tuples.
 
     Handles special formats for flags and variables:
@@ -103,8 +99,7 @@ def parse_variable_names_lines(lines: List[str]) -> List[Tuple[str, str]]:
             out.append((label, "0"))
     return out
 
-
-def find_config_dir(start_path: Optional[Path] = None) -> Optional[Path]:
+def find_config_dir(start_path: Path | None = None) -> Path | None:
     """Find the config directory by searching up the directory tree.
 
     Args:
@@ -122,8 +117,7 @@ def find_config_dir(start_path: Optional[Path] = None) -> Optional[Path]:
             return cand
     return None
 
-
-def parse_input_files(config_dir: Optional[Path] = None) -> Dict[str, List[Tuple[str, str]]]:
+def parse_input_files(config_dir: Path | None = None) -> dict[str, list[tuple[str, str]]]:
     """Parse all *_names.input files in the config directory.
 
     Args:
@@ -162,7 +156,7 @@ def parse_input_files(config_dir: Optional[Path] = None) -> Dict[str, List[Tuple
 
     return parsed
 
-def load_arrays_from_input_files() -> Dict[str, List[str]]:
+def load_arrays_from_input_files() -> dict[str, list[str]]:
     """load sound, effect, screen effect, and music arrays from .input files.
 
     returns:
@@ -320,8 +314,7 @@ def load_arrays_from_input_files() -> Dict[str, List[str]]:
 
     return result
 
-
-def load_variables_from_input_files() -> Dict[int, str]:
+def load_variables_from_input_files() -> dict[int, str]:
     config_dir = Path(__file__).resolve().parents[4] / "config"
 
     # load the input files
@@ -349,8 +342,7 @@ def load_variables_from_input_files() -> Dict[int, str]:
 
     return result
 
-
-def load_flags_from_input_files() -> Dict[tuple[int, int], str]:
+def load_flags_from_input_files() -> dict[tuple[int, int], str]:
     config_dir = Path(__file__).resolve().parents[4] / "config"
 
     # load the input files
@@ -375,8 +367,7 @@ def load_flags_from_input_files() -> Dict[tuple[int, int], str]:
 
     return result
 
-
-def load_class_names_from_config() -> Dict[str, List[str]]:
+def load_class_names_from_config() -> dict[str, list[str]]:
     """Load class name lists from disassembler_output files.
 
     Returns:
@@ -525,5 +516,4 @@ def load_class_names_from_config() -> Dict[str, List[str]]:
             result["enemies"] = [name for _, name in sorted(enemies_with_index)]
 
     return result
-
 

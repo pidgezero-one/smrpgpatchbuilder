@@ -52,7 +52,6 @@ insert_at_offsets = [
 #     0x31FF00
 # ]
 
-
 class Command(BaseCommand):
 
     def add_arguments(self, parser):

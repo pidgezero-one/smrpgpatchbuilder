@@ -1,7 +1,6 @@
 """Individual NPC action script command classes.
 These are the building blocks of NPC action scripts."""
 
-from typing import List, Optional, Set, Type, Union
 from smrpgpatchbuilder.datatypes.items.classes import Item
 
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt4, UInt8
@@ -63,7 +62,6 @@ from .types.classes import (
 
 # script operations
 
-
 class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
     """Goto action script by ID. This shouldn't be used in embedded queues.
 
@@ -78,7 +76,7 @@ class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         destination (int): The ID of the script to jump to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD0
@@ -97,13 +95,12 @@ class A_JmpToScript(UsableActionScriptCommand, ActionScriptCommand):
         assert 0 <= destination < TOTAL_ACTION_SCRIPTS
         self._destination = UInt16(destination)
 
-    def __init__(self, destination: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, destination: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_destination(destination)
 
     def render(self, *args) -> bytearray:
         return super().render(self.destination)
-
 
 class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Goto a specific command by command identifier.
@@ -118,8 +115,8 @@ class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD2
@@ -127,7 +124,6 @@ class A_Jmp(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Run a specific action script as a subroutine, by command identifier.
@@ -142,8 +138,8 @@ class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
 
     """
 
@@ -152,7 +148,6 @@ class A_JmpToSubroutine(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
     """Loop all commands over N loop iterations that are between this command and the next `EndLoop` command.
@@ -168,7 +163,7 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         count (int): Number of times to loop (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD4
@@ -184,13 +179,12 @@ class A_StartLoopNTimes(UsableActionScriptCommand, ActionScriptCommand):
         """Set the total number of times this loop should iterate"""
         self._count = UInt8(count)
 
-    def __init__(self, count: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, count: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_count(count)
 
     def render(self, *args) -> bytearray:
         return super().render(self.count)
-
 
 class A_EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """If previous commands were part of a loop, this is where the loop ends.
@@ -205,12 +199,11 @@ class A_EndLoop(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
 
     """
 
     _opcode = 0xD7
-
 
 class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
     """Pause the active script for a number of frames
@@ -229,10 +222,10 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         length (int): Length of time (in frames) to pause. If this number is 256 or lower (you read that correctly, 256 or lower, not 255 or lower) this command will use the {xx} version (`0xF0`, 2 bytes). If larger, it will use the {xxxx} version (`0xF1`, 3 bytes).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _length: Union[UInt8, UInt16]
+    _length: UInt8 | UInt16
 
     @property
     def length(self) -> int:
@@ -257,7 +250,7 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
                 f"illegal pause duration in {self.identifier}: {length}"
             )
 
-    def __init__(self, length: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, length: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_length(length)
 
@@ -266,7 +259,6 @@ class A_Pause(UsableActionScriptCommand, ActionScriptCommand):
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
         return super().render(0xF1, frames)
-
 
 class A_JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Return to the beginning of the script containing this command
@@ -280,11 +272,10 @@ class A_JmpToStartOfThisScript(UsableActionScriptCommand, ActionScriptCommandNoA
     ## Size
         1 byte
 
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF9
-
 
 class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown how this differs from `A_JmpToStartOfThisScript`)
@@ -299,11 +290,10 @@ class A_JmpToStartOfThisScriptFA(UsableActionScriptCommand, ActionScriptCommandN
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFA
-
 
 class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Ends the script or subroutine.
@@ -319,11 +309,10 @@ class A_ReturnQueue(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFE
-
 
 class A_ReturnAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.
@@ -340,11 +329,10 @@ class A_ReturnAll(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFF
-
 
 _valid_unknowncmd_queue_opcodes = [
     0,  # 00
@@ -864,7 +852,6 @@ _valid_unknowncmd_queue_opcodes_fd = [
     2,
 ]
 
-
 class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
     """Catch-all class for most undocumented commands that don't act as GOTOs.
     Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.
@@ -881,7 +868,7 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         contents (bytearray): The entire byte string that this command consists of.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _contents: bytearray
@@ -922,16 +909,14 @@ class A_UnknownCommand(UsableActionScriptCommand, ActionScriptCommand):
     def size(self) -> int:
         return len(self.contents)
 
-    def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
+    def __init__(self, contents: bytearray, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_contents(contents)
 
     def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
-
 # visibility & collision
-
 
 class A_VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC running this script will have its sprite become visible.
@@ -946,11 +931,10 @@ class A_VisibilityOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x00
-
 
 class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC running this script will have its sprite become invisible.
@@ -965,11 +949,10 @@ class A_VisibilityOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x01
-
 
 class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC's sprite is reset to its default state (mold 0 or sequence 0).
@@ -985,11 +968,10 @@ class A_ResetProperties(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x09
-
 
 class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
@@ -1013,7 +995,7 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
         cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0A
@@ -1109,7 +1091,7 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs: bool = False,
         cant_walk_through: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_bit_0(bit_0)
@@ -1135,7 +1117,6 @@ class A_OverwriteSolidity(UsableActionScriptCommand, ActionScriptCommand):
         flags = UInt8(raw_flags)
         return super().render(flags)
 
-
 class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
     Specified bits will be set, unspecified bits will be unchanged.
@@ -1158,7 +1139,7 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
         cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0B
@@ -1254,7 +1235,7 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs: bool = False,
         cant_walk_through: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_bit_0(bit_0)
@@ -1280,7 +1261,6 @@ class A_SetSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         flags = UInt8(raw_flags)
         return super().render(flags)
 
-
 class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
     """Change the NPC's collision behavioural rules within the current room.
     Bits set to `True` in this command will be cleared (as confusing as that sounds), unspecified bits will be unchanged.
@@ -1303,7 +1283,7 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs (bool): If set to true in this command, this NPC CAN walk through other NPCs on the field
         cant_walk_through (bool): If set to true in this command, the player and other NPCs on the field CAN walk through this NPC
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0C
@@ -1399,7 +1379,7 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs: bool = False,
         cant_walk_through: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_bit_0(bit_0)
@@ -1425,7 +1405,6 @@ class A_ClearSolidityBits(UsableActionScriptCommand, ActionScriptCommand):
         flags = UInt8(raw_flags)
         return super().render(flags)
 
-
 class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown how this differs from `A_SetSolidityBits`)
 
@@ -1447,7 +1426,7 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs (bool): If false, this NPC can walk through other NPCs on the field
         cant_walk_through (bool): If false, the player and other NPCs on the field can walk through this NPC
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x15
@@ -1543,7 +1522,7 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         cant_pass_npcs: bool = False,
         cant_walk_through: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_bit_0(bit_0)
@@ -1569,7 +1548,6 @@ class A_SetMovementsBits(UsableActionScriptCommand, ActionScriptCommand):
         flags = UInt8(raw_flags)
         return super().render(flags)
 
-
 class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
     """Set the rules for how this NPC's sprite overlaps with the player's.
 
@@ -1584,7 +1562,7 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         priority (VRAMPriority): The priority level. Must be 0, 1, 2, or 3. Priority 3 is rendered in front of anything overlapping it, Priority 0 is rendered underneath everything overlapping it.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x13
@@ -1602,14 +1580,13 @@ class A_SetVRAMPriority(UsableActionScriptCommand, ActionScriptCommand):
         self._priority = priority
 
     def __init__(
-        self, priority: VRAMPriority, identifier: Optional[str] = None
+        self, priority: VRAMPriority, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_priority(priority)
 
     def render(self, *args) -> bytearray:
         return super().render(self.priority)
-
 
 class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown how this differs from `A_SetVRAMPriority`)
@@ -1625,7 +1602,7 @@ class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         priority (int): The priority level. Must be 0, 1, 2, or 3.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x0F])
@@ -1642,13 +1619,12 @@ class A_SetPriority(UsableActionScriptCommand, ActionScriptCommand):
         assert 0 <= priority <= 3
         self._priority = priority
 
-    def __init__(self, priority: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, priority: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_priority(priority)
 
     def render(self, *args) -> bytearray:
         return super().render(self.priority)
-
 
 class A_ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Begin showing the NPC's shadow when airborne.
@@ -1663,11 +1639,10 @@ class A_ShadowOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x01])
-
 
 class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC's shadow when airborne will no longer be visible.
@@ -1682,11 +1657,10 @@ class A_ShadowOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x00])
-
 
 class A_FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC will not be affected by gravity.
@@ -1701,11 +1675,10 @@ class A_FloatingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x02])
-
 
 class A_FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC becomes affected by gravity.
@@ -1720,14 +1693,12 @@ class A_FloatingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x03])
 
-
 # memory
-
 
 class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)
@@ -1745,13 +1716,13 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         arg_1 (int): (unknown)
-        bits (Union[List[int], Set[int]]): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int] | set[int]): (unknown)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
     _arg_1: int
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
     def arg_1(self) -> int:
@@ -1764,11 +1735,11 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
         self._arg_1 = arg_1
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """(unknown)"""
         return self._bits
 
-    def set_bits(self, bits: Union[List[int], Set[int]]) -> None:
+    def set_bits(self, bits: list[int] | set[int]) -> None:
         """(unknown)"""
         for bit in bits:
             assert 0 <= bit <= 7
@@ -1777,8 +1748,8 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         arg_1: int,
-        bits: Union[List[int], Set[int]],
-        identifier: Optional[str] = None,
+        bits: list[int] | set[int],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_arg_1(arg_1)
@@ -1795,7 +1766,6 @@ class A_SetObjectMemoryBits(UsableActionScriptCommand, ActionScriptCommand):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: {flags}"
         )
-
 
 class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown - covers a wide range of known but undescribed memory operations)
@@ -1835,7 +1805,7 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
             - 0x30
             - 0x3C
 
-        bits (Union[List[int], Set[int]]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:
+        bits (list[int] | set[int]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:
             - 0x08: [4]
             - 0x09: [7]
             - 0x0B: [3]
@@ -1845,12 +1815,12 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
             - 0x12: [5]
             - 0x30: [4]
             - 0x3C: [6]
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
     _arg_1: int
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
     def arg_1(self) -> int:
@@ -1858,11 +1828,11 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
         return self._arg_1
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """(unknown)"""
         return self._bits
 
-    def set_props(self, arg_1: int, bits: Union[List[int], Set[int]]) -> None:
+    def set_props(self, arg_1: int, bits: list[int] | set[int]) -> None:
         """(unknown)"""
         props_input = (arg_1, bits)
         assert props_input in [
@@ -1883,8 +1853,8 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         arg_1: int,
-        bits: Union[List[int], Set[int]],
-        identifier: Optional[str] = None,
+        bits: list[int] | set[int],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_props(arg_1, bits)
@@ -1916,7 +1886,6 @@ class A_ObjectMemorySetBit(UsableActionScriptCommand, ActionScriptCommand):
                 f"illegal args for {self.identifier.label}: {args}"
             )
         return super().render(opcode)
-
 
 class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown - covers a wide range of known but undescribed memory operations)
@@ -1952,7 +1921,7 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
             - 0x12
             - 0x30
 
-        bits (Union[List[int], Set[int]]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:
+        bits (list[int] | set[int]): Validity depends on arg_1. These are the arrays allowed per arg_1 value:
             - 0x08: [3, 4]
             - 0x09: [7]
             - 0x0B: [3]
@@ -1960,12 +1929,12 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
             - 0x0E: [4] or [5]
             - 0x12: [5]
             - 0x30: [4]
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
     _arg_1: int
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
     def arg_1(self) -> int:
@@ -1973,11 +1942,11 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
         return self._arg_1
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """(unknown)"""
         return self._bits
 
-    def set_props(self, arg_1: int, bits: Union[List[int], Set[int]]) -> None:
+    def set_props(self, arg_1: int, bits: list[int] | set[int]) -> None:
         """(unknown)"""
         props_input = (arg_1, bits)
         assert props_input in [
@@ -1996,8 +1965,8 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         arg_1: int,
-        bits: Union[List[int], Set[int]],
-        identifier: Optional[str] = None,
+        bits: list[int] | set[int],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_props(arg_1, bits)
@@ -2026,7 +1995,6 @@ class A_ObjectMemoryClearBit(UsableActionScriptCommand, ActionScriptCommand):
             )
         return super().render(opcode)
 
-
 class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown - covers a wide range of known but undescribed memory operations)
 
@@ -2046,19 +2014,19 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
             - 0x09
             - 0x0C
 
-        set_bits (Union[List[int], Set[int]]): Bits to set. Validity depends on arg_1. These are the arrays allowed per arg_1 value:
+        set_bits (list[int] | set[int]): Bits to set. Validity depends on arg_1. These are the arrays allowed per arg_1 value:
             - 0x09: [5]
             - 0x0C: [4]
-        clear_bits (Union[List[int], Set[int]]): Bits to clear. Validity depends on arg_1. These are the arrays allowed per arg_1 value:
+        clear_bits (list[int] | set[int]): Bits to clear. Validity depends on arg_1. These are the arrays allowed per arg_1 value:
             - 0x09: [4, 6]
             - 0x0C: [3, 5]
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
     _arg_1: int
-    _set_bits: Set[int]
-    _clear_bits: Set[int]
+    _set_bits: set[int]
+    _clear_bits: set[int]
 
     @property
     def arg_1(self) -> int:
@@ -2066,20 +2034,20 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
         return self._arg_1
 
     @property
-    def set_bits(self) -> Set[int]:
+    def set_bits(self) -> set[int]:
         """(unknown)"""
         return self._set_bits
 
     @property
-    def clear_bits(self) -> Set[int]:
+    def clear_bits(self) -> set[int]:
         """(unknown)"""
         return self._clear_bits
 
     def set_props(
         self,
         arg_1: int,
-        set_bits: Union[List[int], Set[int]],
-        clear_bits: Union[List[int], Set[int]],
+        set_bits: list[int] | set[int],
+        clear_bits: list[int] | set[int],
     ) -> None:
         """(unknown)"""
         props_input = (arg_1, list(set_bits), list(clear_bits))
@@ -2094,9 +2062,9 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         arg_1: int,
-        set_bits: Optional[Union[List[int], Set[int]]] = None,
-        clear_bits: Optional[Union[List[int], Set[int]]] = None,
-        identifier: Optional[str] = None,
+        set_bits: list[int] | set[int] | None = None,
+        clear_bits: list[int] | set[int] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if set_bits is None:
             set_bits = set()
@@ -2115,7 +2083,6 @@ class A_ObjectMemoryModifyBits(UsableActionScriptCommand, ActionScriptCommand):
             f"illegal args for {self.identifier.label}: {args}"
         )
 
-
 class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
     """Set a bit in the range of long-term memory bits dedicated for use in event and action scripts.
 
@@ -2132,7 +2099,7 @@ class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         bit (Flag): The byte bit you wish to set.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -2147,7 +2114,7 @@ class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
         """Designate the exact bit to set."""
         self._bit = bit
 
-    def __init__(self, bit: Flag, identifier: Optional[str] = None) -> None:
+    def __init__(self, bit: Flag, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bit(bit)
 
@@ -2163,7 +2130,6 @@ class A_SetBit(UsableActionScriptCommand, ActionScriptCommand):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
-
 
 class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
     """Clear a bit in the range of long-term memory bits dedicated for use in event and action scripts.
@@ -2181,7 +2147,7 @@ class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         bit (Flag): The byte bit you wish to clear.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -2200,7 +2166,7 @@ class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
         """Designate the exact bit to clear."""
         self.set_bit(bit)
 
-    def __init__(self, bit: Flag, identifier: Optional[str] = None) -> None:
+    def __init__(self, bit: Flag, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bit(bit)
 
@@ -2216,7 +2182,6 @@ class A_ClearBit(UsableActionScriptCommand, ActionScriptCommand):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
-
 
 class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is set.
@@ -2234,8 +2199,8 @@ class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     Args:
         bit (Flag): The byte bit that needs to be set for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 4
@@ -2253,7 +2218,7 @@ class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         self._bit = bit
 
     def __init__(
-        self, bit: Flag, destinations: List[str], identifier: Optional[str] = None
+        self, bit: Flag, destinations: list[str], identifier: str | None = None
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bit(bit)
@@ -2271,7 +2236,6 @@ class A_JmpIfBitSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
 
-
 class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is clear.
 
@@ -2288,8 +2252,8 @@ class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     Args:
         bit (Flag): The byte bit that needs to be clear for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 4
@@ -2312,7 +2276,7 @@ class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         self.set_bit(bit)
 
     def __init__(
-        self, bit: Flag, destinations: List[str], identifier: Optional[str] = None
+        self, bit: Flag, destinations: list[str], identifier: str | None = None
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bit(bit)
@@ -2330,7 +2294,6 @@ class A_JmpIfBitClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
 
-
 class A_SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """For the literal value currently stored at $700C, set the bit that corresponds to this index (starting from $7040 bit 0).
     For example, if $700C is set to 5, then $7040 bit 5 will be set. If $700C is set to 12, then $7041 bit 4 will be set.
@@ -2345,11 +2308,10 @@ class A_SetMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA3
-
 
 class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """For the literal value currently stored at $700C, clear the bit that corresponds to this index (starting from $7040 bit 0).
@@ -2365,12 +2327,11 @@ class A_ClearMem704XAt700CBit(UsableActionScriptCommand, ActionScriptCommandNoAr
         1 byte
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA7
-
 
 class A_JmpIfMem704XAt700CBitSet(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -2388,8 +2349,8 @@ class A_JmpIfMem704XAt700CBitSet(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xDB
@@ -2397,7 +2358,6 @@ class A_JmpIfMem704XAt700CBitSet(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfMem704XAt700CBitClear(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -2415,8 +2375,8 @@ class A_JmpIfMem704XAt700CBitClear(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 3
@@ -2424,7 +2384,6 @@ class A_JmpIfMem704XAt700CBitClear(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
     """Set the longterm mem var to a constant number value.
@@ -2444,18 +2403,18 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         4 bytes if the variable is a short var
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to set
-        value (Union[int, Type[Item]]): The const you want to set the variable to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to set
+        value (int | type[Item]): The const you want to set the variable to
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the destination variable, or both,
         that will be used for this command. \n
@@ -2483,21 +2442,21 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ShortVar, ByteVar],
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        address: ShortVar | ByteVar,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_value_and_address(address, value)
@@ -2512,7 +2471,6 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
-
 
 class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
     """Add a const number value to a longterm mem var.
@@ -2532,13 +2490,13 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         4 bytes if the variable is a short var
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to add to
-        value (Union[int, Type[Item]]): The const you want to add to the variable
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to add to
+        value (int | type[Item]): The const you want to add to the variable
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(self, address=None, value=None) -> None:
         """Set the literal value, the destination variable, or both,
@@ -2565,21 +2523,21 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ShortVar, ByteVar],
+        address: ShortVar | ByteVar,
         value: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_value_and_address(address, value)
@@ -2594,7 +2552,6 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
-
 
 class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
     """Increase a variable by 1.
@@ -2614,8 +2571,8 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         2 bytes if any other variable
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to increase by 1
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to increase by 1
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -2628,7 +2585,6 @@ class A_Inc(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}"
         )
-
 
 class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
     """Decrease a variable by 1.
@@ -2648,8 +2604,8 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         2 bytes if any other variable
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to decrease by 1
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to decrease by 1
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -2662,7 +2618,6 @@ class A_Dec(UsableActionScriptCommand, ActionScriptCommandAnySizeMem):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}"
         )
-
 
 class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
     """Copy the value from one variable to another variable.
@@ -2686,13 +2641,13 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
         2 bytes otherwise
 
     Args:
-        from_var (Union[ShortVar, ByteVar]): The variable you're copying the value **from**.
-        to_var (Union[ShortVar, ByteVar]): The variable you're copying the value **to**.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        from_var (ShortVar | ByteVar): The variable you're copying the value **from**.
+        to_var (ShortVar | ByteVar): The variable you're copying the value **to**.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _from_var: Union[ShortVar, ByteVar]
-    _to_var: Union[ShortVar, ByteVar]
+    _from_var: ShortVar | ByteVar
+    _to_var: ShortVar | ByteVar
 
     def set_addresses(self, from_var=None, to_var=None):
         """Set the source variable, destination variable, or both.\n
@@ -2712,20 +2667,20 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             self._size: int = 2
 
     @property
-    def from_var(self) -> Union[ShortVar, ByteVar]:
+    def from_var(self) -> ShortVar | ByteVar:
         """The source variable, which the value is copied from."""
         return self._from_var
 
     @property
-    def to_var(self) -> Union[ShortVar, ByteVar]:
+    def to_var(self) -> ShortVar | ByteVar:
         """The destination variable, where the value is written to."""
         return self._to_var
 
     def __init__(
         self,
-        from_var: Union[ShortVar, ByteVar],
-        to_var: Union[ShortVar, ByteVar],
-        identifier: Optional[str] = None,
+        from_var: ShortVar | ByteVar,
+        to_var: ShortVar | ByteVar,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self._from_var = from_var
@@ -2748,7 +2703,6 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
             0x{self.from_var:04X} 0x{self.to_var:04X}"""
         )
 
-
 class A_CompareVarToConst(
     UsableActionScriptCommand, ActionScriptCommandShortAddrAndValueOnly
 ):
@@ -2769,8 +2723,8 @@ class A_CompareVarToConst(
 
     Args:
         address (ShortVar): The variable in question
-        value (Union[int, Type[Item]]): The constant number to compare the variable to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        value (int | type[Item]): The constant number to compare the variable to
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -2781,13 +2735,12 @@ class A_CompareVarToConst(
     def __init__(
         self,
         address: ShortVar,
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         if not isinstance(value, int) and issubclass(value, Item):
             value = value().item_id
         super().__init__(address, value, identifier)
-
 
 class A_Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Compare the value stored at $700C to the value stored at a given variable.
@@ -2805,12 +2758,11 @@ class A_Compare700CToVar(UsableActionScriptCommand, ActionScriptCommandShortMem)
 
     Args:
         address (ShortVar): The variable to compare $700C against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC1
     _size: int = 2
-
 
 class A_JmpIfComparisonResultIsGreaterOrEqual(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -2827,8 +2779,8 @@ class A_JmpIfComparisonResultIsGreaterOrEqual(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEC
@@ -2836,7 +2788,6 @@ class A_JmpIfComparisonResultIsGreaterOrEqual(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfComparisonResultIsLesser(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -2853,8 +2804,8 @@ class A_JmpIfComparisonResultIsLesser(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xED
@@ -2862,7 +2813,6 @@ class A_JmpIfComparisonResultIsLesser(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_SetVarToRandom(
     UsableActionScriptCommand, ActionScriptCommandShortAddrAndValueOnly
@@ -2882,16 +2832,15 @@ class A_SetVarToRandom(
         4 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to set
+        address (ShortVar | ByteVar): The variable you want to set
         value (int): The upper bound of possible random values (lower bound is always 0). 16 bit int.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         if self.address == ShortVar(0x700C):
             return super().render(0xB6, self.value)
         return super().render(0xB7, self.address, self.value)
-
 
 class A_AddVarTo700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Add the value stored at the given variable to $700C.
@@ -2906,13 +2855,12 @@ class A_AddVarTo700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
         2 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to add to $700C
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to add to $700C
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB8
     _size: int = 2
-
 
 class A_DecVarFrom700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Subtract the value stored at the given variable from $700C.
@@ -2927,13 +2875,12 @@ class A_DecVarFrom700C(UsableActionScriptCommand, ActionScriptCommandShortMem):
         2 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to subtract from $700C
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to subtract from $700C
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB9
     _size: int = 2
-
 
 class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
     """Swap the two variables' vales.
@@ -2950,7 +2897,7 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         memory_a (ShortVar): The first of the two variables you want to swap.
         memory_b (ShortVar): The second of the two variables you want to swap.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBD
@@ -2980,7 +2927,7 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
         self,
         memory_a: ShortVar,
         memory_b: ShortVar,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_memory_a(memory_a)
@@ -2988,7 +2935,6 @@ class A_SwapVars(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.memory_b, self.memory_a)
-
 
 class A_Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7010, $7012, and $7014 to replace the 16 bit values stored at $7016, $7018, and $701A.
@@ -3003,11 +2949,10 @@ class A_Move70107015To7016701B(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBE
-
 
 class A_Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7016, $7018, and $701A to replace the 16 bit values stored at $7010, $7012, and $7014.
@@ -3022,11 +2967,10 @@ class A_Move7016701BTo70107015(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBF
-
 
 class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the given variable matches the given value, jump to the section of code beginning with the given identifier.
@@ -3046,19 +2990,19 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         6 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to check
-        value (Union[int, Type[Item]]): The value to check the variable against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable equals the value.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to check
+        value (int | type[Item]): The value to check the variable against
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable equals the value.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the comparison variable, or both,
         that will be used for this command. \n
@@ -3086,22 +3030,22 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ByteVar, ShortVar],
-        value: Union[int, Type[Item]],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        address: ByteVar | ShortVar,
+        value: int | type[Item],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
@@ -3118,7 +3062,6 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
-
 
 class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the given variable does not match the given value, jump to the section of code beginning with the given identifier.
@@ -3138,19 +3081,19 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
         6 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to check
-        value (Union[int, Type[Item]]): The value to check the variable against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable doesn't equal the value.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to check
+        value (int | type[Item]): The value to check the variable against
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable doesn't equal the value.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the comparison variable, or both,
         that will be used for this command. \n
@@ -3178,22 +3121,22 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ByteVar, ShortVar],
-        value: Union[int, Type[Item]],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        address: ByteVar | ShortVar,
+        value: int | type[Item],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
@@ -3211,7 +3154,6 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
             f"illegal args for {self.identifier.label}: 0x{self.address:04X}: {self.value}"
         )
 
-
 class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If all of the stated bits are clear on $700C, go to to the script command indicated by the given identifier.
 
@@ -3225,21 +3167,21 @@ class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWith
         5 bytes
 
     Args:
-        bits (List[int]): The bits to check for on $700C (0 to 15)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if all the bits are clear.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits to check for on $700C (0 to 15)
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if all the bits are clear.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE6
     _size: int = 5
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """All of the bit positions which should be clear in order to execute the goto."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Overwrite the list of the bit positions which should be clear
         in order to execute the goto."""
         for bit in bits:
@@ -3248,9 +3190,9 @@ class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWith
 
     def __init__(
         self,
-        bits: List[int],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        bits: list[int],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bits(bits)
@@ -3258,7 +3200,6 @@ class A_JmpIf700CAllBitsClear(UsableActionScriptCommand, ActionScriptCommandWith
     def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
-
 
 class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If any of the stated bits are set on $700C, go to to the script command indicated by the given identifier.
@@ -3273,21 +3214,21 @@ class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJm
         5 bytes
 
     Args:
-        bits (List[int]): The bits to check for on $700C (0 to 15)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if any of the bits are set.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The bits to check for on $700C (0 to 15)
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if any of the bits are set.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE7
     _size: int = 5
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """The bit positions, of which any should be set in order to execute the goto."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Overwrite the list of the bit positions which, if any one is set,
         would execute the goto."""
         for bit in bits:
@@ -3296,9 +3237,9 @@ class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJm
 
     def __init__(
         self,
-        bits: List[int],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        bits: list[int],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bits(bits)
@@ -3306,7 +3247,6 @@ class A_JmpIf700CAnyBitsSet(UsableActionScriptCommand, ActionScriptCommandWithJm
     def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
-
 
 class A_JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """There is a 2/3 chance that, when this command is executed, the script will jump to one of the two commands indicated by label.
@@ -3321,8 +3261,8 @@ class A_JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         5 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of the two commands that there should be a 33% chance to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of the two commands that there should be a 33% chance to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE9
@@ -3330,7 +3270,6 @@ class A_JmpIfRandom2of3(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given identifier.
@@ -3345,8 +3284,8 @@ class A_JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command that there should be a 50% chance to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command that there should be a 50% chance to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE8
@@ -3354,7 +3293,6 @@ class A_JmpIfRandom1of2(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was zero (both values were equal).
@@ -3369,8 +3307,8 @@ class A_JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJ
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEA
@@ -3378,7 +3316,6 @@ class A_JmpIfLoadedMemoryIs0(UsableActionScriptCommand, ActionScriptCommandWithJ
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -3395,8 +3332,8 @@ class A_JmpIfLoadedMemoryIsAboveOrEqual0(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEF
@@ -3404,7 +3341,6 @@ class A_JmpIfLoadedMemoryIsAboveOrEqual0(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfLoadedMemoryIsBelow0(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -3421,8 +3357,8 @@ class A_JmpIfLoadedMemoryIsBelow0(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEE
@@ -3430,7 +3366,6 @@ class A_JmpIfLoadedMemoryIsBelow0(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given identifier if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
@@ -3445,8 +3380,8 @@ class A_JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWi
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEB
@@ -3454,7 +3389,6 @@ class A_JmpIfLoadedMemoryIsNot0(UsableActionScriptCommand, ActionScriptCommandWi
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class A_Mem700CAndConst(
     UsableActionScriptCommand, ActionScriptCommandBasicShortOperation
@@ -3472,11 +3406,10 @@ class A_Mem700CAndConst(
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB0])
-
 
 class A_Mem700CAndVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform a bitwise AND operation between the value of $700C and another variable, save the result to $700C.
@@ -3491,13 +3424,12 @@ class A_Mem700CAndVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB3])
     _size: int = 3
-
 
 class A_Mem700COrConst(
     UsableActionScriptCommand, ActionScriptCommandBasicShortOperation
@@ -3515,11 +3447,10 @@ class A_Mem700COrConst(
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB1])
-
 
 class A_Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform a bitwise OR operation between the value of $700C and another variable, save the result to $700C.
@@ -3534,13 +3465,12 @@ class A_Mem700COrVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB4])
     _size: int = 3
-
 
 class A_Mem700CXorConst(
     UsableActionScriptCommand, ActionScriptCommandBasicShortOperation
@@ -3558,11 +3488,10 @@ class A_Mem700CXorConst(
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB2])
-
 
 class A_Mem700CXorVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """Perform a bitwise XOR operation between the value of $700C and another variable, save the result to $700C.
@@ -3577,13 +3506,12 @@ class A_Mem700CXorVar(UsableActionScriptCommand, ActionScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB5])
     _size: int = 3
-
 
 class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
     """Shift the specified variable to the left by the given amount of bits.
@@ -3600,7 +3528,7 @@ class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         address (ShortVar): The variable to have its value shifted.
         shift (int): The amount of bits to shift the value left by.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB6])
@@ -3628,7 +3556,7 @@ class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
         self._shift = UInt8(shift - 1)
 
     def __init__(
-        self, address: ShortVar, shift: int, identifier: Optional[str] = None
+        self, address: ShortVar, shift: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_address(address)
@@ -3636,7 +3564,6 @@ class A_VarShiftLeft(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.address, 0x100 - self.shift)
-
 
 class A_LoadMemory(UsableActionScriptCommand, ActionScriptCommandShortMem):
     """(unknown)
@@ -3652,15 +3579,13 @@ class A_LoadMemory(UsableActionScriptCommand, ActionScriptCommandShortMem):
 
     Args:
         address (ShortVar): The variable to load(?).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD6
     _size: int = 2
 
-
 # sequencing
-
 
 class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
     """Change the active sprite sequence or static mold for the NPC.
@@ -3681,7 +3606,7 @@ class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         is_sequence (bool): (unknown how this actually works)
         looping (bool): If true, the sprite sequence will loop infinitely. If false, the sprite sequence will play once, and the NPC will remain in the position of the sequence's final frame. This has no effect if you are loading a mold and not a sequence.
         mirror_sprite (bool): If true, the sprite will be mirrored horizontally from its default position.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x08
@@ -3770,7 +3695,7 @@ class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         is_sequence: bool = False,
         looping: bool = False,
         mirror_sprite: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         if is_mold:
             assert 0 <= index <= 31
@@ -3794,7 +3719,6 @@ class A_SetSpriteSequence(UsableActionScriptCommand, ActionScriptCommand):
         arg = UInt16((self.index << 8) | self.sprite_offset | flags)
         return super().render(arg)
 
-
 class A_SequencePlaybackOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to resume.
 
@@ -3808,11 +3732,10 @@ class A_SequencePlaybackOn(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x02
-
 
 class A_SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Halts the NPC's active sprite sequence.
@@ -3827,11 +3750,10 @@ class A_SequencePlaybackOff(UsableActionScriptCommand, ActionScriptCommandNoArgs
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x03
-
 
 class A_SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to loop infinitely.
@@ -3846,11 +3768,10 @@ class A_SequenceLoopingOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x04
-
 
 class A_SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Causes the NPC's active sprite sequence to half upon completion of its current iteration.
@@ -3865,11 +3786,10 @@ class A_SequenceLoopingOff(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x05
-
 
 class _SetAnimationSpeed(ActionScriptCommand):
     """Applies a pre-set multiplier to either the duration of each frame in the NPC's
@@ -3915,7 +3835,7 @@ class _SetAnimationSpeed(ActionScriptCommand):
         speed: SequenceSpeed,
         sequence: bool = False,
         walking: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
@@ -3928,7 +3848,6 @@ class _SetAnimationSpeed(ActionScriptCommand):
         assert self.walking or self.sequence
         flags = bools_to_int(self.walking, self.sequence) << 6
         return super().render(UInt8(self.speed + flags))
-
 
 class A_SetSequenceSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to the duration of each frame in the NPC's active sequence.
@@ -3945,16 +3864,15 @@ class A_SetSequenceSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
 
     Args:
         speed (SequenceSpeed): The playback speed of the sprite's animation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         speed: SequenceSpeed,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(speed, sequence=True, walking=False, identifier=identifier)
-
 
 class A_SetWalkingSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to the NPC's walking speed.
@@ -3971,16 +3889,15 @@ class A_SetWalkingSpeed(_SetAnimationSpeed, UsableActionScriptCommand):
 
     Args:
         speed (SequenceSpeed): How fast the NPC should walk.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         speed: SequenceSpeed,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(speed, sequence=False, walking=True, identifier=identifier)
-
 
 class A_SetAllSpeeds(_SetAnimationSpeed, UsableActionScriptCommand):
     """Applies a pre-set multiplier to both the duration of each frame in the NPC's active sequence and the NPC's walking speed.
@@ -3996,16 +3913,15 @@ class A_SetAllSpeeds(_SetAnimationSpeed, UsableActionScriptCommand):
 
     Args:
         speed (SequenceSpeed): How fast the NPC should walk as well as how fast its animation playback should be.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         speed: SequenceSpeed,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(speed, sequence=True, walking=True, identifier=identifier)
-
 
 class A_EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand):
     """(unknown)
@@ -4025,7 +3941,7 @@ class A_EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand)
 
     Args:
         args (bytearray): 16 bytes starting with one of the three opcodes.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _args: bytearray
@@ -4042,13 +3958,12 @@ class A_EmbeddedAnimationRoutine(UsableActionScriptCommand, ActionScriptCommand)
         assert args[0] in [0x26, 0x27, 0x28]
         self._args = args
 
-    def __init__(self, args: bytearray, identifier: Optional[str] = None) -> None:
+    def __init__(self, args: bytearray, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_args(args)
 
     def render(self, *args) -> bytearray:
         return super().render(self.args)
-
 
 class A_MaximizeSequenceSpeed(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the NPC's sequence speed to its highest value. Not known if this actually works.
@@ -4063,11 +3978,10 @@ class A_MaximizeSequenceSpeed(UsableActionScriptCommand, ActionScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x85
-
 
 class A_MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the NPC's sequence speed to its highest value. Not known if this actually works.
@@ -4082,14 +3996,12 @@ class A_MaximizeSequenceSpeed86(UsableActionScriptCommand, ActionScriptCommandNo
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x86
 
-
 # positioning
-
 
 class A_FixedFCoordOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC will not change the direction it is currently facing regardless of any other movements it makes.
@@ -4104,11 +4016,10 @@ class A_FixedFCoordOn(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x06
-
 
 class A_FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """The NPC can change the direction it's facing when it moves in a certain direction.
@@ -4123,11 +4034,10 @@ class A_FixedFCoordOff(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x07
-
 
 class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If this NPC and the specified NPC are less than the given number of tiles apart (ignoring Z axis), go to the section of code indicated by the identifier.
@@ -4145,8 +4055,8 @@ class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWit
         comparing_npc (AreaObject): The object to check if this NPC is within range of. Use the pre-defined ones in area_objects.py.
         usually (int): (unknown)
         tiles (int): The upper threshold of tiles separating this NPC from the specified NPC which will trigger the goto.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3A
@@ -4189,8 +4099,8 @@ class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWit
         comparing_npc: AreaObject,
         usually: int,
         tiles: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_comparing_npc(comparing_npc)
@@ -4201,7 +4111,6 @@ class A_JmpIfObjectWithinRange(UsableActionScriptCommand, ActionScriptCommandWit
         return super().render(
             self.comparing_npc, self.usually, self.tiles, *self.destinations
         )
-
 
 class A_JmpIfObjectWithinRangeSameZ(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -4221,8 +4130,8 @@ class A_JmpIfObjectWithinRangeSameZ(
         comparing_npc (AreaObject): The object to check if this NPC is within range of. Use the pre-defined ones in area_objects.py.
         usually (int): (unknown)
         tiles (int): The upper threshold of tiles separating this NPC from the specified NPC which will trigger the goto.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3B
@@ -4265,8 +4174,8 @@ class A_JmpIfObjectWithinRangeSameZ(
         comparing_npc: AreaObject,
         usually: int,
         tiles: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_comparing_npc(comparing_npc)
@@ -4277,7 +4186,6 @@ class A_JmpIfObjectWithinRangeSameZ(
         return super().render(
             self.comparing_npc, self.usually, self.tiles, *self.destinations
         )
-
 
 class A_Walk1StepEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step east
@@ -4292,11 +4200,10 @@ class A_Walk1StepEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x40
-
 
 class A_Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step southeast
@@ -4311,11 +4218,10 @@ class A_Walk1StepSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x41
-
 
 class A_Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step south
@@ -4330,11 +4236,10 @@ class A_Walk1StepSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x42
-
 
 class A_Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step southwest
@@ -4349,11 +4254,10 @@ class A_Walk1StepSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x43
-
 
 class A_Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step west
@@ -4368,11 +4272,10 @@ class A_Walk1StepWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x44
-
 
 class A_Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step northwest
@@ -4387,11 +4290,10 @@ class A_Walk1StepNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x45
-
 
 class A_Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step north
@@ -4406,11 +4308,10 @@ class A_Walk1StepNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x46
-
 
 class A_Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step northeast
@@ -4425,11 +4326,10 @@ class A_Walk1StepNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x47
-
 
 class A_Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 1 step in the direction the NPC is currently facing
@@ -4444,11 +4344,10 @@ class A_Walk1StepFDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x48
-
 
 class A_AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Rise 1 step on the Z axis
@@ -4463,11 +4362,10 @@ class A_AddZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4A
-
 
 class A_DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Lower 1 step on the Z axis
@@ -4482,11 +4380,10 @@ class A_DecZCoord1Step(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4B
-
 
 class A_WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps eastward.
@@ -4502,11 +4399,10 @@ class A_WalkEastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x50
-
 
 class A_WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southeastward.
@@ -4522,11 +4418,10 @@ class A_WalkSoutheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x51
-
 
 class A_WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southward.
@@ -4542,11 +4437,10 @@ class A_WalkSouthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x52
-
 
 class A_WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps southwestward.
@@ -4562,11 +4456,10 @@ class A_WalkSouthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x53
-
 
 class A_WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps westward.
@@ -4582,11 +4475,10 @@ class A_WalkWestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x54
-
 
 class A_WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northwestward.
@@ -4602,11 +4494,10 @@ class A_WalkNorthwestSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x55
-
 
 class A_WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northward.
@@ -4622,11 +4513,10 @@ class A_WalkNorthSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x56
-
 
 class A_WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps northeastward.
@@ -4642,11 +4532,10 @@ class A_WalkNortheastSteps(UsableActionScriptCommand, ActionScriptCommandByteSte
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x57
-
 
 class A_WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Walk the given number of steps in the direction the NPC is currently facing.
@@ -4662,11 +4551,10 @@ class A_WalkFDirectionSteps(UsableActionScriptCommand, ActionScriptCommandByteSt
 
     Args:
         steps (int): The number of steps to walk (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x58
-
 
 class A_WalkF20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 20 steps in the direction the NPC is currently facing.
@@ -4681,11 +4569,10 @@ class A_WalkF20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x59
-
 
 class A_ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Shift the given number of steps upward on the Z axis.
@@ -4701,11 +4588,10 @@ class A_ShiftZUpSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
 
     Args:
         steps (int): The number of steps to rise by (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5A
-
 
 class A_ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps):
     """Shift the given number of steps downward on the Z axis.
@@ -4721,11 +4607,10 @@ class A_ShiftZDownSteps(UsableActionScriptCommand, ActionScriptCommandByteSteps)
 
     Args:
         steps (int): The number of steps to descend by (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5B
-
 
 class A_ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Shift 20 steps upward on the Z axis.
@@ -4740,11 +4625,10 @@ class A_ShiftZUp20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5C
-
 
 class A_ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Shift 20 steps downward on the Z axis.
@@ -4759,11 +4643,10 @@ class A_ShiftZDown20Steps(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5D
-
 
 class A_WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels eastward.
@@ -4779,11 +4662,10 @@ class A_WalkEastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x60
-
 
 class A_WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southeastward.
@@ -4799,11 +4681,10 @@ class A_WalkSoutheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x61
-
 
 class A_WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southward.
@@ -4819,11 +4700,10 @@ class A_WalkSouthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x62
-
 
 class A_WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels southwestward.
@@ -4839,11 +4719,10 @@ class A_WalkSouthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x63
-
 
 class A_WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels westward.
@@ -4859,11 +4738,10 @@ class A_WalkWestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x64
-
 
 class A_WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northwestward.
@@ -4879,11 +4757,10 @@ class A_WalkNorthwestPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x65
-
 
 class A_WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northward.
@@ -4899,11 +4776,10 @@ class A_WalkNorthPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x66
-
 
 class A_WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels northeastward.
@@ -4919,11 +4795,10 @@ class A_WalkNortheastPixels(UsableActionScriptCommand, ActionScriptCommandBytePi
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x67
-
 
 class A_WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Walk the given number of pixels in the direction the NPC is currently facing.
@@ -4939,11 +4814,10 @@ class A_WalkFDirectionPixels(UsableActionScriptCommand, ActionScriptCommandByteP
 
     Args:
         pixels (int): The distance to walk in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x68
-
 
 class A_WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Walk 16 pixels in the direction the NPC is currently facing.
@@ -4958,11 +4832,10 @@ class A_WalkFDirection16Pixels(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x69
-
 
 class A_ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Shift the given number of pixels upward on the Z axis.
@@ -4978,11 +4851,10 @@ class A_ShiftZUpPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels)
 
     Args:
         pixels (int): The distance to rise in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6A
-
 
 class A_ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixels):
     """Shift the given number of pixels downward on the Z axis.
@@ -4998,11 +4870,10 @@ class A_ShiftZDownPixels(UsableActionScriptCommand, ActionScriptCommandBytePixel
 
     Args:
         pixels (int): The distance to descend in pixels (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6B
-
 
 class A_FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face eastward.
@@ -5017,11 +4888,10 @@ class A_FaceEast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x70
-
 
 class A_FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face eastward (unknown if this is different from `FaceEast`).
@@ -5036,11 +4906,10 @@ class A_FaceEast7C(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7C
-
 
 class A_FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southeastward.
@@ -5055,11 +4924,10 @@ class A_FaceSoutheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x71
-
 
 class A_FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southward.
@@ -5074,11 +4942,10 @@ class A_FaceSouth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x72
-
 
 class A_FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face southwestward.
@@ -5093,11 +4960,10 @@ class A_FaceSouthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x73
-
 
 class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
     """Face southwestward (unknown how this differs from FaceSouthwest).
@@ -5113,7 +4979,7 @@ class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         arg (int): An 8 bit int, purpose unknown
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -5129,13 +4995,12 @@ class A_FaceSouthwest7D(UsableActionScriptCommand, ActionScriptCommand):
         """(unknown)"""
         self._arg = UInt8(arg)
 
-    def __init__(self, arg: int = 0, identifier: Optional[str] = None) -> None:
+    def __init__(self, arg: int = 0, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_arg(arg)
 
     def render(self, *args) -> bytearray:
         return super().render(self.arg)
-
 
 class A_FaceWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face westward.
@@ -5150,11 +5015,10 @@ class A_FaceWest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x74
-
 
 class A_FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northwestward.
@@ -5169,11 +5033,10 @@ class A_FaceNorthwest(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x75
-
 
 class A_FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northward.
@@ -5188,11 +5051,10 @@ class A_FaceNorth(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x76
-
 
 class A_FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face northeastward.
@@ -5207,11 +5069,10 @@ class A_FaceNortheast(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x77
-
 
 class A_FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Face toward the player.
@@ -5226,11 +5087,10 @@ class A_FaceMario(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x78
-
 
 class A_TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Turn clockwise 45 degrees once.
@@ -5245,11 +5105,10 @@ class A_TurnClockwise45Degrees(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x79
-
 
 class A_TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Turn any random direction supported by the NPC's VRAMsetting.
@@ -5264,11 +5123,10 @@ class A_TurnRandomDirection(UsableActionScriptCommand, ActionScriptCommandNoArgs
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7A
-
 
 class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptCommand):
     """Turn clockwise 45 degrees, repeated a given number of times.
@@ -5284,7 +5142,7 @@ class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptComm
 
     Args:
         count (int): The number of times to turn clockwise
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7B
@@ -5300,13 +5158,12 @@ class A_TurnClockwise45DegreesNTimes(UsableActionScriptCommand, ActionScriptComm
         """Set the number of times to turn clockwise."""
         self._count = UInt8(count)
 
-    def __init__(self, count: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, count: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_count(count)
 
     def render(self, *args) -> bytearray:
         return super().render(self.count)
-
 
 class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
     """The NPC jumps off its current surface to a given height (unknown units).
@@ -5325,7 +5182,7 @@ class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         height (int): (Unit of measurement unknown)
         silent (bool): If true, this jump action will not make a sound effect.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 3
@@ -5351,7 +5208,7 @@ class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
         self._silent = silent
 
     def __init__(
-        self, height: int, silent: bool = False, identifier: Optional[str] = None
+        self, height: int, silent: bool = False, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_height(height)
@@ -5361,7 +5218,6 @@ class A_JumpToHeight(UsableActionScriptCommand, ActionScriptCommand):
         if self.silent:
             return super().render(0x7E, self.height)
         return super().render(0x7F, self.height)
-
 
 class A_WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Walk to the indicated X-Y coordinates (performs walking animation).
@@ -5378,11 +5234,10 @@ class A_WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     Args:
         x (int): The X coordinate to move to (8 bit int)
         y (int): The Y coordinate to move to (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x80
-
 
 class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Walk the indicated number of steps in the X and Y directions (performs walking animation).
@@ -5399,11 +5254,10 @@ class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     Args:
         x (int): Steps to walk in the X direction (8 bit int)
         y (int): Steps to walk in the Y direction (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x81
-
 
 class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift to the indicated X-Y coordinates (does not perform walking animation).
@@ -5420,11 +5274,10 @@ class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     Args:
         x (int): The X coordinate to slide to (8 bit int)
         y (int): The Y coordinate to slide to (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x82
-
 
 class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift the indicated number of steps in the X and Y directions (does not perform walking animation).
@@ -5441,11 +5294,10 @@ class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     Args:
         x (int): Steps to slide in the X direction (8 bit int)
         y (int): Steps to slide in the Y direction (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x83
-
 
 class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     """Shift the indicated number of pixels in the X and Y directions (does not perform walking animation).
@@ -5462,11 +5314,10 @@ class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
     Args:
         x (int): Pixels to slide in the X direction (8 bit int)
         y (int): Pixels to slide in the Y direction (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x84
-
 
 class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the X/Y coordinates of the specified object (ignore Z coord).
@@ -5482,7 +5333,7 @@ class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         target_npc (AreaObject): The field object to teleport to. Use the pre-defined ones in area_objects.py.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x87
@@ -5501,14 +5352,13 @@ class A_TransferToObjectXY(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         target_npc: AreaObject,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target_npc)
-
 
 class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the X/Y/Z coordinates of the specified object.
@@ -5524,7 +5374,7 @@ class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
 
     Args:
         target_npc (AreaObject): The field object to teleport to. Use the pre-defined ones in area_objects.py.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x95
@@ -5543,14 +5393,13 @@ class A_TransferToObjectXYZ(UsableActionScriptCommand, ActionScriptCommand):
     def __init__(
         self,
         target_npc: AreaObject,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target_npc)
-
 
 class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(unknown)
@@ -5565,11 +5414,10 @@ class A_RunAwayShift(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x8A
-
 
 class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Instantly transfer this NPC to the X/Y pixel coordinates corresponding to the 16 bit values currently stored at $7016 and $7018.
@@ -5584,11 +5432,10 @@ class A_TransferTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x89
-
 
 class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Transfer this NPC to the X/Y/Z pixel coordinates corresponding to the 16 bit values currently stored at $7016, $7018, and $701A.
@@ -5603,11 +5450,10 @@ class A_TransferTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x99
-
 
 class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y pixel coordinates corresponding to the 16 bit values currently stored at $7016 and $7018.
@@ -5622,11 +5468,10 @@ class A_WalkTo70167018(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x88
-
 
 class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """This NPC walks to the X/Y/Z pixel coordinates corresponding to the 16 bit values currently stored at $7016, $7018, and $701A.
@@ -5641,11 +5486,10 @@ class A_WalkTo70167018701A(UsableActionScriptCommand, ActionScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x98
-
 
 class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
     """This NPC jumps to a given X/Y coord set while also jumping to the specified height.
@@ -5663,7 +5507,7 @@ class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         x (int): The X coordinate at which the NPC should land (8 bit)
         y (int): The Y coordinate at which the NPC should land (8 bit)
         height (int): (Unit of measurement unknown) (8 bit)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x90
@@ -5700,7 +5544,7 @@ class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         self._height = UInt8(height)
 
     def __init__(
-        self, x: int, y: int, height: int, identifier: Optional[str] = None
+        self, x: int, y: int, height: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_x(x)
@@ -5709,7 +5553,6 @@ class A_BounceToXYWithHeight(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.x, self.y, self.height)
-
 
 class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
     """This NPC jumps the ground distance given by an X/Y coord set and peaks at the specified height.
@@ -5727,7 +5570,7 @@ class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         x (int): The X axis component of the NPC's jump distance (8 bit)
         y (int): The Y axis component of the NPC's jump distance (8 bit)
         height (int): (Unit of measurement unknown) (8 bit)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x91
@@ -5764,7 +5607,7 @@ class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
         self._height = UInt8(height)
 
     def __init__(
-        self, x: int, y: int, height: int, identifier: Optional[str] = None
+        self, x: int, y: int, height: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_x(x)
@@ -5773,7 +5616,6 @@ class A_BounceXYStepsWithHeight(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.x, self.y, self.height)
-
 
 class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to the given X/Y/Z coordinates, facing the given direction.
@@ -5792,7 +5634,7 @@ class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
         y (int): The Y coordinate at which to place the NPC (8 bit int)
         z (int): The Z coordinate at which to place the NPC (0 to 31, no negatives)
         direction (Direction): The direction which the NPC should face when finished
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x92
@@ -5845,7 +5687,7 @@ class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
         y: int,
         z: int,
         direction: Direction,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_x(x)
@@ -5856,7 +5698,6 @@ class A_TransferToXYZF(UsableActionScriptCommand, ActionScriptCommand):
     def render(self, *args) -> bytearray:
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
-
 
 class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to coordinates which are X/Y/Z units away, facing the given direction.
@@ -5875,7 +5716,7 @@ class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
         y (int): Steps to teleport in the Y direction (8 bit int)
         z (int): Steps to teleport upward in the Z direction (0 to 31, no negatives)
         direction (Direction): The direction which the NPC should face when finished
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x93
@@ -5928,7 +5769,7 @@ class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
         y: int,
         z: int,
         direction: Direction,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_x(x)
@@ -5939,7 +5780,6 @@ class A_TransferXYZFSteps(UsableActionScriptCommand, ActionScriptCommand):
     def render(self, *args) -> bytearray:
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
-
 
 class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
     """Instantly teleport to coordinates which are X/Y/Z pixels away, facing the given direction.
@@ -5958,7 +5798,7 @@ class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
         y (int): Pixels to teleport in the Y direction (8 bit int)
         z (int): Pixels to teleport upward in the Z direction (0 to 31, no negatives)
         direction (Direction): The direction which the NPC should face when finished
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x94
@@ -6011,7 +5851,7 @@ class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
         y: int,
         z: int,
         direction: Direction,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_x(x)
@@ -6023,9 +5863,7 @@ class A_TransferXYZFPixels(UsableActionScriptCommand, ActionScriptCommand):
         final_byte = UInt8(self.z + (self.direction << 5))
         return super().render(self.x, self.y, final_byte)
 
-
 # room objects and camera
-
 
 class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
     """Sets $700C to the pixel or isometric coordinate value of one dimension from any NPC's current coordinates.
@@ -6049,7 +5887,7 @@ class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         isometric (bool): If true, stores the isometric coord value (i.e. tile coord) instead of the pixel value. Exclusive with the `pixel` arg.
         pixel (bool): If true, stores the pixel coord value instead of the tile/isometric coord value. Exclusive with the `isometric` arg.
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -6103,7 +5941,7 @@ class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
         isometric: bool = False,
         pixel: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         if coord != COORD_F:
             assert isometric ^ pixel
@@ -6119,7 +5957,6 @@ class A_Set700CToObjectCoord(UsableActionScriptCommand, ActionScriptCommand):
             (self.bit_7 << 7) + (self.is_isometric_not_pixel << 6) + self.target_npc
         )
         return super().render(opcode, arg_1)
-
 
 class A_CreatePacketAtObjectCoords(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -6138,8 +5975,8 @@ class A_CreatePacketAtObjectCoords(
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
         target_npc (AreaObject): The field object whose coordinates to spawn the packet at. Use the pre-defined ones in area_objects.py.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3E
@@ -6170,8 +6007,8 @@ class A_CreatePacketAtObjectCoords(
         self,
         packet: Packet,
         target_npc: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
@@ -6179,7 +6016,6 @@ class A_CreatePacketAtObjectCoords(
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.target_npc, *self.destinations)
-
 
 class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014.
@@ -6195,8 +6031,8 @@ class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmp
 
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3F
@@ -6216,15 +6052,14 @@ class A_CreatePacketAt7010(UsableActionScriptCommand, ActionScriptCommandWithJmp
     def __init__(
         self,
         packet: Packet,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, *self.destinations)
-
 
 class A_CreatePacketAt7010WithEvent(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -6243,8 +6078,8 @@ class A_CreatePacketAt7010WithEvent(
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
         event_id (int): The ID of the event that should run when the spawned packet is touched.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x3E])
@@ -6277,8 +6112,8 @@ class A_CreatePacketAt7010WithEvent(
         self,
         packet: Packet,
         event_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
@@ -6286,7 +6121,6 @@ class A_CreatePacketAt7010WithEvent(
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.event_id, *self.destinations)
-
 
 class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
     """Summon a NPC to the given level by its NPC ID within the level.
@@ -6304,7 +6138,7 @@ class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptComma
     Args:
         target_npc (AreaObject): The field object to make present in the level. Use the pre-defined ones in area_objects.py.
         level_id (int): The level to make the object present in.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF2
@@ -6333,7 +6167,7 @@ class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptComma
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -6342,7 +6176,6 @@ class A_SummonObjectToSpecificLevel(UsableActionScriptCommand, ActionScriptComma
     def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1)
-
 
 class A_SummonObjectAt70A8ToCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
@@ -6360,11 +6193,10 @@ class A_SummonObjectAt70A8ToCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF4
-
 
 class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCommand):
     """Remove a NPC from the given level by its NPC ID within the level.
@@ -6382,7 +6214,7 @@ class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCom
     Args:
         target_npc (AreaObject): The field object to remove in the level. Use the pre-defined ones in area_objects.py.
         level_id (int): The level to remove the object from.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF2
@@ -6411,7 +6243,7 @@ class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCom
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -6421,7 +6253,6 @@ class A_RemoveObjectFromSpecificLevel(UsableActionScriptCommand, ActionScriptCom
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1)
-
 
 class A_RemoveObjectAt70A8FromCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
@@ -6439,11 +6270,10 @@ class A_RemoveObjectAt70A8FromCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF5
-
 
 class A_EnableObjectTriggerInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommand
@@ -6463,7 +6293,7 @@ class A_EnableObjectTriggerInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC whose object trigger to enable. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room in which the NPC whose object trigger is being enabled lives
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF3
@@ -6494,7 +6324,7 @@ class A_EnableObjectTriggerInSpecificLevel(
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -6503,7 +6333,6 @@ class A_EnableObjectTriggerInSpecificLevel(
     def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1)
-
 
 class A_EnableTriggerOfObjectAt70A8InCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
@@ -6522,11 +6351,10 @@ class A_EnableTriggerOfObjectAt70A8InCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF6
-
 
 class A_DisableObjectTriggerInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommand
@@ -6546,7 +6374,7 @@ class A_DisableObjectTriggerInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC whose object trigger to disable. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room in which the NPC whose object trigger is being disabled lives
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF3
@@ -6577,7 +6405,7 @@ class A_DisableObjectTriggerInSpecificLevel(
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -6587,7 +6415,6 @@ class A_DisableObjectTriggerInSpecificLevel(
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1)
-
 
 class A_DisableTriggerOfObjectAt70A8InCurrentLevel(
     UsableActionScriptCommand, ActionScriptCommandNoArgs
@@ -6605,11 +6432,10 @@ class A_DisableTriggerOfObjectAt70A8InCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF7
-
 
 class A_JmpIfObjectInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -6628,8 +6454,8 @@ class A_JmpIfObjectInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF8
@@ -6661,8 +6487,8 @@ class A_JmpIfObjectInSpecificLevel(
         self,
         target_npc: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
@@ -6671,7 +6497,6 @@ class A_JmpIfObjectInSpecificLevel(
     def render(self, *args) -> bytearray:
         arg_1 = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg_1, *self.destinations)
-
 
 class A_JmpIfObjectNotInSpecificLevel(
     UsableActionScriptCommand, ActionScriptCommandWithJmps
@@ -6690,8 +6515,8 @@ class A_JmpIfObjectNotInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is absent from the level.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is absent from the level.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF8
@@ -6723,8 +6548,8 @@ class A_JmpIfObjectNotInSpecificLevel(
         self,
         target_npc: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
@@ -6734,7 +6559,6 @@ class A_JmpIfObjectNotInSpecificLevel(
         arg_1 = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg_1 <= 0x7FFF
         return super().render(arg_1, *self.destinations)
-
 
 class A_JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the specified NPC is currently airborne, jump to the command matching the label.
@@ -6750,8 +6574,8 @@ class A_JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps)
 
     Args:
         target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is airborne.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is airborne.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x3D])
@@ -6770,15 +6594,14 @@ class A_JmpIfObjectInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps)
     def __init__(
         self,
         target_npc: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
 
     def render(self, *args) -> bytearray:
         return super().render(self._target_npc, *self.destinations)
-
 
 class A_Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the value of $700C to the ID of the current level.
@@ -6793,14 +6616,12 @@ class A_Set700CToCurrentLevel(UsableActionScriptCommand, ActionScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC3
 
-
 # controls
-
 
 class A_Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the bits of $700C to correspond to all currently pressed buttons.
@@ -6823,11 +6644,10 @@ class A_Set700CToPressedButton(UsableActionScriptCommand, ActionScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCA
-
 
 class A_Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Set the bits of $700C to correspond to an individual tapped button.
@@ -6850,14 +6670,12 @@ class A_Set700CToTappedButton(UsableActionScriptCommand, ActionScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCB
 
-
 # palettes
-
 
 class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
     """Change the row offset of the default palette.
@@ -6874,7 +6692,7 @@ class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         row (int): The row offset relative to the default palette. (4 bit int)
         upper (int): (unknown 4 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x0D
@@ -6901,7 +6719,7 @@ class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
         self._upper = UInt4(upper)
 
     def __init__(
-        self, row: int, upper: int = 0, identifier: Optional[str] = None
+        self, row: int, upper: int = 0, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_row(row)
@@ -6909,7 +6727,6 @@ class A_SetPaletteRow(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(UInt8((self._upper << 4) + self.row))
-
 
 class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
     """Increase the row offset relative to the current palette by a given amount.
@@ -6929,7 +6746,7 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         rows (int): The row offset to increase by, relative to the current palette. (4 bit int)
         upper (int): Optional upper 4 bits when increasing palette row by >1 (4 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _rows = UInt4(0)
@@ -6961,7 +6778,7 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         self._rows = UInt4(rows)
 
     def __init__(
-        self, rows: int, upper: int = 0, identifier: Optional[str] = None
+        self, rows: int, upper: int = 0, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_rows(rows)
@@ -6972,9 +6789,7 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
             return super().render(0x0F)
         return super().render(0x0E, UInt8((self.upper << 4) + self.rows))
 
-
 # branching / jumps
-
 
 class A_BPL262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(ASM instruction, effect unknown)
@@ -6989,11 +6804,10 @@ class A_BPL262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x21
-
 
 class A_BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(ASM instruction, effect unknown)
@@ -7008,11 +6822,10 @@ class A_BMI262728(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x22
-
 
 class A_BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """(ASM instruction, effect unknown)
@@ -7027,11 +6840,10 @@ class A_BPL2627(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x2A
-
 
 class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """(unknown)
@@ -7048,8 +6860,8 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     Args:
         arg1 (int): (unknown 8 bit int)
         arg2 (int): (unknown 8 bit int)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to, but the condition is not known.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to, but the condition is not known.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3C
@@ -7079,8 +6891,8 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         self,
         arg1: int,
         arg2: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_arg1(arg1)
@@ -7088,7 +6900,6 @@ class A_UnknownJmp3C(UsableActionScriptCommand, ActionScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(self.arg1, self.arg2, *self.destinations)
-
 
 class A_JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     """If the player is currently airborne, go to the command matching the label.
@@ -7103,8 +6914,8 @@ class A_JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the player is airborne.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the player is airborne.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3D
@@ -7113,9 +6924,7 @@ class A_JmpIfMarioInAir(UsableActionScriptCommand, ActionScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
-
 # music
-
 
 class A_StopSound(UsableActionScriptCommand, ActionScriptCommandNoArgs):
     """Halt the playback of any sound effect that is currently playing.
@@ -7130,11 +6939,10 @@ class A_StopSound(UsableActionScriptCommand, ActionScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9B
-
 
 class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect by ID on the specified chanel.
@@ -7154,7 +6962,7 @@ class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         sound (int): The ID of the sound effect to play
         channel (int): The first of two channels to play the sound effect on. This must be 4 or 6.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _sound: UInt8
@@ -7191,7 +6999,7 @@ class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
             self._opcode = 0x9C
 
     def __init__(
-        self, sound: int, channel: int, identifier: Optional[str] = None
+        self, sound: int, channel: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -7199,7 +7007,6 @@ class A_PlaySound(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound)
-
 
 class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
     """Play a sound effect at a set balance.
@@ -7216,7 +7023,7 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         sound (int): The ID of the sound effect to play
         balance (int): The balance level to play the sound at (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9D
@@ -7245,7 +7052,7 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
         self._balance = UInt8(balance)
 
     def __init__(
-        self, sound: int, balance: int, identifier: Optional[str] = None
+        self, sound: int, balance: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -7253,7 +7060,6 @@ class A_PlaySoundBalance(UsableActionScriptCommand, ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
-
 
 class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
     """Fade out the currently playing sound to a specified volume over a specified
@@ -7271,7 +7077,7 @@ class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
     Args:
         duration (int): The duration, in frames, over which to perform the fade (8 bit int)
         volume (int): The desired ending volume for the sound effect (8 bit int)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9E
@@ -7298,7 +7104,7 @@ class A_FadeOutSoundToVolume(UsableActionScriptCommand, ActionScriptCommand):
         self._volume = UInt8(volume)
 
     def __init__(
-        self, duration: int, volume: int, identifier: Optional[str] = None
+        self, duration: int, volume: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)

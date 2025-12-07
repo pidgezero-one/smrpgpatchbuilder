@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 from smrpgpatchbuilder.utils.disassembler_common import shortify, writeline
 from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config
 
-
 TARGETS = [
     "MARIO",
     "TOADSTOOL",
@@ -319,7 +318,6 @@ battle_lengths = [
     1,
 ]
 
-
 def tokenize(rom, start):
     dex = start
     ff_seen = False
@@ -334,7 +332,6 @@ def tokenize(rom, start):
         acc.append((rom[dex : dex + l], dex))
         dex += l
     return acc
-
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -669,7 +666,6 @@ class Command(BaseCommand):
             arg_string = ", ".join(arg_strings)
             output = "%s(%s%s)" % (cls, arg_string, "")
             return output
-
 
         output_path = "./src/disassembler_output/monster_ai"
 

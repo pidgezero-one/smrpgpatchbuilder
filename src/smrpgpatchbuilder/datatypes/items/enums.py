@@ -2,7 +2,6 @@
 
 import enum
 
-
 """ class EffectTypeOld(enum.Enum):
     # Enumeration to describe the type of effect an item will have on its target.
 
@@ -14,7 +13,6 @@ import enum
     BUFFS = enum.auto()
  """
 
-
 class EquipStats(str, enum.Enum):
     """Enumeration for numerical stats that are directly affected by equips."""
 
@@ -24,7 +22,6 @@ class EquipStats(str, enum.Enum):
     MAGIC_ATTACK = "magic_attack"
     MAGIC_DEFENSE = "magic_defense"
 
-
 class ItemTypeValue(enum.IntEnum):
     """Enumeration for distinct base classifications for items."""
 
@@ -33,12 +30,10 @@ class ItemTypeValue(enum.IntEnum):
     ACCESSORY = 0b10
     ITEM = 0b11
 
-
 class EffectType(enum.IntEnum):
     INFLICTION = 0x02
     PROTECTION = 0x01
     NULLIFICATION = 0x04
-
 
 class InflictFunction(enum.IntEnum):
     ITEM_MORPH = 0
@@ -50,11 +45,9 @@ class InflictFunction(enum.IntEnum):
     RAISE_MAX_FP = 6
     INSTANT_DEATH = 7
 
-
 class OverworldMenuBehaviour(enum.IntEnum):
     LEAD_TO_HP = 0
     LEAD_TO_FP = 1
-
 
 class ItemPrefix(enum.IntEnum):
     """Enumeration for item name prefix icons."""

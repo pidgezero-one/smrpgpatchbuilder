@@ -1,8 +1,5 @@
 """Base classes supporting NPC action script assembly."""
 
-from typing import List, Optional, Type, Dict
-
-
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     IdentifierException,
@@ -18,29 +15,28 @@ from .ids.misc import (
     TOTAL_SCRIPTS,
 )
 
-
 class ActionScript(Script[UsableActionScriptCommand]):
     """Base class for a single NPC action script, a list of script command subclasses."""
 
-    _contents: List[UsableActionScriptCommand]
+    _contents: list[UsableActionScriptCommand]
 
     @property
-    def contents(self) -> List[UsableActionScriptCommand]:
+    def contents(self) -> list[UsableActionScriptCommand]:
         return self._contents
 
     def append(self, command: UsableActionScriptCommand) -> None:
         super().append(command)
 
-    def extend(self, commands: List[UsableActionScriptCommand]) -> None:
+    def extend(self, commands: list[UsableActionScriptCommand]) -> None:
         super().extend(commands)
 
     def set_contents(
-        self, script: Optional[List[UsableActionScriptCommand]] = None
+        self, script: list[UsableActionScriptCommand] | None = None
     ) -> None:
         super().set_contents(script)
 
     def __init__(
-        self, script: Optional[List[UsableActionScriptCommand]] = None
+        self, script: list[UsableActionScriptCommand] | None = None
     ) -> None:
         super().__init__(script)
 
@@ -57,7 +53,7 @@ class ActionScript(Script[UsableActionScriptCommand]):
     def insert_before_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableActionScriptCommand],
+        cls: type[UsableActionScriptCommand],
         command: UsableActionScriptCommand,
     ) -> None:
         super().insert_before_nth_command_of_type(ordinality, cls, command)
@@ -65,7 +61,7 @@ class ActionScript(Script[UsableActionScriptCommand]):
     def insert_after_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableActionScriptCommand],
+        cls: type[UsableActionScriptCommand],
         command: UsableActionScriptCommand,
     ) -> None:
         super().insert_after_nth_command_of_type(ordinality, cls, command)
@@ -83,25 +79,24 @@ class ActionScript(Script[UsableActionScriptCommand]):
     def replace_at_index(self, index: int, content: UsableActionScriptCommand) -> None:
         super().replace_at_index(index, content)
 
-
 class ActionScriptBank(ScriptBank):
     """Base class for the collection of NPC action scripts."""
 
-    _scripts: List[ActionScript]
+    _scripts: list[ActionScript]
     _pointer_table_start: int = 0x210000
     _start: int = 0x210800
     _end: int = 0x21C000
     _count: int = 1024
 
-    _addresses: Dict[str, int]
+    _addresses: dict[str, int]
     _pointer_bytes: bytearray
     _script_bytes: bytearray
 
     @property
-    def scripts(self) -> List[ActionScript]:
+    def scripts(self) -> list[ActionScript]:
         return self._scripts
 
-    def set_contents(self, scripts: Optional[List[ActionScript]] = None) -> None:
+    def set_contents(self, scripts: list[ActionScript] | None = None) -> None:
         if scripts is None:
             scripts = []
         assert len(scripts) == self._count
@@ -113,7 +108,7 @@ class ActionScriptBank(ScriptBank):
 
     def __init__(
         self,
-        scripts: Optional[List[ActionScript]] = None,
+        scripts: list[ActionScript] | None = None,
         start: int = 0x210800,
         pointer_table_start: int = 0x210000,
         end: int = 0x21C000,
@@ -126,7 +121,7 @@ class ActionScriptBank(ScriptBank):
         self._end = end
 
     @property
-    def addresses(self) -> Dict[str, int]:
+    def addresses(self) -> dict[str, int]:
         return self._addresses
 
     @property
@@ -181,7 +176,7 @@ class ActionScriptBank(ScriptBank):
             raise ScriptBankTooLongException(
                 f"action script output too long: got {final_length} expected {expected_length}"
             )
-        buffer: List[int] = [0xFF] * (expected_length - final_length)
+        buffer: list[int] = [0xFF] * (expected_length - final_length)
         self.script_bytes.extend(buffer)
 
         return self.pointer_bytes + self.script_bytes

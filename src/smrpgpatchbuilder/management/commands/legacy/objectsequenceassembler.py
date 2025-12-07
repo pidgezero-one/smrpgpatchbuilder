@@ -8,7 +8,6 @@ class Command(BaseCommand):
 
         print("combined length", hex(len(b)), len(b))
 
-
         f = open(f'write_to_0x210000.img', 'wb')
         f.write(b)
         f.close()

@@ -3,14 +3,12 @@
 from copy import deepcopy
 import random
 import math
-from typing import List, TypeVar, Optional, Dict
-
+from typing import TypeVar
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import (
     PartyCharacter,
 )
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, ByteField, BitMapSet
-
 
 # target .enums specifically to prevent cyclic import
 from smrpgpatchbuilder.datatypes.spells.enums import Status, Element, TempStatBuff
@@ -27,14 +25,13 @@ from .constants import (
 )
 from .encoding import encode_item_description, decode_item_description
 
-
 class Item:
     """Parent class representing an item."""
 
     _item_id: int = 0
 
     _item_name: str = ""
-    _prefix: Optional[ItemPrefix] = None
+    _prefix: ItemPrefix | None = None
     _description: str = ""
 
     _price: int = 0
@@ -48,15 +45,15 @@ class Item:
     _magic_defense: int = 0
 
     _type_value: ItemTypeValue = ItemTypeValue.ITEM
-    _effect_type: Optional[EffectType] = None
-    _inflict_type: Optional[InflictFunction] = None
-    _inflict_element: Optional[Element] = None
+    _effect_type: EffectType | None = None
+    _inflict_type: InflictFunction | None = None
+    _inflict_element: Element | None = None
 
-    _equip_chars: List[PartyCharacter] = []
-    _elemental_immunities: List[Element] = []
-    _elemental_resistances: List[Element] = []
-    _status_immunities: List[Status] = []
-    _temp_buffs: List[TempStatBuff] = []
+    _equip_chars: list[PartyCharacter] = []
+    _elemental_immunities: list[Element] = []
+    _elemental_resistances: list[Element] = []
+    _status_immunities: list[Status] = []
+    _temp_buffs: list[TempStatBuff] = []
 
     _prevent_ko: bool = False
     _hide_damage: bool = False
@@ -103,11 +100,11 @@ class Item:
         self._description = description
 
     @property
-    def equip_chars(self) -> List[PartyCharacter]:
+    def equip_chars(self) -> list[PartyCharacter]:
         """A list of which characters can equip this item"""
         return self._equip_chars
 
-    def set_equip_chars(self, equip_chars: List[PartyCharacter]) -> None:
+    def set_equip_chars(self, equip_chars: list[PartyCharacter]) -> None:
         """Overwrites the list of which characters can equip this item"""
         self._equip_chars = equip_chars
 
@@ -154,21 +151,21 @@ class Item:
         return self._variance
 
     @property
-    def elemental_immunities(self) -> List[Element]:
+    def elemental_immunities(self) -> list[Element]:
         """The wearer takes 0 damage from spells infused with these elements."""
         return deepcopy(self._elemental_immunities)
 
     @property
-    def elemental_resistances(self) -> List[Element]:
+    def elemental_resistances(self) -> list[Element]:
         """The wearer takes half damage from spells infused with these elements."""
         return deepcopy(self._elemental_resistances)
 
     @property
-    def status_immunities(self) -> List[Status]:
+    def status_immunities(self) -> list[Status]:
         """The wearer is immune to these status effects."""
         return deepcopy(self._status_immunities)
 
-    def set_status_immunities(self, status_immunities: List[Status]) -> None:
+    def set_status_immunities(self, status_immunities: list[Status]) -> None:
         """Overwrites the status effect immunities for this item."""
         self._status_immunities = deepcopy(status_immunities)
 
@@ -183,7 +180,7 @@ class Item:
             self._status_immunities.remove(immunity)
 
     @property
-    def temp_buffs(self) -> List[TempStatBuff]:
+    def temp_buffs(self) -> list[TempStatBuff]:
         """Boost multiplier effects applied to the wearer at the start of battle."""
         return deepcopy(self._temp_buffs)
 
@@ -207,29 +204,29 @@ class Item:
         self._inflict = inflict
 
     @property
-    def effect_type(self) -> Optional[EffectType]:
+    def effect_type(self) -> EffectType | None:
         """The type of effect this represents"""
         return self._effect_type
 
-    def set_effect_type(self, effect_type: Optional[EffectType]) -> None:
+    def set_effect_type(self, effect_type: EffectType | None) -> None:
         """Update the effect type"""
         self._effect_type = effect_type
 
     @property
-    def inflict_type(self) -> Optional[InflictFunction]:
+    def inflict_type(self) -> InflictFunction | None:
         """The function that determines infliction logic"""
         return self._inflict_type
 
-    def set_inflict_type(self, inflict_type: Optional[InflictFunction]) -> None:
+    def set_inflict_type(self, inflict_type: InflictFunction | None) -> None:
         """Update the inflict type function"""
         self._inflict_type = inflict_type
 
     @property
-    def inflict_element(self) -> Optional[Element]:
+    def inflict_element(self) -> Element | None:
         """The elemental type associated with this effect"""
         return self._inflict_element
 
-    def set_inflict_element(self, inflict_element: Optional[Element]) -> None:
+    def set_inflict_element(self, inflict_element: Element | None) -> None:
         """Update the infliction element"""
         self._inflict_element = inflict_element
 
@@ -359,11 +356,11 @@ class Item:
         self._frog_coin_item = frog_coin_item
 
     @property
-    def prefix(self) -> Optional[ItemPrefix]:
+    def prefix(self) -> ItemPrefix | None:
         """The icon prefix that appears before the item name."""
         return self._prefix
 
-    def set_prefix(self, prefix: Optional[ItemPrefix]) -> None:
+    def set_prefix(self, prefix: ItemPrefix | None) -> None:
         """Set the icon prefix for this item."""
         self._prefix = prefix
 
@@ -403,9 +400,9 @@ class Item:
             raise ValueError("name contains characters not encodable in latin-1")
         self._item_name = name
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
         if self.price == 0:
             return patch
         base_addr = ITEMS_BASE_ADDRESS + (self.item_id * 18)
@@ -514,9 +511,7 @@ class Item:
 
         return patch
 
-
 ItemT = TypeVar("ItemT", bound=Item)
-
 
 class Equipment(Item):
     """Base class for weapons, armor, and accessories."""
@@ -550,7 +545,7 @@ class Equipment(Item):
         """Modify the OHKO protection flag for this equip."""
         self._prevent_ko = prevent_ko
 
-    def set_elemental_immunities(self, elemental_immunities: List[Element]) -> None:
+    def set_elemental_immunities(self, elemental_immunities: list[Element]) -> None:
         """Overwrite the elemental immunities for this equip."""
         self._elemental_immunities = deepcopy(elemental_immunities)
 
@@ -564,7 +559,7 @@ class Equipment(Item):
         if element in self._elemental_immunities:
             self._elemental_immunities.remove(element)
 
-    def set_elemental_resistances(self, elemental_resistances: List[Element]) -> None:
+    def set_elemental_resistances(self, elemental_resistances: list[Element]) -> None:
         """Overwrite the elemental resistances for this equip."""
         self._elemental_resistances = deepcopy(elemental_resistances)
 
@@ -578,7 +573,7 @@ class Equipment(Item):
         if element in self._elemental_resistances:
             self._elemental_resistances.remove(element)
 
-    def set_temp_buffs(self, temp_buffs: List[TempStatBuff]) -> None:
+    def set_temp_buffs(self, temp_buffs: list[TempStatBuff]) -> None:
         """Overwrite the buff multipliers for this equip."""
         self._temp_buffs = deepcopy(temp_buffs)
 
@@ -591,7 +586,6 @@ class Equipment(Item):
         """Remove a buff multiplier from this equip."""
         if buff in self._temp_buffs:
             self._temp_buffs.remove(buff)
-
 
 class Weapon(Equipment):
     """base class for all weapons.
@@ -645,7 +639,7 @@ class Weapon(Equipment):
         """Set frame for half timing window end"""
         self._half_time_window_ends = UInt8(value)
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
         if self.item_id > 40:
             raise TypeError("weapon IDs can only be 0-40")
@@ -664,20 +658,17 @@ class Weapon(Equipment):
 
         return patch
 
-
 class Armor(Equipment):
     """Base class for all armor."""
 
     _item_id: int = 1
     _type_value: ItemTypeValue = ItemTypeValue.ARMOR
 
-
 class Accessory(Equipment):
     """Base class for all accessories."""
 
     _item_id: int = 2
     _type_value: ItemTypeValue = ItemTypeValue.ACCESSORY
-
 
 class RegularItem(Item):
     """Base class for most obtainable, non-equippable items."""
@@ -688,11 +679,10 @@ class RegularItem(Item):
     def consumable(self) -> bool:
         return self._reusable == False
 
-
 class ItemCollection:
     """Collection of items with rendering support for descriptions and pointer tables."""
 
-    def __init__(self, items: List[Item]):
+    def __init__(self, items: list[Item]):
         """initialize the collection with a list of items.
 
         args:
@@ -707,13 +697,13 @@ class ItemCollection:
             )
         self.items = items
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """render all items including their descriptions and pointer table.
 
         returns:
             dictionary mapping rom addresses to bytearrays
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         # first, render each item individually (stats, prices, names, etc.)
         for item in self.items:

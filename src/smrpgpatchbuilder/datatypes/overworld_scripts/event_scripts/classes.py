@@ -1,6 +1,5 @@
 """Base classes supporting event script assembly."""
 
-from typing import List, Optional, Type, Union
 from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
@@ -25,28 +24,27 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids.misc import
 )
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt16
 
-
 class EventScript(Script[UsableEventScriptCommand]):
     """Base class for a single event script, a list of script command subclasses."""
 
-    _contents: List[UsableEventScriptCommand]
+    _contents: list[UsableEventScriptCommand]
 
     @property
-    def contents(self) -> List[UsableEventScriptCommand]:
+    def contents(self) -> list[UsableEventScriptCommand]:
         return self._contents
 
     def append(self, command: UsableEventScriptCommand) -> None:
         super().append(command)
 
-    def extend(self, commands: List[UsableEventScriptCommand]) -> None:
+    def extend(self, commands: list[UsableEventScriptCommand]) -> None:
         super().extend(commands)
 
     def set_contents(
-        self, script: Optional[List[UsableEventScriptCommand]] = None
+        self, script: list[UsableEventScriptCommand] | None = None
     ) -> None:
         super().set_contents(script)
 
-    def __init__(self, script: Optional[List[UsableEventScriptCommand]] = None) -> None:
+    def __init__(self, script: list[UsableEventScriptCommand] | None = None) -> None:
         if script is None:
             ss = []
         else:
@@ -66,7 +64,7 @@ class EventScript(Script[UsableEventScriptCommand]):
     def insert_before_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableEventScriptCommand],
+        cls: type[UsableEventScriptCommand],
         command: UsableEventScriptCommand,
     ) -> None:
         super().insert_before_nth_command_of_type(ordinality, cls, command)
@@ -74,7 +72,7 @@ class EventScript(Script[UsableEventScriptCommand]):
     def insert_after_nth_command_of_type(
         self,
         ordinality: int,
-        cls: Type[UsableEventScriptCommand],
+        cls: type[UsableEventScriptCommand],
         command: UsableEventScriptCommand,
     ) -> None:
         super().insert_after_nth_command_of_type(ordinality, cls, command)
@@ -92,12 +90,11 @@ class EventScript(Script[UsableEventScriptCommand]):
     def replace_at_index(self, index: int, content: UsableEventScriptCommand) -> None:
         super().replace_at_index(index, content)
 
-
 class EventScriptBank(ScriptBank[EventScript]):
     """base class for a collection of npc action scripts
     that should belong to the same $##xxxx bank (1e, 1f, or 20)."""
 
-    _scripts: List[EventScript]
+    _scripts: list[EventScript]
     _pointer_table_start: int
     _start: int
     _end: int
@@ -137,10 +134,10 @@ class EventScriptBank(ScriptBank[EventScript]):
         return UInt16((self.start - self.pointer_table_start) // 2)
 
     @property
-    def scripts(self) -> List[EventScript]:
+    def scripts(self) -> list[EventScript]:
         return self._scripts
 
-    def set_contents(self, scripts: Optional[List[EventScript]] = None) -> None:
+    def set_contents(self, scripts: list[EventScript] | None = None) -> None:
         if scripts is None:
             scripts = []
         assert len(scripts) == self.script_count
@@ -155,7 +152,7 @@ class EventScriptBank(ScriptBank[EventScript]):
         pointer_table_start: int,
         start: int,
         end: int,
-        scripts: Optional[List[EventScript]],
+        scripts: list[EventScript] | None,
     ) -> None:
         self.set_pointer_table_start(pointer_table_start)
         self.set_start(start)
@@ -164,7 +161,7 @@ class EventScriptBank(ScriptBank[EventScript]):
 
     def _associate_address(
         self,
-        command: Union[UsableEventScriptCommand, UsableActionScriptCommand],
+        command: UsableEventScriptCommand | UsableActionScriptCommand,
         position: int,
     ) -> int:
         key: str = command.identifier.label
@@ -236,27 +233,26 @@ class EventScriptBank(ScriptBank[EventScript]):
             raise ScriptBankTooLongException(
                 f"event script output too long: got {final_length} expected {expected_length}"
             )
-        buffer: List[int] = [0xFF] * (expected_length - final_length)
+        buffer: list[int] = [0xFF] * (expected_length - final_length)
         self.script_bytes.extend(buffer)
 
         return self.pointer_bytes + self.script_bytes
 
-
 class EventScriptController:
     """Contains all event script banks. Allows lookup by identifier in any bank."""
 
-    _banks: List[EventScriptBank]
+    _banks: list[EventScriptBank]
 
     @property
-    def banks(self) -> List[EventScriptBank]:
+    def banks(self) -> list[EventScriptBank]:
         """List of event script banks."""
         return self._banks
 
-    def set_banks(self, banks: List[EventScriptBank]) -> None:
+    def set_banks(self, banks: list[EventScriptBank]) -> None:
         """Overwrite the list of event script banks."""
         self._banks = banks
 
-    def __init__(self, banks: List[EventScriptBank]):
+    def __init__(self, banks: list[EventScriptBank]):
         assert len(banks) == 3
         assert (
             len(banks[0].scripts) + len(banks[1].scripts) + len(banks[2].scripts)

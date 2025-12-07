@@ -8,7 +8,6 @@ disassemblers in the proper order to ensure dependencies are resolved.
 from django.core.management.base import BaseCommand
 from pathlib import Path
 
-
 class Command(BaseCommand):
     help = "Run all disassemblers in proper sequence"
 

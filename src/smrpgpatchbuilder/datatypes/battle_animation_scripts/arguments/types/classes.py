@@ -1,9 +1,6 @@
 """Base classes that inform argument typing in battle script command classes."""
 
-from typing import Tuple
-
 from smrpgpatchbuilder.datatypes.numbers.classes import Int8
-
 
 class Origin(int):
     """Int subclass representing the origin point that coords should be relative to."""
@@ -13,7 +10,6 @@ class Origin(int):
         assert 0 <= num <= 3
         return super(Origin, cls).__new__(cls, num)
 
-
 class PauseUntil(int):
     """Int subclass representing the behaviour of a script pause."""
 
@@ -21,7 +17,6 @@ class PauseUntil(int):
         num = args[0]
         assert 0 <= num <= 0x10
         return super(PauseUntil, cls).__new__(cls, num)
-
 
 class ShiftType(int):
     """Int subclass representing the behaviour of an object shift."""
@@ -32,7 +27,6 @@ class ShiftType(int):
         assert num % 2 == 0
         return super(ShiftType, cls).__new__(cls, num)
 
-
 class MessageType(int):
     """Int subclass representing the context of a dialog displayed in battle."""
 
@@ -40,7 +34,6 @@ class MessageType(int):
         num = args[0]
         assert 0 <= num <= 5
         return super(MessageType, cls).__new__(cls, num)
-
 
 class LayerPriorityType(int):
     """Int subclass meaningfully representing layer priority in battle animations."""
@@ -50,7 +43,6 @@ class LayerPriorityType(int):
         assert 0 <= num <= 3
         return super(LayerPriorityType, cls).__new__(cls, num)
 
-
 class FlashColour(int):
     """Int subclass describing screen flash colours in battle animations."""
 
@@ -58,7 +50,6 @@ class FlashColour(int):
         num = args[0]
         assert 0 <= num <= 8
         return super(FlashColour, cls).__new__(cls, num)
-
 
 class BonusMessage(int):
     """Int subclass representing the messages that appear from in-battle bonus flowers."""
@@ -68,7 +59,6 @@ class BonusMessage(int):
         assert 0 <= num <= 6
         return super(BonusMessage, cls).__new__(cls, num)
 
-
 class BattleTarget(int):
     """Int subclass instances representing valid targets in battle animation script commands."""
 
@@ -76,7 +66,6 @@ class BattleTarget(int):
         num = args[0]
         assert 0 <= num <= 47
         return super(BattleTarget, cls).__new__(cls, num)
-
 
 class MaskEffect(int):
     """Int subclass describing screen mask effects in battle animations."""
@@ -86,8 +75,7 @@ class MaskEffect(int):
         assert 0 <= num <= 7
         return super(MaskEffect, cls).__new__(cls, num)
 
-
-class MaskPoint(Tuple[Int8, Int8]):
+class MaskPoint(tuple[Int8, Int8]):
     """Tuple subclass representing x-y coords in a battle animation screen mask effect."""
 
     def __new__(cls, *args: int):
@@ -98,7 +86,6 @@ class MaskPoint(Tuple[Int8, Int8]):
     def __reduce__(self):
         return (self.__class__, (self[0], self[1]))
 
-
 class WaveEffectLayer(int):
     """Int subclass describing screen mask effects in battle animations."""
 
@@ -106,7 +93,6 @@ class WaveEffectLayer(int):
         num = args[0]
         assert 0 <= num <= 2
         return super(WaveEffectLayer, cls).__new__(cls, num)
-
 
 class WaveEffectDirection(int):
     """Int subclass describing screen mask effects in battle animations."""

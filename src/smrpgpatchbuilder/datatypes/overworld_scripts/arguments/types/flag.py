@@ -4,7 +4,6 @@ class _Flag(NamedTuple):
     byte: int
     bit: int
 
-
 class Flag(_Flag):
     """An in-game variable that is a single true/false bit,
     normally carrying meaning independent of the byte it belongs to.\n

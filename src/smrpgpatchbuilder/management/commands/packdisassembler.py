@@ -38,7 +38,6 @@ from smrpgpatchbuilder.datatypes.battles.ids.misc import (
     TOTAL_FORMATIONS,
 )
 
-
 class Command(BaseCommand):
     help = "Disassembles formation packs from a ROM file"
 

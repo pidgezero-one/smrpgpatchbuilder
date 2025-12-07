@@ -560,7 +560,6 @@ fd_sequence_lens = [
 
 # I'll refactor this later
 
-
 def tok(rom, start, end):
     dex = start
     script = []
@@ -577,7 +576,6 @@ def tok(rom, start, end):
         dex += l
     return script
 
-
 def parse_line(line, offset):
     if line[0] == 0xFD:
         cmd = line[1]
@@ -593,12 +591,10 @@ def parse_line(line, offset):
         name, args = "db", line
     return name, args
 
-
 fd_names = [None] * 256
 names = [None] * 256
 
 # This is weird in LS, may not reflect output, however it does follow the docs
-
 
 def set_sprite_sequence(args):
     sprite = args[0] & 0x07
@@ -607,13 +603,11 @@ def set_sprite_sequence(args):
     sequence = args[1] & 0x7F
     return "set_sprite_sequence", [sequence, sprite, f]
 
-
 def set_animation_speed(args):
     speed = args[0] & 0x07
     flag_short = args[0] >> 6
     f = parse_flags(flag_short, "_0x10Flags", _0x10_flags, [0, 1])
     return "set_animation_speed", [speed, f]
-
 
 def set_object_memory_bits(obj):
     def inner_set_object_memory_bits(args):
@@ -622,14 +616,12 @@ def set_object_memory_bits(obj):
 
     return inner_set_object_memory_bits
 
-
 def transfer_to_xyzf(args):
     x = args[0]
     y = args[1]
     z = args[2] & 0x1F
     direction = args[2] >> 5
     return "transfer_to_xyzf", [x, y, z, direction]
-
 
 def transfer_xyzf_steps(args):
     x = args[0]
@@ -638,7 +630,6 @@ def transfer_xyzf_steps(args):
     direction = args[2] >> 5
     return "transfer_xyzf_steps", [x, y, z, direction]
 
-
 def transfer_xyzf_pixels(args):
     x = args[0]
     y = args[1]
@@ -646,16 +637,13 @@ def transfer_xyzf_pixels(args):
     direction = args[2] >> 5
     return "transfer_xyzf_pixels", [x, y, z, direction]
 
-
 def fade_out_sound_to_volume(args):
     return "fade_out_sound_to_volume", args
-
 
 def parse_target_bit(cmd, args):
     bit = args[0] & 0x07
     addr = 0x7040 + (0x0020 * (cmd & 0x0F)) + (args[0] >> 3)
     return addr, bit
-
 
 # name bit vars eventually
 def set_bit(cmd):
@@ -665,14 +653,12 @@ def set_bit(cmd):
 
     return inner_set_bit
 
-
 def clear_bit(cmd):
     def inner_clear_bit(args):
         addr, bit = parse_target_bit(cmd - 0xA4, args)
         return "clear_bit", [addr, bit]
 
     return inner_clear_bit
-
 
 def parse_object_coord(cmd):
     def inner_parse_object_coord(args):
@@ -690,7 +676,6 @@ def parse_object_coord(cmd):
 
     return inner_parse_object_coord
 
-
 def jmp_if_bit_clear(cmd):
     def inner_jmp_if_bit_clear(args):
         addr, bit = parse_target_bit(cmd - 0xDC, args)
@@ -702,7 +687,6 @@ def jmp_if_bit_clear(cmd):
         ]
 
     return inner_jmp_if_bit_clear
-
 
 def jmp_if_bit_set(cmd):
     def inner_jmp_if_bit_set(args):
@@ -716,15 +700,12 @@ def jmp_if_bit_set(cmd):
 
     return inner_jmp_if_bit_set
 
-
 def pause(args):
     return "pause", [args[0] + 1]
-
 
 def pauseshort(args):
     s = shortify(args, 0)
     return "pause", [s + 1]
-
 
 def set_object_presence_in_level(args):
     presence = bit(args, 1, 7)
@@ -736,7 +717,6 @@ def set_object_presence_in_level(args):
         func = "remove_from_level"
     return func, [obj, level]
 
-
 def set_object_trigger_in_level(args):
     presence = bit(args, 1, 7)
     obj = (args[1] & 0x7F) >> 1
@@ -746,7 +726,6 @@ def set_object_trigger_in_level(args):
     else:
         func = "disable_trigger_in_level"
     return func, [obj, level]
-
 
 def jmp_depending_on_object_presence(args):
     presence = bit(args, 1, 7)
@@ -759,12 +738,10 @@ def jmp_depending_on_object_presence(args):
         func = "jmp_if_object_not_in_level"
     return func, [obj, level, addr]
 
-
 def mem_700C_shift_left(args):
     addr = 2 * args[0] + 0x7000
     shift = 256 - args[1]
     return "mem_700C_shift_left", [addr, shift]
-
 
 names[0x00] = named("visibility_on")
 names[0x01] = named("visibility_off")
@@ -1160,13 +1137,11 @@ jmp_cmds_double = [0xE9]
 
 jmp_cmds_fd = [0x3D, 0x3E]
 
-
 def get_jump_args(line, args):
     if line[0] in jmp_cmds_double:
         return -2
     else:
         return -1
-
 
 class Command(BaseCommand):
     def add_arguments(self, parser):

@@ -1,5 +1,5 @@
 import pytest
-from typing import Optional, Type, List
+
 from smrpgpatchbuilder.datatypes.items.classes import Accessory, RegularItem
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import Battlefield
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
@@ -52,10 +52,9 @@ class YoshiCookieItem(RegularItem):
 class Case:
     label: str
     commands_factory: callable
-    expected_bytes: Optional[List[int]] = None
-    exception: Optional[str] = None
-    exception_type: Optional[Type] = None
-
+    expected_bytes: list[int] | None = None
+    exception: str | None = None
+    exception_type: type | None = None
 
 test_cases = [
     #
@@ -2302,7 +2301,6 @@ test_cases = [
         exception_type=InvalidCommandArgumentException,
     ),
 ]
-
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):

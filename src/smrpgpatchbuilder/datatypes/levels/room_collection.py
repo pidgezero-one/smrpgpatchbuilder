@@ -1,19 +1,18 @@
 """RoomCollection class for managing and rendering all 512 rooms in the game."""
-from typing import Optional, Union
+
 from smrpgpatchbuilder.datatypes.levels.classes import (
     Room, NPC, Partition, BaseRoomObject, RoomObject, Clone,
     BattlePackNPC, RegularNPC, ChestNPC, BattlePackClone, RegularClone, ChestClone,
     RoomExit, MapExit
 )
 
-
 class RoomCollection:
     """Manages all 512 rooms and handles rendering them to ROM format."""
 
-    _rooms: list[Optional[Room]]
+    _rooms: list[Room | None]
     _large_partition_table: bool
 
-    def __init__(self, rooms: list[Optional[Room]], large_partition_table: bool = False):
+    def __init__(self, rooms: list[Room | None], large_partition_table: bool = False):
         """Initialize the room collection.
 
         Args:
@@ -27,7 +26,7 @@ class RoomCollection:
         self._rooms = rooms
         self._large_partition_table = large_partition_table
 
-    def _get_npc_signature(self, npc: NPC, room_obj: Optional[BaseRoomObject] = None) -> tuple:
+    def _get_npc_signature(self, npc: NPC, room_obj: BaseRoomObject | None = None) -> tuple:
         """Get a unique signature for an NPC that includes all properties.
 
         If room_obj is provided, include any BaseRoomObject-level overrides.
@@ -493,9 +492,9 @@ class RoomCollection:
         return patches
 
     def _render_room_object(self, obj: BaseRoomObject, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
-                           parent: Optional[RoomObject] = None, clones: Optional[list[Clone]] = None,
+                           parent: RoomObject | None = None, clones: list[Clone] | None = None,
                            room_idx: int = -1, obj_idx: int = -1, parent_obj_idx: int = -1,
-                           base_values: Optional[tuple] = None) -> tuple[bytearray, Optional[tuple]]:
+                           base_values: tuple | None = None) -> tuple[bytearray, tuple | None]:
         """Render a single room object to bytes.
 
         Args:
@@ -678,7 +677,6 @@ class RoomCollection:
             # Bytes 3-5: NPC ID and action script (packed)
             # base_assigned_npc = ((d[offset + 4] & 0x0F) << 6) + (d[offset + 3] >> 2)
             # base_action_script = ((d[offset + 5] & 0x3F) << 4) + ((d[offset + 4] & 0xFF) >> 4)
-
 
             # Byte 3: (base_npc_id << 2) low 8 bits + slidable_along_walls (bit 0) + cant_move_if_in_air (bit 1)
             data[3] = ((base_assigned_npc << 2) & 0xFF) | (1 if obj.slidable_along_walls else 0) | ((1 if obj.cant_move_if_in_air else 0) << 1)
@@ -988,7 +986,7 @@ class RoomCollection:
 
         return patches
 
-    def _render_exit(self, exit_obj: Union[RoomExit, MapExit]) -> bytearray:
+    def _render_exit(self, exit_obj: RoomExit | MapExit) -> bytearray:
         """Render a single exit to bytes.
 
         Follows disassembler lines 488-551.

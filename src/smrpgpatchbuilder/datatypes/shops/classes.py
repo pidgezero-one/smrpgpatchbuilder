@@ -1,14 +1,11 @@
 """Shop class for SMRPG shop data."""
 
-from typing import Dict, List, Type, Optional
 from smrpgpatchbuilder.datatypes.items.classes import Item
-
 
 # Constants
 SHOP_BASE_ADDRESS = 0x3A44DF
 TOTAL_SHOPS = 33
 ITEMS_PER_SHOP = 15
-
 
 class Shop:
     """A shop in Super Mario RPG."""
@@ -22,7 +19,7 @@ class Shop:
     _discount_12: bool
     _discount_25: bool
     _discount_50: bool
-    _items: List[Optional[Type[Item]]]
+    _items: list[type[Item] | None]
 
     @property
     def index(self) -> int:
@@ -107,11 +104,11 @@ class Shop:
         self._discount_50 = value
 
     @property
-    def items(self) -> List[Optional[Type[Item]]]:
+    def items(self) -> list[type[Item] | None]:
         """The items sold in this shop (up to 15)."""
         return self._items
 
-    def set_items(self, items: List[Optional[Type[Item]]]) -> None:
+    def set_items(self, items: list[type[Item] | None]) -> None:
         """Set the items sold in this shop."""
         assert len(items) <= ITEMS_PER_SHOP, f"Shop can have at most {ITEMS_PER_SHOP} items"
         self._items = items
@@ -122,7 +119,7 @@ class Shop:
     def __init__(
         self,
         index: int,
-        items: List[Optional[Type[Item]]],
+        items: list[type[Item] | None],
         buy_frog_coin_one: bool = False,
         buy_frog_coin: bool = False,
         buy_only_a: bool = False,
@@ -157,7 +154,7 @@ class Shop:
         self.set_discount_25(discount_25)
         self.set_discount_50(discount_50)
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render the shop data to ROM format.
 
         Returns:
@@ -199,18 +196,17 @@ class Shop:
 
         return {offset: data}
 
-
 class ShopCollection:
     """Collection of all shops in the game."""
 
-    _shops: List[Shop]
+    _shops: list[Shop]
 
     @property
-    def shops(self) -> List[Shop]:
+    def shops(self) -> list[Shop]:
         """The list of 33 shops."""
         return self._shops
 
-    def __init__(self, shops: List[Shop]) -> None:
+    def __init__(self, shops: list[Shop]) -> None:
         """Initialize a ShopCollection with exactly 33 shops.
 
         Args:
@@ -223,13 +219,13 @@ class ShopCollection:
             f"ShopCollection requires exactly {TOTAL_SHOPS} shops, got {len(shops)}"
         self._shops = shops
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Render all shops to ROM format.
 
         Returns:
             A dictionary mapping ROM addresses to bytearrays for patching
         """
-        patch: Dict[int, bytearray] = {}
+        patch: dict[int, bytearray] = {}
 
         for shop in self._shops:
             shop_patch = shop.render()

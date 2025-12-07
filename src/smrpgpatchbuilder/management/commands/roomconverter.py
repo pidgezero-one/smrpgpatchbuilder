@@ -12,7 +12,6 @@ from randomizer.management.disassembler_common import (
     writeline,
 )
 
-
 DIRECTIONS = [
     "EAST",
     "SOUTHEAST",
@@ -122,10 +121,8 @@ VRAM_SIZES = [
 
 searchable_vars = globals()
 
-
 def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] == obj]
-
 
 def get_var_name_string(id, prefix):
     candidates = namestr(id, searchable_vars)
@@ -136,30 +133,23 @@ def get_var_name_string(id, prefix):
         raise Exception(newlist)
     return newlist[0]
 
-
 def get_event_name(id):
     return get_var_name_string(id, "E")
-
 
 def get_action_name(id):
     return get_var_name_string(id, "A")
 
-
 def get_music_name(id):
     return get_var_name_string(id, "M")
-
 
 def get_overworld_name(id):
     return get_var_name_string(id, "OW")
 
-
 def get_room_name(id):
     return get_var_name_string(id, "R")
 
-
 def get_pack_name(id):
     return get_var_name_string(id, "PACK")
-
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -175,7 +165,7 @@ class Command(BaseCommand):
             partition_output = (
                 "from randomizer.entities.rooms.partition_imports import *"
             )
-            partition_output += """\n\nbuffers: List[Buffer] = ["""
+            partition_output += """\n\nbuffers: list[Buffer] = ["""
             partition_output += "\n    Buffer("
             partition_output += (
                 "\n        buffer_type = BufferType.%s,"

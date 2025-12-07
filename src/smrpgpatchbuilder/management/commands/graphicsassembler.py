@@ -16,7 +16,6 @@ class Command(BaseCommand):
 		parser.add_argument("-b", "--bin", action='store_true', dest="bin", help="use -b if you want to output your assembled bytes as flexhex-compatible img files.")
 		parser.add_argument("-r", "--rom", dest="rom", help="specify a path to a mario rpg rom if you want to output your assembled bytes as a bps patch.")
 
-
 	def handle(self, *args, **options):
 		module_path = "disassembler_output.sprites.sprites"
 		

@@ -2,7 +2,6 @@
 
 from enum import Enum
 
-
 class LevelStats(str, Enum):
     """An enumerator for the stats that can be incresed upon levelup."""
 

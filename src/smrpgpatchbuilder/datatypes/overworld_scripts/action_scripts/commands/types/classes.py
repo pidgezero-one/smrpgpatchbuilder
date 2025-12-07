@@ -1,7 +1,5 @@
 """Basic types supporting the creation of action script commands"""
 
-from typing import Optional, Type, Union
-
 from smrpgpatchbuilder.datatypes.items.classes import Item
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
@@ -17,25 +15,21 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import ByteVar
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import ShortVar
 
-
 class ActionScriptCommand(ScriptCommand):
     """Base class for any command in a NPC action script."""
-
 
 class ActionScriptCommandWithJmps(ActionScriptCommand, ScriptCommandWithJmps):
     """Base class for any command in a NPC action script that contains at least one goto."""
 
-
 class ActionScriptCommandNoArgs(ActionScriptCommand, ScriptCommandNoArgs):
     """Base class for any command in a NPC action script that takes no arguments."""
-
 
 class ActionScriptCommandAnySizeMem(ActionScriptCommand, ScriptCommandAnySizeMem):
     """base class for any command in a npc action script that can accept either an
     8 bit or 16 bit var."""
 
     def __init__(
-        self, address: Union[ShortVar, ByteVar], identifier: Optional[str] = None
+        self, address: ShortVar | ByteVar, identifier: str | None = None
     ) -> None:
         super().__init__(address, identifier)
 
@@ -44,11 +38,9 @@ class ActionScriptCommandAnySizeMem(ActionScriptCommand, ScriptCommandAnySizeMem
         else:
             self._size = 2
 
-
 class ActionScriptCommandShortMem(ActionScriptCommand, ScriptCommandShortMem):
     """base class for any command in a npc action script that accepts only
     an 8 bit var."""
-
 
 class ActionScriptCommandShortAddrAndValueOnly(
     ActionScriptCommand, ScriptCommandShortAddrAndValueOnly
@@ -59,8 +51,8 @@ class ActionScriptCommandShortAddrAndValueOnly(
     def __init__(
         self,
         address: ShortVar,
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(address, value, identifier)
 
@@ -69,13 +61,11 @@ class ActionScriptCommandShortAddrAndValueOnly(
         else:
             self._size = 4
 
-
 class ActionScriptCommandBasicShortOperation(
     ActionScriptCommand, ScriptCommandBasicShortOperation
 ):
     """base class for any command in a npc action script that performs math
     on an 8 bit var."""
-
 
 class ActionScriptCommandByteSteps(ActionScriptCommand):
     """base class for any command in a npc action script that accepts a
@@ -93,13 +83,12 @@ class ActionScriptCommandByteSteps(ActionScriptCommand):
         """Set the number of steps for this measurement."""
         self._steps = UInt8(steps)
 
-    def __init__(self, steps: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, steps: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_steps(steps)
 
     def render(self, *args) -> bytearray:
         return super().render(self.steps)
-
 
 class ActionScriptCommandBytePixels(ActionScriptCommand):
     """base class for any command in a npc action script that accepts a
@@ -117,13 +106,12 @@ class ActionScriptCommandBytePixels(ActionScriptCommand):
         """Set the number of pixels for this measurement."""
         self._pixels = UInt8(value)
 
-    def __init__(self, pixels: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, pixels: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_pixels(pixels)
 
     def render(self, *args) -> bytearray:
         return super().render(self.pixels)
-
 
 class ActionScriptCommandXYBytes(ActionScriptCommand):
     """base class for any command in a npc action script that accepts an
@@ -151,14 +139,13 @@ class ActionScriptCommandXYBytes(ActionScriptCommand):
         """Set the Y coordinate"""
         self._y = UInt8(y)
 
-    def __init__(self, x: int, y: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, x: int, y: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_x(x)
         self.set_y(y)
 
     def render(self, *args) -> bytearray:
         return super().render(self.x, self.y)
-
 
 class UsableActionScriptCommand(ActionScriptCommand):
     """subclass for commands that can actually be used in a script

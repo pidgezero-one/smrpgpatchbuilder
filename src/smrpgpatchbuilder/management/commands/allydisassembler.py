@@ -7,7 +7,6 @@ from smrpgpatchbuilder.utils.disassembler_common import writeline
 import os
 import importlib
 
-
 class Command(BaseCommand):
     help = "Disassemble ally/character data from a ROM"
 

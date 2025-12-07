@@ -1,8 +1,6 @@
 """Battle dialog collection for managing battle dialogs and messages."""
 
-from typing import Dict, List
 from smrpgpatchbuilder.datatypes.dialogs.utils import compress, COMPRESSION_TABLE
-
 
 # Battle dialog addresses
 BATTLE_DIALOG_POINTER_ADDRESS = 0x396554
@@ -14,50 +12,49 @@ BATTLE_MESSAGE_POINTER_ADDRESS = 0x3A26F1
 BATTLE_MESSAGE_DATA_START = 0x3A274D
 BATTLE_MESSAGE_DATA_END = 0x3A29FF
 
-
 class BattleDialogCollection:
     """Houses battle dialogs and messages with ability to render to ROM bytes."""
 
-    _battle_dialogs: List[str]
-    _battle_messages: List[str]
-    _compression_table: List[tuple[str, bytes]]
+    _battle_dialogs: list[str]
+    _battle_messages: list[str]
+    _compression_table: list[tuple[str, bytes]]
 
     @property
-    def battle_dialogs(self) -> List[str]:
+    def battle_dialogs(self) -> list[str]:
         """The battle dialog strings (256 entries)."""
         return self._battle_dialogs
 
-    def set_battle_dialogs(self, battle_dialogs: List[str]) -> None:
+    def set_battle_dialogs(self, battle_dialogs: list[str]) -> None:
         """Set the battle dialog strings."""
         if len(battle_dialogs) != 256:
             raise ValueError(f"Expected 256 battle dialogs, got {len(battle_dialogs)}")
         self._battle_dialogs = battle_dialogs
 
     @property
-    def battle_messages(self) -> List[str]:
+    def battle_messages(self) -> list[str]:
         """The battle message strings (46 entries)."""
         return self._battle_messages
 
-    def set_battle_messages(self, battle_messages: List[str]) -> None:
+    def set_battle_messages(self, battle_messages: list[str]) -> None:
         """Set the battle message strings."""
         if len(battle_messages) != 46:
             raise ValueError(f"Expected 46 battle messages, got {len(battle_messages)}")
         self._battle_messages = battle_messages
 
     @property
-    def compression_table(self) -> List[tuple[str, bytes]]:
+    def compression_table(self) -> list[tuple[str, bytes]]:
         """The compression table used for battle dialogs and messages."""
         return self._compression_table
 
-    def set_compression_table(self, compression_table: List[tuple[str, bytes]]) -> None:
+    def set_compression_table(self, compression_table: list[tuple[str, bytes]]) -> None:
         """Set the compression table."""
         self._compression_table = compression_table
 
     def __init__(
         self,
-        battle_dialogs: List[str],
-        battle_messages: List[str],
-        compression_table: List[tuple[str, bytes]] = None,
+        battle_dialogs: list[str],
+        battle_messages: list[str],
+        compression_table: list[tuple[str, bytes]] = None,
     ) -> None:
         """Initialize the battle dialog collection.
 
@@ -79,7 +76,7 @@ class BattleDialogCollection:
         self.set_battle_dialogs(battle_dialogs)
         self.set_battle_messages(battle_messages)
 
-    def render(self) -> Dict[int, bytearray]:
+    def render(self) -> dict[int, bytearray]:
         """Convert battle dialogs and messages to ROM patch format.
 
         Returns:

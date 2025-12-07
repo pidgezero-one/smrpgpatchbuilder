@@ -2,7 +2,7 @@
 These are the building blocks of logical progression in SMRPG."""
 
 from copy import deepcopy
-from typing import List, Optional, Set, Type, Union, cast
+from typing import cast
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import (
     LAYER_L1,
     LAYER_L2,
@@ -101,7 +101,6 @@ from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
 
 # script operations
 
-
 class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
     """Loop all commands (over a number of frames) between this command and the next `EndLoop` command.\n
 
@@ -116,7 +115,7 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         length (int): Duration (in frames) to loop over.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD5
@@ -132,13 +131,12 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
         """Set the total duration of the loop, in frames"""
         self._length = UInt16(length)
 
-    def __init__(self, length: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, length: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_length(length)
 
     def render(self, *args) -> bytearray:
         return super().render(self.length)
-
 
 class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
     """Loop all commands (over a number of iterations) that are between this command and the next `EndLoop` command.\n
@@ -154,7 +152,7 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         length (int): Number/count of times to loop.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD4
@@ -170,13 +168,12 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
         """Set the total number of times this loop should iterate"""
         self._count = UInt8(count)
 
-    def __init__(self, count: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, count: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_count(count)
 
     def render(self, *args) -> bytearray:
         return super().render(self.count)
-
 
 class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """If previous commands were part of a loop, this is where the loop ends.\n
@@ -191,11 +188,10 @@ class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD7
-
 
 class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a specific command. This uses another event's label instead of its address, which is calculated at build time.\n
@@ -210,8 +206,8 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
         3 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of whatever command you want to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of whatever command you want to jump to.
     """
 
     _opcode = 0xD2
@@ -219,7 +215,6 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     """Goto event script by ID.\n
@@ -235,7 +230,7 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         destination (int): The ID of the event you want to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD0
@@ -254,13 +249,12 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= destination < TOTAL_SCRIPTS
         self._destination = UInt16(destination)
 
-    def __init__(self, destination: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, destination: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_destination(destination)
 
     def render(self, *args) -> bytearray:
         return super().render(self.destination)
-
 
 class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return to the beginning of the script containing this command.
@@ -276,11 +270,10 @@ class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF9
-
 
 class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return to the beginning of the script containing this command.
@@ -296,11 +289,10 @@ class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArg
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFA
-
 
 class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Run a chunk of event script code as a subroutine starting at a specified command. This uses another event's label instead of its address, which is calculated at build time.\n
@@ -315,8 +307,8 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD3
@@ -324,7 +316,6 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script from being a background process to being the main process.\n
@@ -339,11 +330,10 @@ class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs)
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x40])
-
 
 class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the first of two background processes.\n
@@ -358,11 +348,10 @@ class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommand
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x41])
-
 
 class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the second of two background processes.\n
@@ -377,11 +366,10 @@ class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommand
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x42])
-
 
 class Pause(UsableEventScriptCommand, EventScriptCommand):
     """Pause the active script for a number of frames.\n
@@ -398,13 +386,12 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
         3 bytes
 
-
     Args:
         length (int): Length of time (in frames) to pause. If this number is 256 or lower (you read that correctly, 256 or lower, not 255 or lower) this command will use the {xx} version (`0xF0`, 2 bytes). If larger, it will use the {xxxx} version (`0xF1`, 3 bytes).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _length: Union[UInt8, UInt16]
+    _length: UInt8 | UInt16
 
     @property
     def length(self) -> int:
@@ -429,7 +416,7 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
                 f"illegal pause duration in {self.identifier}: {length}"
             )
 
-    def __init__(self, length: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, length: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_length(length)
 
@@ -438,7 +425,6 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(frames, UInt8):
             return super().render(0xF0, frames)
         return super().render(0xF1, frames)
-
 
 class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)\n
@@ -453,11 +439,10 @@ class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x32])
-
 
 class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """If a background event is paused, resume it.\n
@@ -473,7 +458,7 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x47
@@ -489,13 +474,12 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         """(unknown, but must be $701C, $701E, $7020, or $7022)"""
         self._timer_var = TimerVar(timer_var)
 
-    def __init__(self, timer_var: ShortVar, identifier: Optional[str] = None) -> None:
+    def __init__(self, timer_var: ShortVar, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
     def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
-
 
 class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Run an event (by ID) as a background event.\n
@@ -514,7 +498,7 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         return_on_level_exit (bool): If true, the background event will stop when the current level is unloaded.
         bit_6 (bool): (unknown)
         run_as_second_script (bool): If true, the event will run in background thread 2 instead of background thread 1.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x40
@@ -568,7 +552,7 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         return_on_level_exit: bool = False,
         bit_6: bool = False,
         run_as_second_script: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_event_id(event_id)
@@ -583,7 +567,6 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         flags = flags << 13
         arg_byte = UInt16(self.event_id + flags)
         return super().render(arg_byte)
-
 
 class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
     """(unknown exactly how this differs from `RunBackgroundEvent`)\n
@@ -602,7 +585,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
         bit_4 (bool): (unknown)
         bit_5 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x44
@@ -656,7 +639,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         timer_var: ShortVar,
         bit_4: bool = False,
         bit_5: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_event_id(event_id)
@@ -670,7 +653,6 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         timer = self.timer_var.to_byte() << 14
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
-
 
 class RunBackgroundEventWithPauseReturnOnExit(
     UsableEventScriptCommand, EventScriptCommand
@@ -691,7 +673,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
         timer_var (ShortVar): The timer memory variable to designate for this background event. You can use this to stop it later. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
         bit_4 (bool): (unknown)
         bit_5 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x45
@@ -745,7 +727,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
         timer_var: ShortVar,
         bit_4: bool = False,
         bit_5: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_event_id(event_id)
@@ -759,7 +741,6 @@ class RunBackgroundEventWithPauseReturnOnExit(
         timer = self.timer_var.to_byte() << 14
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
-
 
 class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
     """When the current script ends, start running the script denoted by ID.\n
@@ -775,7 +756,7 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         event_id (int): The ID of the event you want to run on return.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x46])
@@ -793,13 +774,12 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= event_id < TOTAL_SCRIPTS
         self._event_id = UInt16(event_id)
 
-    def __init__(self, event_id: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, event_id: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_event_id(event_id)
 
     def render(self, *args) -> bytearray:
         return super().render(self.event_id)
-
 
 class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
     """Run another event by ID as a subroutine (function).\n
@@ -817,7 +797,7 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         event_id (int): The ID of the event you want to run as a subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD1
@@ -835,13 +815,12 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= event_id < TOTAL_SCRIPTS
         self._event_id = UInt16(event_id)
 
-    def __init__(self, event_id: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, event_id: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_event_id(event_id)
 
     def render(self, *args) -> bytearray:
         return super().render(self.event_id)
-
 
 class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt all background events on all threads.\n
@@ -856,11 +835,10 @@ class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x43])
-
 
 class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Stop a background event."\n
@@ -876,7 +854,7 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         timer_var (ShortVar): The timer memory variable associated to the event you're stopping, probably set by `ResumeBackgroundEvent`, `RunBackgroundEventWithPause`, or `RunBackgroundEventWithPauseReturnOnExit`. Must a ShortVar instance of `0x701C`, `0x701E`, `0x7020`, or `0x7022`.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x46
@@ -892,13 +870,12 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         """(unknown)"""
         self._timer_var = TimerVar(timer_var)
 
-    def __init__(self, timer_var: ShortVar, identifier: Optional[str] = None) -> None:
+    def __init__(self, timer_var: ShortVar, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_timer_var(timer_var)
 
     def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
-
 
 class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Ends the script or subroutine.
@@ -914,11 +891,10 @@ class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFE
-
 
 class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.
@@ -935,11 +911,10 @@ class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFF
-
 
 class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown, some kind of unused return command, unsure how it differs from others)\n
@@ -954,13 +929,12 @@ class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFE])
 
-
-_valid_unknowncmd_opcodes: List[int] = [
+_valid_unknowncmd_opcodes: list[int] = [
     0,  # 00
     0,
     0,
@@ -1218,7 +1192,7 @@ _valid_unknowncmd_opcodes: List[int] = [
     0,
     0,
 ]
-_valid_unknowncmd_opcodes_fd: List[int] = [
+_valid_unknowncmd_opcodes_fd: list[int] = [
     0,  # 00
     0,
     0,
@@ -1477,7 +1451,6 @@ _valid_unknowncmd_opcodes_fd: List[int] = [
     0,
 ]
 
-
 class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
     """Catch-all class for most undocumented commands that don't act as GOTOs.
     Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.
@@ -1494,7 +1467,7 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         contents (bytearray): The entire byte string that this command consists of.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _contents: bytearray
@@ -1535,16 +1508,14 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
     def size(self) -> int:
         return len(self.contents)
 
-    def __init__(self, contents: bytearray, identifier: Optional[str] = None) -> None:
+    def __init__(self, contents: bytearray, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_contents(contents)
 
     def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
-
 # memory operations
-
 
 class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -1559,8 +1530,8 @@ class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWi
         4 bytes
 
     Args:
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x62])
@@ -1568,7 +1539,6 @@ class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWi
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -1583,8 +1553,8 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x41
@@ -1592,7 +1562,6 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If all of the stated bits are clear on $7000, jump to the script command indicated by the given label.
@@ -1607,21 +1576,21 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
         5 bytes
 
     Args:
-        bits (List[int]): The list of bits (0 to 7) all of which should be clear in order to GOTO.
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The list of bits (0 to 7) all of which should be clear in order to GOTO.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE6
     _size: int = 5
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """All of the bit positions which should be clear in order to execute the goto."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Overwrite the list of the bit positions which should be clear
         in order to execute the goto."""
         for bit in bits:
@@ -1630,9 +1599,9 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
 
     def __init__(
         self,
-        bits: List[int],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        bits: list[int],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bits(bits)
@@ -1640,7 +1609,6 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
     def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
-
 
 class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If any of the stated bits are set on $7000, go to to the script command indicated by the given label.
@@ -1655,21 +1623,21 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         5 bytes
 
     Args:
-        bits (List[int]): The list of bits (0 to 7) any of which should be clear in order to GOTO.
-        destinations (List[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (list[int]): The list of bits (0 to 7) any of which should be clear in order to GOTO.
+        destinations (list[str]): A list of exactly one string. The string will be the `identifier` property of the first command you want to run as part of your subroutine.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE7
     _size: int = 5
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """The bit positions, of which any should be set in order to execute the goto."""
         return self._bits
 
-    def set_bits(self, bits: List[int]) -> None:
+    def set_bits(self, bits: list[int]) -> None:
         """Overwrite the list of the bit positions which, if any one is set,
         would execute the goto."""
         for bit in bits:
@@ -1678,9 +1646,9 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def __init__(
         self,
-        bits: List[int],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        bits: list[int],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bits(bits)
@@ -1688,7 +1656,6 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
-
 
 class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is set.
@@ -1706,8 +1673,8 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     Args:
         bit (Flag): The byte bit that needs to be set for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 4
@@ -1725,7 +1692,7 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         self._bit = bit
 
     def __init__(
-        self, bit: Flag, destinations: List[str], identifier: Optional[str] = None
+        self, bit: Flag, destinations: list[str], identifier: str | None = None
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bit(bit)
@@ -1743,7 +1710,6 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
 
-
 class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is clear.
 
@@ -1760,8 +1726,8 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     Args:
         bit (Flag): The byte bit that needs to be clear for the goto to happen.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 4
@@ -1784,7 +1750,7 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
         self.set_bit(bit)
 
     def __init__(
-        self, bit: Flag, destinations: List[str], identifier: Optional[str] = None
+        self, bit: Flag, destinations: list[str], identifier: str | None = None
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_bit(bit)
@@ -1802,7 +1768,6 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
 
-
 class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was zero (both values were equal).
 
@@ -1816,8 +1781,8 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEA
@@ -1825,7 +1790,6 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -1842,8 +1806,8 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEF
@@ -1851,7 +1815,6 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to another command (by label) if the comparison result indicated that the first value was greater than the second value.
@@ -1866,8 +1829,8 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEE
@@ -1875,7 +1838,6 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
@@ -1890,8 +1852,8 @@ class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJm
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEB
@@ -1899,7 +1861,6 @@ class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJm
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is set.
@@ -1915,8 +1876,8 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xDB
@@ -1924,7 +1885,6 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is clear.
@@ -1940,8 +1900,8 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 3
@@ -1949,7 +1909,6 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the literal value currently stored at $7000, set the bit that corresponds to this index (starting from $7040 bit 0).
@@ -1965,11 +1924,10 @@ class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA3
-
 
 class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the literal value currently stored at $7000, clear the bit that corresponds to this index (starting from $7040 bit 0).
@@ -1985,11 +1943,10 @@ class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xA7
-
 
 class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7010, $7012, and $7014 to replace the 16 bit values stored at $7016, $7018, and $701A.
@@ -2004,11 +1961,10 @@ class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBE
-
 
 class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7016, $7018, and $701A to replace the 16 bit values stored at $7010, $7012, and $7014.
@@ -2023,11 +1979,10 @@ class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBF
-
 
 class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
     """Set the longterm mem var to a constant number value.
@@ -2047,15 +2002,15 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
         4 bytes if the variable is a short var
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to set
-        value (Union[int, Type[Item]]): The const you want to set the variable to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to set
+        value (int | type[Item]): The const you want to set the variable to
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the destination variable, or both,
         that will be used for this command. \n
@@ -2083,21 +2038,21 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ShortVar, ByteVar],
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        address: ShortVar | ByteVar,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_value_and_address(address, value)
@@ -2113,7 +2068,6 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
-
 class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2128,7 +2082,7 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         address (int): The address to read from. I don't know what this command does, so this can be any short uint.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5C
@@ -2144,13 +2098,12 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
         """(unknown)"""
         self._address = UInt16(address)
 
-    def __init__(self, address: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_address(address)
 
     def render(self, *args) -> bytearray:
         return super().render(self.address)
-
 
 class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
     """Set the value of $7000 to the value of any address between $7FF800 and $7FFFFF. This includes long term battle memory like Super Jump PBs.
@@ -2166,7 +2119,7 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         address (int): The last four hex digits of the var you want to read
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xAC])
@@ -2184,13 +2137,12 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
         assert address >= 0xF800
         self._address = UInt16(address)
 
-    def __init__(self, address: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_address(address)
 
     def render(self, *args) -> bytearray:
         return super().render(UInt16(self.address - 0xF800))
-
 
 class SetBit(UsableEventScriptCommand, EventScriptCommand):
     """Set a bit in the range of long-term memory bits dedicated for use in event and action scripts.
@@ -2208,7 +2160,7 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         bit (Flag): The byte bit you wish to set.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -2223,7 +2175,7 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
         """Designate the exact bit to set."""
         self._bit = bit
 
-    def __init__(self, bit: Flag, identifier: Optional[str] = None) -> None:
+    def __init__(self, bit: Flag, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bit(bit)
 
@@ -2239,7 +2191,6 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
-
 
 class ClearBit(UsableEventScriptCommand, EventScriptCommand):
     """Clear a bit in the range of long-term memory bits dedicated for use in event and action scripts.
@@ -2257,7 +2208,7 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         bit (Flag): The byte bit you wish to clear.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -2277,7 +2228,7 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
         """Designate the exact bit to clear."""
         self.set_bit(bit)
 
-    def __init__(self, bit: Flag, identifier: Optional[str] = None) -> None:
+    def __init__(self, bit: Flag, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bit(bit)
 
@@ -2294,7 +2245,6 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
 
-
 class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2309,7 +2259,7 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         address (int): Any 16 bit addr above 0x0158 (?)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x8B])
@@ -2326,7 +2276,7 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
         assert address % 2 == 0 and address >= 0x0158
         self._address = UInt16(address)
 
-    def __init__(self, address: int, identifier: Optional[str] = None):
+    def __init__(self, address: int, identifier: str | None = None):
         super().__init__(identifier)
         self.set_address(address)
 
@@ -2334,7 +2284,6 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte = (self.address - 0x0158) // 2
         address_byte &= 0x7F
         return super().render(address_byte)
-
 
 class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -2351,7 +2300,7 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     Args:
         address (int): Any 16 bit addr above 0x0158 (?)
         bit_7 (bool): unknown
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x88])
@@ -2379,7 +2328,7 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         self._bit_7 = bit_7
 
     def __init__(
-        self, address: int, bit_7: bool = False, identifier: Optional[str] = None
+        self, address: int, bit_7: bool = False, identifier: str | None = None
     ):
         super().__init__(identifier)
         self.set_address(address)
@@ -2390,7 +2339,6 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte &= 0x7F
         address_byte += self.bit_7 << 7
         return super().render(address_byte)
-
 
 class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -2407,7 +2355,7 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     Args:
         address (int): Any 16 bit addr above 0x0158 (?)
         bit_7 (bool): unknown
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x89])
@@ -2435,7 +2383,7 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         self._bit_7 = bit_7
 
     def __init__(
-        self, address: int, bit_7: bool = False, identifier: Optional[str] = None
+        self, address: int, bit_7: bool = False, identifier: str | None = None
     ):
         super().__init__(identifier)
         self.set_address(address)
@@ -2446,7 +2394,6 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte &= 0x7F
         address_byte += self.bit_7 << 7
         return super().render(address_byte)
-
 
 class Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -2463,12 +2410,11 @@ class Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set(
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xC6])
     _size: int = 2
-
 
 class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
     """Copy the value from one variable to another variable.
@@ -2492,13 +2438,13 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
         2 bytes otherwise
 
     Args:
-        from_var (Union[ShortVar, ByteVar]): The variable you're copying the value **from**.
-        to_var (Union[ShortVar, ByteVar]): The variable you're copying the value **to**.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        from_var (ShortVar | ByteVar): The variable you're copying the value **from**.
+        to_var (ShortVar | ByteVar): The variable you're copying the value **to**.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _from_var: Union[ShortVar, ByteVar]
-    _to_var: Union[ShortVar, ByteVar]
+    _from_var: ShortVar | ByteVar
+    _to_var: ShortVar | ByteVar
 
     def set_addresses(self, from_var=None, to_var=None):
         """Set the source variable, destination variable, or both.\n
@@ -2521,20 +2467,20 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
             return 2
 
     @property
-    def from_var(self) -> Union[ShortVar, ByteVar]:
+    def from_var(self) -> ShortVar | ByteVar:
         """The source variable, which the value is copied from."""
         return self._from_var
 
     @property
-    def to_var(self) -> Union[ShortVar, ByteVar]:
+    def to_var(self) -> ShortVar | ByteVar:
         """The destination variable, where the value is written to."""
         return self._to_var
 
     def __init__(
         self,
-        from_var: Union[ShortVar, ByteVar],
-        to_var: Union[ShortVar, ByteVar],
-        identifier: Optional[str] = None,
+        from_var: ShortVar | ByteVar,
+        to_var: ShortVar | ByteVar,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self._from_var = from_var
@@ -2557,7 +2503,6 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
             0x{self.from_var:04x} 0x{self.to_var:04x}"""
         )
 
-
 class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2573,7 +2518,7 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
     Args:
         value_1 (int): Unknown 8 bit int
         value_2 (int): Unknown 8 bit int
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x90])
@@ -2600,7 +2545,7 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
         self._value_2 = UInt8(value_2)
 
     def __init__(
-        self, value_1: int, value_2: int, identifier: Optional[str] = None
+        self, value_1: int, value_2: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_value_1(value_1)
@@ -2608,7 +2553,6 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.value_1, self.value_2)
-
 
 class Store00To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2623,11 +2567,10 @@ class Store00To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFC])
-
 
 class Store00To0334(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2642,11 +2585,10 @@ class Store00To0334(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x93])
-
 
 class Store01To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2661,11 +2603,10 @@ class Store01To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFB])
-
 
 class Store01To0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2680,11 +2621,10 @@ class Store01To0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x92])
-
 
 class Store02To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2699,11 +2639,10 @@ class Store02To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFD])
-
 
 class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2718,11 +2657,10 @@ class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x91])
-
 
 class Set7000ToMinecartTimer(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the value of $7000 to the latest value of the minecraft timer.
@@ -2737,11 +2675,10 @@ class Set7000ToMinecartTimer(UsableEventScriptCommand, EventScriptCommandNoArgs)
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB8])
-
 
 class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -2760,7 +2697,7 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         bit (Flag): Description here to be filled out by me
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 3
@@ -2775,7 +2712,7 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
         """(unknown)"""
         self._bit = bit
 
-    def __init__(self, bit: Flag, identifier: Optional[str] = None) -> None:
+    def __init__(self, bit: Flag, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_bit(bit)
 
@@ -2792,7 +2729,6 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
 
-
 class SwapVars(UsableEventScriptCommand, EventScriptCommand):
     """Swap the two variables' vales.
 
@@ -2808,7 +2744,7 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
     Args:
         memory_a (ShortVar): The first of the two variables you want to swap.
         memory_b (ShortVar): The second of the two variables you want to swap.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xBD
@@ -2838,7 +2774,7 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
         self,
         memory_a: ShortVar,
         memory_b: ShortVar,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_memory_a(memory_a)
@@ -2847,9 +2783,7 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.memory_b, self.memory_a)
 
-
 # math operations
-
 
 class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
     """Add a const number value to a longterm mem var.
@@ -2869,13 +2803,13 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         4 bytes if the variable is a short var
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to add to
-        value (Union[int, Type[Item]]): The const you want to add to the variable
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to add to
+        value (int | type[Item]): The const you want to add to the variable
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(self, address=None, value=None) -> None:
         """Set the literal value, the destination variable, or both,
@@ -2902,21 +2836,21 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ShortVar, ByteVar],
+        address: ShortVar | ByteVar,
         value: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_value_and_address(address, value)
@@ -2931,7 +2865,6 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
-
 
 class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
     """Increase a variable by 1.
@@ -2951,8 +2884,8 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         2 bytes if any other variable
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to increase by 1
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to increase by 1
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -2965,7 +2898,6 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
-
 
 class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
     """Decrease a variable by 1.
@@ -2985,8 +2917,8 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         2 bytes if any other variable
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to decrease by 1
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to decrease by 1
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -2999,7 +2931,6 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
-
 
 class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Add the value stored at the given variable to $7000.
@@ -3014,13 +2945,12 @@ class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
         2 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to add to $7000
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to add to $7000
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB8
     _size: int = 2
-
 
 class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Subtract the value stored at the given variable from $7000.
@@ -3035,13 +2965,12 @@ class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
         2 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to subtract from $7000
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to subtract from $7000
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xB9
     _size: int = 2
-
 
 class GenerateRandomNumFromRangeVar(
     UsableEventScriptCommand, EventScriptCommandShortMem
@@ -3059,12 +2988,11 @@ class GenerateRandomNumFromRangeVar(
             3 bytes
 
         Args:
-            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+            identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB7])
     _size: int = 3
-
 
 class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """There is a 2/3 chance that, when this command is executed, the script will jump to one of the two commands indicated by label.
@@ -3079,8 +3007,8 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
         5 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of the two commands that there should be a 33% chance to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of the two commands that there should be a 33% chance to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE9
@@ -3088,7 +3016,6 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given label.
@@ -3103,8 +3030,8 @@ class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command that there should be a 50% chance to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command that there should be a 50% chance to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xE8
@@ -3112,7 +3039,6 @@ class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly):
     """Set the given variable to a random number between 0 and the given upper bound.
@@ -3130,16 +3056,15 @@ class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndVal
         4 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to set
+        address (ShortVar | ByteVar): The variable you want to set
         value (int): The upper bound of possible random values (lower bound is always 0). 16 bit int.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
         if self.address == ShortVar(0x7000):
             return super().render(0xB6, self.value)
         return super().render(0xB7, self.address, self.value)
-
 
 class CompareVarToConst(
     UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly
@@ -3161,8 +3086,8 @@ class CompareVarToConst(
 
     Args:
         address (ShortVar): The variable in question
-        value (Union[int, Type[Item]]): The constant number to compare the variable to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        value (int | type[Item]): The constant number to compare the variable to
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def render(self, *args) -> bytearray:
@@ -3172,9 +3097,9 @@ class CompareVarToConst(
 
     def __init__(
         self,
-        address: Union[ShortVar, ByteVar],
-        value: Union[int, Type[Item]],
-        identifier: Optional[str] = None,
+        address: ShortVar | ByteVar,
+        value: int | type[Item],
+        identifier: str | None = None,
     ) -> None:
         if not isinstance(value, int) and issubclass(value, Item):
             value = value().item_id
@@ -3182,7 +3107,6 @@ class CompareVarToConst(
         if isinstance(addr, ByteVar):
             addr = ShortVar(addr)
         super().__init__(addr, value, identifier)
-
 
 class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Compare the value stored at $7000 to the value stored at a given variable.
@@ -3200,12 +3124,11 @@ class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
 
     Args:
         address (ShortVar): The variable to compare $7000 against
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC1
     _size: int = 2
-
 
 class JmpIfComparisonResultIsGreaterOrEqual(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -3222,8 +3145,8 @@ class JmpIfComparisonResultIsGreaterOrEqual(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xEC
@@ -3231,7 +3154,6 @@ class JmpIfComparisonResultIsGreaterOrEqual(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfComparisonResultIsLesser(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -3248,8 +3170,8 @@ class JmpIfComparisonResultIsLesser(
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xED
@@ -3257,7 +3179,6 @@ class JmpIfComparisonResultIsLesser(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the given variable matches the given value, jump to the section of code beginning with the given label.
@@ -3277,19 +3198,19 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
         6 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to check
-        value (Union[int, Type[Item]]): The value to check the variable against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable equals the value.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to check
+        value (int | type[Item]): The value to check the variable against
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable equals the value.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the comparison variable, or both,
         that will be used for this command. \n
@@ -3317,22 +3238,22 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ByteVar, ShortVar],
-        value: Union[int, Type[Item]],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        address: ByteVar | ShortVar,
+        value: int | type[Item],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
@@ -3349,7 +3270,6 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
-
 
 class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the given variable does not match the given value, jump to the section of code beginning with the given label.
@@ -3369,19 +3289,19 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
         6 bytes otherwise
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to check
-        value (Union[int, Type[Item]]): The value to check the variable against
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable doesn't equal the value.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to check
+        value (int | type[Item]): The value to check the variable against
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the variable doesn't equal the value.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _value: Union[UInt8, UInt16]
-    _address: Union[ShortVar, ByteVar]
+    _value: UInt8 | UInt16
+    _address: ShortVar | ByteVar
 
     def set_value_and_address(
         self,
-        address: Optional[Union[ByteVar, ShortVar]] = None,
-        value: Optional[Union[int, Type[Item]]] = None,
+        address: ByteVar | ShortVar | None = None,
+        value: int | type[Item] | None = None,
     ) -> None:
         """Set the literal value, the comparison variable, or both,
         that will be used for this command. \n
@@ -3409,22 +3329,22 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
         self._value = value
 
     @property
-    def value(self) -> Union[UInt8, UInt16]:
+    def value(self) -> UInt8 | UInt16:
         """The literal value to set the variable to."""
         return self._value
 
     @property
-    def address(self) -> Union[ShortVar, ByteVar]:
+    def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
     def __init__(
         self,
-        address: Union[ByteVar, ShortVar],
-        value: Union[int, Type[Item]],
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        address: ByteVar | ShortVar,
+        value: int | type[Item],
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_value_and_address(address, value)
@@ -3442,7 +3362,6 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
-
 class Mem7000AndConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise AND operation between the value of $7000 and a given literal number, save the result to $7000.
 
@@ -3457,11 +3376,10 @@ class Mem7000AndConst(UsableEventScriptCommand, EventScriptCommandBasicShortOper
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB0])
-
 
 class Mem7000AndVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise AND operation between the value of $7000 and another variable, save the result to $7000.
@@ -3476,13 +3394,12 @@ class Mem7000AndVar(UsableEventScriptCommand, EventScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB3])
     _size: int = 3
-
 
 class Mem7000OrConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise OR operation between the value of $7000 and a given literal number, save the result to $7000.
@@ -3498,11 +3415,10 @@ class Mem7000OrConst(UsableEventScriptCommand, EventScriptCommandBasicShortOpera
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB1])
-
 
 class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise OR operation between the value of $7000 and another variable, save the result to $7000.
@@ -3517,13 +3433,12 @@ class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB4])
     _size: int = 3
-
 
 class Mem7000XorConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise XOR operation between the value of $7000 and a given literal number, save the result to $7000.
@@ -3539,11 +3454,10 @@ class Mem7000XorConst(UsableEventScriptCommand, EventScriptCommandBasicShortOper
 
     Args:
         value (int): A number (up to 16 bits) to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB2])
-
 
 class Mem7000XorVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise XOR operation between the value of $7000 and another variable, save the result to $7000.
@@ -3558,13 +3472,12 @@ class Mem7000XorVar(UsableEventScriptCommand, EventScriptCommandShortMem):
         3 bytes
 
     Args:
-        address (Union[ShortVar, ByteVar]): The variable you want to use in the bitwise operation.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        address (ShortVar | ByteVar): The variable you want to use in the bitwise operation.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB5])
     _size: int = 3
-
 
 class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
     """Shift the specified variable to the left by the given amount of bits.
@@ -3581,7 +3494,7 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
     Args:
         address (ShortVar): The variable to have its value shifted.
         shift (int): The amount of bits to shift the value left by.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xB6])
@@ -3609,7 +3522,7 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
         self._shift = UInt8(shift - 1)
 
     def __init__(
-        self, address: ShortVar, shift: int, identifier: Optional[str] = None
+        self, address: ShortVar, shift: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_address(address)
@@ -3617,7 +3530,6 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.address, 0xFF - self._shift)
-
 
 class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
     UsableEventScriptCommand, EventScriptCommand
@@ -3636,7 +3548,7 @@ class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
     Args:
         adding (int): Description here to be filled out by me
         multiplying (int): Description here to be filled out by me
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xC8])
@@ -3663,7 +3575,7 @@ class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
         self._multiplying = UInt8(multiplying)
 
     def __init__(
-        self, adding: int, multiplying: int, identifier: Optional[str] = None
+        self, adding: int, multiplying: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_adding(adding)
@@ -3671,7 +3583,6 @@ class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
 
     def render(self, *args) -> bytearray:
         return super().render(self.adding, self.multiplying)
-
 
 class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -3686,14 +3597,12 @@ class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
         ? bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFE])
 
-
 # room objects & camera
-
 
 class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
@@ -3713,22 +3622,21 @@ class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
 
     Args:
         target (AreaObject): The actor that this action queue should apply to
-        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        subscript (list[UsableActionScriptCommand] | None): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if subscript is None:
             script = []
         else:
             script = deepcopy(subscript)
         super().__init__(target, False, script, identifier)
-
 
 class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
@@ -3748,20 +3656,19 @@ class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
 
     Args:
         target (AreaObject): The actor that this action queue should apply to
-        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        subscript (list[UsableActionScriptCommand] | None): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if subscript is None:
             subscript = []
         super().__init__(target, True, subscript, identifier)
-
 
 class StartAsyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
@@ -3783,21 +3690,20 @@ class StartAsyncEmbeddedActionScript(
 
     Args:
         target (AreaObject): The actor that this action queue should apply to
-        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        subscript (list[UsableActionScriptCommand] | None): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         prefix: int,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if subscript is None:
             subscript = []
         super().__init__(target, prefix, False, subscript, identifier)
-
 
 class StartSyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
@@ -3819,21 +3725,20 @@ class StartSyncEmbeddedActionScript(
 
     Args:
         target (AreaObject): The actor that this action queue should apply to
-        subscript (Optional[List[UsableActionScriptCommand]]): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        subscript (list[UsableActionScriptCommand] | None): A list of action script commands for the actor to perform (see action_scriots/commands/commands.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         prefix: int,
-        subscript: Optional[List[UsableActionScriptCommand]] = None,
-        identifier: Optional[str] = None,
+        subscript: list[UsableActionScriptCommand] | None = None,
+        identifier: str | None = None,
     ) -> None:
         if subscript is None:
             subscript = []
         super().__init__(target, prefix, True, subscript, identifier)
-
 
 class NonEmbeddedActionQueue(UsableEventScriptCommand, NonEmbeddedActionQueuePrototype):
     """A section of unheadered code to be run as an action script instead of an event script.\n
@@ -3854,9 +3759,8 @@ class NonEmbeddedActionQueue(UsableEventScriptCommand, NonEmbeddedActionQueuePro
         The size of the subscript in bytes. No header.
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
-
 
 class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Force a given NPC to run an action script by ID.\n
@@ -3904,7 +3808,7 @@ class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
         target: AreaObject,
         action_script_id: int,
         sync: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -3914,7 +3818,6 @@ class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         header_byte: int = (not self.sync) + 0xF2
         return super().render(self.target, header_byte, self.action_script_id)
-
 
 class SetAsyncActionScript(
     _SetActionScript,
@@ -3936,17 +3839,16 @@ class SetAsyncActionScript(
     Args:
         target (AreaObject): The actor that this action script should apply to
         action_script_id (int): The ID of the action script for the target to be animated by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         action_script_id: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, False, identifier)
-
 
 class SetSyncActionScript(_SetActionScript, UsableEventScriptCommand):
     """Force an actor to run an action script by ID.
@@ -3965,17 +3867,16 @@ class SetSyncActionScript(_SetActionScript, UsableEventScriptCommand):
     Args:
         target (AreaObject): The actor that this action script should apply to
         action_script_id (int): The ID of the action script for the target to be animated by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         action_script_id: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, True, identifier)
-
 
 class _SetTempActionScript(EventScriptCommand):
     """Force a given NPC to run an action script by ID, where they will resume
@@ -4024,7 +3925,7 @@ class _SetTempActionScript(EventScriptCommand):
         target: AreaObject,
         action_script_id: int,
         sync: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -4034,7 +3935,6 @@ class _SetTempActionScript(EventScriptCommand):
     def render(self, *args) -> bytearray:
         header_byte: int = (not self.sync) + 0xF4
         return super().render(self.target, header_byte, self.action_script_id)
-
 
 class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     """The specified actor acts out an action script by ID.
@@ -4054,17 +3954,16 @@ class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     Args:
         target (AreaObject): The actor that this action script should apply to
         action_script_id (int): The ID of the action script for the target to be animated by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         action_script_id: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, False, identifier)
-
 
 class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     """The specified actor acts out an action script by ID.
@@ -4084,17 +3983,16 @@ class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     Args:
         target (AreaObject): The actor that this action script should apply to
         action_script_id (int): The ID of the action script for the target to be animated by
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     def __init__(
         self,
         target: AreaObject,
         action_script_id: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, True, identifier)
-
 
 class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Changes an async script (blocks the progression of the main thread until completion) to
@@ -4112,7 +4010,7 @@ class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor that this action script should apply to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4127,13 +4025,12 @@ class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC to run the action script."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF6)
-
 
 class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Summon a NPC to the given level by its NPC ID within the level.
@@ -4151,7 +4048,7 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     Args:
         target_npc (AreaObject): The field object to make present in the level. Use the pre-defined ones in area_objects.py.
         level_id (int): The level to make the object present in.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF2
@@ -4180,7 +4077,7 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -4189,7 +4086,6 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         arg: int = UInt16(self.level_id + (self.target_npc << 9) + (1 << 15))
         return super().render(arg)
-
 
 class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
     """
@@ -4207,7 +4103,7 @@ class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor to make visible
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4222,13 +4118,12 @@ class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
         """Specify the target to become active with this command."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF8)
-
 
 class SummonObjectToCurrentLevelAtMariosCoords(
     UsableEventScriptCommand, EventScriptCommand
@@ -4248,7 +4143,7 @@ class SummonObjectToCurrentLevelAtMariosCoords(
 
     Args:
         target (AreaObject): The actor to make visible and teleport
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4263,13 +4158,12 @@ class SummonObjectToCurrentLevelAtMariosCoords(
         """Specify the target to become active with this command."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF7)
-
 
 class SummonObjectAt70A8ToCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -4287,11 +4181,10 @@ class SummonObjectAt70A8ToCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF4
-
 
 class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Remove a NPC from the given level by its NPC ID within the level.
@@ -4309,7 +4202,7 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
     Args:
         target_npc (AreaObject): The field object to remove in the level. Use the pre-defined ones in area_objects.py.
         level_id (int): The level to remove the object from.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF2
@@ -4338,7 +4231,7 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -4349,7 +4242,6 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
         assert 0 <= arg_raw <= 0x7FFF
         arg: int = UInt16(arg_raw)
         return super().render(arg)
-
 
 class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
     """The specified NPC will no longer be present in the level (`visible` set to false).
@@ -4366,7 +4258,7 @@ class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand)
 
     Args:
         target (AreaObject): The actor to make invisible
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4381,13 +4273,12 @@ class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand)
         """Designate the NPC to be removed from the current level."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF9)
-
 
 class RemoveObjectAt70A8FromCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -4405,11 +4296,10 @@ class RemoveObjectAt70A8FromCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF5
-
 
 class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
     """The actor's action script will pause until a `ResumeActionScript`
@@ -4427,7 +4317,7 @@ class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor whose animation to pause
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4442,13 +4332,12 @@ class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC whose action script should be paused."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFA)
-
 
 class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Resumes a paused action script for the target actor.
@@ -4466,7 +4355,7 @@ class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor whose paused animation to resume
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4481,13 +4370,12 @@ class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC whose paused action script should be resumed."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFB)
-
 
 class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
     """The specified actor can now be interacted with.
@@ -4504,7 +4392,7 @@ class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor whose trigger to enable
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4519,13 +4407,12 @@ class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC that should become interact-able."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFC)
-
 
 class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
     """The actor will enter a state in which it cannot be interacted with.
@@ -4542,7 +4429,7 @@ class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor to disable interactions for
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4557,13 +4444,12 @@ class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC that should become un-interact-able."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFD)
-
 
 class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Enable the object trigger of the NPC to the given level.
@@ -4581,7 +4467,7 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
     Args:
         target_npc (AreaObject): The NPC whose object trigger to enable. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room in which the NPC whose object trigger is being enabled lives
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF3
@@ -4612,7 +4498,7 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -4622,7 +4508,6 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
         arg_raw = self.level_id + (self.target_npc << 9) + (1 << 15)
         arg: int = UInt16(arg_raw)
         return super().render(arg)
-
 
 class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Disable the object trigger of the NPC to the given level.
@@ -4640,7 +4525,7 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
     Args:
         target_npc (AreaObject): The NPC whose object trigger to disable. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room in which the NPC whose object trigger is being disabled lives
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF3
@@ -4671,7 +4556,7 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
         self._level_id = UInt16(level_id)
 
     def __init__(
-        self, target_npc: AreaObject, level_id: int, identifier: Optional[str] = None
+        self, target_npc: AreaObject, level_id: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_target_npc(target_npc)
@@ -4682,7 +4567,6 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
         assert 0 <= arg_raw <= 0x7FFF
         arg: int = UInt16(arg_raw)
         return super().render(arg)
-
 
 class EnableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -4701,11 +4585,10 @@ class EnableTriggerOfObjectAt70A8InCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF6
-
 
 class DisableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -4723,11 +4606,10 @@ class DisableTriggerOfObjectAt70A8InCurrentLevel(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF7
-
 
 class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
     """If the NPC is running an action script that was applied to it
@@ -4746,7 +4628,7 @@ class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor to disable an animation for
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4761,13 +4643,12 @@ class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
         """Designate the NPC whose embedded action queue is to be stopped."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFE)
-
 
 class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
     """The given NPC will return to the coordinates as set in the room definition.
@@ -4784,7 +4665,7 @@ class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The actor to reset the position for
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -4801,13 +4682,12 @@ class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
         in the room definition."""
         self._target = target
 
-    def __init__(self, target: AreaObject, identifier: Optional[str] = None) -> None:
+    def __init__(self, target: AreaObject, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFF)
-
 
 class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet spawning at any NPC's current coordinates.
@@ -4824,8 +4704,8 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
         target_npc (AreaObject): The field object whose coordinates to spawn the packet at. Use the pre-defined ones in area_objects.py.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3E
@@ -4856,8 +4736,8 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
         self,
         packet: Packet,
         target_npc: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
@@ -4865,7 +4745,6 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.target_npc, *self.destinations)
-
 
 class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014.
@@ -4881,8 +4760,8 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3F
@@ -4902,15 +4781,14 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def __init__(
         self,
         packet: Packet,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, *self.destinations)
-
 
 class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014. When touched, the packet will run the event specified by the given ID.\n
@@ -4927,8 +4805,8 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
     Args:
         packet (Packet): The packet object you want to spawn. Use the packets in packets.py, or define your own as long as the properties match what's in your ROM.
         event_id (int): The ID of the event that should run when the spawned packet is touched.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if packet spawning fails (can be any command, but is usually a `ReturnQueue` command or whatever command comes after this one).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x3E])
@@ -4961,8 +4839,8 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
         self,
         packet: Packet,
         event_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_packet_id(packet)
@@ -4970,7 +4848,6 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.event_id, *self.destinations)
-
 
 class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """All NPCs in the room will have their current actions frozen until the next
@@ -4986,11 +4863,10 @@ class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArg
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x30
-
 
 class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Cancels any commands that have frozen NPCs in the room.
@@ -5005,11 +4881,10 @@ class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x31
-
 
 class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The camera will no longer adjust to the player's position.
@@ -5024,11 +4899,10 @@ class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x31])
-
 
 class UnfreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The camera will resume following the player's position.
@@ -5043,11 +4917,10 @@ class UnfreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x30])
-
 
 class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently on top of the specific NPC,
@@ -5064,8 +4937,8 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
         Args:
             target (AreaObject): The NPC to check if a player is on
-            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if Mario is on the NPC.
-            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+            destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if Mario is on the NPC.
+            identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x39
@@ -5084,15 +4957,14 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def __init__(
         self,
         target: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self._target, *self.destinations)
-
 
 class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Accepts two identifiers for commands to go to:\n
@@ -5109,8 +4981,8 @@ class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWith
         5 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly two `str`s. The first one should be the label of a command to jump to if the player **is** on another NPC and the second should be the label of the command to jump to if the player **is not** on an NPC.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly two `str`s. The first one should be the label of a command to jump to if the player **is** on another NPC and the second should be the label of the command to jump to if the player **is not** on an NPC.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x42
@@ -5118,7 +4990,6 @@ class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is currently airborne, jump to the command matching the label.
@@ -5134,8 +5005,8 @@ class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     Args:
         target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is airborne.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is airborne.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x3D])
@@ -5154,15 +5025,14 @@ class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def __init__(
         self,
         target_npc: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
 
     def render(self, *args) -> bytearray:
         return super().render(self._target_npc, *self.destinations)
-
 
 class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is present in the specified level, jump to the command matching the specified label.
@@ -5179,8 +5049,8 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
     Args:
         target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF8
@@ -5212,8 +5082,8 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
         self,
         target_npc: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
@@ -5222,7 +5092,6 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
     def render(self, *args) -> bytearray:
         arg = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg, *self.destinations)
-
 
 class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is present in the current level, jump to the code section beginning with the specified identifier.
@@ -5238,8 +5107,8 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
 
     Args:
         target (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is present in the level.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x32
@@ -5258,15 +5127,14 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
     def __init__(
         self,
         target: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
-
 
 class JmpIfObjectNotInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5285,8 +5153,8 @@ class JmpIfObjectNotInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC to check for. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is absent from the level.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC is absent from the level.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xF8
@@ -5318,8 +5186,8 @@ class JmpIfObjectNotInSpecificLevel(
         self,
         target_npc: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target_npc(target_npc)
@@ -5329,7 +5197,6 @@ class JmpIfObjectNotInSpecificLevel(
         arg = UInt16((self.target_npc << 9) + self.level_id)
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
-
 
 class JmpIfObjectTriggerEnabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5348,8 +5215,8 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC's object trigger
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is enabled.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is enabled.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xF0])
@@ -5381,8 +5248,8 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
         self,
         target: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
@@ -5391,7 +5258,6 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
     def render(self, *args) -> bytearray:
         arg: int = UInt16(self.level_id + (self.target << 9) + (1 << 15))
         return super().render(arg, *self.destinations)
-
 
 class JmpIfObjectTriggerDisabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5410,8 +5276,8 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
     Args:
         target_npc (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
         level_id (int): The ID of the room to check for the NPC's object trigger
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xF0])
@@ -5443,8 +5309,8 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
         self,
         target: AreaObject,
         level_id: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
@@ -5454,7 +5320,6 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
         arg = UInt16((self.target << 9) + self.level_id)
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
-
 
 class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is underwater in the current level,
@@ -5471,8 +5336,8 @@ class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJm
 
         Args:
             target (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
-            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
-            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+            destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+            identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x34])
@@ -5491,15 +5356,14 @@ class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJm
     def __init__(
         self,
         target: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
-
 
 class JmpIfObjectActionScriptIsRunning(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5518,8 +5382,8 @@ class JmpIfObjectActionScriptIsRunning(
 
         Args:
             target (AreaObject): The NPC to check. Use the pre-defined ones in area_objects.py.
-            destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
-            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+            destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the NPC's trigger is disabled.
+            identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x33])
@@ -5538,15 +5402,14 @@ class JmpIfObjectActionScriptIsRunning(
     def __init__(
         self,
         target: AreaObject,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_target(target)
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
-
 
 class JmpIfObjectsAreLessThanXYStepsApart(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5568,8 +5431,8 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         object_2 (AreaObject): The second NPC to compare. Use the pre-defined ones in area_objects.py.
         x (int): The x component of the step threshold that the NPCs can be separated by.
         y (int): The y component of the step threshold that the NPCs can be separated by.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3A
@@ -5625,8 +5488,8 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         object_2: AreaObject,
         x: int,
         y: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_object_1(object_1)
@@ -5638,7 +5501,6 @@ class JmpIfObjectsAreLessThanXYStepsApart(
         return super().render(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
-
 
 class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5659,8 +5521,8 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         object_2 (AreaObject): The second NPC to compare. Use the pre-defined ones in area_objects.py.
         x (int): The x component of the step threshold that the NPCs can be separated by.
         y (int): The y component of the step threshold that the NPCs can be separated by.
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance on the same z coord.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the two NPCs are separated by less than both the x and y distance on the same z coord.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3B
@@ -5716,8 +5578,8 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         object_2: AreaObject,
         x: int,
         y: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_object_1(object_1)
@@ -5729,7 +5591,6 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
         return super().render(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
-
 
 class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -5749,11 +5610,10 @@ class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
             1 byte
 
         Args:
-            identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+            identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5D
-
 
 class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
     """Sets $7000 to the pixel or isometric coordinate value of one dimension from any NPC's current coordinates.
@@ -5779,7 +5639,7 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         isometric (bool): If true, stores the isometric coord value (i.e. tile coord) instead of the pixel value. Exclusive with the `pixel` arg.
         pixel (bool): If true, stores the pixel coord value instead of the tile/isometric coord value. Exclusive with the `isometric` arg.
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
@@ -5834,7 +5694,7 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         isometric: bool = False,
         pixel: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         if coord != COORD_F:
             assert isometric ^ pixel
@@ -5850,7 +5710,6 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
             (self.bit_7 << 7) + (self.is_isometric_not_pixel << 6) + self.target_npc
         )
         return super().render(opcode, arg)
-
 
 class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     """Copy the X, Y, and Z pixel coordinates of the NPC to $7010, $7012, and $7014.
@@ -5868,7 +5727,7 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         target (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
         bit_6 (bool): (unknown)
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC7
@@ -5909,7 +5768,7 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         target: AreaObject,
         bit_6: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -5918,7 +5777,6 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
-
 
 class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     """Copy the X, Y, and Z pixel coordinates of the NPC to $7016, $7018, and $701A.
@@ -5934,7 +5792,7 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         target (AreaObject): The field object whose coords to read. Use the pre-defined ones in area_objects.py.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC8
@@ -5975,7 +5833,7 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
         target: AreaObject,
         bit_6: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -5984,7 +5842,6 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
-
 
 class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """(unknown)
@@ -6000,15 +5857,13 @@ class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem)
 
     Args:
         address (ShortVar): Any short var to read from
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xD6
     _size: int = 2
 
-
 # controls
-
 
 class EnableControls(UsableEventScriptCommand, EventScriptCommand):
     """Buttons included in this command will be enabled, and buttons excluded will be disabled.
@@ -6032,40 +5887,39 @@ class EnableControls(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        enabled_buttons (Union[List[ControllerInput], Set[ControllerInput]]): All of the buttons that should be enabled to the exclusion of all others
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        enabled_buttons (list[ControllerInput] | set[ControllerInput]): All of the buttons that should be enabled to the exclusion of all others
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x35
     _size: int = 2
-    _enabled_buttons: Set[ControllerInput]
+    _enabled_buttons: set[ControllerInput]
 
     @property
-    def enabled_buttons(self) -> Set[ControllerInput]:
+    def enabled_buttons(self) -> set[ControllerInput]:
         """The complete list of buttons that the player can use as of this command."""
         return self._enabled_buttons
 
     def set_enabled_buttons(
-        self, enabled_buttons: Union[List[ControllerInput], Set[ControllerInput]]
+        self, enabled_buttons: list[ControllerInput] | set[ControllerInput]
     ) -> None:
         """Overwrite the complete list of buttons that the player can use as of this command."""
         self._enabled_buttons = set(enabled_buttons)
 
     def __init__(
         self,
-        enabled_buttons: Union[List[ControllerInput], Set[ControllerInput]],
-        identifier: Optional[str] = None,
+        enabled_buttons: list[ControllerInput] | set[ControllerInput],
+        identifier: str | None = None,
     ):
         super().__init__(identifier)
         self.set_enabled_buttons(enabled_buttons)
 
     def render(self, *args) -> bytearray:
-        buttons_as_ints: List[int] = cast(
-            List[int], [int(b) for b in self.enabled_buttons]
+        buttons_as_ints: list[int] = cast(
+            list[int], [int(b) for b in self.enabled_buttons]
         )
         arg: int = bits_to_int(buttons_as_ints)
         return super().render(arg)
-
 
 class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
     """Buttons included in this command will be enabled, and buttons excluded will be disabled.\n
@@ -6090,29 +5944,29 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        enabled_buttons (Union[List[ControllerInput], Set[ControllerInput]]): All of the buttons that should be enabled to the exclusion of all others
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        enabled_buttons (list[ControllerInput] | set[ControllerInput]): All of the buttons that should be enabled to the exclusion of all others
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x34
     _size: int = 2
-    _enabled_buttons: Set[ControllerInput]
+    _enabled_buttons: set[ControllerInput]
 
     @property
-    def enabled_buttons(self) -> Set[ControllerInput]:
+    def enabled_buttons(self) -> set[ControllerInput]:
         """The complete list of buttons that the player can use as of this command."""
         return self._enabled_buttons
 
     def set_enabled_buttons(
-        self, enabled_buttons: Union[Set[ControllerInput], List[ControllerInput]]
+        self, enabled_buttons: set[ControllerInput] | list[ControllerInput]
     ) -> None:
         """Overwrite the complete list of buttons that the player can use as of this command."""
         self._enabled_buttons = set(enabled_buttons)
 
     def __init__(
         self,
-        enabled_buttons: Optional[List[ControllerInput]] = None,
-        identifier: Optional[str] = None,
+        enabled_buttons: list[ControllerInput] | None = None,
+        identifier: str | None = None,
     ):
         super().__init__(identifier)
         if enabled_buttons is None:
@@ -6120,12 +5974,11 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
         self.set_enabled_buttons(enabled_buttons)
 
     def render(self, *args) -> bytearray:
-        buttons_as_ints: List[int] = cast(
-            List[int], [int(b) for b in self.enabled_buttons]
+        buttons_as_ints: list[int] = cast(
+            list[int], [int(b) for b in self.enabled_buttons]
         )
         arg: int = bits_to_int(buttons_as_ints)
         return super().render(arg)
-
 
 class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the bits of $7000 to correspond to all currently pressed buttons.
@@ -6148,11 +6001,10 @@ class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs)
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCA
-
 
 class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the bits of $7000 to correspond to an individual tapped button.
@@ -6175,14 +6027,12 @@ class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xCB
 
-
 # inventory / party
-
 
 class AddCoins(UsableEventScriptCommand, EventScriptCommand):
     """Add this many coins to the player's coin count.
@@ -6199,15 +6049,15 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        amount (Union[int, ShortVar]): The number of coins to add (8 bit int), or variable $7000 (cannot be any other var).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        amount (int | ShortVar): The number of coins to add (8 bit int), or variable $7000 (cannot be any other var).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
-    _amount: Union[ShortVar, UInt8]
+    _amount: ShortVar | UInt8
 
     @property
-    def amount(self) -> Union[ShortVar, UInt8]:
+    def amount(self) -> ShortVar | UInt8:
         """The number of coins to grant."""
         return self._amount
 
@@ -6219,7 +6069,7 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
             assert amount == 0x7000
             self._amount = ShortVar(amount)
 
-    def __init__(self, amount: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amount: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amount(amount)
 
@@ -6227,7 +6077,6 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(self.amount, ShortVar):
             return super().render(bytearray([0xFD, 0x52]))
         return super().render(0x52, self.amount)
-
 
 class Dec7000FromCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's coin count by the amount stored to $7000.
@@ -6242,11 +6091,10 @@ class Dec7000FromCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x53])
-
 
 class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
     """Add this many coins to the player's frog coin count.
@@ -6263,15 +6111,15 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        amount (Union[int, ShortVar]): The number of frog coins to add (8 bit int), or variable $7000 (cannot be any other var).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        amount (int | ShortVar): The number of frog coins to add (8 bit int), or variable $7000 (cannot be any other var).
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
-    _amount: Union[ShortVar, UInt8]
+    _amount: ShortVar | UInt8
 
     @property
-    def amount(self) -> Union[ShortVar, UInt8]:
+    def amount(self) -> ShortVar | UInt8:
         """The number of Frog Coins to grant."""
         return self._amount
 
@@ -6283,7 +6131,7 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
             assert amount == 0x7000
             self._amount = ShortVar(amount)
 
-    def __init__(self, amount: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, amount: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amount(amount)
 
@@ -6291,7 +6139,6 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
         if isinstance(self.amount, ShortVar):
             return super().render(bytearray([0xFD, 0x54]))
         return super().render(0x53, self.amount)
-
 
 class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's frog coin count by the amount stored to $7000.
@@ -6306,11 +6153,10 @@ class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x55])
-
 
 class Add7000ToCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Add the amount stored to $7000 to the player's current FP fill.
@@ -6325,11 +6171,10 @@ class Add7000ToCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x56])
-
 
 class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's current FP fill by the amount stored to $7000.
@@ -6344,11 +6189,10 @@ class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x57
-
 
 class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Add the amount stored to $7000 to the player's current max FP threshold.
@@ -6363,11 +6207,10 @@ class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x57])
-
 
 class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
     """Decrease the given character's current HP fill by the amount stored to $7000.
@@ -6383,7 +6226,7 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         character (PartyCharacter): The character who will be damaged
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x56
@@ -6400,14 +6243,13 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
         self._character = character
 
     def __init__(
-        self, character: PartyCharacter, identifier: Optional[str] = None
+        self, character: PartyCharacter, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_character(character)
 
     def render(self, *args) -> bytearray:
         return super().render(self.character)
-
 
 class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
     """Arbitrarily equip an item to a specified character. The item does not need to exist in the player's inventory.
@@ -6422,15 +6264,15 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        item (Type[Equipment]): The item to equip (use an item class name from datatypes/items/implementations.py)
+        item (type[Equipment]): The item to equip (use an item class name from datatypes/items/implementations.py)
         character (PartyCharacter): The character to equip the item to
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x54
     _size: int = 3
     _character: PartyCharacter
-    _item: Type[Equipment]
+    _item: type[Equipment]
 
     @property
     def character(self) -> PartyCharacter:
@@ -6442,19 +6284,19 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
         self._character = character
 
     @property
-    def item(self) -> Type[Equipment]:
+    def item(self) -> type[Equipment]:
         """The class of item to equip to the character."""
         return self._item
 
-    def set_item(self, item: Type[Equipment]) -> None:
+    def set_item(self, item: type[Equipment]) -> None:
         """Set the class of item to equip to the character."""
         self._item = item
 
     def __init__(
         self,
-        item: Type[Equipment],
+        item: type[Equipment],
         character: PartyCharacter,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_character(character)
@@ -6462,7 +6304,6 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.character, self.item().item_id)
-
 
 class IncEXPByPacket(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The amount of EXP belonging to the packet index designated by `SetEXPPacketTo7000` will be added to the EXP of all recruited characters.
@@ -6477,11 +6318,10 @@ class IncEXPByPacket(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4B])
-
 
 class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
     """The specified character is recruited.
@@ -6498,7 +6338,7 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         character (PartyCharacter): The character who joins the party
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x36
@@ -6515,14 +6355,13 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
         self._character = character
 
     def __init__(
-        self, character: PartyCharacter, identifier: Optional[str] = None
+        self, character: PartyCharacter, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_character(character)
 
     def render(self, *args) -> bytearray:
         return super().render(self.character + (1 << 7))
-
 
 class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
     """The specified character is dismissed from the party.
@@ -6539,7 +6378,7 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         character (PartyCharacter): The character who leaves the party
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x36
@@ -6556,14 +6395,13 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
         self._character = character
 
     def __init__(
-        self, character: PartyCharacter, identifier: Optional[str] = None
+        self, character: PartyCharacter, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_character(character)
 
     def render(self, *args) -> bytearray:
         return super().render(self.character & 0x7F)
-
 
 class Store70A7ToEquipsInventory(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The item whose ID matches the current value of $70A7 is added to the equips inventory pocket.
@@ -6578,11 +6416,10 @@ class Store70A7ToEquipsInventory(UsableEventScriptCommand, EventScriptCommandNoA
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x51])
-
 
 class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
     """The item matching the given ID, or the ID stored at $70A7, will be added to the appropriate inventory pocket.
@@ -6599,19 +6436,19 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
         2 bytes
 
     Args:
-        item (Union[Type[Item], ByteVar]): Either the item to equip (use an item class name from datatypes/items/implementations.py), OR the `ByteVar(0x70A7)` ByteVar to store whatever item ID is in $70A7.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item] | ByteVar): Either the item to equip (use an item class name from datatypes/items/implementations.py), OR the `ByteVar(0x70A7)` ByteVar to store whatever item ID is in $70A7.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 2
-    _item: Union[Type[Item], ByteVar]
+    _item: type[Item] | ByteVar
 
     @property
-    def item(self) -> Union[Type[Item], ByteVar]:
+    def item(self) -> type[Item] | ByteVar:
         """The item (or variable) being stored to inventory."""
         return self._item
 
-    def set_item(self, item: Union[Type[Item], ByteVar]) -> None:
+    def set_item(self, item: type[Item] | ByteVar) -> None:
         """Acceptable values: an item class, or ByteVar(0x70A7) variable."""
         if isinstance(item, ByteVar):
             assert item == ByteVar(0x70A7)
@@ -6621,7 +6458,7 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
             self._item = item
 
     def __init__(
-        self, item: Union[Type[Item], ByteVar], identifier: Optional[str] = None
+        self, item: type[Item] | ByteVar, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_item(item)
@@ -6631,7 +6468,6 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
             return super().render(bytearray([0xFD, 0x50]))
         item = self.item
         return super().render(0x50, item().item_id)
-
 
 class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand):
     """One item matching the given ID will be removed from inventory.
@@ -6646,30 +6482,29 @@ class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand)
         2 bytes
 
     Args:
-        item (Type[Item]): The item to equip (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to equip (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x51
     _size: int = 2
-    _item: Type[Item]
+    _item: type[Item]
 
     @property
-    def item(self) -> Type[Item]:
+    def item(self) -> type[Item]:
         """The item to remove one of from inventory."""
         return self._item
 
-    def set_item(self, item: Type[Item]) -> None:
+    def set_item(self, item: type[Item]) -> None:
         """Set the item to remove one of from inventory."""
         self._item = item
 
-    def __init__(self, item: Type[Item], identifier: Optional[str] = None) -> None:
+    def __init__(self, item: type[Item], identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_item(item)
 
     def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
-
 
 class RestoreAllFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's FP will be filled to its current maximum.
@@ -6684,11 +6519,10 @@ class RestoreAllFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x5C])
-
 
 class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """All recruited characters' HP will be filled to their current maximum.
@@ -6703,11 +6537,10 @@ class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x5B])
-
 
 class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the active EXP packet to the ID corresponding to the current value of $7000.
@@ -6723,11 +6556,10 @@ class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x64])
-
 
 class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
     """The value of $7000 will be set to the character ID who currently occupies the given slot by party index (0 to 4).
@@ -6743,7 +6575,7 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         slot (int): The slot to look at (0 to 4)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x38
@@ -6760,13 +6592,12 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= slot <= 4
         self._slot = UInt8(slot)
 
-    def __init__(self, slot: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, slot: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_slot(slot)
 
     def render(self, *args) -> bytearray:
         return super().render(0x08 + self.slot)
-
 
 class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Store the total party size to $7000.
@@ -6781,11 +6612,10 @@ class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x37
-
 
 class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the item whose ID matches the current value of $70A7, check how many of that item are currently in the player inventory, and store that amount to $7000.
@@ -6800,11 +6630,10 @@ class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommand
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x5E])
-
 
 class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand):
     """For the given equipment type on the given character, store the ID of the currently equipped item to $7000
@@ -6820,14 +6649,14 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
 
     Args:
         character (PartyCharacter): The character whose equipment to look at.
-        equip_slot (Type[Equipment]): The equip slot to read (`WeaponItem`, `ArmorItem`, or `AccessoryItem`)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        equip_slot (type[Equipment]): The equip slot to read (`WeaponItem`, `ArmorItem`, or `AccessoryItem`)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x5D])
     _size: int = 4
     _character: PartyCharacter
-    _equip_slot: Type[Equipment]
+    _equip_slot: type[Equipment]
 
     @property
     def character(self) -> PartyCharacter:
@@ -6839,11 +6668,11 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
         self._character = character
 
     @property
-    def equip_slot(self) -> Type[Equipment]:
+    def equip_slot(self) -> type[Equipment]:
         """The equipment type to check."""
         return self._equip_slot
 
-    def set_equip_slot(self, equip_slot: Type[Equipment]) -> None:
+    def set_equip_slot(self, equip_slot: type[Equipment]) -> None:
         """Designate the equipment type to check."""
         assert 0 <= equip_slot().item_id <= 2
         self._equip_slot = equip_slot
@@ -6851,8 +6680,8 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
     def __init__(
         self,
         character: PartyCharacter,
-        equip_slot: Type[Equipment],
-        identifier: Optional[str] = None,
+        equip_slot: type[Equipment],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_character(character)
@@ -6860,7 +6689,6 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
 
     def render(self, *args) -> bytearray:
         return super().render(self.character, self.equip_slot().item_id)
-
 
 class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current FP fill amount is stored to $7000.
@@ -6875,11 +6703,10 @@ class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x58
-
 
 class StoreEmptyItemInventorySlotCountTo7000(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -6896,11 +6723,10 @@ class StoreEmptyItemInventorySlotCountTo7000(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x55
-
 
 class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's current coin count is stored to $7000.
@@ -6915,11 +6741,10 @@ class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x59])
-
 
 class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
     """Check how many of the given item are currently in the player's inventory, and store that amount to $7000.
@@ -6934,30 +6759,29 @@ class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        item (Type[Item]): The item to count (use an item class name from datatypes/items/implementations.py)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        item (type[Item]): The item to count (use an item class name from datatypes/items/implementations.py)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x58])
     _size: int = 3
-    _item: Type[Item]
+    _item: type[Item]
 
     @property
-    def item(self) -> Type[Item]:
+    def item(self) -> type[Item]:
         """The item whose inventory quantity to check."""
         return self._item
 
-    def set_item(self, item: Type[Item]) -> None:
+    def set_item(self, item: type[Item]) -> None:
         """Set the item whose inventory quantity to check."""
         self._item = item
 
-    def __init__(self, item: Type[Item], identifier: Optional[str] = None) -> None:
+    def __init__(self, item: type[Item], identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_item(item)
 
     def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
-
 
 class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's current Frog Coin count is stored to $7000.
@@ -6972,14 +6796,12 @@ class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArg
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x5A])
 
-
 # yourself
-
 
 class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently airborne, go to the section of code beginning with the specified identifier.
@@ -6994,8 +6816,8 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the player is airborne.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to if the player is airborne.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x3D
@@ -7003,7 +6825,6 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class MarioGlows(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player will glow as they normally do during an EXP star animation.
@@ -7018,11 +6839,10 @@ class MarioGlows(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xF9])
-
 
 class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The effect of a prior `MarioGlows` command is canceled.
@@ -7037,14 +6857,12 @@ class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xFA])
 
-
 # palettes & screen effects
-
 
 class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
     """(The inner workings of this command are unknown.)
@@ -7065,7 +6883,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         bit_1 (bool): (unknown)
         bit_2 (bool): (unknown)
         bit_3 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x8A
@@ -7140,7 +6958,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         bit_1: bool = False,
         bit_2: bool = False,
         bit_3: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_palette_set(palette_set)
@@ -7154,7 +6972,6 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         flags: int = bools_to_int(self.bit_0, self.bit_1, self.bit_2, self.bit_3)
         arg_1 = UInt8(flags + ((self.row - 1) << 4))
         return super().render(arg_1, self.palette_set)
-
 
 class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
     """(The inner workings of this command are unknown.)
@@ -7173,7 +6990,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         palette_set (int): The palette set to apply to the NPCs in the current level
         duration (int): The number of frames over which this palette morph should occur
         row (int): The row offset relative to the palette
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x89
@@ -7227,7 +7044,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         palette_set: int,
         duration: int,
         row: int,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_palette_type(palette_type)
@@ -7238,7 +7055,6 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         arg_1 = UInt8(self.duration + (self.palette_type << 4))
         return super().render(arg_1, self.row, self.palette_set)
-
 
 class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The script will not continue until an active graphical effect has finished.
@@ -7253,11 +7069,10 @@ class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoA
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7F
-
 
 class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
     """Pixelate the given layers according to the given stylistic rules.
@@ -7272,28 +7087,28 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        layers (Union[List[Layer], Set[Layer]]): The list of layers to be pixelated
+        layers (list[Layer] | set[Layer]): The list of layers to be pixelated
         pixel_size (int): The size of the rendered pixels
         duration (int): The number of frames over which to complete the pixel effect
         bit_6 (bool): (unknown)
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x84
     _size: int = 3
-    _layers: Set[Layer]
+    _layers: set[Layer]
     _pixel_size: UInt8
     _duration: UInt8
     _bit_6: bool = False
     _bit_7: bool = False
 
     @property
-    def layers(self) -> Set[Layer]:
+    def layers(self) -> set[Layer]:
         """The list of layers to be pixelated."""
         return self._layers
 
-    def set_layers(self, layers: Union[List[Layer], Set[Layer]]) -> None:
+    def set_layers(self, layers: list[Layer] | set[Layer]) -> None:
         """Overwrite the layers to be pixelated."""
         for layer in layers:
             assert layer in [LAYER_L1, LAYER_L2, LAYER_L3, LAYER_L4]
@@ -7339,12 +7154,12 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
 
     def __init__(
         self,
-        layers: Union[List[Layer], Set[Layer]],
+        layers: list[Layer] | set[Layer],
         pixel_size: int,
         duration: int,
         bit_6: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_layers(layers)
@@ -7354,12 +7169,11 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
         self.set_bit_7(bit_7)
 
     def render(self, *args) -> bytearray:
-        layers: int = bits_to_int(cast(List[int], self.layers))
+        layers: int = bits_to_int(cast(list[int], self.layers))
         arg_1 = UInt8(layers + (self.pixel_size << 4))
         return super().render(
             arg_1, self.duration + (self.bit_6 << 6) + (self.bit_7 << 7)
         )
-
 
 class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -7374,46 +7188,46 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
         4 bytes
 
     Args:
-        mainscreen (Union[List[Layer], Set[Layer]]): (unknown)
-        subscreen (Union[List[Layer], Set[Layer]]): (unknown)
-        colour_math (Union[List[Layer], Set[Layer]]): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        mainscreen (list[Layer] | set[Layer]): (unknown)
+        subscreen (list[Layer] | set[Layer]): (unknown)
+        colour_math (list[Layer] | set[Layer]): (unknown)
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x81
     _size: int = 4
-    _mainscreen: Set[Layer]
-    _subscreen: Set[Layer]
-    _colour_math: Set[Layer]
+    _mainscreen: set[Layer]
+    _subscreen: set[Layer]
+    _colour_math: set[Layer]
 
     @property
-    def mainscreen(self) -> Set[Layer]:
+    def mainscreen(self) -> set[Layer]:
         """(unknown)"""
         return self._mainscreen
 
-    def set_mainscreen(self, mainscreen: Union[List[Layer], Set[Layer]]) -> None:
+    def set_mainscreen(self, mainscreen: list[Layer] | set[Layer]) -> None:
         """(unknown)"""
         for layer in mainscreen:
             assert layer in [LAYER_L1, LAYER_L2, LAYER_L3, NPC_SPRITES]
         self._mainscreen = set(mainscreen)
 
     @property
-    def subscreen(self) -> Set[Layer]:
+    def subscreen(self) -> set[Layer]:
         """(unknown)"""
         return self._subscreen
 
-    def set_subscreen(self, subscreen: Union[List[Layer], Set[Layer]]) -> None:
+    def set_subscreen(self, subscreen: list[Layer] | set[Layer]) -> None:
         """(unknown)"""
         for layer in subscreen:
             assert layer in [LAYER_L1, LAYER_L2, LAYER_L3, NPC_SPRITES]
         self._subscreen = set(subscreen)
 
     @property
-    def colour_math(self) -> Set[Layer]:
+    def colour_math(self) -> set[Layer]:
         """(unknown)"""
         return self._colour_math
 
-    def set_colour_math(self, colour_math: Union[List[Layer], Set[Layer]]) -> None:
+    def set_colour_math(self, colour_math: list[Layer] | set[Layer]) -> None:
         """(unknown)"""
         for layer in colour_math:
             assert layer != LAYER_L4
@@ -7421,10 +7235,10 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
 
     def __init__(
         self,
-        mainscreen: Union[List[Layer], Set[Layer]],
-        subscreen: Union[List[Layer], Set[Layer]],
-        colour_math: Union[List[Layer], Set[Layer]],
-        identifier: Optional[str] = None,
+        mainscreen: list[Layer] | set[Layer],
+        subscreen: list[Layer] | set[Layer],
+        colour_math: list[Layer] | set[Layer],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_mainscreen(mainscreen)
@@ -7432,11 +7246,10 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
         self.set_colour_math(colour_math)
 
     def render(self, *args) -> bytearray:
-        mainscreen: int = bits_to_int(cast(List[int], self.mainscreen))
-        subscreen: int = bits_to_int(cast(List[int], self.subscreen))
-        colour_math: int = bits_to_int(cast(List[int], self.colour_math))
+        mainscreen: int = bits_to_int(cast(list[int], self.mainscreen))
+        subscreen: int = bits_to_int(cast(list[int], self.subscreen))
+        colour_math: int = bits_to_int(cast(list[int], self.colour_math))
         return super().render(mainscreen, subscreen, colour_math)
-
 
 class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -7451,11 +7264,10 @@ class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x82
-
 
 class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
     """Briefly flash a colour over the whole screen.
@@ -7471,7 +7283,7 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         colour (Colour): The colour to flash
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x83
@@ -7490,14 +7302,13 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
     def __init__(
         self,
         colour: Colour,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_colour(colour)
 
     def render(self, *args) -> bytearray:
         return super().render(self.colour)
-
 
 class TintLayers(UsableEventScriptCommand, EventScriptCommand):
     """Tint the selected layers with an RGB value.
@@ -7513,18 +7324,18 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
         5 bytes
 
     Args:
-        layers (List[Layer]): The list of layers to be tinted
+        layers (list[Layer]): The list of layers to be tinted
         red (int): The red value of the RGB colour. Must be divisible by 8
         green (int): The green value of the RGB colour. Must be divisible by 8
         blue (int): The blue value of the RGB colour. Must be divisible by 8
         speed (int): The speed at which to perform the tint
         bit_15 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x80
     _size: int = 5
-    _layers: List[Layer]
+    _layers: list[Layer]
     _red: UInt8
     _green: UInt8
     _blue: UInt8
@@ -7532,11 +7343,11 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
     _bit_15: bool
 
     @property
-    def layers(self) -> List[Layer]:
+    def layers(self) -> list[Layer]:
         """The list of layers to be tinted."""
         return self._layers
 
-    def set_layers(self, layers: List[Layer]) -> None:
+    def set_layers(self, layers: list[Layer]) -> None:
         """Overwrite the list of layers to be tinted."""
         self._layers = layers
 
@@ -7593,13 +7404,13 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
 
     def __init__(
         self,
-        layers: List[Layer],
+        layers: list[Layer],
         red: int,
         green: int,
         blue: int,
         speed: int,
         bit_15: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_layers(layers)
@@ -7614,13 +7425,11 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
             (self.red >> 3) + (self.green << 2) + (self.blue << 7) + (self.bit_15 << 15)
         )
         assembled_short = UInt16(assembled_raw)
-        assembled_layers_raw: int = bits_to_int(cast(List[int], self.layers))
+        assembled_layers_raw: int = bits_to_int(cast(list[int], self.layers))
         assembled_layers = UInt8(assembled_layers_raw)
         return super().render(assembled_short, assembled_layers, self.speed)
 
-
 # screen transitions
-
 
 class CircleMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -7637,11 +7446,10 @@ class CircleMaskExpandFromScreenCenter(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7C
-
 
 class CircleMaskShrinkToScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -7658,11 +7466,10 @@ class CircleMaskShrinkToScreenCenter(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7D
-
 
 class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
     """A circle mask shrinks to surround a given object, blacking out most of the level.
@@ -7683,7 +7490,7 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
         width (int): The diameter of the circle mask in pixels
         speed (int): The speed at which the mask effect should complete
         static (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _size: int = 4
@@ -7734,7 +7541,7 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
         width: int,
         speed: int,
         static: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_target(target)
@@ -7745,7 +7552,6 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         opcode: int = 0x8F if self.static else 0x87
         return super().render(opcode, self.target, self.width, self.speed)
-
 
 class StarMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -7762,11 +7568,10 @@ class StarMaskExpandFromScreenCenter(
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7A
-
 
 class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """A star mask shrinks to the screen center to black out most of the level.
@@ -7781,11 +7586,10 @@ class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandN
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7B
-
 
 class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen in from being unloaded.
@@ -7808,12 +7612,12 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         sync (bool): If false, the fade must finish before the script can continue
-        duration (Optional[int]): The length of time in frames that the fade should take
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        duration (int | None): The length of time in frames that the fade should take
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _sync: bool = False
-    _duration: Optional[UInt8] = None
+    _duration: UInt8 | None = None
 
     @property
     def sync(self) -> bool:
@@ -7825,13 +7629,13 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
         self._sync = sync
 
     @property
-    def duration(self) -> Optional[UInt8]:
+    def duration(self) -> UInt8 | None:
         """The length of time in frames that the fade should take."""
         if self._duration is not None:
             return UInt8(self._duration)
         return self._duration
 
-    def set_duration(self, duration: Optional[int] = None) -> None:
+    def set_duration(self, duration: int | None = None) -> None:
         """Define the length of time in frames that the fade should take."""
         if duration is not None:
             self._duration = UInt8(duration)
@@ -7843,8 +7647,8 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
     def __init__(
         self,
         sync: bool,
-        duration: Optional[int] = None,
-        identifier: Optional[str] = None,
+        duration: int | None = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_sync(sync)
@@ -7856,7 +7660,6 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
             opcode += 2
             return super().render(opcode, self.duration)
         return super().render(opcode)
-
 
 class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
     """Draw an opaque colour over the screen, and then fade the screen in.
@@ -7873,7 +7676,7 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The length of time in frames that the fade should take
         colour (Colour): The initial colour to draw over the screen
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x78
@@ -7900,7 +7703,7 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
         self._colour = colour
 
     def __init__(
-        self, duration: int, colour: Colour, identifier: Optional[str] = None
+        self, duration: int, colour: Colour, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -7908,7 +7711,6 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
-
 
 class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen out to solid black.
@@ -7931,12 +7733,12 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         sync (bool): If false, the fade must finish before the script can continue
-        duration (Optional[int]): The length of time in frames that the fade should take
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        duration (int | None): The length of time in frames that the fade should take
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _sync: bool = False
-    _duration: Optional[UInt8] = None
+    _duration: UInt8 | None = None
 
     @property
     def sync(self) -> bool:
@@ -7948,13 +7750,13 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
         self._sync = sync
 
     @property
-    def duration(self) -> Optional[UInt8]:
+    def duration(self) -> UInt8 | None:
         """The length of time in frames that the fade should take."""
         if self._duration is not None:
             return UInt8(self._duration)
         return self._duration
 
-    def set_duration(self, duration: Optional[int] = None) -> None:
+    def set_duration(self, duration: int | None = None) -> None:
         """Define the length of time in frames that the fade should take."""
         if duration is not None:
             self._duration = UInt8(duration)
@@ -7966,8 +7768,8 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
     def __init__(
         self,
         sync: bool,
-        duration: Optional[int] = None,
-        identifier: Optional[str] = None,
+        duration: int | None = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_sync(sync)
@@ -7979,7 +7781,6 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
             opcode += 2
             return super().render(opcode, self.duration)
         return super().render(opcode)
-
 
 class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen out to any solid colour.
@@ -7996,7 +7797,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The length of time in frames that the fade should take
         colour (Colour): The final colour to draw over the screen
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x79
@@ -8023,7 +7824,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
         self._colour = colour
 
     def __init__(
-        self, duration: int, colour: Colour, identifier: Optional[str] = None
+        self, duration: int, colour: Colour, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8031,7 +7832,6 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
-
 
 class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Perform the screen effect that precedes a battle.
@@ -8046,14 +7846,12 @@ class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x7E
 
-
 # music
-
 
 class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to slow down the music.
@@ -8070,7 +7868,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur
         change (int): Set the time in frames over which the tempo change should gradually occur (0 to 127)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x97
@@ -8098,7 +7896,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         self._change = UInt8(change)
 
     def __init__(
-        self, duration: int, change: int, identifier: Optional[str] = None
+        self, duration: int, change: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8106,7 +7904,6 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
-
 
 class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to speed up the music.
@@ -8123,7 +7920,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur.
         change (int): The difference in tempo to apply as a speedup (0 to 128).
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x97
@@ -8151,7 +7948,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         self._change = UInt8(change)
 
     def __init__(
-        self, duration: int, change: int, identifier: Optional[str] = None
+        self, duration: int, change: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8159,7 +7956,6 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
-
 
 class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to lower the pitch.
@@ -8176,7 +7972,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur
         change (int): Set the time in frames over which the tempo change should gradually occur (0 to 127)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x98
@@ -8204,7 +8000,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self._change = UInt8(change)
 
     def __init__(
-        self, duration: int, change: int, identifier: Optional[str] = None
+        self, duration: int, change: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8212,7 +8008,6 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
-
 
 class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to increase the pitch.
@@ -8229,7 +8024,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The time in frames over which the tempo change should gradually occur.
         change (int): The difference in tempo to apply as a speedup (0 to 128)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x98
@@ -8257,7 +8052,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self._change = UInt8(change)
 
     def __init__(
-        self, duration: int, change: int, identifier: Optional[str] = None
+        self, duration: int, change: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8265,7 +8060,6 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
-
 
 class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
     """Sound channels identified by the given bits (0-7) will be silenced.
@@ -8280,20 +8074,20 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        bits (Set[int]): i.e. include bit 4 to silence channel 4
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        bits (set[int]): i.e. include bit 4 to silence channel 4
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x94])
     _size: int = 3
-    _bits: Set[int]
+    _bits: set[int]
 
     @property
-    def bits(self) -> Set[int]:
+    def bits(self) -> set[int]:
         """i.e. include bit 4 to silence channel 4"""
         return self._bits
 
-    def set_bits(self, bits: Set[int]) -> None:
+    def set_bits(self, bits: set[int]) -> None:
         """0-7. i.e. include bit 4 to silence channel 4"""
         for bit in bits:
             assert 0 <= bit <= 7
@@ -8301,8 +8095,8 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
 
     def __init__(
         self,
-        bits: Set[int],
-        identifier: Optional[str] = None,
+        bits: set[int],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_bits(bits)
@@ -8310,7 +8104,6 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(flags)
-
 
 class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
     """Fade music in from a silent state.
@@ -8327,7 +8120,7 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         music (int): The ID of the music to fade in.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x92
@@ -8345,13 +8138,12 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= music < TOTAL_MUSIC
         self._music_id = UInt8(music)
 
-    def __init__(self, music: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, music: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music_id(music)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
-
 
 class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current background music fades out to silence.
@@ -8366,11 +8158,10 @@ class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x93
-
 
 class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current background music fades out to silence.
@@ -8386,12 +8177,11 @@ class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA3])
     _size: int = 2
-
 
 class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
     """Fade out the currently playing background music to a specified volume over a specified time period (in frames).
@@ -8408,7 +8198,7 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The duration, in frames, over which to perform the fade.
         volume (int): The final volume of the background music.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x95
@@ -8435,7 +8225,7 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
         self._volume = UInt8(volume)
 
     def __init__(
-        self, duration: int, volume: int, identifier: Optional[str] = None
+        self, duration: int, volume: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8443,7 +8233,6 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
-
 
 class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
     """Fade out the currently playing sound to a specified volume over a specified time period (in frames).
@@ -8460,7 +8249,7 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
     Args:
         duration (int): The duration, in frames, over which to perform the fade.
         volume (int): The desired ending volume for the sound effect.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9E
@@ -8487,7 +8276,7 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
         self._volume = UInt8(volume)
 
     def __init__(
-        self, duration: int, volume: int, identifier: Optional[str] = None
+        self, duration: int, volume: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_duration(duration)
@@ -8495,7 +8284,6 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
-
 
 class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -8511,8 +8299,8 @@ class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWith
 
     Args:
         threshold (int): (unknown)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x96])
@@ -8531,15 +8319,14 @@ class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWith
     def __init__(
         self,
         threshold: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_threshold(threshold)
 
     def render(self, *args) -> bytearray:
         return super().render(self.threshold, *self.destinations)
-
 
 class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -8555,8 +8342,8 @@ class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmp
 
     Args:
         value (int): (unknown)
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x97])
@@ -8575,15 +8362,14 @@ class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmp
     def __init__(
         self,
         value: int,
-        destinations: List[str],
-        identifier: Optional[str] = None,
+        destinations: list[str],
+        identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
         self.set_value(value)
 
     def render(self, *args) -> bytearray:
         return super().render(self.value, *self.destinations)
-
 
 class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track.
@@ -8599,7 +8385,7 @@ class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         music (int): The ID of the music to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x9E])
@@ -8617,13 +8403,12 @@ class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= music < TOTAL_MUSIC
         self._music_id = UInt8(music)
 
-    def __init__(self, music: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, music: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music_id(music)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
-
 
 class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track, at the same volume as the current track.
@@ -8639,7 +8424,7 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         music (int): The ID of the music to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x90
@@ -8657,13 +8442,12 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= music < TOTAL_MUSIC
         self._music_id = UInt8(music)
 
-    def __init__(self, music: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, music: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music_id(music)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
-
 
 class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track (at default volume).
@@ -8679,7 +8463,7 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         music (int): The ID of the music to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x91
@@ -8697,13 +8481,12 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= music < TOTAL_MUSIC
         self._music_id = UInt8(music)
 
-    def __init__(self, music: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, music: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music_id(music)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
-
 
 class PlaySound(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect by ID on the specified channel.
@@ -8723,7 +8506,7 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
     Args:
         sound (int): The ID of the sound to play.
         channel (int): The channel on which to play the sound. Needs to be 4 or 6.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _sound: UInt8
@@ -8758,7 +8541,7 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
             self._opcode = 0x9C
 
     def __init__(
-        self, sound: int, channel: int, identifier: Optional[str] = None
+        self, sound: int, channel: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -8766,7 +8549,6 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound)
-
 
 class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect at a given balance.
@@ -8783,7 +8565,7 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
     Args:
         sound (int): The ID of the sound to play.
         balance (int): The balance level to play the sound at.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9D
@@ -8812,7 +8594,7 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
         self._balance = UInt8(balance)
 
     def __init__(
-        self, sound: int, balance: int, identifier: Optional[str] = None
+        self, sound: int, balance: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -8820,7 +8602,6 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
-
 
 class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect at a given balance.
@@ -8838,7 +8619,7 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
     Args:
         sound (int): The ID of the sound to play.
         balance (int): The balance level to play the sound at.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x9D])
@@ -8867,7 +8648,7 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
         self._balance = UInt8(balance)
 
     def __init__(
-        self, sound: int, balance: int, identifier: Optional[str] = None
+        self, sound: int, balance: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
@@ -8875,7 +8656,6 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
-
 
 class SlowDownMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Show down the current music to an unspecified tempo, over a constant duration.
@@ -8890,11 +8670,10 @@ class SlowDownMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA4])
-
 
 class SpeedUpMusicToDefault(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return the current music tempo to default, over a constant duration.
@@ -8909,11 +8688,10 @@ class SpeedUpMusicToDefault(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA5])
-
 
 class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8928,11 +8706,10 @@ class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x94
-
 
 class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8948,11 +8725,10 @@ class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x9F])
-
 
 class StopMusicFDA0(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8968,11 +8744,10 @@ class StopMusicFDA0(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA0])
-
 
 class StopMusicFDA1(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8988,11 +8763,10 @@ class StopMusicFDA1(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA1])
-
 
 class StopMusicFDA2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -9008,11 +8782,10 @@ class StopMusicFDA2(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA2])
-
 
 class StopMusicFDA6(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -9028,11 +8801,10 @@ class StopMusicFDA6(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xA6])
-
 
 class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt the playback of any sound effect that is currently playing.
@@ -9047,14 +8819,12 @@ class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x9B
 
-
 # dialogs
-
 
 class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCommand):
     """The dialog whose ID corresponds to the current value of $7000 will be appended to the end of a dialog that is already being displayed.
@@ -9071,7 +8841,7 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
     Args:
         closable (bool): If false, the dialog will remain on screen instead of being clearable
         sync (bool): If false, events will continue to run and the player can continue to move.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x63
@@ -9100,7 +8870,7 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
         self._sync = sync
 
     def __init__(
-        self, closable: bool, sync: bool, identifier: Optional[str] = None
+        self, closable: bool, sync: bool, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_closable(closable)
@@ -9109,7 +8879,6 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
     def render(self, *args) -> bytearray:
         flags = (self.closable << 5) + ((not self.sync) << 7)
         return super().render(flags)
-
 
 class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """If there is an open dialog, it will be forcibly closed.
@@ -9124,11 +8893,10 @@ class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x64
-
 
 class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Depends on the results of a previously displayed dialog which had only 2 options. If the second option was selected, go to the section of code beginning with the command matching the given label.
@@ -9143,8 +8911,8 @@ class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWit
         3 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x66
@@ -9152,7 +8920,6 @@ class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class JmpIfDialogOptionBOrCSelected(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -9169,8 +8936,8 @@ class JmpIfDialogOptionBOrCSelected(
         5 bytes
 
     Args:
-        destinations (List[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of commands to jump to.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        destinations (list[str]): This should be a list of exactly two `str`s. The `str`s should be the labels of commands to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x67
@@ -9178,7 +8945,6 @@ class JmpIfDialogOptionBOrCSelected(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
-
 
 class PauseScriptResumeOnNextDialogPageA(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -9196,11 +8962,10 @@ class PauseScriptResumeOnNextDialogPageA(
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x60])
-
 
 class PauseScriptResumeOnNextDialogPageB(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -9218,11 +8983,10 @@ class PauseScriptResumeOnNextDialogPageB(
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x61])
-
 
 class RunDialog(UsableEventScriptCommand, EventScriptCommand):
     """Display a dialog by ID, or whose ID matches the current value of $7000.
@@ -9241,17 +9005,17 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
         4 bytes otherwise
 
     Args:
-        dialog_id (Union[int, ShortVar]): The ID of the dialog to display, or the var containing an ID to display.
+        dialog_id (int | ShortVar): The ID of the dialog to display, or the var containing an ID to display.
         above_object (AreaObject): The field object to anchor the dialog on. Use the pre-defined ones in area_objects.py.
         closable (bool): If false, the dialog will remain on screen instead of being clearable
         sync (bool): If false, events will continue to run and the player can continue to move.
         multiline (bool): If true, the dialog will display up to 3 lines.
         use_background (bool): If true, the dialog will be displayed over the parchment asset.
         bit_6 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
-    _dialog_id: Union[UInt16, ShortVar]
+    _dialog_id: UInt16 | ShortVar
     _above_object: AreaObject
     _closable: bool
     _bit_6: bool
@@ -9260,11 +9024,11 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
     _use_background: bool
 
     @property
-    def dialog_id(self) -> Union[UInt16, ShortVar]:
+    def dialog_id(self) -> UInt16 | ShortVar:
         """The ID of the dialog to display, or the var containing an ID to display. If using a var, it has to be `ShortVar(0x7000)`."""
         return self._dialog_id
 
-    def set_dialog_id(self, dialog_id: Union[int, ShortVar]) -> None:
+    def set_dialog_id(self, dialog_id: int | ShortVar) -> None:
         """Accepts one of two things:\n
         1. The ID of the dialog to display
         (it is recommended to use dialog ID constant names for this),\n
@@ -9347,14 +9111,14 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
 
     def __init__(
         self,
-        dialog_id: Union[int, ShortVar],
+        dialog_id: int | ShortVar,
         above_object: AreaObject,
         closable: bool,
         sync: bool,
         multiline: bool,
         use_background: bool,
         bit_6: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_dialog_id(dialog_id)
@@ -9376,7 +9140,6 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
         id_arg = UInt16((flags_lower << 8) + self.dialog_id)
         return super().render(id_arg, final_arg)
 
-
 class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
     """Display a dialog by ID for a given duration in frames.
 
@@ -9393,7 +9156,7 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
         dialog_id (int): The ID of the dialog to display.
         duration (int): The duration, in frames, for which the dialog should be active.
         sync (bool): If false, events will continue to run and the player can continue to move.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x62
@@ -9437,7 +9200,7 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
         dialog_id: int,
         duration: int,
         sync: bool,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_dialog_id(dialog_id)
@@ -9447,7 +9210,6 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         arg = UInt16(self.dialog_id + (self.duration << 13) + ((not self.sync) << 15))
         return super().render(arg)
-
 
 class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Event scripts and player movements will resume without waiting for the dialog to close.
@@ -9462,14 +9224,12 @@ class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x65
 
-
 # levels
-
 
 class EnterArea(UsableEventScriptCommand, EventScriptCommand):
     """Immediately teleport to a specified level.
@@ -9492,7 +9252,7 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         z_add_half_unit (bool): If true, adds half a unit to the player's starting Z coordinate.
         show_banner (bool): If the room has an associated message, the message will be temporarily
         run_entrance_event (bool): If true, the entrance event associated to the room will run on load.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x68
@@ -9595,7 +9355,7 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         z_add_half_unit: bool = False,
         show_banner: bool = False,
         run_entrance_event: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_room_id(room_id)
@@ -9615,7 +9375,6 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         direction_z_arg = UInt8(self.z + (self.face_direction << 5))
         return super().render(room_short, self.x, y_z_arg, direction_z_arg)
 
-
 class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
     """If the specified room has tile modifications available, this command can apply one.
 
@@ -9632,7 +9391,7 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
         room_id (int): The ID of the room applying a tile mod.
         mod_id (int): The ID of the mod to apply.
         use_alternate (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6A
@@ -9677,7 +9436,7 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
         room_id: int,
         mod_id: int,
         use_alternate: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_room_id(room_id)
@@ -9689,7 +9448,6 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
             self.room_id + (self.mod_id << 9) + (self.use_alternate << 15)
         )
         return super().render(UInt16(assembled_raw))
-
 
 class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
     """If the specified room has collision modifications available, this command can apply one.
@@ -9708,7 +9466,7 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
         room_id (int): The ID of the room applying a collision mod.
         mod_id (int): The ID of the mod to apply.
         permanent (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x6B
@@ -9753,7 +9511,7 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
         room_id: int,
         mod_id: int,
         permanent: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_room_id(room_id)
@@ -9763,7 +9521,6 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         assembled_raw: int = self.room_id + (self.mod_id << 9) + (self.permanent << 15)
         return super().render(UInt16(assembled_raw))
-
 
 class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
     """Leaves the given level forcibly, and returns to the world map.
@@ -9783,7 +9540,7 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         bit_5 (bool): (unknown)
         bit_6 (bool): (unknown)
         bit_7 (bool): (unknown)
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4B
@@ -9837,7 +9594,7 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         bit_5: bool = False,
         bit_6: bool = False,
         bit_7: bool = False,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_area(area)
@@ -9849,7 +9606,6 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         flags: int = bools_to_int(self.bit_5, self.bit_6, self.bit_7)
         flags = flags << 5
         return super().render(self.area, flags)
-
 
 class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the value of $7000 to the ID of the currently loaded level.
@@ -9864,14 +9620,12 @@ class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xC3
 
-
 # scenes
-
 
 class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
     """Text that normally appears in the game intro. Unused in rando.
@@ -9888,7 +9642,7 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
     Args:
         text (IntroTitleText): The predefined text to display.
         y (int): The Y coord at which to display the text.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x66])
@@ -9915,7 +9669,7 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
         self._y = UInt8(y)
 
     def __init__(
-        self, text: IntroTitleText, y: int, identifier: Optional[str] = None
+        self, text: IntroTitleText, y: int, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_text(text)
@@ -9923,7 +9677,6 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.y, self.text)
-
 
 class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Run the cutscene where Exor shatters the star road.
@@ -9939,11 +9692,10 @@ class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0xF8])
-
 
 class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
     """Runs one of a various selection of menus or automatic cutscenes.
@@ -9959,7 +9711,7 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         scene (Scene): The menu or cutscene to play.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4F
@@ -9975,13 +9727,12 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
         """Choose the menu or cutscene to play."""
         self._scene = scene
 
-    def __init__(self, scene: Scene, identifier: Optional[str] = None) -> None:
+    def __init__(self, scene: Scene, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_scene(scene)
 
     def render(self, *args) -> bytearray:
         return super().render(self.scene)
-
 
 class OpenSaveMenu(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Open the save menu.
@@ -9996,11 +9747,10 @@ class OpenSaveMenu(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4A])
-
 
 class OpenShop(UsableEventScriptCommand, EventScriptCommand):
     """Open a shop by ID.
@@ -10017,7 +9767,7 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         shop_id (int): The ID of the shop to open.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4C
@@ -10035,13 +9785,12 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
         assert 0 <= shop_id < TOTAL_SHOPS
         self._shop_id = UInt8(shop_id)
 
-    def __init__(self, shop_id: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, shop_id: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_shop_id(shop_id)
 
     def render(self, *args) -> bytearray:
         return super().render(self.shop_id)
-
 
 class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Pauses the running script if a menu is opened.
@@ -10056,11 +9805,10 @@ class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x5B
-
 
 class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Reloads your last save. Character EXP is not reset.
@@ -10075,11 +9823,10 @@ class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFB
-
 
 class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Reset to the file select screen (presumably?).
@@ -10094,11 +9841,10 @@ class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0xFC
-
 
 class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Begin the ending credits sequence.
@@ -10113,11 +9859,10 @@ class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x67])
-
 
 class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
     """Run a special cutscene. Normally used for star pieces in the ending credits.
@@ -10134,7 +9879,7 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
     Args:
         scene (Scene): The specific cutscene to run.
         value (int): A value needed by the chosen cutscene.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4E
@@ -10161,7 +9906,7 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
         self._value = UInt8(value)
 
     def __init__(
-        self, scene: Scene, value: int = 0, identifier: Optional[str] = None
+        self, scene: Scene, value: int = 0, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_scene(scene)
@@ -10169,7 +9914,6 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.scene, self.value)
-
 
 class RunLevelupBonusSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Launch the levelup screen.
@@ -10184,11 +9928,10 @@ class RunLevelupBonusSequence(UsableEventScriptCommand, EventScriptCommandNoArgs
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x65])
-
 
 class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
     """Run a specific menu tutorial.
@@ -10204,7 +9947,7 @@ class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         tutorial (Tutorial): The specific tutorial to run.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4C])
@@ -10220,13 +9963,12 @@ class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
         """Choose the specific tutorial to run."""
         self._tutorial = tutorial
 
-    def __init__(self, tutorial: Tutorial, identifier: Optional[str] = None) -> None:
+    def __init__(self, tutorial: Tutorial, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_tutorial(tutorial)
 
     def render(self, *args) -> bytearray:
         return super().render(self.tutorial)
-
 
 class RunMolevilleMountainIntroSequence(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -10243,11 +9985,10 @@ class RunMolevilleMountainIntroSequence(
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4F])
-
 
 class RunMolevilleMountainSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Enter the Moleville Mountain minigame.
@@ -10262,11 +10003,10 @@ class RunMolevilleMountainSequence(UsableEventScriptCommand, EventScriptCommandN
         2 bytes
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4E])
-
 
 class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
     """Run a star piece collection cutscene.
@@ -10282,7 +10022,7 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         star (int): The specific star piece to collect.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = bytearray([0xFD, 0x4D])
@@ -10299,13 +10039,12 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
         assert 1 <= star <= 8
         self._star = UInt8(star)
 
-    def __init__(self, star: int, identifier: Optional[str] = None) -> None:
+    def __init__(self, star: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_star(star)
 
     def render(self, *args) -> bytearray:
         return super().render(self.star)
-
 
 class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
     """Enter into a battle with a given pack ID and battlefield.
@@ -10323,7 +10062,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
     Args:
         pack_id (int): The ID of the pack to fight.
         battlefield (Battlefield): The battlefield on which the battle should take place.
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x4A
@@ -10352,7 +10091,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
         self._battlefield = battlefield
 
     def __init__(
-        self, pack_id: int, battlefield: Battlefield, identifier: Optional[str] = None
+        self, pack_id: int, battlefield: Battlefield, identifier: str | None = None
     ) -> None:
         super().__init__(identifier)
         self.set_pack_id(pack_id)
@@ -10360,7 +10099,6 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(UInt16(self.pack_id), self.battlefield)
-
 
 class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Initiates a battle on the default battlefield associated to the current level against the pack ID matching the current value of $700E.
@@ -10375,7 +10113,7 @@ class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoAr
         1 byte
 
     Args:
-        identifier (Optional[str]): Give this command a label if you want another command to jump to it.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x49
