@@ -349,7 +349,7 @@ class Command(BaseCommand):
                 cls = "DeactivateSoundChannels"
                 include_argnames = False
                 bits = cmdargs[0]
-                args["bits"] = "%r" % bits
+                args["bits"] = "set(%r)" % bits
             elif cmd["command"] == "dec":
                 cls = "Dec"
                 include_argnames = False

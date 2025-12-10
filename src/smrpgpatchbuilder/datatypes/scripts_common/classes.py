@@ -108,6 +108,10 @@ class ScriptCommand:
         use to jump to this one."""
         return self._identifier
 
+    def rename(self, new_name: str) -> None:
+        """Change the unique identifier for this command instance."""
+        self._identifier = TransformableIdentifier(new_name)
+
     @property
     def size(self) -> int:
         """The total number of bytes this command can be expected to occupy in the ROM."""
