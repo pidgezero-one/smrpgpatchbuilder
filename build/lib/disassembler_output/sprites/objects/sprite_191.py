@@ -1,0 +1,88 @@
+# SPR0191_JINX_OVERWORLD
+
+from smrpgpatchbuilder.datatypes.graphics.classes import CompleteSprite, AnimationPack, AnimationPackProperties, AnimationSequence, AnimationSequenceFrame, Mold, Tile, Clone
+sprite = CompleteSprite(
+    animation=AnimationPack(305, length=78, unknown=0x0000,
+        properties=AnimationPackProperties(vram_size=2048,
+            molds=[
+                Mold(0, gridplane=True,
+                    tiles=[
+                        Tile(mirror=False, invert=False, format=0, length=10, subtile_bytes=[
+                            None,
+                            None,
+                            None,
+                            None,
+                            bytearray(b'>&=C\x1db"?\x04\x1c\x18>2:66\x00>P#Y&\x11. \x04$$&^28'),
+                            None,
+                            None,
+                            None,
+                            None,
+                        ], is_16bit=False, y_plus=0, y_minus=0, x=0, y=0),
+                    ]
+                ),
+                Mold(1, gridplane=True,
+                    tiles=[
+                        Tile(mirror=False, invert=False, format=0, length=10, subtile_bytes=[
+                            None,
+                            None,
+                            None,
+                            None,
+                            bytearray(b'>&=C\x1db2/\x04\x1c\x10<\x14\x1c\x18\x18\x00>P#Y&\x11. \x04,,\x044\x18\x14'),
+                            None,
+                            None,
+                            None,
+                            None,
+                        ], is_16bit=False, y_plus=1, y_minus=0, x=0, y=0),
+                    ]
+                ),
+                Mold(2, gridplane=True,
+                    tiles=[
+                        Tile(mirror=False, invert=False, format=0, length=10, subtile_bytes=[
+                            None,
+                            None,
+                            None,
+                            None,
+                            bytearray(b'\x1a&|BLr\x0c>0<\x0c0HH\x18\x18\x006\x00~ ^2\x0c\x1c\x1c\x1c\x1ct\\\x18<'),
+                            None,
+                            None,
+                            None,
+                            None,
+                        ], is_16bit=False, y_plus=0, y_minus=0, x=0, y=0),
+                    ]
+                ),
+                Mold(3, gridplane=True,
+                    tiles=[
+                        Tile(mirror=False, invert=False, format=0, length=10, subtile_bytes=[
+                            None,
+                            None,
+                            None,
+                            None,
+                            bytearray(b'\x1a&|BLr\x0c> ,\\P\x18\x18\x0c\x0c\x006\x00~ ^2\x0c\x1e\x0c>\x1c\x14<\x0c\x14'),
+                            None,
+                            None,
+                            None,
+                            None,
+                        ], is_16bit=False, y_plus=1, y_minus=0, x=0, y=0),
+                    ]
+                ),
+            ],
+            sequences=[
+                AnimationSequence(
+                    frames=[
+                        AnimationSequenceFrame(duration=8, mold_id=0),
+                        AnimationSequenceFrame(duration=8, mold_id=1),
+                    ]
+                ),
+                AnimationSequence(
+                    frames=[
+                        AnimationSequenceFrame(duration=8, mold_id=2),
+                        AnimationSequenceFrame(duration=8, mold_id=3),
+                    ]
+                ),
+            ]
+        )
+    ),
+    palette_id=649,
+    palette_offset=0,
+    unknown_num=0
+)

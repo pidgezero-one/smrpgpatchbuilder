@@ -1,0 +1,20 @@
+# 111 - CCEnemy
+
+from smrpgpatchbuilder.datatypes.monster_scripts import *
+from smrpgpatchbuilder.datatypes.monster_scripts.commands import *
+from smrpgpatchbuilder.datatypes.monster_scripts.arguments.types.classes import DoNothing
+from ...variables.battle_event_names import *
+from ...variables.battle_variable_names import *
+from ...items.items import *
+from ...spells.spells import *
+from ...enemies.enemies import *
+from ...enemy_attacks.attacks import *
+from smrpgpatchbuilder.datatypes.monster_scripts.arguments import *
+
+script = MonsterScript([
+	IfVarBitsClear(BV7EE000, [0]),
+	SetVarBits(BV7EE000, []),
+	SetUntargetable(SELF),
+	Wait1TurnandRestartScript(),
+	StartCounterCommands()
+])
