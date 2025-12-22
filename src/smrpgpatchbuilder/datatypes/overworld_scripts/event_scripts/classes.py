@@ -260,6 +260,34 @@ class EventScriptController:
         )
         self.set_banks(banks)
 
+    def get_command_by_identifier(
+        self, identifier: str
+    ) -> UsableEventScriptCommand:
+        """get one command from any bank by identifier string."""
+        for bank in self.banks:
+            for script in bank.scripts:
+                for command in script.contents:
+                    if command.identifier.label == identifier:
+                        return command
+        raise IdentifierException(f"could not find command identifier {identifier}")
+
+    def delete_command_by_identifier(self, identifier: str) -> None:
+        """Delete the command matching the identifier from its script.
+
+        Args:
+            identifier: The unique identifier of the command to delete.
+
+        Raises:
+            IdentifierException: If no command with the identifier is found.
+        """
+        for bank in self.banks:
+            for script in bank.scripts:
+                for index, command in enumerate(script.contents):
+                    if command.identifier.label == identifier:
+                        del script.contents[index]
+                        return
+        raise IdentifierException(f"could not find command identifier {identifier}")
+
     def get_script_by_id(self, script_id: int) -> EventScript:
         """get one script from any bank by absolute id.\n
         It is recommended to use event name constants for this."""

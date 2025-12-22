@@ -136,15 +136,19 @@ class AnimationScriptBlock(AnimationScript):
         self._expected_size = expected_size
         self._expected_beginning = expected_beginning
 
+    def get_rendered_size(self) -> int:
+        """Calculate the size of this script when rendered, without padding."""
+        return sum(command.size for command in self._contents)
+
     def render(self, _: int | None = None) -> bytearray:
         output = super().render(_)
         # fill empty bytes
         if len(output) == self.expected_size:
             return output
         if len(output) > self.expected_size:
-            print(self)
             raise ScriptBankTooLongException(
-                f"animation script output too long: got {len(output)} expected {self.expected_size}"
+                f"animation script output too long: got {len(output)} expected {self.expected_size} "
+                f"(over by {len(output) - self.expected_size} bytes)"
             )
         buffer: list[UsableAnimationScriptCommand] = [ReturnSubroutine()] * (self.expected_size - len(output))
         self.set_contents(self.contents + buffer)
@@ -198,6 +202,15 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
                     return
         raise IdentifierException(f"{identifier} not found")
 
+    def delete_command_by_name(self, identifier: str) -> None:
+        """Delete a single command whose unique identifier matches the name provided."""
+        for script in self._scripts:
+            for index, command in enumerate(script.contents):
+                if command.identifier.label == identifier:
+                    del script.contents[index]
+                    return
+        raise IdentifierException(f"{identifier} not found")
+
     def set_addresses(self, addrs: dict[str, int]) -> None:
         """This should ONLY be used when the parent ScriptBankCollection is rendering
         all of its constituent banks. Replaces the identifier-address dict."""
@@ -247,8 +260,51 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         return self.addresses
 
+    def _build_size_report(self, scripts: list[AnimationScriptBlock]) -> str:
+        """Build a detailed report of all script sizes in this bank."""
+        lines: list[str] = [f"\nScript size report for bank '{self.name}':"]
+        lines.append("-" * 60)
+
+        total_over = 0
+        total_available = 0
+
+        for i, script in enumerate(scripts):
+            actual_size = script.get_rendered_size()
+            expected_size = script.expected_size
+            diff = actual_size - expected_size
+
+            addr_str = f"0x{script.expected_beginning:06X}"
+
+            if diff > 0:
+                lines.append(
+                    f"  Script {i} @ {addr_str}: {actual_size}/{expected_size} bytes "
+                    f"(OVER by {diff} bytes)"
+                )
+                total_over += diff
+            elif diff < 0:
+                available = -diff
+                lines.append(
+                    f"  Script {i} @ {addr_str}: {actual_size}/{expected_size} bytes "
+                    f"({available} bytes available)"
+                )
+                total_available += available
+            else:
+                lines.append(
+                    f"  Script {i} @ {addr_str}: {actual_size}/{expected_size} bytes (exact fit)"
+                )
+
+        lines.append("-" * 60)
+        lines.append(f"  Total over: {total_over} bytes")
+        lines.append(f"  Total available: {total_available} bytes")
+        if total_over > total_available:
+            lines.append(f"  NET SHORTAGE: {total_over - total_available} bytes")
+        else:
+            lines.append(f"  Net surplus: {total_available - total_over} bytes")
+
+        return "\n".join(lines)
+
     def render(self) -> list[tuple[int, bytearray]]:
-        """generate the bytes representing the current state of this bank to be written
+        """Generate the bytes representing the current state of this bank to be written
         to the ROM."""
 
         scripts: list[AnimationScriptBlock] = [
@@ -261,6 +317,26 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         # replace jump placeholders with addresses
         for script in scripts:
             self._populate_jumps(script)
+
+        # Check for oversized scripts before rendering
+        oversized: list[tuple[int, AnimationScriptBlock, int]] = []
+        for i, script in enumerate(scripts):
+            actual_size = script.get_rendered_size()
+            if actual_size > script.expected_size:
+                oversized.append((i, script, actual_size - script.expected_size))
+
+        if oversized:
+            # Build detailed error message
+            error_lines = [
+                f"Animation script bank '{self.name}' has {len(oversized)} oversized script(s):"
+            ]
+            for idx, script, over_by in oversized:
+                error_lines.append(
+                    f"  Script {idx} @ 0x{script.expected_beginning:06X}: "
+                    f"over by {over_by} bytes"
+                )
+            error_lines.append(self._build_size_report(scripts))
+            raise ScriptBankTooLongException("\n".join(error_lines))
 
         return [
             (script.expected_beginning, script.render())

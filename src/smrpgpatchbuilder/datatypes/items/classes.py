@@ -697,6 +697,23 @@ class ItemCollection:
             )
         self.items = items
 
+    def get_by_type(self, item_type: type[ItemT]) -> ItemT:
+        """Return the item instance matching the given type.
+
+        Args:
+            item_type: The Item subclass to look up.
+
+        Returns:
+            The item instance of the given type.
+
+        Raises:
+            KeyError: If no item of the given type is found.
+        """
+        for item in self.items:
+            if type(item) is item_type:
+                return item  # type: ignore[return-value]
+        raise KeyError(f"No item of type {item_type.__name__} found in collection")
+
     def render(self) -> dict[int, bytearray]:
         """render all items including their descriptions and pointer table.
 

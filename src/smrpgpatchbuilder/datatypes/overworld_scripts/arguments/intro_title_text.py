@@ -2,9 +2,9 @@
 
 from .types.intro_title_text import IntroTitleText
 
-SUPER_MARIO = IntroTitleText(0)
-PRINCESS_TOADSTOOL = IntroTitleText(1)
-KING_BOWSER = IntroTitleText(2)
-MALLOW = IntroTitleText(3)
-GENO = IntroTitleText(4)
-IN = IntroTitleText(5)
+SUPER_MARIO_TITLE = IntroTitleText(0)
+PRINCESS_TOADSTOOL_TITLE = IntroTitleText(1)
+KING_BOWSER_TITLE = IntroTitleText(2)
+MALLOW_TITLE = IntroTitleText(3)
+GENO_TITLE = IntroTitleText(4)
+IN_TITLE = IntroTitleText(5)

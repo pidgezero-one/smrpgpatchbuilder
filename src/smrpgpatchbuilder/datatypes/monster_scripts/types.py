@@ -134,6 +134,33 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         assert 0 <= index < self.script_count
         super().replace_script(index, script)
 
+    def get_command_by_identifier(
+        self, identifier: str
+    ) -> tuple[int, int, UsableMonsterScriptCommand]:
+        """Return the command that matches the specified unique identifier.
+
+        Returns a tuple of (script_index, command_index, command).
+        Raises IdentifierException if not found.
+        """
+        for script_index, script in enumerate(self.scripts):
+            for command_index, command in enumerate(script.contents):
+                if command.identifier.label == identifier:
+                    return (script_index, command_index, command)
+        from smrpgpatchbuilder.datatypes.scripts_common.classes import IdentifierException
+        raise IdentifierException(f"{identifier} not found")
+
+    def replace_command_by_identifier(
+        self, identifier: str, replacements: Sequence[UsableMonsterScriptCommand]
+    ) -> None:
+        """Replace the command matching the identifier with any number of commands.
+
+        The command with the matching identifier is removed and the replacement
+        commands are inserted at that position.
+        """
+        script_index, command_index, _ = self.get_command_by_identifier(identifier)
+        script = self.scripts[script_index]
+        script.contents[command_index : command_index + 1] = list(replacements)
+
     def __init__(
         self,
         scripts: list[MonsterScript] | None = None,

@@ -301,8 +301,8 @@ class PackCollection:
         Raises:
             AssertionError: If not exactly 255 packs are provided
         """
-        assert len(packs) == 255, \
-            f"PackCollection requires exactly 255 packs, got {len(packs)}"
+        assert len(packs) == 256, \
+            f"PackCollection requires exactly 256 packs, got {len(packs)}"
         self._packs = packs
 
     def _formations_equal(self, f1: Formation, f2: Formation) -> bool:

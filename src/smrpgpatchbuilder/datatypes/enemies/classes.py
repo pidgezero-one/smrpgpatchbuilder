@@ -626,6 +626,23 @@ class EnemyCollection:
             )
         self.enemies = enemies
 
+    def get_by_type(self, enemy_type: type[Enemy]) -> Enemy:
+        """Return the enemy that matches the specified type.
+
+        Args:
+            enemy_type: The Enemy subclass to search for.
+
+        Returns:
+            The enemy instance matching the type.
+
+        Raises:
+            KeyError: If no enemy of the specified type is found.
+        """
+        for enemy in self.enemies:
+            if type(enemy) is enemy_type:
+                return enemy
+        raise KeyError(f"No enemy of type {enemy_type.__name__} found in collection")
+
     def render(self) -> dict[int, bytearray]:
         """render all enemies including their psychopath messages and pointer table.
 

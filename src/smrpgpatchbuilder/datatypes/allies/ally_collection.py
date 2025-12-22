@@ -16,6 +16,23 @@ class AllyCollection:
 
         self._allies = allies
 
+    def get_by_type(self, ally_type: type[Ally]) -> Ally:
+        """Return the ally that matches the specified type.
+
+        Args:
+            ally_type: The Ally subclass to search for.
+
+        Returns:
+            The ally instance matching the type.
+
+        Raises:
+            KeyError: If no ally of the specified type is found.
+        """
+        for ally in self._allies:
+            if type(ally) is ally_type:
+                return ally
+        raise KeyError(f"No ally of type {ally_type.__name__} found in collection")
+
     def render(self) -> dict[int, bytearray]:
         """Render all ally data to patches.
 
