@@ -2471,10 +2471,18 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
         """The source variable, which the value is copied from."""
         return self._from_var
 
+    def set_from_var(self, from_var: ShortVar | ByteVar) -> None:
+        """Set the source variable, which the value is copied from."""
+        self.set_addresses(from_var=from_var)
+
     @property
     def to_var(self) -> ShortVar | ByteVar:
         """The destination variable, where the value is written to."""
         return self._to_var
+
+    def set_to_var(self, to_var: ShortVar | ByteVar) -> None:
+        """Set the destination variable, where the value is written to."""
+        self.set_addresses(to_var=to_var)
 
     def __init__(
         self,
@@ -2840,11 +2848,19 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
         """The literal value to set the variable to."""
         return self._value
 
+    def set_value(self, value: int) -> None:
+        """Set the literal value to add to the variable."""
+        self.set_value_and_address(value=value)
+
     @property
     def address(self) -> ShortVar | ByteVar:
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
+
+    def set_address(self, address: ShortVar | ByteVar) -> None:
+        """Set the variable to add the value to."""
+        self.set_value_and_address(address=address)
 
     def __init__(
         self,
@@ -3242,11 +3258,19 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
         """The literal value to set the variable to."""
         return self._value
 
+    def set_value(self, value: int | type[Item]) -> None:
+        """Set the value to compare the variable against."""
+        self.set_value_and_address(value=value)
+
     @property
     def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
+
+    def set_address(self, address: ShortVar | ByteVar) -> None:
+        """Set the variable to compare the value against."""
+        self.set_value_and_address(address=address)
 
     def __init__(
         self,
@@ -3333,11 +3357,19 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
         """The literal value to set the variable to."""
         return self._value
 
+    def set_value(self, value: int | type[Item]) -> None:
+        """Set the value to compare the variable against."""
+        self.set_value_and_address(value=value)
+
     @property
     def address(self) -> ShortVar | ByteVar:
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
+
+    def set_address(self, address: ShortVar | ByteVar) -> None:
+        """Set the variable to compare the value against."""
+        self.set_value_and_address(address=address)
 
     def __init__(
         self,

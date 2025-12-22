@@ -4728,6 +4728,15 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         """(unknown)"""
         self._bit_7 = bit_7
 
+    @property
+    def mirror(self) -> bool:
+        """If true, the sprite will be displayed flipped horizontally."""
+        return self._mirror
+
+    def set_mirror(self, mirror: bool) -> None:
+        """Set if the sprite will be displayed flipped horizontally."""
+        self._mirror = mirror
+
     def __init__(
         self,
         field_object: int,
@@ -4740,6 +4749,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         bit_5: bool = False,
         current_target: bool = False,
         bit_7: bool = False,
+        mirror: bool = False,
         identifier: str | None = None,
     ) -> None:
         super().__init__(destinations, identifier)
@@ -4753,6 +4763,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         self.set_bit_5(bit_5)
         self.set_current_target(current_target)
         self.set_bit_7(bit_7)
+        self.set_mirror(mirror)
 
     def render(self, *args) -> bytearray:
         byte1 = bools_to_int(

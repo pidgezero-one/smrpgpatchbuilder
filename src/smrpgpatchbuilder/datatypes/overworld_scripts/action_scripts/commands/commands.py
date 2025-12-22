@@ -2452,6 +2452,14 @@ class A_SetVarToConst(UsableActionScriptCommand, ActionScriptCommand):
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
+    def set_value(self, value: int | type[Item]) -> None:
+        """Set the literal value that will be stored in the variable."""
+        self.set_value_and_address(value=value)
+
+    def set_address(self, address: ShortVar | ByteVar) -> None:
+        """Set the variable to store the literal value to."""
+        self.set_value_and_address(address=address)
+
     def __init__(
         self,
         address: ShortVar | ByteVar,
@@ -2532,6 +2540,14 @@ class A_AddConstToVar(UsableActionScriptCommand, ActionScriptCommand):
         """The variable to store the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
+
+    def set_value(self, value: int) -> None:
+        """Set the literal value to add to the variable."""
+        self.set_value_and_address(value=value)
+
+    def set_address(self, address: ShortVar | ByteVar) -> None:
+        """Set the variable to add the literal value to."""
+        self.set_value_and_address(address=address)
 
     def __init__(
         self,
@@ -2675,6 +2691,16 @@ class A_CopyVarToVar(UsableActionScriptCommand, ActionScriptCommand):
     def to_var(self) -> ShortVar | ByteVar:
         """The destination variable, where the value is written to."""
         return self._to_var
+
+    def set_from_var(self, from_var: ShortVar | ByteVar) -> None:
+        """Set the source variable, which the value is copied from."""
+        self._from_var = from_var
+        self.set_addresses(from_var=from_var)
+
+    def set_to_var(self, to_var: ShortVar | ByteVar) -> None:
+        """Set the destination variable, where the value is written to."""
+        self._to_var = to_var
+        self.set_addresses(to_var=to_var)
 
     def __init__(
         self,
@@ -3040,6 +3066,14 @@ class A_JmpIfVarEqualsConst(UsableActionScriptCommand, ActionScriptCommandWithJm
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
 
+    def set_value(self, value: int | type[Item]) -> None:
+        """Set the literal value to compare the variable against."""
+        self.set_value_and_address(value=value)
+
+    def set_address(self, address: ByteVar | ShortVar) -> None:
+        """Set the variable to compare the literal value to."""
+        self.set_value_and_address(address=address)
+
     def __init__(
         self,
         address: ByteVar | ShortVar,
@@ -3130,6 +3164,14 @@ class A_JmpIfVarNotEqualsConst(UsableActionScriptCommand, ActionScriptCommandWit
         """The variable to compare the literal value to.\n
         It is recommended to use contextual const names for SMRPG variables."""
         return self._address
+
+    def set_value(self, value: int | type[Item]) -> None:
+        """Set the literal value to compare the variable against."""
+        self.set_value_and_address(value=value)
+
+    def set_address(self, address: ByteVar | ShortVar) -> None:
+        """Set the variable to compare the literal value to."""
+        self.set_value_and_address(address=address)
 
     def __init__(
         self,
