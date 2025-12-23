@@ -115,7 +115,7 @@ class Enemy:
 
     def set_hp(self, hp: int) -> None:
         """Set how much HP the enemy will have at the start of the fight."""
-        assert UInt16(hp)
+        UInt16(hp)
         self._hp = hp
 
     @property
@@ -125,7 +125,7 @@ class Enemy:
 
     def set_fp(self, fp: int) -> None:
         """Set how much FP the enemy will have at the start of the fight."""
-        assert UInt8(fp)
+        UInt8(fp)
         self._fp = fp
 
     @property
@@ -135,7 +135,7 @@ class Enemy:
 
     def set_attack(self, attack: int) -> None:
         """Set the enemy's base physical attack power."""
-        assert UInt8(attack)
+        UInt8(attack)
         self._attack = attack
 
     @property
@@ -145,7 +145,7 @@ class Enemy:
 
     def set_defense(self, defense: int) -> None:
         """Set the enemy's base physical defense power."""
-        assert UInt8(defense)
+        UInt8(defense)
         self._defense = defense
 
     @property
@@ -155,7 +155,7 @@ class Enemy:
 
     def set_magic_attack(self, magic_attack: int) -> None:
         """Set the enemy's base magic attack power."""
-        assert UInt8(magic_attack)
+        UInt8(magic_attack)
         self._magic_attack = magic_attack
 
     @property
@@ -165,7 +165,7 @@ class Enemy:
 
     def set_magic_defense(self, magic_defense: int) -> None:
         """Set the enemy's base magic defense power."""
-        assert UInt8(magic_defense)
+        UInt8(magic_defense)
         self._magic_defense = magic_defense
 
     @property
@@ -175,7 +175,7 @@ class Enemy:
 
     def set_speed(self, speed: int) -> None:
         """Set the enemy's speed."""
-        assert UInt8(speed)
+        UInt8(speed)
         self._speed = speed
 
     @property
@@ -276,7 +276,7 @@ class Enemy:
 
     def set_coins(self, coins: int) -> None:
         """Set the amount of coins rewarded by the enemy."""
-        assert UInt8(coins)
+        UInt8(coins)
         self._coins = coins
 
     @property

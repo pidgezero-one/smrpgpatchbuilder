@@ -105,7 +105,7 @@ class EnemyAttack:
 
     def set_hit_rate(self, hit_rate: int) -> None:
         """Set the success rate of this attack (max is 255)."""
-        assert UInt8(hit_rate)
+        UInt8(hit_rate)
         self._hit_rate = hit_rate
 
     @property

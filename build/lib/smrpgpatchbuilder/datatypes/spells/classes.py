@@ -75,7 +75,7 @@ class Spell:
 
     def set_power(self, power: int) -> None:
         """Set the base power of this spell."""
-        assert UInt8(power)
+        UInt8(power)
         self._power = power
 
     @property
@@ -85,7 +85,7 @@ class Spell:
 
     def set_hit_rate(self, hit_rate: int) -> None:
         """Specify the likelihood that this spell will hit a target."""
-        assert UInt8(hit_rate)
+        UInt8(hit_rate)
         self._hit_rate = hit_rate
 
     @property

@@ -8,3 +8,4 @@ debug.log
 config/** 
 .claude
 .vscode
+publish.sh
