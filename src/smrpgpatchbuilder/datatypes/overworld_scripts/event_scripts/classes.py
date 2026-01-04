@@ -5,6 +5,7 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types
     UsableActionScriptCommand,
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
+    ActionQueuePrototype,
     EventScriptCommandActionScriptContainer,
     UsableEventScriptCommand,
     NonEmbeddedActionQueuePrototype,
@@ -274,6 +275,8 @@ class EventScriptController:
     def delete_command_by_identifier(self, identifier: str) -> None:
         """Delete the command matching the identifier from its script.
 
+        Also checks inside ActionQueuePrototype subscripts for matching identifiers.
+
         Args:
             identifier: The unique identifier of the command to delete.
 
@@ -286,6 +289,12 @@ class EventScriptController:
                     if command.identifier.label == identifier:
                         del script.contents[index]
                         return
+                    # Also check inside ActionQueuePrototype subscripts
+                    if isinstance(command, ActionQueuePrototype):
+                        for sub_index, sub_command in enumerate(command.subscript.contents):
+                            if sub_command.identifier.label == identifier:
+                                command.subscript.delete_at_index(sub_index)
+                                return
         raise IdentifierException(f"could not find command identifier {identifier}")
 
     def get_script_by_id(self, script_id: int) -> EventScript:

@@ -148,6 +148,25 @@ class ActionScriptBank(ScriptBank):
             )
         return position
 
+    def delete_command_by_identifier(self, identifier: str) -> tuple[int, int]:
+        """Delete a command from any script in the bank by its identifier.
+
+        Args:
+            identifier: The unique identifier of the command to delete.
+
+        Returns:
+            A tuple of (script_index, command_index) indicating where the command was found.
+
+        Raises:
+            IdentifierException: If no command with the given identifier is found.
+        """
+        for script_index, script in enumerate(self._scripts):
+            for cmd_index, command in enumerate(script.contents):
+                if command.identifier.label == identifier:
+                    script.delete_at_index(cmd_index)
+                    return (script_index, cmd_index)
+        raise IdentifierException(f"identifier not found in any script: {identifier}")
+
     def render(self) -> bytearray:
         """Return this script set as ROM patch data."""
         position: int = self._start
