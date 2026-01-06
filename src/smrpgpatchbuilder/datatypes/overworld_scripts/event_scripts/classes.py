@@ -4,6 +4,9 @@ from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
 )
+from typing import TypeVar
+
+T = TypeVar('T', bound=UsableActionScriptCommand)
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
     ActionQueuePrototype,
     EventScriptCommandActionScriptContainer,
@@ -271,6 +274,39 @@ class EventScriptController:
                     if command.identifier.label == identifier:
                         return command
         raise IdentifierException(f"could not find command identifier {identifier}")
+
+    def get_subscript_command_by_identifier(
+        self,
+        event_cmd_id: str,
+        subscript_cmd_id: str,
+        cmd_type: type[T],
+    ) -> T:
+        """Get a command from a subscript by identifier.
+
+        Args:
+            event_cmd_id: The identifier of the event script command containing the subscript.
+            subscript_cmd_id: The identifier of the command within the subscript.
+            cmd_type: The expected type of the subscript command.
+
+        Returns:
+            The subscript command, typed as cmd_type.
+
+        Raises:
+            IdentifierException: If the event command is not found.
+            ValueError: If the event command doesn't contain a subscript or
+                       the subscript command is not of the expected type.
+        """
+        ev = self.get_command_by_identifier(event_cmd_id)
+        if not isinstance(ev, EventScriptCommandActionScriptContainer):
+            raise ValueError(
+                f"Event script command with ID {event_cmd_id} does not contain a subscript."
+            )
+        subcmd = ev.subscript.get_command_by_name(subscript_cmd_id)
+        if not isinstance(subcmd, cmd_type):
+            raise ValueError(
+                f"Subscript command with ID {subscript_cmd_id} is not of type {cmd_type.__name__}."
+            )
+        return subcmd
 
     def delete_command_by_identifier(self, identifier: str) -> None:
         """Delete the command matching the identifier from its script.
