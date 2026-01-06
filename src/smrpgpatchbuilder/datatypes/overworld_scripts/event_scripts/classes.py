@@ -308,6 +308,34 @@ class EventScriptController:
             )
         return subcmd
 
+    def delete_subscript_command_by_identifier(
+        self,
+        event_cmd_id: str,
+        subscript_cmd_id: str,
+    ) -> None:
+        """Delete a command from a subscript by identifier.
+
+        Args:
+            event_cmd_id: The identifier of the event script command containing the subscript.
+            subscript_cmd_id: The identifier of the command within the subscript to delete.
+
+        Raises:
+            IdentifierException: If the event command or subscript command is not found.
+            ValueError: If the event command doesn't contain a subscript.
+        """
+        ev = self.get_command_by_identifier(event_cmd_id)
+        if not isinstance(ev, EventScriptCommandActionScriptContainer):
+            raise ValueError(
+                f"Event script command with ID {event_cmd_id} does not contain a subscript."
+            )
+        for index, subcmd in enumerate(ev.subscript.contents):
+            if subcmd.identifier.label == subscript_cmd_id:
+                ev.subscript.delete_at_index(index)
+                return
+        raise IdentifierException(
+            f"Could not find subscript command identifier {subscript_cmd_id}"
+        )
+
     def delete_command_by_identifier(self, identifier: str) -> None:
         """Delete the command matching the identifier from its script.
 
