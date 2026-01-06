@@ -7,10 +7,13 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptBank,
     ScriptBankTooLongException,
 )
+from typing import TypeVar, Union
 
 from .commands.types.classes import (
     UsableActionScriptCommand,
 )
+
+T = TypeVar('T', bound=UsableActionScriptCommand)
 from .ids.misc import (
     TOTAL_SCRIPTS,
 )
@@ -165,6 +168,62 @@ class ActionScriptBank(ScriptBank):
                 if command.identifier.label == identifier:
                     script.delete_at_index(cmd_index)
                     return (script_index, cmd_index)
+        raise IdentifierException(f"identifier not found in any script: {identifier}")
+
+    def get_command_by_identifier(
+        self,
+        identifier: str,
+        cmd_type: type[T],
+    ) -> T:
+        """Get a command from any script in the bank by its identifier.
+
+        Args:
+            identifier: The unique identifier of the command to find.
+            cmd_type: The expected type of the command.
+
+        Returns:
+            The command, typed as cmd_type.
+
+        Raises:
+            IdentifierException: If no command with the given identifier is found.
+            ValueError: If the command is not of the expected type.
+        """
+        for script in self._scripts:
+            for command in script.contents:
+                if command.identifier.label == identifier:
+                    if not isinstance(command, cmd_type):
+                        raise ValueError(
+                            f"Command with ID {identifier} is not of type {cmd_type.__name__}."
+                        )
+                    return command
+        raise IdentifierException(f"identifier not found in any script: {identifier}")
+
+    def replace_command_by_identifier(
+        self,
+        identifier: str,
+        replacement: Union[UsableActionScriptCommand, list[UsableActionScriptCommand]],
+    ) -> None:
+        """Replace a command in any script with one or more new commands.
+
+        Args:
+            identifier: The unique identifier of the command to replace.
+            replacement: A single command or list of commands to insert in place of the old one.
+
+        Raises:
+            IdentifierException: If no command with the given identifier is found.
+        """
+        for script in self._scripts:
+            for index, command in enumerate(script.contents):
+                if command.identifier.label == identifier:
+                    # Delete the old command
+                    script.delete_at_index(index)
+                    # Insert replacement(s)
+                    if isinstance(replacement, list):
+                        for i, new_cmd in enumerate(replacement):
+                            script.insert_before_nth_command(index + i, new_cmd)
+                    else:
+                        script.insert_before_nth_command(index, replacement)
+                    return
         raise IdentifierException(f"identifier not found in any script: {identifier}")
 
     def render(self) -> bytearray:
