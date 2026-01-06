@@ -4,7 +4,7 @@ from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
 )
-from typing import TypeVar
+from typing import TypeVar, Union
 
 T = TypeVar('T', bound=UsableActionScriptCommand)
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
@@ -331,6 +331,43 @@ class EventScriptController:
         for index, subcmd in enumerate(ev.subscript.contents):
             if subcmd.identifier.label == subscript_cmd_id:
                 ev.subscript.delete_at_index(index)
+                return
+        raise IdentifierException(
+            f"Could not find subscript command identifier {subscript_cmd_id}"
+        )
+
+    def replace_subscript_command_by_identifier(
+        self,
+        event_cmd_id: str,
+        subscript_cmd_id: str,
+        replacement: Union[UsableActionScriptCommand, list[UsableActionScriptCommand]],
+    ) -> None:
+        """Replace a command in a subscript with one or more new commands.
+
+        Args:
+            event_cmd_id: The identifier of the event script command containing the subscript.
+            subscript_cmd_id: The identifier of the command within the subscript to replace.
+            replacement: A single command or list of commands to insert in place of the old one.
+
+        Raises:
+            IdentifierException: If the event command or subscript command is not found.
+            ValueError: If the event command doesn't contain a subscript.
+        """
+        ev = self.get_command_by_identifier(event_cmd_id)
+        if not isinstance(ev, EventScriptCommandActionScriptContainer):
+            raise ValueError(
+                f"Event script command with ID {event_cmd_id} does not contain a subscript."
+            )
+        for index, subcmd in enumerate(ev.subscript.contents):
+            if subcmd.identifier.label == subscript_cmd_id:
+                # Delete the old command
+                ev.subscript.delete_at_index(index)
+                # Insert replacement(s)
+                if isinstance(replacement, list):
+                    for i, new_cmd in enumerate(replacement):
+                        ev.subscript.insert_before_nth_command(index + i, new_cmd)
+                else:
+                    ev.subscript.insert_before_nth_command(index, replacement)
                 return
         raise IdentifierException(
             f"Could not find subscript command identifier {subscript_cmd_id}"
