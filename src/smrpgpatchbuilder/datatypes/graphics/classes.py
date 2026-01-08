@@ -25,6 +25,11 @@ class AnimationSequence:
     def __init__(self, frames: list[AnimationSequenceFrame]):
         self.frames = frames
 
+    @property
+    def total_duration(self) -> int:
+        """Sum of all frame durations in this sequence."""
+        return sum(frame.duration for frame in self.frames)
+
 class Tile:
     mirror: bool = False
     invert: bool = False
