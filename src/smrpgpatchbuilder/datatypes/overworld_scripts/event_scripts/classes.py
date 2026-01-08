@@ -373,6 +373,35 @@ class EventScriptController:
             f"Could not find subscript command identifier {subscript_cmd_id}"
         )
 
+    def replace_command_by_identifier(
+        self,
+        identifier: str,
+        replacement: Union[UsableEventScriptCommand, list[UsableEventScriptCommand]],
+    ) -> None:
+        """Replace an event script command with one or more new commands.
+
+        Args:
+            identifier: The unique identifier of the command to replace.
+            replacement: A single command or list of commands to insert in place of the old one.
+
+        Raises:
+            IdentifierException: If no command with the identifier is found.
+        """
+        for bank in self.banks:
+            for script in bank.scripts:
+                for index, command in enumerate(script.contents):
+                    if command.identifier.label == identifier:
+                        # Delete the old command
+                        del script.contents[index]
+                        # Insert replacement(s)
+                        if isinstance(replacement, list):
+                            for i, new_cmd in enumerate(replacement):
+                                script.insert_before_nth_command(index + i, new_cmd)
+                        else:
+                            script.insert_before_nth_command(index, replacement)
+                        return
+        raise IdentifierException(f"Could not find command identifier {identifier}")
+
     def delete_command_by_identifier(self, identifier: str) -> None:
         """Delete the command matching the identifier from its script.
 
