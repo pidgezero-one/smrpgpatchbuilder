@@ -4,13 +4,12 @@ from typing import (
     Generic,
     TypeVar,
     cast,
-    TYPE_CHECKING,
+    overload,
 )
 import uuid
 from copy import deepcopy
 
-if TYPE_CHECKING:
-    from smrpgpatchbuilder.datatypes.items.classes import Item
+from smrpgpatchbuilder.datatypes.items.classes import Item
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.short_var import (
     ShortVar,
@@ -270,10 +269,10 @@ class ScriptCommandShortAddrAndValueOnly(ScriptCommand):
         """The constant number argument used by the command."""
         return self._value
 
-    def set_value(self, value: int | type["Item"]) -> None:
+    def set_value(self, value: int | type[Item]) -> None:
         """set the constant number argument used by the command.\n
         Can also accept an item class, which it extracts the ID from."""
-        if not isinstance(value, int) and hasattr(value, "item_id"):
+        if isinstance(value, type) and issubclass(value, Item):
             # This is an Item subclass - extract the ID
             value = value().item_id
         self._value = UInt16(value)
@@ -281,7 +280,7 @@ class ScriptCommandShortAddrAndValueOnly(ScriptCommand):
     def __init__(
         self,
         address: ShortVar,
-        value: int | type["Item"],
+        value: int | type[Item],
         identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
@@ -313,6 +312,7 @@ class ScriptCommandBasicShortOperation(ScriptCommand):
         return super().render(self.value)
 
 ScriptCommandT = TypeVar("ScriptCommandT", bound=ScriptCommand)
+ScriptCommandT2 = TypeVar("ScriptCommandT2", bound=ScriptCommand)
 
 class Script(Generic[ScriptCommandT]):
     """A base class for any script, which is mostly a list of script commands."""
@@ -436,8 +436,28 @@ class Script(Generic[ScriptCommandT]):
         """Delete the command at the specified list index within the script."""
         del self._contents[index]
 
-    def get_command_by_name(self, identifier: str) -> tuple[int, ScriptCommandT]:
-        """Return the command that matches the specifed unique identifier."""
+    @overload
+    def get_command_by_name(self, identifier: str) -> tuple[int, ScriptCommandT]: ...
+    @overload
+    def get_command_by_name(self, identifier: str, cmd_type: type[ScriptCommandT2]) -> tuple[int, ScriptCommandT2]: ...
+
+    def get_command_by_name(
+        self, identifier: str, cmd_type: type[ScriptCommandT2] | None = None
+    ) -> tuple[int, ScriptCommandT] | tuple[int, ScriptCommandT2]:
+        """Return the command that matches the specified unique identifier.
+
+        Args:
+            identifier: The unique identifier of the command to find.
+            cmd_type: Optional expected type of the command. If provided, raises
+                ValueError if the command is not of this type.
+
+        Returns:
+            A tuple of (index, command).
+
+        Raises:
+            IdentifierException: If no command with the identifier is found.
+            ValueError: If cmd_type is provided and the command is not of that type.
+        """
         index = next(
             (
                 i
@@ -447,8 +467,16 @@ class Script(Generic[ScriptCommandT]):
             -1,
         )
         if index == -1:
-            raise IdentifierException("{identifier} not found")
-        return index, self._contents[index]
+            raise IdentifierException(f"{identifier} not found")
+        command = self._contents[index]
+        if cmd_type is not None:
+            if not isinstance(command, cmd_type):
+                raise ValueError(
+                    f"Command with ID {identifier} is {type(command).__name__}, "
+                    f"expected {cmd_type.__name__}."
+                )
+            return index, command
+        return index, command
 
     def render(self):
         """Convert this script into bytes that can be used in a ROM patch."""

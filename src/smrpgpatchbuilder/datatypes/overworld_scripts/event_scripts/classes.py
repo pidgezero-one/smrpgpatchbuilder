@@ -4,9 +4,10 @@ from copy import deepcopy
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands.types.classes import (
     UsableActionScriptCommand,
 )
-from typing import TypeVar, Union
+from typing import TypeVar, Union, overload
 
 T = TypeVar('T', bound=UsableActionScriptCommand)
+E = TypeVar('E', bound='UsableEventScriptCommand')
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands.types.classes import (
     ActionQueuePrototype,
     EventScriptCommandActionScriptContainer,
@@ -275,14 +276,37 @@ class EventScriptController:
         )
         self.set_banks(banks)
 
+    @overload
+    def get_command_by_identifier(self, identifier: str) -> UsableEventScriptCommand: ...
+    @overload
+    def get_command_by_identifier(self, identifier: str, cmd_type: type[E]) -> E: ...
+
     def get_command_by_identifier(
-        self, identifier: str
-    ) -> UsableEventScriptCommand:
-        """get one command from any bank by identifier string."""
+        self, identifier: str, cmd_type: type[E] | None = None
+    ) -> UsableEventScriptCommand | E:
+        """Get one command from any bank by identifier string.
+
+        Args:
+            identifier: The unique identifier of the command to find.
+            cmd_type: Optional expected type of the command. If provided, raises
+                ValueError if the command is not of this type.
+
+        Returns:
+            The command, typed as cmd_type if provided.
+
+        Raises:
+            IdentifierException: If no command with the identifier is found.
+            ValueError: If cmd_type is provided and the command is not of that type.
+        """
         for bank in self.banks:
             for script in bank.scripts:
                 for command in script.contents:
                     if command.identifier.label == identifier:
+                        if cmd_type is not None and not isinstance(command, cmd_type):
+                            raise ValueError(
+                                f"Command with ID {identifier} is {type(command).__name__}, "
+                                f"expected {cmd_type.__name__}."
+                            )
                         return command
         raise IdentifierException(f"could not find command identifier {identifier}")
 
@@ -312,11 +336,7 @@ class EventScriptController:
             raise ValueError(
                 f"Event script command with ID {event_cmd_id} does not contain a subscript."
             )
-        subcmd = ev.subscript.get_command_by_name(subscript_cmd_id)
-        if not isinstance(subcmd, cmd_type):
-            raise ValueError(
-                f"Subscript command with ID {subscript_cmd_id} is not of type {cmd_type.__name__}."
-            )
+        _, subcmd = ev.subscript.get_command_by_name(subscript_cmd_id, cmd_type)
         return subcmd
 
     def delete_subscript_command_by_identifier(
