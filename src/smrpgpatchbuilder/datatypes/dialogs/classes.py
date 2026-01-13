@@ -60,6 +60,7 @@ class DialogCollection:
     _dialog_bank_23_ends: int = DIALOG_BANK_23_ENDS
     _dialog_bank_24_begins: int = DIALOG_BANK_24_BEGINS
     _dialog_bank_24_ends: int = DIALOG_BANK_24_ENDS
+    _unused_ranges: list[tuple[int, int] | None]
 
     @property
     def dialogs(self) -> list[Dialog]:
@@ -125,6 +126,7 @@ class DialogCollection:
         self._dialog_bank_23_ends = dialog_bank_23_ends
         self._dialog_bank_24_begins = dialog_bank_24_begins
         self._dialog_bank_24_ends = dialog_bank_24_ends
+        self._unused_ranges = []
 
     def render(self) -> dict[int, bytearray]:
         """Get all dialog data in `{0x123456: bytearray([0x00])}` format."""
@@ -133,6 +135,7 @@ class DialogCollection:
         if len(self.raw_data) != 3:
             raise ValueError("must be exactly 3 dialog banks")
 
+        self._unused_ranges = []  # Reset unused ranges tracking
         new_pointer_table: list[int] = [-1] * 4096
 
         compressed_text = [
@@ -213,14 +216,19 @@ class DialogCollection:
 
             # make sure it's not overflowing, fill up with empty data if space left
             if bank_index == 0:
-                max_length = self._dialog_bank_22_ends - self._dialog_bank_22_begins
-                empty_space = max_length - len(assembled_bank_dialog_data)
+                bank_begins = self._dialog_bank_22_begins
+                bank_ends = self._dialog_bank_22_ends
             elif bank_index == 1:
-                max_length = self._dialog_bank_23_ends - self._dialog_bank_23_begins
-                empty_space = max_length - len(assembled_bank_dialog_data)
+                bank_begins = self._dialog_bank_23_begins
+                bank_ends = self._dialog_bank_23_ends
             else:
-                max_length = self._dialog_bank_24_ends - self._dialog_bank_24_begins
-                empty_space = max_length - len(assembled_bank_dialog_data)
+                bank_begins = self._dialog_bank_24_begins
+                bank_ends = self._dialog_bank_24_ends
+
+            max_length = bank_ends - bank_begins
+            used_length = len(assembled_bank_dialog_data)
+            empty_space = max_length - used_length
+
             if empty_space < 0:
                 length = len(assembled_bank_dialog_data)
                 err_bank = 0x22 + bank_index
@@ -230,10 +238,16 @@ class DialogCollection:
                         f"{length} bytes (expected up to {max_length})"
                     )
                 )
+
+            # Track unused range before padding
             if empty_space > 0:
+                unused_start = bank_begins + used_length
+                self._unused_ranges.append((unused_start, bank_ends))
                 assembled_bank_dialog_data += bytearray(
                     [0x00 for x in range(empty_space)]
                 )
+            else:
+                self._unused_ranges.append(None)
 
             assembled_dialog_data.append(assembled_bank_dialog_data)
 
@@ -310,3 +324,10 @@ class DialogCollection:
             0x240000: assembled_dialog_data[2],
             0x249000: assembled_compression_table,
         }
+
+    def get_unused_ranges(self) -> list[tuple[int, int]]:
+        """Return list of (start, end) tuples for unused space in each bank.
+
+        Call after render(). Returns only non-None ranges (banks with unused space).
+        """
+        return [r for r in self._unused_ranges if r is not None]

@@ -90,6 +90,7 @@ class ActionScriptBank(ScriptBank):
     _start: int = 0x210800
     _end: int = 0x21C000
     _count: int = 1024
+    _used_script_length: int = 0
 
     _addresses: dict[str, int]
     _pointer_bytes: bytearray
@@ -250,6 +251,7 @@ class ActionScriptBank(ScriptBank):
         # fill empty bytes
         expected_length: int = self.end - self.start
         final_length: int = len(self.script_bytes)
+        self._used_script_length = final_length  # Track before padding
         if final_length > expected_length:
             raise ScriptBankTooLongException(
                 f"action script output too long: got {final_length} expected {expected_length}"
@@ -258,3 +260,10 @@ class ActionScriptBank(ScriptBank):
         self.script_bytes.extend(buffer)
 
         return self.pointer_bytes + self.script_bytes
+
+    def get_unused_range(self) -> tuple[int, int] | None:
+        """Return (start, end) of unused space after render(). Returns None if fully used."""
+        unused_start = self.start + self._used_script_length
+        if unused_start < self.end:
+            return (unused_start, self.end)
+        return None

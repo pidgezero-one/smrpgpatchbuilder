@@ -102,6 +102,7 @@ class EventScriptBank(ScriptBank[EventScript]):
     _pointer_table_start: int
     _start: int
     _end: int
+    _used_script_length: int
 
     @property
     def pointer_table_start(self) -> int:
@@ -161,6 +162,7 @@ class EventScriptBank(ScriptBank[EventScript]):
         self.set_pointer_table_start(pointer_table_start)
         self.set_start(start)
         self.set_end(end)
+        self._used_script_length = 0
         super().__init__(scripts)
 
     def _associate_address(
@@ -233,6 +235,7 @@ class EventScriptBank(ScriptBank[EventScript]):
         # fill empty bytes
         expected_length: int = self.end - self.start
         final_length: int = len(self.script_bytes)
+        self._used_script_length = final_length  # Track before padding
         if final_length > expected_length:
             raise ScriptBankTooLongException(
                 f"event script output too long: got {final_length} expected {expected_length}"
@@ -241,6 +244,14 @@ class EventScriptBank(ScriptBank[EventScript]):
         self.script_bytes.extend(buffer)
 
         return self.pointer_bytes + self.script_bytes
+
+    def get_unused_range(self) -> tuple[int, int] | None:
+        """Return (start, end) of unused space after render(). Returns None if fully used."""
+        unused_start = self.start + self._used_script_length
+        if unused_start < self.end:
+            return (unused_start, self.end)
+        return None
+
 
 class EventScriptController:
     """Contains all event script banks. Allows lookup by identifier in any bank."""
