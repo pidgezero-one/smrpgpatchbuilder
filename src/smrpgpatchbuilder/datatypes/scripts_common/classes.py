@@ -333,7 +333,7 @@ class Script(Generic[ScriptCommandT]):
         self._contents.extend(commands)
 
     def _insert(self, index: int, command: ScriptCommandT) -> None:
-        assert 0 <= index < len(self._contents)
+        assert 0 <= index <= len(self._contents)
         self._contents.insert(index, command)
 
     def _get_index_of_nth_command_of_type(
