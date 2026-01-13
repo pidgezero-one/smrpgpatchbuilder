@@ -13,6 +13,10 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptBankTooLongException,
 )
 
+from typing import TypeVar, overload
+
+T = TypeVar('T', bound=UsableAnimationScriptCommand)
+
 from smrpgpatchbuilder.datatypes.battle_animation_scripts.commands.types import (
     UsableAnimationScriptCommand,
 )
@@ -183,11 +187,38 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
             scripts = []
         super().set_contents(scripts)
 
-    def get_command_by_name(self, identifier: str) -> UsableAnimationScriptCommand:
-        """Return a single command whose unique identifier matches the name provided."""
+    @overload
+    def get_command_by_name(self, identifier: str) -> UsableAnimationScriptCommand: ...
+    @overload
+    def get_command_by_name(self, identifier: str, cmd_type: type[T]) -> T: ...
+
+    def get_command_by_name(
+        self, identifier: str, cmd_type: type[T] | None = None
+    ) -> UsableAnimationScriptCommand | T:
+        """Return a single command whose unique identifier matches the name provided.
+
+        Args:
+            identifier: The unique identifier of the command to find.
+            cmd_type: Optional expected type of the command. If provided, raises
+                ValueError if the command is not of this type.
+
+        Returns:
+            The command, typed as cmd_type if provided.
+
+        Raises:
+            IdentifierException: If no command with the identifier is found.
+            ValueError: If cmd_type is provided and the command is not of that type.
+        """
         for script in self._scripts:
             for command in script.contents:
                 if command.identifier.label == identifier:
+                    if cmd_type is not None:
+                        if not isinstance(command, cmd_type):
+                            raise ValueError(
+                                f"Command with ID {identifier} is {type(command).__name__}, "
+                                f"expected {cmd_type.__name__}."
+                            )
+                        return command
                     return command
         raise IdentifierException(f"{identifier} not found")
 
