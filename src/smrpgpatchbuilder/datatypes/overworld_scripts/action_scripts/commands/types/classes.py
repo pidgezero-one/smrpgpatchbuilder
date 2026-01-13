@@ -1,7 +1,7 @@
 """Basic types supporting the creation of action script commands"""
 
 from smrpgpatchbuilder.datatypes.items.classes import Item
-from smrpgpatchbuilder.datatypes.numbers.classes import UInt8
+from smrpgpatchbuilder.datatypes.numbers.classes import Int8, UInt8
 from smrpgpatchbuilder.datatypes.scripts_common.classes import (
     ScriptCommand,
     ScriptCommandAnySizeMem,
@@ -115,7 +115,7 @@ class ActionScriptCommandBytePixels(ActionScriptCommand):
 
 class ActionScriptCommandXYBytes(ActionScriptCommand):
     """base class for any command in a npc action script that accepts an
-    X and Y coordinate, each as 8 bit ints."""
+    X and Y coordinate, each as unsigned 8 bit ints (0-255)."""
 
     _size: int = 3
     _x: UInt8
@@ -146,6 +146,43 @@ class ActionScriptCommandXYBytes(ActionScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.x, self.y)
+
+
+class ActionScriptCommandXYBytesSigned(ActionScriptCommand):
+    """base class for any command in a npc action script that accepts an
+    X and Y value as signed 8 bit ints (-128 to 127). Used for relative
+    movement commands like steps or pixels."""
+
+    _size: int = 3
+    _x: Int8
+    _y: Int8
+
+    @property
+    def x(self) -> Int8:
+        """The X value"""
+        return self._x
+
+    def set_x(self, x: int) -> None:
+        """Set the X value"""
+        self._x = Int8(x)
+
+    @property
+    def y(self) -> Int8:
+        """The Y value"""
+        return self._y
+
+    def set_y(self, y: int) -> None:
+        """Set the Y value"""
+        self._y = Int8(y)
+
+    def __init__(self, x: int, y: int, identifier: str | None = None) -> None:
+        super().__init__(identifier)
+        self.set_x(x)
+        self.set_y(y)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.x, self.y)
+
 
 class UsableActionScriptCommand(ActionScriptCommand):
     """subclass for commands that can actually be used in a script

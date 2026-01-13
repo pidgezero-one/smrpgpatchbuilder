@@ -1351,6 +1351,32 @@ test_cases = [
         commands_factory=lambda: [A_ShiftXYPixels(90, 88)],
         expected_bytes=[0x84, 0x5A, 0x58],
     ),
+    # Negative X/Y values for signed commands
+    Case(
+        label="A_WalkXYSteps_negative",
+        commands_factory=lambda: [A_WalkXYSteps(-10, -5)],
+        expected_bytes=[0x81, 0xF6, 0xFB],  # -10 = 0xF6, -5 = 0xFB
+    ),
+    Case(
+        label="A_WalkXYSteps_mixed",
+        commands_factory=lambda: [A_WalkXYSteps(10, -9)],
+        expected_bytes=[0x81, 0x0A, 0xF7],  # 10 = 0x0A, -9 = 0xF7
+    ),
+    Case(
+        label="A_ShiftXYSteps_negative",
+        commands_factory=lambda: [A_ShiftXYSteps(-1, -128)],
+        expected_bytes=[0x83, 0xFF, 0x80],  # -1 = 0xFF, -128 = 0x80
+    ),
+    Case(
+        label="A_ShiftXYPixels_negative",
+        commands_factory=lambda: [A_ShiftXYPixels(-50, -25)],
+        expected_bytes=[0x84, 0xCE, 0xE7],  # -50 = 0xCE, -25 = 0xE7
+    ),
+    Case(
+        label="A_ShiftXYPixels_max_negative",
+        commands_factory=lambda: [A_ShiftXYPixels(-128, 127)],
+        expected_bytes=[0x84, 0x80, 0x7F],  # -128 = 0x80, 127 = 0x7F
+    ),
     Case(
         label="A_TransferToObjectXY",
         commands_factory=lambda: [A_TransferToObjectXY(NPC_1)],

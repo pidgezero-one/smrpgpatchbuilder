@@ -57,6 +57,7 @@ from .types.classes import (
     ActionScriptCommandByteSteps,
     ActionScriptCommandBytePixels,
     ActionScriptCommandXYBytes,
+    ActionScriptCommandXYBytesSigned,
     UsableActionScriptCommand,
 )
 
@@ -5281,7 +5282,7 @@ class A_WalkToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
 
     _opcode = 0x80
 
-class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytesSigned):
     """Walk the indicated number of steps in the X and Y directions (performs walking animation).
 
     ## Lazy Shell command
@@ -5294,8 +5295,8 @@ class A_WalkXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         3 bytes
 
     Args:
-        x (int): Steps to walk in the X direction (8 bit int)
-        y (int): Steps to walk in the Y direction (8 bit int)
+        x (int): Steps to walk in the X direction (signed 8 bit int, -128 to 127)
+        y (int): Steps to walk in the Y direction (signed 8 bit int, -128 to 127)
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
@@ -5321,7 +5322,7 @@ class A_ShiftToXYCoords(UsableActionScriptCommand, ActionScriptCommandXYBytes):
 
     _opcode = 0x82
 
-class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytesSigned):
     """Shift the indicated number of steps in the X and Y directions (does not perform walking animation).
 
     ## Lazy Shell command
@@ -5334,14 +5335,14 @@ class A_ShiftXYSteps(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         3 bytes
 
     Args:
-        x (int): Steps to slide in the X direction (8 bit int)
-        y (int): Steps to slide in the Y direction (8 bit int)
+        x (int): Steps to slide in the X direction (signed 8 bit int, -128 to 127)
+        y (int): Steps to slide in the Y direction (signed 8 bit int, -128 to 127)
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x83
 
-class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
+class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytesSigned):
     """Shift the indicated number of pixels in the X and Y directions (does not perform walking animation).
 
     ## Lazy Shell command
@@ -5354,8 +5355,8 @@ class A_ShiftXYPixels(UsableActionScriptCommand, ActionScriptCommandXYBytes):
         3 bytes
 
     Args:
-        x (int): Pixels to slide in the X direction (8 bit int)
-        y (int): Pixels to slide in the Y direction (8 bit int)
+        x (int): Pixels to slide in the X direction (signed 8 bit int, -128 to 127)
+        y (int): Pixels to slide in the Y direction (signed 8 bit int, -128 to 127)
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
