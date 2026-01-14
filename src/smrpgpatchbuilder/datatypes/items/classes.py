@@ -682,6 +682,8 @@ class RegularItem(Item):
 class ItemCollection:
     """Collection of items with rendering support for descriptions and pointer tables."""
 
+    _additional_desc_ranges: list[tuple[int, int]]
+
     def __init__(self, items: list[Item]):
         """initialize the collection with a list of items.
 
@@ -696,6 +698,27 @@ class ItemCollection:
                 f"ItemCollection can contain at most 256 items, but {len(items)} were provided."
             )
         self.items = items
+        self._additional_desc_ranges = []
+
+    def set_additional_desc_ranges(self, ranges: list[tuple[int, int]]) -> None:
+        """Set additional address ranges for writing item descriptions.
+
+        These ranges will be used after the default ITEMS_BASE_DESC_DATA_ADDRESSES
+        ranges are exhausted.
+
+        Args:
+            ranges: List of (start, end) tuples representing address ranges.
+        """
+        self._additional_desc_ranges = ranges
+
+    def add_additional_desc_range(self, start: int, end: int) -> None:
+        """Add a single additional address range for writing item descriptions.
+
+        Args:
+            start: Start address of the range.
+            end: End address of the range.
+        """
+        self._additional_desc_ranges.append((start, end))
 
     def get_by_type(self, item_type: type[ItemT]) -> ItemT:
         """Return the item instance matching the given type.
@@ -727,9 +750,18 @@ class ItemCollection:
             item_patch = item.render()
             patch.update(item_patch)
 
+        # Build the full list of description data ranges
+        # Start with the base ranges, then add any additional ranges
+        all_desc_ranges: list[tuple[int, int]] = list(ITEMS_BASE_DESC_DATA_ADDRESSES)
+        all_desc_ranges.extend(self._additional_desc_ranges)
+
+        # Calculate total available space
+        total_available_space = sum(end - start for start, end in all_desc_ranges)
+
         # now handle descriptions
         # start writing descriptions at the first available address
-        current_desc_addr = ITEMS_BASE_DESC_DATA_ADDRESSES[0][0]
+        current_range_idx = 0
+        current_desc_addr = all_desc_ranges[0][0]
         desc_pointer_table = bytearray()
         total_desc_bytes = 0  # track total description data size
 
@@ -759,18 +791,18 @@ class ItemCollection:
             # move to next description address
             current_desc_addr += len(desc_bytes)
 
-            # check if we need to move to the second description data region
-            if current_desc_addr > ITEMS_BASE_DESC_DATA_ADDRESSES[0][1]:
-                if current_desc_addr < ITEMS_BASE_DESC_DATA_ADDRESSES[1][0]:
-                    current_desc_addr = ITEMS_BASE_DESC_DATA_ADDRESSES[1][0]
+            # check if we need to move to the next description data region
+            if current_desc_addr > all_desc_ranges[current_range_idx][1]:
+                current_range_idx += 1
+                if current_range_idx < len(all_desc_ranges):
+                    current_desc_addr = all_desc_ranges[current_range_idx][0]
 
         # check if total description data exceeds available space
-        max_desc_size = 0x3A40F2 - 0x3A3120  # 4050 bytes
-        if total_desc_bytes > max_desc_size:
+        if total_desc_bytes > total_available_space:
             raise ValueError(
                 f"Item descriptions total {total_desc_bytes} bytes, "
-                f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
-                f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
+                f"which exceeds the maximum allowed size of {total_available_space} bytes. "
+                f"Reduce description lengths by {total_desc_bytes - total_available_space} bytes."
             )
 
         # write the pointer table

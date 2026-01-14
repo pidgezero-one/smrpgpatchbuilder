@@ -389,23 +389,49 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
         Requires bank_end to be set via set_bank_end(). Returns None if
         bank_end is not set or if there is no unused space.
+
+        Deprecated: Use get_unused_ranges() instead to get all unused ranges.
+        """
+        ranges = self.get_unused_ranges()
+        if not ranges:
+            return None
+        # Return the last range (tail space) for backwards compatibility
+        return ranges[-1]
+
+    def get_unused_ranges(self) -> list[tuple[int, int]]:
+        """Return all unused ranges (gaps between scripts and tail space).
+
+        Requires bank_end to be set via set_bank_end(). Returns empty list if
+        bank_end is not set or if there are no unused ranges.
+
+        Returns:
+            List of (start, end) tuples representing unused address ranges.
         """
         if self._bank_end is None:
-            return None
+            return []
 
         scripts: list[AnimationScriptBlock] = [
             s for s in self.scripts if isinstance(s, AnimationScriptBlock)
         ]
         if not scripts:
-            return None
+            return []
 
-        # Find the end of the last script (by address, not list order)
-        last_end = 0
-        for script in scripts:
-            script_end = script.expected_beginning + script.expected_size
-            if script_end > last_end:
-                last_end = script_end
+        # Sort scripts by their expected beginning address
+        sorted_scripts = sorted(scripts, key=lambda s: s.expected_beginning)
 
+        unused_ranges: list[tuple[int, int]] = []
+
+        # Find gaps between consecutive scripts
+        for i in range(len(sorted_scripts) - 1):
+            current_end = sorted_scripts[i].expected_end
+            next_start = sorted_scripts[i + 1].expected_beginning
+            if current_end < next_start:
+                unused_ranges.append((current_end, next_start))
+
+        # Find tail space after the last script
+        last_script = sorted_scripts[-1]
+        last_end = last_script.expected_end
         if last_end < self._bank_end:
-            return (last_end, self._bank_end)
-        return None
+            unused_ranges.append((last_end, self._bank_end))
+
+        return unused_ranges
