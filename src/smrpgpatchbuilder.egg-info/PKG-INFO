@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: smrpgpatchbuilder
-Version: 1.1.28
+Version: 1.1.29
 Summary: Patchable base class support for some SMRPG concepts similar to their definitions in Lazy Shell
 Author-email: pidgezero_one <s.kischak@gmail.com>
 License-Expression: MIT
@@ -831,7 +831,7 @@ The disassembler creates a `BattleDialogCollection` (in the same file). If you w
 
 Disassemble:
 ```bash
-PYTHONPATH=src python src/smrpgpatchbuilder/manage.py packdisassembler --rom "path/to/your/smrpg/rom" 
+PYTHONPATH=src python src/smrpgpatchbuilder/manage.py packdisassembler --rom "path/to/your/smrpg/rom"
 ```
 Assemble:
 ```bash
@@ -841,44 +841,56 @@ PYTHONPATH=src python src/smrpgpatchbuilder/manage.py packassembler -r path/to/y
 Writes to:
 ```
 ./src/disassembler_output/packs/pack_collection.py
+./src/disassembler_output/variables/formation_names.py
 ```
 
-There are 255 battle packs. When you disassemble them, you will see formations established inside the Pack class. When you assemble your packs, the assembler will identify which formations are identical, and warn you if you have more than 512 unique ones.
+There are 256 battle packs and up to 512 formations. Formations are disassembled as separate declarations with their own IDs, and packs reference these formations by variable name.
 
-Here is what this pack looks like disassembled:
-![alt text](image-11.png)
+Here is what formations and packs look like disassembled:
+
+**Formation declarations** (at the top of pack_collection.py):
 ```python
-packs[PACK098_SHAMAN_WITH_ORBISON_JAWFUL] = FormationPack(
-    Formation(
-        members=[
-            FormationMember(SHAMAN, 151, 111),
-            FormationMember(SHAMAN, 199, 151),
-        ],
-        music=NormalBattleMusic(),
-        unknown_bit=True,
-    )
-    ,
-    Formation(
-        members=[
-            FormationMember(SHAMAN, 135, 119),
-            FormationMember(ORBISON, 199, 151),
-            FormationMember(JAWFUL, 199, 119),
-        ],
-        music=NormalBattleMusic(),
-        unknown_bit=True,
-    )
-    ,
-    Formation(
-        members=[
-            FormationMember(SHAMAN, 167, 103),
-            FormationMember(SHAMAN, 231, 135),
-            FormationMember(JAWFUL, 167, 135),
-        ],
-        music=NormalBattleMusic(),
-        unknown_bit=True,
-    )
+FORM0098 = Formation(
+    id=98,
+    members=[
+        FormationMember(SHAMAN, 151, 111),
+        FormationMember(SHAMAN, 199, 151),
+    ],
+    music=NormalBattleMusic(),
+    unknown_bit=True,
+)
+
+FORM0099 = Formation(
+    id=99,
+    members=[
+        FormationMember(SHAMAN, 135, 119),
+        FormationMember(ORBISON, 199, 151),
+        FormationMember(JAWFUL, 199, 119),
+    ],
+    music=NormalBattleMusic(),
+    unknown_bit=True,
+)
+
+FORM0100 = Formation(
+    id=100,
+    members=[
+        FormationMember(SHAMAN, 167, 103),
+        FormationMember(SHAMAN, 231, 135),
+        FormationMember(JAWFUL, 167, 135),
+    ],
+    music=NormalBattleMusic(),
+    unknown_bit=True,
 )
 ```
+
+**Pack definitions** (referencing formations by name):
+```python
+packs[PACK098_SHAMAN_WITH_ORBISON_JAWFUL] = FormationPack(FORM0098, FORM0099, FORM0100)
+```
+
+Each formation has an `id` property that determines where it gets written in the ROM. The disassembler also generates `formation_names.py` with constants for all used formation IDs.
+
+If you want to provide descriptive names for formations, you can create a `config/formation_names.input` file following the same format as other name input files.
 
 The assembler produces a `PackCollection`. If you want to use your packs in another Python project, this is what your project should import. When building a patch, the `collection.render()` method produces a `dict[int, bytearray]` where each int is the address at which to patch the bytearray.
 

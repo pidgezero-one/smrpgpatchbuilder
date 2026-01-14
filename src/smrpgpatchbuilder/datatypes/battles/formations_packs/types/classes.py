@@ -108,6 +108,7 @@ class FormationMember:
 class Formation:
     """A subclass that defines an arrangement of enemies in a battle."""
 
+    _formation_id: int | None
     _members: list[FormationMember | None]
     _run_event_at_load: UInt8 | None
     _music: Music | None
@@ -115,6 +116,18 @@ class Formation:
     _unknown_byte: UInt8
     _unknown_bit: bool
     _battlefield: Battlefield
+
+    @property
+    def formation_id(self) -> int | None:
+        """The unique ID of this formation (0-511). Used for ROM address calculation."""
+        return self._formation_id
+
+    def set_formation_id(self, formation_id: int | None) -> None:
+        """Set the unique ID of this formation (0-511)."""
+        if formation_id is not None:
+            assert 0 <= formation_id < TOTAL_FORMATIONS, \
+                f"Formation ID must be 0-{TOTAL_FORMATIONS-1}, got {formation_id}"
+        self._formation_id = formation_id
 
     @property
     def members(self) -> list[FormationMember | None]:
@@ -195,7 +208,9 @@ class Formation:
         can_run_away: bool = True,
         unknown_byte: int = 0,
         unknown_bit: bool = False,
+        id: int | None = None,
     ) -> None:
+        self.set_formation_id(id)
         self.set_members(members)
         self.set_run_event_at_load(run_event_at_load)
         self.set_music(music)
@@ -203,9 +218,21 @@ class Formation:
         self.set_unknown_byte(unknown_byte)
         self.set_unknown_bit(unknown_bit)
 
-    def render(self, formation_index: int) -> dict[int, bytearray]:
-        """Get formation data in `{0x123456: bytearray([0x00])}` format."""
-        assert 0 <= formation_index < TOTAL_FORMATIONS
+    def render(self, formation_index: int | None = None) -> dict[int, bytearray]:
+        """Get formation data in `{0x123456: bytearray([0x00])}` format.
+
+        Args:
+            formation_index: Optional index override. If not provided, uses the
+                           internal formation_id. For backward compatibility.
+        """
+        # Use internal ID if set, otherwise use parameter
+        actual_index = formation_index if formation_index is not None else self._formation_id
+        if actual_index is None:
+            raise ValueError(
+                "Formation has no ID set. Either pass formation_index to render() "
+                "or set the formation ID via __init__(id=...) or set_formation_id()."
+            )
+        assert 0 <= actual_index < TOTAL_FORMATIONS
         patch: dict[int, bytearray] = {}
         data = bytearray()
 
@@ -234,7 +261,7 @@ class Formation:
                 data += ByteField(0).as_bytes()
                 data += ByteField(0).as_bytes()
 
-        base_addr = BASE_FORMATION_ADDRESS + (formation_index * 26)
+        base_addr = BASE_FORMATION_ADDRESS + (actual_index * 26)
         patch[base_addr] = data
 
         # add formation metadata.
@@ -247,7 +274,7 @@ class Formation:
         )
         data += ByteField(music_byte).as_bytes()
 
-        base_addr = BASE_FORMATION_META_ADDRESS + formation_index * 3
+        base_addr = BASE_FORMATION_META_ADDRESS + actual_index * 3
         patch[base_addr] = data
 
         return patch
@@ -283,105 +310,89 @@ class FormationPack:
             self._formations = list(formations)
 
 class PackCollection:
-    """Collection of 255 FormationPacks that manages formation deduplication and rendering."""
+    """Collection of 256 FormationPacks that renders formations and packs to ROM."""
 
     _packs: list[FormationPack]
 
     @property
     def packs(self) -> list[FormationPack]:
-        """The list of 255 FormationPacks in this collection."""
+        """The list of 256 FormationPacks in this collection."""
         return self._packs
 
     def __init__(self, packs: list[FormationPack]) -> None:
-        """Initialize a PackCollection with exactly 255 FormationPacks.
+        """Initialize a PackCollection with exactly 256 FormationPacks.
 
         Args:
-            packs: A list of exactly 255 FormationPack instances
+            packs: A list of exactly 256 FormationPack instances
 
         Raises:
-            AssertionError: If not exactly 255 packs are provided
+            AssertionError: If not exactly 256 packs are provided
         """
         assert len(packs) == 256, \
             f"PackCollection requires exactly 256 packs, got {len(packs)}"
         self._packs = packs
 
-    def _formations_equal(self, f1: Formation, f2: Formation) -> bool:
-        """Check if two formations are identical by comparing their rendered output."""
-        # Render both formations at index 0 to compare their data
-        render1 = f1.render(0)
-        render2 = f2.render(0)
-        return render1 == render2
-
     def render(self) -> dict[int, bytearray]:
-        """Render all packs and formations, deduplicating identical formations.
+        """Render all packs and formations using their formation IDs.
 
         This method:
-        1. Collects all unique formations from all packs
-        2. Assigns IDs to each unique formation
-        3. Renders all unique formations
-        4. Renders all packs using the assigned formation IDs
+        1. Collects all unique formations from all packs (by object identity)
+        2. Renders each formation using its formation_id property
+        3. Renders all packs using the formation IDs
 
         Returns:
             A dictionary mapping ROM addresses to bytearrays for patching
+
+        Raises:
+            ValueError: If any formation does not have a formation_id set
         """
         patch: dict[int, bytearray] = {}
 
-        # Collect all formations from all packs
-        all_formations: list[Formation] = []
-        for pack in self._packs:
-            all_formations.extend(pack.formations)
-
-        # Deduplicate formations and assign IDs
+        # Collect unique formations by object identity (using set of ids)
+        seen_formation_ids: set[int] = set()  # Python object ids we've seen
         unique_formations: list[Formation] = []
-        formation_to_id: dict[int, int] = {}  # Maps id(formation) to formation_id
 
-        for formation in all_formations:
-            # Check if this formation is identical to any existing unique formation
-            found_id = None
-            for idx, unique_formation in enumerate(unique_formations):
-                if self._formations_equal(formation, unique_formation):
-                    found_id = idx
-                    break
+        for pack in self._packs:
+            for formation in pack.formations:
+                if id(formation) not in seen_formation_ids:
+                    seen_formation_ids.add(id(formation))
+                    unique_formations.append(formation)
 
-            if found_id is not None:
-                # Use existing formation ID
-                formation_to_id[id(formation)] = found_id
-            else:
-                # Add as new unique formation
-                formation_id = len(unique_formations)
-                if formation_id >= TOTAL_FORMATIONS:
-                    raise ValueError(
-                        f"Too many unique formations: {formation_id + 1} unique formations found, "
-                        f"but maximum is {TOTAL_FORMATIONS}. Please reduce the number of unique formations "
-                        f"or reuse existing formations."
-                    )
-                unique_formations.append(formation)
-                formation_to_id[id(formation)] = formation_id
-
-        # Render all unique formations
-        for formation_id, formation in enumerate(unique_formations):
-            formation_patch = formation.render(formation_id)
+        # Render all unique formations using their formation_id property
+        for formation in unique_formations:
+            if formation.formation_id is None:
+                raise ValueError(
+                    "Formation has no ID set. All formations in a PackCollection "
+                    "must have a formation_id. Set it via Formation(id=...) or set_formation_id()."
+                )
+            formation_patch = formation.render()
             patch.update(formation_patch)
 
-        # Render all packs using the assigned formation IDs
+        # Render all packs using the formation IDs
         for pack_index, pack in enumerate(self._packs):
             # Get the formation IDs for this pack
-            formation_ids = [formation_to_id[id(f)] for f in pack.formations]
+            formation_ids: list[int] = []
+            for f in pack.formations:
+                if f.formation_id is None:
+                    raise ValueError(
+                        f"Formation in pack {pack_index} has no ID set. "
+                        "All formations must have a formation_id."
+                    )
+                formation_ids.append(f.formation_id)
 
-            # Render pack data
+            # Render pack data (3 formation IDs + high bank indicator)
             data = bytearray()
-            hi_num = False
+            hi_bits = 0
 
-            for formation_id in formation_ids:
-                val = formation_id
-                if val > 255:
-                    hi_num = True
-                    val -= 256
-                data += ByteField(val).as_bytes()
+            for i, formation_id in enumerate(formation_ids):
+                if formation_id > 255:
+                    hi_bits |= (1 << i)
+                    data += ByteField(formation_id - 256).as_bytes()
+                else:
+                    data += ByteField(formation_id).as_bytes()
 
-            # high bank indicator
-            val = 7 if hi_num else 0
-            data += ByteField(val).as_bytes()
+            # High bank indicator byte
+            data += ByteField(hi_bits).as_bytes()
 
             base_addr = PACK_BASE_ADDRESS + (pack_index * 4)
             patch[base_addr] = data
