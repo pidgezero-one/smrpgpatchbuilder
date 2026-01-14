@@ -1,6 +1,7 @@
 """Functions that help with dialog development."""
 
 import re
+from collections.abc import Sequence
 
 COMPRESSION_TABLE: list[tuple[str, bytes]] = [
     ("[0x7000]", b"\x1C\x00"),
@@ -51,7 +52,7 @@ COMPRESSION_TABLE: list[tuple[str, bytes]] = [
     ("&", b"\x9C"),
 ]
 
-def compress(string: str, compression_table: list[tuple[str, bytes]]) -> bytearray:
+def compress(string: str, compression_table: Sequence[tuple[str, bytes | bytearray]]) -> bytearray:
     """Turns a dialog string into bytes."""
     output = bytearray()
     tbl = dict(compression_table)

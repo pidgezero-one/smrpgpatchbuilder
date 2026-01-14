@@ -95,13 +95,13 @@ class DialogCollection:
                 self.raw_data[bank_index][index] = string.replace(search, replace)
 
     def _set_compression_table(
-        self, compression_table: list[tuple[str, bytearray]]
+        self, compression_table: list[tuple[str, bytes | bytearray]]
     ) -> None:
         """Set the compression table for this dialog collection."""
         self._compression_table = compression_table
 
     @property
-    def compression_table(self) -> list[tuple[str, bytearray]]:
+    def compression_table(self) -> list[tuple[str, bytes | bytearray]]:
         """Get the compression table for this dialog collection."""
         return self._compression_table
 
@@ -109,7 +109,7 @@ class DialogCollection:
         self,
         dialogs: list[Dialog],
         raw_data: list[list[str]],
-        compression_table: list[tuple[str, bytearray]],
+        compression_table: list[tuple[str, bytes | bytearray]],
         dialog_bank_22_begins=DIALOG_BANK_22_BEGINS,
         dialog_bank_22_ends=DIALOG_BANK_22_ENDS,
         dialog_bank_23_begins=DIALOG_BANK_23_BEGINS,
@@ -134,6 +134,20 @@ class DialogCollection:
             raise ValueError("must be exactly 4096 dialogs")
         if len(self.raw_data) != 3:
             raise ValueError("must be exactly 3 dialog banks")
+
+        # Validate all dialog pointers reference valid indexes
+        bank_sizes = [len(self.raw_data[0]), len(self.raw_data[1]), len(self.raw_data[2])]
+        for ptr_id, dialog in enumerate(self.dialogs):
+            bank_idx = dialog.bank - 0x22
+            if bank_idx < 0 or bank_idx > 2:
+                raise ValueError(
+                    f"Dialog {ptr_id}: invalid bank 0x{dialog.bank:02x} (must be 0x22-0x24)"
+                )
+            if dialog.index >= bank_sizes[bank_idx]:
+                raise ValueError(
+                    f"Dialog {ptr_id}: index {dialog.index} exceeds bank 0x{dialog.bank:02x} "
+                    f"table size ({bank_sizes[bank_idx]} entries)"
+                )
 
         self._unused_ranges = []  # Reset unused ranges tracking
         new_pointer_table: list[int] = [-1] * 4096
@@ -257,7 +271,13 @@ class DialogCollection:
             assembled_dialog_data.append(assembled_bank_dialog_data)
 
         # pointer bytes
-        for val in new_pointer_table:
+        for ptr_id, val in enumerate(new_pointer_table):
+            if val == -1:
+                dialog = self.dialogs[ptr_id]
+                raise ValueError(
+                    f"Dialog {ptr_id}: position {dialog.position} exceeds compressed "
+                    f"dialog length at bank 0x{dialog.bank:02x}, index {dialog.index}"
+                )
             assembled_pointers.append(val & 0xFF)
             assembled_pointers.append(val >> 8)
 
