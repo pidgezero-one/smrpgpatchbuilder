@@ -94,6 +94,8 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
     _range_2_start: int = BANK_RANGE_2_START
     _range_2_end: int = BANK_RANGE_2_END
     _pointer_table_start: int = POINTER_TABLE_START
+    _used_length_1: int = 0
+    _used_length_2: int = 0
 
     @property
     def range_1_start(self) -> int:
@@ -230,6 +232,10 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         expected_size_1 = self.range_1_end - self.range_1_start
         expected_size_2 = self.range_2_end - self.range_2_start
 
+        # Track used lengths before padding
+        self._used_length_1 = len(bank_1)
+        self._used_length_2 = len(bank_2)
+
         if len(bank_1) < expected_size_1:
             filler = bytearray([0xFF] * (expected_size_1 - len(bank_1)))
             bank_1 += filler
@@ -240,3 +246,19 @@ class MonsterScriptBank(ScriptBank[MonsterScript]):
         assert len(bank_2) == expected_size_2
 
         return ptr_bank + bank_1, bank_2
+
+    def get_unused_ranges(self) -> list[tuple[int, int]]:
+        """Return list of (start, end) tuples for unused space in each range.
+
+        Call after render(). Returns only ranges with unused space.
+        """
+        result = []
+        unused_start_1 = self.range_1_start + self._used_length_1
+        if unused_start_1 < self.range_1_end:
+            result.append((unused_start_1, self.range_1_end))
+
+        unused_start_2 = self.range_2_start + self._used_length_2
+        if unused_start_2 < self.range_2_end:
+            result.append((unused_start_2, self.range_2_end))
+
+        return result

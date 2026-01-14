@@ -485,7 +485,7 @@ class SpriteCollection:
         image_data: list[int] = []
         animation_pointers: list[int] = []
 
-        def place_bytes(these_bytes: bytearray) -> int:
+        def place_bytes(these_bytes: bytearray, identifier: str = "unknown", remaining_items: list[tuple[int, int]] | None = None) -> int:
             # find bank with most space
             highest_space = 0
             index = 0
@@ -494,7 +494,32 @@ class SpriteCollection:
                     highest_space = b.remaining_space
                     index = b_index
             if len(these_bytes) > self.animation_data_banks[index].remaining_space:
-                raise Exception("could not place bytes into an animation bank with space")
+                # Build detailed error message
+                error_lines = [
+                    f"Could not place animation data into any bank.",
+                    f"Animation: {identifier}",
+                    f"Data size: {len(these_bytes):,} bytes",
+                    "",
+                    "Available banks (sorted by remaining space):",
+                ]
+                sorted_banks = sorted(
+                    enumerate(self.animation_data_banks),
+                    key=lambda x: x[1].remaining_space,
+                    reverse=True
+                )
+                for b_index, b in sorted_banks:
+                    error_lines.append(
+                        f"  Bank {b_index}: 0x{b.start:06X}-0x{b.end:06X} "
+                        f"({b.remaining_space:,} bytes remaining of {b.end - b.start:,})"
+                    )
+                if remaining_items:
+                    total_remaining = sum(size for _, size in remaining_items)
+                    error_lines.append("")
+                    error_lines.append(f"Remaining animations to place: {len(remaining_items)} ({total_remaining:,} bytes total)")
+                    error_lines.append("Sizes: " + ", ".join(f"{size:,}" for _, size in remaining_items[:20]))
+                    if len(remaining_items) > 20:
+                        error_lines.append(f"  ... and {len(remaining_items) - 20} more")
+                raise Exception("\n".join(error_lines))
             offset = self.animation_data_banks[index].current_offset
             self.animation_data_banks[index].tiles += these_bytes
             return offset
@@ -691,8 +716,10 @@ class SpriteCollection:
             animations_ready_to_place.append((anim_id, finished_bytes))
 
         animations_ready_to_place.sort(key=lambda x: len(x[1]), reverse=True)
-        for anim_id, finished_bytes in animations_ready_to_place:
-            anim_ptr = place_bytes(finished_bytes) + 0xC00000
+        for i, (anim_id, finished_bytes) in enumerate(animations_ready_to_place):
+            # Calculate remaining items (including current) for error reporting
+            remaining = [(aid, len(fb)) for aid, fb in animations_ready_to_place[i:]]
+            anim_ptr = place_bytes(finished_bytes, f"animation #{anim_id}", remaining) + 0xC00000
             animation_pointers_wip[anim_id] = anim_ptr
 
         for anim_ptr in animation_pointers_wip:
@@ -761,7 +788,7 @@ class SpriteCollection:
 
         unique_tiles_length = 0
 
-        def place_bytes(these_bytes: bytearray) -> int:
+        def place_bytes(these_bytes: bytearray, identifier: str = "unknown", remaining_items: list[tuple[str, int]] | None = None) -> int:
             # find bank with most space
             highest_space: int = 0
             index: int = 0
@@ -770,7 +797,32 @@ class SpriteCollection:
                     highest_space = b.remaining_space
                     index = b_index
             if len(these_bytes) > self.uncompressed_tile_banks[index].remaining_space:
-                raise Exception("could not place bytes into a tile bank with space")
+                # Build detailed error message
+                error_lines = [
+                    f"Could not place tile data into any bank.",
+                    f"Tile group: {identifier}",
+                    f"Data size: {len(these_bytes):,} bytes",
+                    "",
+                    "Available tile banks (sorted by remaining space):",
+                ]
+                sorted_banks = sorted(
+                    enumerate(self.uncompressed_tile_banks),
+                    key=lambda x: x[1].remaining_space,
+                    reverse=True
+                )
+                for b_index, b in sorted_banks:
+                    error_lines.append(
+                        f"  Bank {b_index}: 0x{b.start:06X}-0x{b.end:06X} "
+                        f"({b.remaining_space:,} bytes remaining of {b.end - b.start:,})"
+                    )
+                if remaining_items:
+                    total_remaining = sum(size for _, size in remaining_items)
+                    error_lines.append("")
+                    error_lines.append(f"Remaining tile groups to place: {len(remaining_items)} ({total_remaining:,} bytes total)")
+                    error_lines.append("Sizes: " + ", ".join(f"{size:,}" for _, size in remaining_items[:20]))
+                    if len(remaining_items) > 20:
+                        error_lines.append(f"  ... and {len(remaining_items) - 20} more")
+                raise Exception("\n".join(error_lines))
             offset = self.uncompressed_tile_banks[index].current_offset
             self.uncompressed_tile_banks[index].tiles += these_bytes
             return offset
@@ -894,11 +946,16 @@ class SpriteCollection:
         
         
         sortable_tile_groups.sort(key=lambda x: len(x[1].tiles), reverse=True)
-        for tile_key, group in sortable_tile_groups:
+        # Pre-calculate sizes for remaining items reporting
+        tile_group_sizes = [(key, sum(len(bytearray(t)) for t in group.tiles + group.extra))
+                           for key, group in sortable_tile_groups]
+        for i, (tile_key, group) in enumerate(sortable_tile_groups):
             tilebytes = bytearray([])
             for t in group.tiles + group.extra:
                 tilebytes += bytearray(t)
-            group_offset = place_bytes(tilebytes)
+            # Calculate remaining items for error reporting
+            remaining = tile_group_sizes[i:]
+            group_offset = place_bytes(tilebytes, f"tile_group '{tile_key}'", remaining)
             tile_groups[tile_key].offset = group_offset
 
         # start building stuff

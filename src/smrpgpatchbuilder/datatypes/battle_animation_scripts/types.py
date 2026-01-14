@@ -165,6 +165,7 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
 
     _scripts: list[AnimationScript | AnimationScriptBlock]
     _name: str
+    _bank_end: int | None = None
 
     @property
     def scripts(self) -> list[AnimationScript | AnimationScriptBlock]:
@@ -176,10 +177,19 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
         the contents of this bank externally."""
         return self._name
 
+    @property
+    def bank_end(self) -> int | None:
+        """The expected end address of this bank in the ROM. Used to calculate unused space."""
+        return self._bank_end
+
     def set_name(self, name: str) -> None:
         """Set an arbitrary key for this particular bank. Used to reference and modify
         the contents of this bank externally."""
         self._name = name
+
+    def set_bank_end(self, bank_end: int) -> None:
+        """Set the expected end address of this bank in the ROM."""
+        self._bank_end = bank_end
 
     def set_contents(self, scripts: list[AnimationScript] | None = None) -> None:
         """Overwrite the entire list of scripts belonging to this bank."""
@@ -373,3 +383,29 @@ class AnimationScriptBank(ScriptBank[AnimationScript]):
             (script.expected_beginning, script.render())
             for script in scripts
         ]
+
+    def get_unused_range(self) -> tuple[int, int] | None:
+        """Return (start, end) of unused space after the last script.
+
+        Requires bank_end to be set via set_bank_end(). Returns None if
+        bank_end is not set or if there is no unused space.
+        """
+        if self._bank_end is None:
+            return None
+
+        scripts: list[AnimationScriptBlock] = [
+            s for s in self.scripts if isinstance(s, AnimationScriptBlock)
+        ]
+        if not scripts:
+            return None
+
+        # Find the end of the last script (by address, not list order)
+        last_end = 0
+        for script in scripts:
+            script_end = script.expected_beginning + script.expected_size
+            if script_end > last_end:
+                last_end = script_end
+
+        if last_end < self._bank_end:
+            return (last_end, self._bank_end)
+        return None

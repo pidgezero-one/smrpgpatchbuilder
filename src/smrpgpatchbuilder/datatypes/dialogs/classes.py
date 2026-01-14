@@ -229,6 +229,11 @@ class DialogCollection:
             used_length = len(assembled_bank_dialog_data)
             empty_space = max_length - used_length
 
+            # Report space usage for each bank
+            bank_number = 0x22 + bank_index
+            pct_used = (used_length / max_length) * 100
+            print(f"Dialog bank 0x{bank_number:02x}: {used_length:,}/{max_length:,} bytes used ({pct_used:.1f}%), {empty_space:,} bytes free")
+
             if empty_space < 0:
                 length = len(assembled_bank_dialog_data)
                 err_bank = 0x22 + bank_index
