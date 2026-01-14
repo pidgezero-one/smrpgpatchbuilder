@@ -278,6 +278,12 @@ class DialogCollection:
                     f"Dialog {ptr_id}: position {dialog.position} exceeds compressed "
                     f"dialog length at bank 0x{dialog.bank:02x}, index {dialog.index}"
                 )
+            if val < 0 or val > 0xFFFF:
+                dialog = self.dialogs[ptr_id]
+                raise ValueError(
+                    f"Dialog {ptr_id}: pointer value {val} out of range (0-65535). "
+                    f"Dialog: bank=0x{dialog.bank:02x}, index={dialog.index}, pos={dialog.position}"
+                )
             assembled_pointers.append(val & 0xFF)
             assembled_pointers.append(val >> 8)
 
