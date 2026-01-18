@@ -778,6 +778,12 @@ class ItemCollection:
 
             total_desc_bytes += len(desc_bytes)
 
+            # check if description would overflow current range, move to next if so
+            while (current_desc_addr + len(desc_bytes) > all_desc_ranges[current_range_idx][1]
+                   and current_range_idx + 1 < len(all_desc_ranges)):
+                current_range_idx += 1
+                current_desc_addr = all_desc_ranges[current_range_idx][0]
+
             # calculate pointer value (subtract offset to get the value to store)
             pointer_value = current_desc_addr - ITEMS_DESC_DATA_POINTER_OFFSET
 
@@ -790,12 +796,6 @@ class ItemCollection:
 
             # move to next description address
             current_desc_addr += len(desc_bytes)
-
-            # check if we need to move to the next description data region
-            if current_desc_addr > all_desc_ranges[current_range_idx][1]:
-                current_range_idx += 1
-                if current_range_idx < len(all_desc_ranges):
-                    current_desc_addr = all_desc_ranges[current_range_idx][0]
 
         # check if total description data exceeds available space
         if total_desc_bytes > total_available_space:

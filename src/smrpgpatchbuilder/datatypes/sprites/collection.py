@@ -34,7 +34,6 @@ from .sprite import (
 )
 from .ids.misc import (
     ALPHABET,
-    ANIMATION_DATA_BANK_1_START,
     ANIMATION_PTRS_END,
     ANIMATION_PTRS_START,
     IMAGE_PTRS_END,
@@ -1502,22 +1501,17 @@ class SpriteCollection(list[SpriteContainer]):
                 )
             )
 
-        output_tiles = bytearray([])
         output_tile_ranges: list[tuple[int, bytearray]] = []
         final_offset = _SUBTILE_BANKS[0].start
         for bank_index, bank in enumerate(_SUBTILE_BANKS):
             final_offset = bank.start + len(bank.raw_bytes)
-            _SUBTILE_BANKS[bank_index].set_raw_bytes(
+            _SUBTILE_BANKS[bank_index].extend_raw_bytes(
                 bytearray([0] * (bank.end - bank.start - len(bank.raw_bytes)))
             )
-            if bank.end <= UNCOMPRESSED_GFX_END:
-                output_tiles += _SUBTILE_BANKS[bank_index].raw_bytes
-                if bank.end == UNCOMPRESSED_GFX_END:
-                    output_tile_ranges.append((UNCOMPRESSED_GFX_START, output_tiles))
-            else:
-                output_tile_ranges.append(
-                    (bank.start, _SUBTILE_BANKS[bank_index].raw_bytes)
-                )
+            # Write each bank to its own address
+            output_tile_ranges.append(
+                (bank.start, _SUBTILE_BANKS[bank_index].raw_bytes)
+            )
 
         if len(complete_images) > TOTAL_IMAGES:
             raise InvalidSpriteConstructionException(
@@ -1824,20 +1818,15 @@ class SpriteCollection(list[SpriteContainer]):
             )
 
         anim_tile_ranges: list[tuple[int, bytearray]] = []
-        anim_data = bytearray()
         for bank_index, bank in enumerate(_ANIMATION_DATA_BANKS):
             final_offset = bank.start + len(bank.raw_bytes)
             _ANIMATION_DATA_BANKS[bank_index].extend_raw_bytes(
                 bytearray([0] * (bank.end - bank.start - len(bank.raw_bytes)))
             )
-            if bank.end <= UNCOMPRESSED_GFX_START:
-                anim_data += _ANIMATION_DATA_BANKS[bank_index].raw_bytes
-                if bank.end == UNCOMPRESSED_GFX_START:
-                    anim_tile_ranges.append((ANIMATION_DATA_BANK_1_START, anim_data))
-            else:
-                anim_tile_ranges.append(
-                    (bank.start, _ANIMATION_DATA_BANKS[bank_index].raw_bytes)
-                )
+            # Write each bank to its own address
+            anim_tile_ranges.append(
+                (bank.start, _ANIMATION_DATA_BANKS[bank_index].raw_bytes)
+            )
 
         sprite_data += bytearray(
             [0] * (SPRITE_PTRS_END - SPRITE_PTRS_START - len(sprite_data))

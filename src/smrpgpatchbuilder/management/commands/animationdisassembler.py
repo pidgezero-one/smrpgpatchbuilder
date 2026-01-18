@@ -153,109 +153,111 @@ monster_entrance_offsets = [
     0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC
 ]
 
-# force_contiguous_block_start = monster_behaviour_oq_offsets +
-force_contiguous_block_start = [    # there are other addresses that should get this treatment, like the beginning of a bank's pointer table
-    0x02F455,
-    0x02F4BF,
-    0x350402,
-    0x351026,
-    0x351493,
-    # Monster entrance offsets - top ptr should start a new block
-    0x352128,
-    #0x352148, 0x352149, 0x352169, 0x352194, 0x3521DA, 0x352207, 0x352227, 0x352247, 0x35227D, 0x3522E1, 0x3522EB, 0x352317, 0x352336, 0x352373, 0x35238F, 0x3523AC,
-    0x35816D,
-    0x358271,
-    0x358916,
-    0x3589D5,
-    0x358AC6,
-    0x358B57,
-    0x358BEC,
-    0x35C761,
-    0x35C992,
-    0x35ECA2,
-    0x3A6000,
-]
-
 @dataclass
-class Bank:
-    pointer_table_start: int | None
-    pointer_table_end: int | None
-    start: int
-    end: int
+class StaticPointer:
+    """Defines a pointer that must remain at a fixed address in the ROM.
+
+    These are the entry points for battle animation scripts. Each entry generates
+    one script file with expected_beginning set to this address.
+    """
+    address: int
+    is_oq: bool  # True if this is an object queue (pointer table), False if standalone script
+    max_length: int | None = None  # Max script size (None = computed from next address)
+    name: str | None = None  # Descriptive name for the script file
+    oq_ptr_count: int | None = None  # Number of pointers in OQ (for determining OQ size)
 
     @property
-    def has_pointers(self) -> bool:
-        return (
-            self.pointer_table_end is not None and self.pointer_table_start is not None
-        )
+    def bank(self) -> str:
+        """Return the bank ID (02, 35, or 3A) for this pointer."""
+        return f"{(self.address >> 16):02X}"
 
-    def __init__(
-        self,
-        start: int,
-        end: int,
-        pointer_table_start: int | None = None,
-        pointer_table_end: int | None = None,
-    ):
-        self.pointer_table_start = pointer_table_start
-        self.pointer_table_end = pointer_table_end
-        self.start = start
-        self.end = end
+# POINTER_MUST_REMAIN_STATIC defines all script entry points
+# Each entry becomes a separate script file in the disassembler output
+# Script sizes are bounded by the next address in the same bank
+# oq_ptr_count values are calculated as len(range(ptr_table_start, ptr_table_end, 2)) from original banks dict
+POINTER_MUST_REMAIN_STATIC: list[StaticPointer] = [
+    # Bank 0x02
+    # flower_bonus: range(0x02F455, 0x02F460, 2) = 6 pointers
+    StaticPointer(0x02F455, True, None, "flower_bonus_oq", 6),
+    StaticPointer(0x02F4BF, False, None, "toad_tutorial"),
 
-    def __str__(self):
-        return "Bank(start=0x%06X, end=0x%06X, pointer_table_start=%s, pointer_table_end=%s)" % (
-            self.start,
-            self.end,
-            "0x%06X" % self.pointer_table_start
-            if self.pointer_table_start is not None
-            else "None",
-            "0x%06X" % self.pointer_table_end
-            if self.pointer_table_end is not None
-            else "None",
-        )
+    # Bank 0x35 - Ally and Monster behaviours
+    StaticPointer(0x350000, True, 0x202, "ally_behaviour_root_oq", 1),  # 1 ptr to 6-ptr OQ, traced scripts extend to 0x350202
+    StaticPointer(0x350202, True, None, "monster_behaviour_ptrs", 256),  # 256 ptrs, each to 6-ptr behaviour OQ
+    # monster_spells: range(0x351026, 0x35107F, 2) = 45 pointers
+    StaticPointer(0x351026, True, None, "monster_spell_ptrs", 45),
+    # monster_attacks: range(0x351493, 0x351594, 2) = 129 pointers
+    StaticPointer(0x351493, True, None, "monster_attack_ptrs", 129),
+    # monster_entrances: range(0x352128, 0x352147, 2) = 16 pointers
+    StaticPointer(0x352128, True, None, "monster_entrance_oq", 16),
+    # weapon_misses: range(0x35816D, 0x3581B6, 2) = 37 pointers
+    StaticPointer(0x35816D, True, None, "weapon_miss_oq", 37),
+    # weapon_sounds: range(0x358271, 0x3582BA, 2) = 37 pointers
+    StaticPointer(0x358271, True, None, "weapon_sound_oq", 37),
+    StaticPointer(0x358916, False, None, "weapon_wrapper_mario"),
+    StaticPointer(0x3589D5, False, None, "weapon_wrapper_toadstool"),
+    StaticPointer(0x358AC6, False, None, "weapon_wrapper_bowser"),
+    StaticPointer(0x358B57, False, None, "weapon_wrapper_geno"),
+    StaticPointer(0x358BEC, False, None, "weapon_wrapper_mallow"),
+    # items: range(0x35C761, 0x35C802, 2) = 81 pointers
+    StaticPointer(0x35C761, True, None, "item_oq", 81),
+    # ally_spells: range(0x35C992, 0x35C9C7, 2) = 27 pointers
+    StaticPointer(0x35C992, True, None, "ally_spell_oq", 27),
+    # weapons: range(0x35ECA2, 0x35ECE9, 2) = 36 pointers
+    StaticPointer(0x35ECA2, True, None, "weapon_animation_oq", 36),
 
-banks: dict[str, Bank] = {
+    # Bank 0x3A
+    StaticPointer(0x3A6000, True, None, "battle_events_root_oq"),  # Variable-length, determines own size
+]
 
-    "flower_bonus": Bank(0x02F461, 0x02F4A0, 0x02F455, 0x02F460),
-    # gap
-    "toad_tutorial": Bank(0x02F4BF, 0x02F50D),
-    "ally_behaviours": Bank(0x350462, 0x35054D),
-    "monster_behaviour_pointers": Bank(0x350202, 0x350261),
-    # Don't include the monster behaviour pointer table at 0x350202, that's controlled in the enemy class
-    "monster_behaviours_1": Bank(0x3505C6, 0x350897),
-    "monster_behaviours_2": Bank(0x3508A4, 0x350984),
-    "monster_behaviours_3": Bank(0x35099E, 0x350AD2),
-    "monster_behaviours_4": Bank(0x350AF7, 0x350CF1),
-    "monster_behaviours_5": Bank(0x350D22, 0x350E5F),
-    "monster_behaviours_6": Bank(0x350E84, 0x351025),
-    "monster_spells": Bank(0x351080, 0x351492, 0x351026, 0x35107F),
-    "monster_attacks": Bank(0x351595, 0x352127, 0x351493, 0x351594),
-    "monster_entrances": Bank(0x352148, 0x3523C3, 0x352128, 0x352147),
-    # gap
-    "weapon_misses": Bank(0x3581B7, 0x35826E, 0x35816D, 0x3581B6),
-    # gap (2 bytes, ptr table header)
-    "weapon_sounds": Bank(0x3582BB, 0x35831C, 0x358271, 0x3582BA),
-    # gap
-    "weapon_wrapper_mario": Bank(0x358916, 0x358935),
-    # gap
-    "weapon_wrapper_toadstool": Bank(0x3589D5, 0x358A07),
-    # gap
-    "weapon_wrapper_bowser": Bank(0x358AC6, 0x358A9A),
-    # gap
-    "weapon_wrapper_geno": Bank(0x358B57, 0x358B8C),
-    # gap
-    "weapon_wrapper_mallow": Bank(0x358BEC, 0x358C2A),
-    # gap
-    "items": Bank(0x35C803, 0x35C967, 0x35C761, 0x35C802),
-    # gap
-    "ally_spells": Bank(
-        0x35C9C8, 0x35CAAB, 0x35C992, 0x35C9C7
-    ),  # note: adjusted due to clone spells!
-    # gap
-    "weapons": Bank(0x35ECEA, 0x35F111, 0x35ECA2, 0x35ECE9),
-    "battle_events": Bank(0x3A6000, 0x3A705C),
+def compute_script_boundaries() -> dict[int, int | None]:
+    """Return dict mapping address to max_length for each script.
 
-    #"battle_events": bank(0x3a60d0, 0x3a705c, 0x3a6004, 0x3a60cf),
-}
+    For entries with explicit max_length, use that value.
+    For others, compute the distance to the next address in the same bank.
+    Cross-bank or last entries get None (determined by tracing).
+    """
+    sorted_ptrs = sorted(POINTER_MUST_REMAIN_STATIC, key=lambda p: p.address)
+    boundaries: dict[int, int | None] = {}
+    for i, ptr in enumerate(sorted_ptrs):
+        if ptr.max_length is not None:
+            boundaries[ptr.address] = ptr.max_length
+        elif i + 1 < len(sorted_ptrs):
+            next_addr = sorted_ptrs[i + 1].address
+            if (next_addr >> 16) == (ptr.address >> 16):  # Same bank
+                boundaries[ptr.address] = next_addr - ptr.address
+            else:
+                boundaries[ptr.address] = None  # Cross-bank
+        else:
+            boundaries[ptr.address] = None  # Last entry
+    return boundaries
+
+def get_static_pointer_addresses() -> list[int]:
+    """Return list of all addresses in POINTER_MUST_REMAIN_STATIC.
+
+    Used for block boundary detection (replaces force_contiguous_block_start).
+    """
+    return [p.address for p in POINTER_MUST_REMAIN_STATIC]
+
+def get_static_pointer_by_address(address: int) -> StaticPointer | None:
+    """Look up a StaticPointer by its address."""
+    for p in POINTER_MUST_REMAIN_STATIC:
+        if p.address == address:
+            return p
+    return None
+
+# Known unused gaps that should be included in script sizes when merging blocks
+# These are ranges of bytes that are unused but should be included in the script file
+KNOWN_UNUSED_GAPS = [
+    (0x350452, 0x350462),  # 16 bytes of unused code in ally/monster behaviours
+]
+
+def is_in_known_gap(addr: int) -> bool:
+    """Check if an address is within a known unused gap."""
+    for start, end in KNOWN_UNUSED_GAPS:
+        if start <= addr < end:
+            return True
+    return False
 
 BATTLE_EVENT_INDEXES_START_AT = 0x3A6004
 UNKNOWN_BATTLE_EVENT_SIBLING_STARTS_AT = 0x3AECF7
@@ -762,16 +764,6 @@ INIT_AMEM: AMEM = AMEM([[0]] * 16)
 BATTLE_EVENTS_WITH_QUEUE_POINTER_TABLE = [22]
 BATTLE_EVENTS_WITH_DOUBLE_QUEUE_POINTER_TABLE = [70, 85]
 
-def get_third_byte_as_string(bank_name: str) -> str:
-    if "subroutine" in bank_name:
-        return bank_name[-6:-4].upper()
-    elif bank_name == "battle_events":
-        return "3A"
-    elif bank_name in ["toad_tutorial", "flower_bonus"]:
-        return "02"
-    else:
-        return "35"
-
 BATTLE_EVENTS_ROOT_LABEL = "battle_events_root"
 
 def hash_amem_for_dedup(amem: AMEM, important_indexes: list[int]) -> tuple:
@@ -849,8 +841,11 @@ class Command(BaseCommand):
         
 
         collective_data: dict[str, list[list[ProtoCommand]]] = {"35": [], "3A": [], "02": []}
-        
+
         references: dict[int, list[str]] = {}
+
+        # Cache static pointer addresses for performance (avoid recomputing in loops)
+        static_pointer_addresses_cache = set(get_static_pointer_addresses())
 
         # Load data from config input files
         loaded_arrays = load_arrays_from_input_files()
@@ -867,6 +862,10 @@ class Command(BaseCommand):
             args = {}
             cls = None
             include_argnames = True
+
+            # Skip filler commands for unused gaps (they're only for size calculation)
+            if command.id.startswith("unused_gap_"):
+                return None, {}, False, False
 
             if command.oq:
                 args["destinations"] = '[%s]' %  ", ".join(f"\"{a}\"" for a in command.parsed_data)
@@ -2343,180 +2342,132 @@ class Command(BaseCommand):
             ],
         }
 
-        for bank_id, blocks in banks.items():
-            #print(f'processing bank: {bank_id}')
-            third_byte_as_string = get_third_byte_as_string(bank_id)
-            reference_label = bank_id
+        # Map StaticPointer names to SCRIPT_NAMES keys for labeling
+        STATIC_POINTER_TO_SCRIPT_NAMES: dict[str, str] = {
+            "weapon_miss_oq": "weapon_misses",
+            "weapon_sound_oq": "weapon_sounds",
+            "item_oq": "items",
+            "ally_spell_oq": "ally_spells",
+            "weapon_animation_oq": "weapons",
+            "monster_spell_ptrs": "monster_spells",
+            "monster_attack_ptrs": "monster_attacks",
+            "monster_entrance_oq": "monster_entrances",
+            "flower_bonus_oq": "flower_bonus",
+        }
 
-            bank_as_upper_byte = blocks.start & 0xFF0000
-
-            bank_pointer_addresses: list[int] = []
-            script_sizes: list[int] = []
+        # Process all ROM banks using POINTER_MUST_REMAIN_STATIC as the source of truth
+        for rom_bank_id in ["02", "35", "3A"]:
+            third_byte_as_string = rom_bank_id  # Keep uppercase to match known_addresses_covered keys
+            bank_as_upper_byte = int(rom_bank_id, 16) << 16
 
             # this is the list of every address in the animation code that can be touched, recursively, from a top-level pointer
             branches: list[Addr] = []
             amem: AMEM = deepcopy(INIT_AMEM)
 
-            # to start, all of the bank's pointers (or just the bank start, if there are no pointers) need to be added to the branch array.
-            # treat pointers as an OQ because that's pretty much what it is
-            if blocks.has_pointers and bank_id not in ["battle_events"]:
-                oq_starts.append(
-                    OQRef(
-                        bank_as_upper_byte + blocks.pointer_table_start,
-                        deepcopy(amem),
-                        [0],
-                    )
-                )
-                for pointer_table_index, pointer in enumerate(
-                    range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be none if has_pointers is true
-                ):
-                    three_byte_pointer: int = (
-                        shortify(rom, pointer) + bank_as_upper_byte
-                    )
-                    # this is a string that tells us what the script does, i.e. froggiestick miss, ice bomb, etc.
-                    ref_label = "%s %s" % (
-                        reference_label,
-                        (
-                            str(pointer_table_index)
-                            if pointer_table_index >= len(SCRIPT_NAMES[bank_id])
-                            else SCRIPT_NAMES[bank_id][pointer_table_index]
-                        ),
-                    )
-                    bank_pointer_addresses.append(three_byte_pointer)
-                    #print(f"    adding {bank_id} pointer {pointer_table_index} 0x{bank_as_upper_byte + pointer:06x}")
-                    branches.append(
-                        Addr(three_byte_pointer, deepcopy(amem), ref_label, [])
-                    )
-                    known_addresses_covered[third_byte_as_string][three_byte_pointer & 0xFFFF] = True
-                    known_addresses_covered[third_byte_as_string][(three_byte_pointer & 0xFFFF) + 1] = True
-                    if third_byte_as_string == "35" and ((three_byte_pointer & 0xFFFF == 0x0452) or ((three_byte_pointer & 0xFFFF) + 1 == 0x0452)):
-                        raise("2")
-            elif bank_id == "monster_behaviour_pointers":
-                o = OQRef(
-                        blocks.start,
-                        deepcopy(INIT_AMEM),
-                        [0],
-                    )
-                o.length = 512
-                oq_starts.append(
-                    deepcopy(o)
-                )
-                for i in range(0, 512, 2):
-                    mb_offset = shortify(rom, blocks.start + i) + 0x350000
-                    o = OQRef(
-                            mb_offset,
-                            deepcopy(INIT_AMEM),
-                            [0],
-                            label=f'monster_{i//2}_sprite_behaviour'
-                        )
-                    o.length = 12
-                    oq_starts.append(
-                        deepcopy(o)
-                    )
-                    branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), "monster_behaviour_by_id", []))
-                for i in range(0x0202, 0x0202+512):
-                    known_addresses_covered["35"][i] = True
-            elif bank_id == "ally_behaviours":
-                o = OQRef(
-                        0x350000,
-                        deepcopy(INIT_AMEM),
-                        [0],
-                    )
-                o.length = 2
-                oq_starts.append(
-                    deepcopy(o)
-                )
-                known_addresses_covered[third_byte_as_string][0] = True
-                known_addresses_covered[third_byte_as_string][1] = True
-                branches.append(Addr(0x350000, deepcopy(INIT_AMEM), "ally_behaviours_root", []))
-                top_level_ally_ptr = shortify(rom, 0x350000) + 0x350000
-                branches.append(Addr(top_level_ally_ptr, deepcopy(INIT_AMEM), "ally_behaviours_subroot", ["ally_behaviours_root"]))
-                o = OQRef(
-                        top_level_ally_ptr,
-                        deepcopy(INIT_AMEM),
-                        [0],
-                    )
-                o.length = 12
-                oq_starts.append(
-                    deepcopy(o)
-                )
-                for i in range(0, 12, 2):
-                    cursor = top_level_ally_ptr + i
-                    known_addresses_covered[third_byte_as_string][cursor & 0xFFFF] = True
-                    known_addresses_covered[third_byte_as_string][(cursor & 0xFFFF) + 1] = True
-                    #print(f"0x{cursor:06x}, {i}")
-                    a_offset = shortify(rom, cursor) + 0x350000
-                    #print(f"0x{a_offset:06x}, {i}")
-                    o = OQRef(
-                            a_offset,
-                            deepcopy(INIT_AMEM),
-                            [0],
-                        )
-                    o.length = 16
-                    oq_starts.append(
-                        deepcopy(o)
-                    )
-                    #print(o)
-                    #print(i // 2)
-                    branches.append(Addr(a_offset, deepcopy(INIT_AMEM), f"ally_behaviour_set_{i}", ["ally_behaviours_root", "ally_behaviours_subroot"]))
-                #print([f"0x{b.offset:06x}" for b in branches])
-                #print([f"0x{b.addr:06x}, {b.length if hasattr(b, "length") else None}" for b in oq_starts])
-                
-            elif bank_id == "battle_events":
-                tertiary_cursor = blocks.start
-                tertiary_cursor_short = tertiary_cursor & 0xFFFF
-                tertiary_end = 0x10000
-                while tertiary_cursor_short < tertiary_end:
-                    tertiary_points_to = shortify(rom, tertiary_cursor)
-                    known_addresses_covered[third_byte_as_string][tertiary_cursor & 0xFFFF] = True
-                    known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
-                    if tertiary_points_to < tertiary_end:
-                        tertiary_end = tertiary_points_to
-                    #print("    reading battle_events root iterator addr", f"0x{tertiary_cursor:06x}", "points to", f"0x{bank_as_upper_byte + tertiary_points_to:06x}")
-                    tertiary_cursor += 2
-                    tertiary_cursor_short = tertiary_cursor & 0xFFFF
-                    oq_idx_starts.append(
-                        OQRef(
-                            bank_as_upper_byte + tertiary_points_to,
-                            deepcopy(INIT_AMEM),
-                            [0],
-                        )
-                    )
-                    branches.append(Addr(bank_as_upper_byte + tertiary_points_to, deepcopy(INIT_AMEM), BATTLE_EVENTS_ROOT_LABEL, []))
-                # force 0x3a6000 to be processed as ptr table, do not treat it as a branch
-                o = OQRef(
-                        0x3A6000,
-                        deepcopy(INIT_AMEM),
-                        [0],
-                    )
-                o.length = 4
-                oq_idx_starts.append(
-                    o
-                )
-            else:
-                #print(f"    adding {bank_id} 0x{blocks.start:06x}")
-                branches.append(Addr(blocks.start, deepcopy(INIT_AMEM), bank_id, []))
-                
+            # Get all static pointers for this bank
+            bank_static_pointers = [p for p in POINTER_MUST_REMAIN_STATIC if p.bank.upper() == rom_bank_id.upper()]
 
-            # sprite behaviour OQs need to be included
-            if third_byte_as_string == '35':
+            for static_ptr in bank_static_pointers:
+                ptr_addr = static_ptr.address
+                reference_label = static_ptr.name or f"script_0x{ptr_addr:06X}"
+
+                if static_ptr.is_oq:
+                    # Special handling for specific pointer types
+                    if static_ptr.name == "ally_behaviour_root_oq":
+                        # 0x350000 - ally behaviour root with nested OQs
+                        o = OQRef(0x350000, deepcopy(INIT_AMEM), [0])
+                        o.length = 2
+                        oq_starts.append(deepcopy(o))
+                        known_addresses_covered[third_byte_as_string][0] = True
+                        known_addresses_covered[third_byte_as_string][1] = True
+                        branches.append(Addr(0x350000, deepcopy(INIT_AMEM), "ally_behaviours_root", []))
+                        top_level_ally_ptr = shortify(rom, 0x350000) + 0x350000
+                        branches.append(Addr(top_level_ally_ptr, deepcopy(INIT_AMEM), "ally_behaviours_subroot", ["ally_behaviours_root"]))
+                        o = OQRef(top_level_ally_ptr, deepcopy(INIT_AMEM), [0])
+                        o.length = 12
+                        oq_starts.append(deepcopy(o))
+                        for i in range(0, 12, 2):
+                            cursor = top_level_ally_ptr + i
+                            known_addresses_covered[third_byte_as_string][cursor & 0xFFFF] = True
+                            known_addresses_covered[third_byte_as_string][(cursor & 0xFFFF) + 1] = True
+                            a_offset = shortify(rom, cursor) + 0x350000
+                            o = OQRef(a_offset, deepcopy(INIT_AMEM), [0])
+                            o.length = 16
+                            oq_starts.append(deepcopy(o))
+                            branches.append(Addr(a_offset, deepcopy(INIT_AMEM), f"ally_behaviour_set_{i}", ["ally_behaviours_root", "ally_behaviours_subroot"]))
+
+                    elif static_ptr.name == "monster_behaviour_ptrs":
+                        # 0x350202 - 256 monster behaviour pointers, each to a 6-ptr OQ
+                        o = OQRef(ptr_addr, deepcopy(INIT_AMEM), [0])
+                        o.length = 512
+                        oq_starts.append(deepcopy(o))
+                        for i in range(0, 512, 2):
+                            mb_offset = shortify(rom, ptr_addr + i) + 0x350000
+                            o = OQRef(mb_offset, deepcopy(INIT_AMEM), [0], label=f'monster_{i//2}_sprite_behaviour')
+                            o.length = 12
+                            oq_starts.append(deepcopy(o))
+                            branches.append(Addr(ptr_addr, deepcopy(INIT_AMEM), "monster_behaviour_by_id", []))
+                        for i in range(0x0202, 0x0202+512):
+                            known_addresses_covered["35"][i] = True
+
+                    elif static_ptr.name == "battle_events_root_oq":
+                        # 0x3A6000 - battle events with variable-length pointer table
+                        tertiary_cursor = ptr_addr
+                        tertiary_cursor_short = tertiary_cursor & 0xFFFF
+                        tertiary_end = 0x10000
+                        while tertiary_cursor_short < tertiary_end:
+                            tertiary_points_to = shortify(rom, tertiary_cursor)
+                            known_addresses_covered[third_byte_as_string][tertiary_cursor & 0xFFFF] = True
+                            known_addresses_covered[third_byte_as_string][(tertiary_cursor & 0xFFFF) + 1] = True
+                            if tertiary_points_to < tertiary_end:
+                                tertiary_end = tertiary_points_to
+                            tertiary_cursor += 2
+                            tertiary_cursor_short = tertiary_cursor & 0xFFFF
+                            oq_idx_starts.append(OQRef(bank_as_upper_byte + tertiary_points_to, deepcopy(INIT_AMEM), [0]))
+                            branches.append(Addr(bank_as_upper_byte + tertiary_points_to, deepcopy(INIT_AMEM), BATTLE_EVENTS_ROOT_LABEL, []))
+                        # force 0x3a6000 to be processed as ptr table
+                        o = OQRef(0x3A6000, deepcopy(INIT_AMEM), [0])
+                        o.length = 4
+                        oq_idx_starts.append(o)
+
+                    else:
+                        # Generic OQ pointer table
+                        o = OQRef(ptr_addr, deepcopy(amem), [0])
+                        if static_ptr.oq_ptr_count:
+                            ptr_table_size = static_ptr.oq_ptr_count * 2
+                            o.length = ptr_table_size
+                            # Mark pointer table bytes as covered
+                            for ptr_offset in range(ptr_table_size):
+                                known_addresses_covered[third_byte_as_string][(ptr_addr + ptr_offset) & 0xFFFF] = True
+                            # Add branches for each pointer
+                            script_names_key = STATIC_POINTER_TO_SCRIPT_NAMES.get(static_ptr.name or "", "")
+                            for pointer_table_index in range(static_ptr.oq_ptr_count):
+                                pointer_addr = ptr_addr + (pointer_table_index * 2)
+                                three_byte_pointer = shortify(rom, pointer_addr) + bank_as_upper_byte
+                                # Generate label
+                                if script_names_key and script_names_key in SCRIPT_NAMES and pointer_table_index < len(SCRIPT_NAMES[script_names_key]):
+                                    ref_label = f"{reference_label} {SCRIPT_NAMES[script_names_key][pointer_table_index]}"
+                                else:
+                                    ref_label = f"{reference_label} {pointer_table_index}"
+                                branches.append(Addr(three_byte_pointer, deepcopy(amem), ref_label, []))
+                                known_addresses_covered[third_byte_as_string][three_byte_pointer & 0xFFFF] = True
+                                known_addresses_covered[third_byte_as_string][(three_byte_pointer & 0xFFFF) + 1] = True
+                        oq_starts.append(o)
+                else:
+                    # Non-OQ entry - just add as a branch
+                    branches.append(Addr(ptr_addr, deepcopy(INIT_AMEM), reference_label, []))
+
+            # sprite behaviour OQs need to be included for bank 35
+            if rom_bank_id == "35":
                 for i, mb_offset in enumerate(monster_behaviour_oq_offsets):
-                    # Use descriptive name from monster_behaviour_names if available
                     label = monster_behaviour_names[i] if i < len(monster_behaviour_names) else f'sprite_behaviour_{i}'
-                    oq_starts.append(
-                        OQRef(
-                            mb_offset,
-                            deepcopy(INIT_AMEM),
-                            [0],
-                            label=label
-                        )
-                    )
+                    oq_starts.append(OQRef(mb_offset, deepcopy(INIT_AMEM), [0], label=label))
                     branches.append(Addr(mb_offset, deepcopy(INIT_AMEM), label, []))
             # now we're going to process every item in the branch array, adding any more branches we find from jumps, object queues, subroutines, etc.
             branch_index: int = 0
             this_branch = branches[branch_index]
             while True:
-                #print(f'    tracing branch index {branch_index}/{len(branches)} of {bank_id} (0x{this_branch.offset:06x}): {this_branch}')
+                #print(f'    tracing branch index {branch_index}/{len(branches)} of {rom_bank_id} (0x{this_branch.offset:06x}): {this_branch}')
                 # amem can control where the code branches to.
                 amem = deepcopy(this_branch.amem)
                 absolute_offset = this_branch.offset 
@@ -2635,7 +2586,7 @@ class Command(BaseCommand):
                                 i += 1
                                 length += 2
                                 # for monster behaviours, stop after exactly 6 pointers
-                                if (max_pointers is not None and i >= max_pointers) or temp_cursor_addr in force_contiguous_block_start or temp_cursor_addr in SPECIAL_CASE_BREAKS:
+                                if (max_pointers is not None and i >= max_pointers) or temp_cursor_addr in static_pointer_addresses_cache:
                                     end_found = True
                                     break
                                 if not (temp_cursor_addr_short < tbl_ends_at):
@@ -2742,17 +2693,9 @@ class Command(BaseCommand):
                         if command == bytearray([0,0,0,0,0,0,0,0,0]):
                             end_found = True
                             break
-                        # i have no idea why the branch array length is being compared to the script size length, but it worked before
-                        # here we're flagging each byte in the command as "used", as in we know some script definitely accesses it
-                        elif blocks.has_pointers and (branch_index < len(script_sizes)):
-                            for tok_output in range(
-                                cvr_range, cvr_range + length
-                            ):
-                                known_addresses_covered[third_byte_as_string][tok_output] = True
-                        else:
-                            for tok_output in range(cvr_range, cvr_range + length):
-                                known_addresses_covered[third_byte_as_string][tok_output] = True
-                                #print(f"{cvr_range:04x} command: {' '.join([f'{b:02x}' for b in command])}")
+                        # Flag each byte in the command as "used", as in we know some script definitely accesses it
+                        for tok_output in range(cvr_range, cvr_range + length):
+                            known_addresses_covered[third_byte_as_string][tok_output] = True
 
                         # if this is a command that changes amem $60-$6f, or could change them, we need to keep track of what its possible values could be in case an amem-based object queue comes up.
                         if opcode in [0x20, 0x21]:  # set amem 8 bit to...
@@ -2909,16 +2852,9 @@ class Command(BaseCommand):
                         # terminating conditions
                         if opcode in TERMINATING_OPCODES:
                             end_found = True
-                    
-                    if (
-                        branch_index < len(script_sizes)
-                        and (cursor + length >= absolute_offset + script_sizes[branch_index])
-                    ):
-                        end_found = True
-                    elif cursor + length in SPECIAL_CASE_BREAKS:
-                        #print(f"        hit special case break at 0x{cursor + length:06x}")
-                        end_found = True
-                    elif 0x3A0000 <= cursor + length < 0x3A60D0:
+
+                    # Battle events region termination
+                    if 0x3A0000 <= cursor + length < 0x3A60D0:
                         end_found = True
 
                     # if not terminated, move on to the next command
@@ -2954,8 +2890,8 @@ class Command(BaseCommand):
                 # value: used or not
                 absolute_offset = upper + index
 
-                # check if we need to break the block at a pointer table start
-                if started is not None and value and absolute_offset in force_contiguous_block_start:
+                # check if we need to break the block at a static pointer address
+                if started is not None and value and absolute_offset in static_pointer_addresses_cache:
                     # end the current block and start a new one
                     used[bank_id].append(ContiguousBlock(started + upper, rom[(upper+started):(upper+index)]))
                     started = index  # Start new block at current position
@@ -3020,7 +2956,7 @@ class Command(BaseCommand):
         # associate jump pointers with command ids
         for bank_id, script in collective_data.items():
 
-            third_byte_as_string = get_third_byte_as_string(bank_id)
+            third_byte_as_string = bank_id.lower()
 
             # when reassembling battle scripts: before each script body, need to insert 2 bytes
             # that are a pointer to its own start
@@ -3085,44 +3021,87 @@ class Command(BaseCommand):
 
                         script[index][cmd_index].raw_data = command.raw_data
         
-        # do the same but for pointer tables
-        # treat pointers as oqs with no amem
-        for bank_id, blocks in banks.items():
-            if not blocks.has_pointers:
-                continue
-            this_script: list[ProtoCommand] = []
-            makeshift_oq = ProtoCommand(f"{bank_id}_pointer_table", blocks.pointer_table_start, bytearray(), True, blocks.pointer_table_end - blocks.pointer_table_start + 1)  # type: ignore - these can never be none if has_pointers is true
-            third_byte_as_string = get_third_byte_as_string(bank_id)
-            for pointer_table_index, pointer in enumerate(
-                range(blocks.pointer_table_start, blocks.pointer_table_end, 2) # type: ignore - these can never be none if has_pointers is true
-            ):
-                three_byte_pointer: int = (
-                    shortify(rom, pointer) + (int(third_byte_as_string, 16) << 16)
-                )
-                found = None
-                for search_script in collective_data[third_byte_as_string]:
-                    for search_command in search_script:
-                        if search_command.addr == three_byte_pointer:
-                            found = search_command.id
-                            break
-                    if found is not None:
-                        break
-                if found is not None:
-                    jump_pointers.append(found)
-                    makeshift_oq.parsed_data.append(found)
-                else:
-                    raise Exception("couldn't find pointer target 0x%06x" % three_byte_pointer)
-            this_script.append(makeshift_oq)
-            collective_data[third_byte_as_string].insert(0, this_script)
+        # Deduplicate scripts by starting address and enforce boundaries
+        # based on POINTER_MUST_REMAIN_STATIC
+        script_boundaries = compute_script_boundaries()
+        static_addresses = static_pointer_addresses_cache  # Use cached set
 
-        # todo: comprehensive parser seems to be working
-        # now we need to re-do how the output files are written
-        # also need to adjust how oq command classes work. idx type is just a pointer collection
+        for bank_id in collective_data.keys():
+            # Deduplicate: keep only the first script for each starting address
+            seen_addresses: set[int] = set()
+            deduped: list[list[ProtoCommand]] = []
+            for script in collective_data[bank_id]:
+                if script and script[0].addr not in seen_addresses:
+                    seen_addresses.add(script[0].addr)
+                    deduped.append(script)
+            collective_data[bank_id] = deduped
+
+            # Merge scripts that are separated by known unused gaps
+            # Sort scripts by starting address first
+            collective_data[bank_id].sort(key=lambda s: s[0].addr if s else 0)
+            merged_scripts: list[list[ProtoCommand]] = []
+            i = 0
+            while i < len(collective_data[bank_id]):
+                current_script = collective_data[bank_id][i]
+                if not current_script:
+                    i += 1
+                    continue
+
+                # Check if there's a known gap after this script
+                script_end = current_script[-1].addr + (current_script[-1].length or 0)
+                gap_found = None
+                for gap_start, gap_end in KNOWN_UNUSED_GAPS:
+                    if script_end == gap_start:
+                        gap_found = (gap_start, gap_end)
+                        break
+
+                if gap_found and i + 1 < len(collective_data[bank_id]):
+                    next_script = collective_data[bank_id][i + 1]
+                    if next_script and next_script[0].addr == gap_found[1]:
+                        # Merge: current_script + filler for gap + next_script
+                        gap_start, gap_end = gap_found
+                        gap_size = gap_end - gap_start
+                        filler = ProtoCommand(
+                            f"unused_gap_0x{gap_start:06X}",
+                            gap_start,
+                            rom[gap_start:gap_end],
+                            oq=False,
+                            length=gap_size
+                        )
+                        merged = current_script + [filler] + next_script
+                        merged_scripts.append(merged)
+                        i += 2  # Skip both scripts
+                        continue
+
+                merged_scripts.append(current_script)
+                i += 1
+            collective_data[bank_id] = merged_scripts
+
+            # Enforce script size limits based on boundaries
+            for script in collective_data[bank_id]:
+                if not script:
+                    continue
+                script_start = script[0].addr
+                # Find the next static pointer in the same bank
+                same_bank_addrs = sorted([a for a in static_addresses if (a >> 16) == (script_start >> 16) and a > script_start])
+                if same_bank_addrs:
+                    max_end = same_bank_addrs[0]
+                    # Truncate script if it extends beyond the boundary
+                    truncated_script: list[ProtoCommand] = []
+                    current_end = script_start
+                    for cmd in script:
+                        cmd_end = cmd.addr + (cmd.length or 0)
+                        if cmd_end <= max_end:
+                            truncated_script.append(cmd)
+                            current_end = cmd_end
+                        else:
+                            # Truncate at boundary
+                            break
+                    script.clear()
+                    script.extend(truncated_script)
 
         for bank_id, blocks in collective_data.items():
             #print(f"exporting {bank_id}...")
-
-            third_byte_as_string = get_third_byte_as_string(bank_id)
 
             export_dest = f"{output_path}/{bank_id}"
             os.makedirs(export_dest, exist_ok=True)

@@ -727,15 +727,10 @@ class SpriteCollection:
             animation_pointers.extend([anim_ptr & 0xFF, (anim_ptr >> 8) & 0xFF, (anim_ptr >> 16) & 0xFF])
 
         anim_tile_ranges: list[tuple[int, bytearray]] = []
-        anim_data = bytearray([])
         for bank_index, b in enumerate(self.animation_data_banks):
             self.animation_data_banks[bank_index].tiles += bytearray([0] * (b.end - b.start - len(b.tiles)))
-            if b.end <= 0x280000:
-                anim_data += self.animation_data_banks[bank_index].tiles
-                if b.end == 0x280000:
-                    anim_tile_ranges.append((0x259000, anim_data))
-            else:
-                anim_tile_ranges.append((b.start, self.animation_data_banks[bank_index].tiles))
+            # Write each bank to its own address
+            anim_tile_ranges.append((b.start, self.animation_data_banks[bank_index].tiles))
 
         sprite_data += bytearray([0] * (SPRITE_PTRS_END - SPRITE_PTRS_START - len(sprite_data)))
         image_data += bytearray([0] * (IMAGE_PTRS_END - IMAGE_PTRS_START - len(image_data)))
@@ -879,8 +874,6 @@ class SpriteCollection:
         free_tiles -= 64
         if free_tiles < 0:
             free_tiles = 0
-
-        output_tiles = bytearray([])
 
         complete_sprites: list[Sprite] = []
         complete_images: list[ImagePack] = []
@@ -1041,12 +1034,8 @@ class SpriteCollection:
         for bank_index, b in enumerate(self.uncompressed_tile_banks):
             final_offset = b.start + len(b.tiles)
             self.uncompressed_tile_banks[bank_index].tiles += bytearray([0] * (b.end - b.start - len(b.tiles)))
-            if b.end <= UNCOMPRESSED_GFX_END:
-                output_tiles += self.uncompressed_tile_banks[bank_index].tiles
-                if b.end == UNCOMPRESSED_GFX_END:
-                    output_tile_ranges.append((0x280000, output_tiles))
-            else:
-                output_tile_ranges.append((b.start, self.uncompressed_tile_banks[bank_index].tiles))
+            # Write each bank to its own address
+            output_tile_ranges.append((b.start, self.uncompressed_tile_banks[bank_index].tiles))
         
         if len(complete_images) > 512:
             raise ValueError("too many images: %i" % len(complete_images))
