@@ -403,6 +403,36 @@ class Item:
     def render(self) -> dict[int, bytearray]:
         """Get data for this item in `{0x123456: bytearray([0x00])}` format"""
         patch: dict[int, bytearray] = {}
+
+        # name (15 bytes: optional prefix byte + name + padding with 0x20)
+        name_addr = ITEMS_BASE_NAME_ADDRESS + (self.item_id * 15)
+        name_bytes = bytearray()
+
+        # add prefix byte if present
+        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
+            name_bytes.append(self._prefix)
+
+        # encode the name
+        # special character mapping: ' (closing single quote) -> 0x3A
+        if self._item_name:
+            max_name_length = 15 - len(name_bytes)
+            encoded_name = bytearray()
+            for char in self._item_name:
+                if char == "’" or char == "'":
+                    encoded_name.append(0x7E)
+                else:
+                    encoded_name.extend(char.encode('latin-1'))
+            name_bytes.extend(encoded_name[:max_name_length])
+
+        # pad with spaces (0x20) to fill all 15 bytes
+        while len(name_bytes) < 15:
+            name_bytes.append(0x20)
+        patch[name_addr] = name_bytes
+        
+        # price
+        price_addr = ITEMS_BASE_PRICE_ADDRESS + (self.item_id * 2)
+        patch[price_addr] = ByteField(self.price, num_bytes=2).as_bytes()
+
         if self.price == 0:
             return patch
         base_addr = ITEMS_BASE_ADDRESS + (self.item_id * 18)
@@ -479,35 +509,6 @@ class Item:
         data += ByteField(0x04 if self.hide_damage else 0x00).as_bytes()
 
         patch[base_addr] = data
-
-        # price
-        price_addr = ITEMS_BASE_PRICE_ADDRESS + (self.item_id * 2)
-        patch[price_addr] = ByteField(self.price, num_bytes=2).as_bytes()
-
-        # name (15 bytes: optional prefix byte + name + padding with 0x20)
-        name_addr = ITEMS_BASE_NAME_ADDRESS + (self.item_id * 15)
-        name_bytes = bytearray()
-
-        # add prefix byte if present
-        if self._prefix is not None and self._prefix != ItemPrefix.NONE:
-            name_bytes.append(self._prefix)
-
-        # encode the name
-        # special character mapping: ' (closing single quote) -> 0x3A
-        if self._item_name:
-            max_name_length = 15 - len(name_bytes)
-            encoded_name = bytearray()
-            for char in self._item_name:
-                if char == "’" or char == "'":
-                    encoded_name.append(0x7E)
-                else:
-                    encoded_name.extend(char.encode('latin-1'))
-            name_bytes.extend(encoded_name[:max_name_length])
-
-        # pad with spaces (0x20) to fill all 15 bytes
-        while len(name_bytes) < 15:
-            name_bytes.append(0x20)
-        patch[name_addr] = name_bytes
 
         return patch
 

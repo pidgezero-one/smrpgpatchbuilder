@@ -1436,7 +1436,7 @@ class Command(BaseCommand):
                 include_argnames = False
                 args["steps"] = str(cmdargs[0])
             elif cmd["command"] == "shift_z_20_steps":
-                cls = "A_ShiftZUp20Steps"
+                cls = "A_WalkF20Steps"
             elif cmd["command"] == "shift_z_up_steps":
                 cls = "A_ShiftZUpSteps"
                 include_argnames = False
