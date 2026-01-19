@@ -784,13 +784,29 @@ class SpriteCollection:
         unique_tiles_length = 0
 
         def place_bytes(these_bytes: bytearray, identifier: str = "unknown", remaining_items: list[tuple[str, int]] | None = None) -> int:
-            # find bank with most space
+            # The SNES reads graphics data in blocks, and some ROM editors (like LAZYSHELL)
+            # read 0x4000 bytes for each sprite graphics block. To prevent corruption from
+            # cross-bank reads, ensure at least 0x4000 bytes remain after placement.
+            GRAPHICS_READ_SIZE = 0x4000
+
+            # find bank with most space that can accommodate data + buffer
             highest_space: int = 0
             index: int = 0
             for b_index, b in enumerate(self.uncompressed_tile_banks):
-                if highest_space < b.remaining_space and b.remaining_space >= len(these_bytes):
-                    highest_space = b.remaining_space
-                    index = b_index
+                total_space_needed = len(these_bytes) + GRAPHICS_READ_SIZE
+                if b.remaining_space >= total_space_needed:
+                    if highest_space < b.remaining_space:
+                        highest_space = b.remaining_space
+                        index = b_index
+
+            # If no bank can accommodate data + buffer, fall back to largest available bank
+            if highest_space == 0:
+                for b_index, b in enumerate(self.uncompressed_tile_banks):
+                    if b.remaining_space >= len(these_bytes):
+                        if highest_space < b.remaining_space:
+                            highest_space = b.remaining_space
+                            index = b_index
+
             if len(these_bytes) > self.uncompressed_tile_banks[index].remaining_space:
                 # Build detailed error message
                 error_lines = [
