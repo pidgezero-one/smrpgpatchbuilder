@@ -298,6 +298,13 @@ class RoomCollection:
         clone_groups = self._collect_clone_group_requirements()
         unique_npcs, clone_group_mapping = self._build_sequential_placement(clone_groups)
 
+        # Verify NPC count doesn't exceed maximum
+        if len(unique_npcs) > 1462:
+            raise ValueError(
+                f"Too many unique NPCs: {len(unique_npcs)} exceeds maximum of 1462. "
+                f"Reduce the number of unique NPC variants across all rooms."
+            )
+
         # Build partition table
         partitions, room_to_partition_index = self._build_partition_table()
 

@@ -101,7 +101,8 @@ class Packet:
 
     def render(self) -> bytearray:
         output = bytearray()
-        output.append(((self.sprite_id - 0xC0) & 0x3F) + (self.unknown_bytes[0] << 6))
+        # Sprite ID uses all 8 bits (bits 6-7 are also stored separately as b0 in LAZYSHELL)
+        output.append(self.sprite_id & 0xFF)
         output.append(self.unknown_bytes[1] + (self.unknown_bytes[2] << 3) + (self.unknown_bytes[3] << 5))
         output.append(self.unknown_bytes[4] + (self.unknown_bits[0] << 2) + (self.unknown_bits[1] << 3) + (self.unknown_bits[2] << 4) + (self.shadow << 5) + (self.unknown_bytes[5] << 6))
         output.append(self.action_script_id & 0xFF)

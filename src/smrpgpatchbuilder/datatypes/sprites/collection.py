@@ -151,13 +151,34 @@ class _SpriteRawDataBankCollection(list[_SpriteRawDataBank]):
         that currently has the most empty space.\n
         It is a good idea to use this in a function that places
         raw data in order from longest to shortest."""
-        # find bank with most space
+        # LAZYSHELL reads 0x4000 bytes for each sprite graphics block.
+        # To prevent corruption from cross-bank reads, we must ensure that
+        # the entire 0x4000-byte read stays within the same bank.
+        # This means we need at least 0x4000 bytes remaining after placement.
+
+        GRAPHICS_READ_SIZE = 0x4000
+
+        # find bank with most space that can accommodate the data + buffer safely
         highest_space = 0
         index = 0
         for bank_index, bank in enumerate(self):
-            if highest_space < bank.remaining_space:
-                highest_space = bank.remaining_space
-                index = bank_index
+            # Check if this bank can accommodate data + full graphics read buffer
+            total_space_needed = len(these_bytes) + GRAPHICS_READ_SIZE
+
+            if bank.remaining_space >= total_space_needed:
+                if highest_space < bank.remaining_space:
+                    highest_space = bank.remaining_space
+                    index = bank_index
+
+        # If no bank can accommodate data + buffer, fall back to largest available bank
+        # (this maintains existing behavior if strict buffer requirement can't be met)
+        if highest_space == 0:
+            for bank_index, bank in enumerate(self):
+                if bank.remaining_space >= len(these_bytes):
+                    if highest_space < bank.remaining_space:
+                        highest_space = bank.remaining_space
+                        index = bank_index
+
         if len(these_bytes) > self[index].remaining_space:
             raise ScriptBankTooLongException(
                 "could not place bytes into a bank with space"
