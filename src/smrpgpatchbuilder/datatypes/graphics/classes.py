@@ -1074,7 +1074,30 @@ class SpriteCollection:
 
     def render(self, whitespace: bool = False) -> list[tuple[int, bytearray]]:
         sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace)
-        return [
+
+        # Zero out all sprite data ranges before writing to prevent leftover data
+        zero_ranges = []
+
+        # Zero sprite data region
+        sprite_data_size = len(sprite_data)
+        zero_ranges.append((self.sprite_data_begins, bytearray(sprite_data_size)))
+
+        # Zero image and animation data region
+        image_animation_size = len(image_data) + len(animation_pointers)
+        zero_ranges.append((self.image_and_animation_data_begins, bytearray(image_animation_size)))
+
+        # Zero all animation data banks
+        for bank in self.animation_data_banks:
+            bank_size = bank.end - bank.start
+            zero_ranges.append((bank.start, bytearray(bank_size)))
+
+        # Zero all uncompressed tile banks
+        for bank in self.uncompressed_tile_banks:
+            bank_size = bank.end - bank.start
+            zero_ranges.append((bank.start, bytearray(bank_size)))
+
+        # Return zeros first, then actual data (so data overwrites zeros)
+        return zero_ranges + [
             (self.sprite_data_begins, sprite_data),
             (self.image_and_animation_data_begins, image_data + animation_pointers),
         ] + animation_data + tiles
