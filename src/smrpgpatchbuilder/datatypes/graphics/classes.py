@@ -164,9 +164,10 @@ def random_tile_id() -> str:
     return ''.join(random.choices(alphabet, k=8))
 
 class AnimationBank:
-    start = 0
-    end = 0
-    tiles = bytearray([])
+    # Remove class-level mutable defaults to avoid sharing across instances
+    start: int
+    end: int
+    tiles: bytearray
 
     @property
     def remaining_space(self) -> int:
@@ -739,6 +740,13 @@ class SpriteCollection:
         return bytearray(sprite_data), bytearray(image_data), bytearray(animation_pointers), anim_tile_ranges, output_tile_ranges
 
     def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
+        # CRITICAL: Reset all banks before assembling to prevent data from previous runs
+        for bank in self.uncompressed_tile_banks:
+            bank.tiles = bytearray([])
+
+        for bank in self.animation_data_banks:
+            bank.tiles = bytearray([])
+
         tile_groups: dict[str, TileGroup] = {}
         wip_sprites: list[WIPSprite] = []
 
@@ -789,6 +797,10 @@ class SpriteCollection:
             # cross-bank reads, ensure at least 0x4000 bytes remain after placement.
             GRAPHICS_READ_SIZE = 0x4000
 
+            # CRITICAL: ImagePacket pointers are masked with 0xFFF0, so tiles MUST be placed
+            # on 16-byte aligned addresses. Add padding if needed.
+            REQUIRED_ALIGNMENT = 0x10
+
             # find bank with most space that can accommodate data + buffer
             highest_space: int = 0
             index: int = 0
@@ -834,7 +846,16 @@ class SpriteCollection:
                     if len(remaining_items) > 20:
                         error_lines.append(f"  ... and {len(remaining_items) - 20} more")
                 raise Exception("\n".join(error_lines))
-            offset = self.uncompressed_tile_banks[index].current_offset
+
+            # Align to required boundary by adding padding if necessary
+            current_offset = self.uncompressed_tile_banks[index].current_offset
+            misalignment = current_offset % REQUIRED_ALIGNMENT
+            if misalignment != 0:
+                padding_needed = REQUIRED_ALIGNMENT - misalignment
+                self.uncompressed_tile_banks[index].tiles += bytearray(padding_needed)
+                current_offset += padding_needed
+
+            offset = current_offset
             self.uncompressed_tile_banks[index].tiles += these_bytes
             return offset
 
@@ -860,7 +881,15 @@ class SpriteCollection:
                 key = tile_id
             else:
                 tile_groups[key].used_by.append(index)
-                tile_groups[key].tiles = list(set(tile_groups[key].tiles + unique_subtiles))
+                # CRITICAL: Preserve order while removing duplicates. Using set() would randomize order!
+                combined = tile_groups[key].tiles + unique_subtiles
+                seen = set()
+                ordered_unique = []
+                for tile in combined:
+                    if tile not in seen:
+                        seen.add(tile)
+                        ordered_unique.append(tile)
+                tile_groups[key].tiles = ordered_unique
             wip_sprite.tiles = unique_subtiles
             wip_sprite.tile_group = key
             wip_sprite.relative_offset = 0
@@ -981,7 +1010,7 @@ class SpriteCollection:
                     lowest_subtile_index = tilegroup_index_of_this_tile
                 if tilegroup_index_of_this_tile > highest_subtile_index:
                     highest_subtile_index = tilegroup_index_of_this_tile
-            
+
 
             inserting_whitespace_before = False
             whitespace_amount = 0
