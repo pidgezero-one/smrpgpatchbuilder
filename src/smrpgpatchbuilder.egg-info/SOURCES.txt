@@ -157,9 +157,12 @@ src/smrpgpatchbuilder/datatypes/sprites/__init__.py
 src/smrpgpatchbuilder/datatypes/sprites/collection.py
 src/smrpgpatchbuilder/datatypes/sprites/disassembler.py
 src/smrpgpatchbuilder/datatypes/sprites/exceptions.py
+src/smrpgpatchbuilder/datatypes/sprites/palette.py
 src/smrpgpatchbuilder/datatypes/sprites/sprite.py
 src/smrpgpatchbuilder/datatypes/sprites/ids/__init__.py
+src/smrpgpatchbuilder/datatypes/sprites/ids/event_palettes.py
 src/smrpgpatchbuilder/datatypes/sprites/ids/misc.py
+src/smrpgpatchbuilder/datatypes/sprites/ids/sprite_palettes.py
 src/smrpgpatchbuilder/datatypes/world_map_locations/__init__.py
 src/smrpgpatchbuilder/datatypes/world_map_locations/classes.py
 src/smrpgpatchbuilder/management/commands/allyassembler.py
@@ -182,6 +185,7 @@ src/smrpgpatchbuilder/management/commands/enemydisassembler.py
 src/smrpgpatchbuilder/management/commands/eventassembler.py
 src/smrpgpatchbuilder/management/commands/eventconverter.py
 src/smrpgpatchbuilder/management/commands/eventidentifieraudit.py
+src/smrpgpatchbuilder/management/commands/eventpalettedisassembler.py
 src/smrpgpatchbuilder/management/commands/generatesample.py
 src/smrpgpatchbuilder/management/commands/graphicsassembler.py
 src/smrpgpatchbuilder/management/commands/graphicsdisassembler.py
@@ -208,6 +212,7 @@ src/smrpgpatchbuilder/management/commands/shopdisassembler.py
 src/smrpgpatchbuilder/management/commands/space_reassigner.py
 src/smrpgpatchbuilder/management/commands/spellassembler.py
 src/smrpgpatchbuilder/management/commands/spelldisassembler.py
+src/smrpgpatchbuilder/management/commands/spritepalettedisassembler.py
 src/smrpgpatchbuilder/management/commands/unused_gfx_finder.py
 src/smrpgpatchbuilder/management/commands/unused_gfx_remover old.py
 src/smrpgpatchbuilder/management/commands/unused_gfx_remover.py
