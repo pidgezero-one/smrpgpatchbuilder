@@ -25,8 +25,9 @@ COMPRESSION_TABLE: list[tuple[str, bytes]] = [
     ("”", b"\x23"),
     ("♥", b"\x24"),
     ("♪", b"\x25"),
-    ("‘", b"\x26"),
-    ("’", b"\x27"),
+    ("'", b"\x26"),
+    ("'", b"\x27"),
+    ("'", b"\x27"),  # ASCII straight apostrophe maps same as curly
     ("••", b"\x2B"),
     ("•", b"\x2A"),
     ("~", b"\x3A"),
