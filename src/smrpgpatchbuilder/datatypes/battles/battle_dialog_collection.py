@@ -64,13 +64,22 @@ class BattleDialogCollection:
             compression_table: Optional custom compression table. If None, uses default.
         """
         # Use same compression table as psychopath messages with battle-specific additions
+        # Battle/menu text uses different byte values for some characters (KeystrokesMenu in LAZYSHELL)
         if compression_table is None:
             compression_table = [
                 ("\n", b"\x01"),
                 ("[await]", b"\x02"),
                 ("[pause]", b"\x03"),
-                ("[delay]", b"\x0C")
-            ] + COMPRESSION_TABLE[17:]
+                ("[delay]", b"\x0C"),
+            ] + COMPRESSION_TABLE[17:] + [
+                # Battle/menu specific character mappings (from KeystrokesMenu 0x7B-0x7E)
+                # These MUST come after COMPRESSION_TABLE to override dialog encodings
+                ("!", b"\x7B"),
+                ("#", b"\x7C"),
+                ("-", b"\x7D"),
+                ("'", b"\x7E"),  # ASCII straight apostrophe
+                ("\u2019", b"\x7E"),  # Right single curly quote → same as apostrophe
+            ]
 
         self.set_compression_table(compression_table)
         self.set_battle_dialogs(battle_dialogs)
