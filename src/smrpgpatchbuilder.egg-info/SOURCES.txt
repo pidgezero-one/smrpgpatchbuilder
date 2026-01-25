@@ -154,6 +154,7 @@ src/smrpgpatchbuilder/datatypes/spells/arguments/types/classes.py
 src/smrpgpatchbuilder/datatypes/spells/ids/__init__.py
 src/smrpgpatchbuilder/datatypes/spells/ids/misc.py
 src/smrpgpatchbuilder/datatypes/sprites/__init__.py
+src/smrpgpatchbuilder/datatypes/sprites/ally_palettes.py
 src/smrpgpatchbuilder/datatypes/sprites/collection.py
 src/smrpgpatchbuilder/datatypes/sprites/disassembler.py
 src/smrpgpatchbuilder/datatypes/sprites/exceptions.py

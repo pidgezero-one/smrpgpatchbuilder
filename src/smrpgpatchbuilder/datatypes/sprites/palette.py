@@ -5,7 +5,7 @@ This module stores colors as 24-bit hex integers (0xRRGGBB) for readability,
 and converts to/from SNES format for ROM operations.
 
 Sprite palettes: 819 palettes at 0x253000-0x258FFF (object/NPC palettes)
-Event palettes: 9557 palettes at 0x37A000-0x3C0000 (event/scene palettes)
+Event palettes: 273 palettes at 0x37A000-0x37BFFF (event/scene palettes)
 """
 
 from .ids.misc import (
@@ -337,7 +337,7 @@ class EventPalette(_BasePalette):
         """Create a new EventPalette.
 
         Args:
-            index: The palette index (0-9556).
+            index: The palette index (0-272).
             colors: Optional list of 15 colors as 24-bit hex integers.
                    If not provided, initializes to all black (0x000000).
         """
@@ -411,7 +411,7 @@ class SpritePaletteCollection(list[SpritePalette]):
 
 
 class EventPaletteCollection(list[EventPalette]):
-    """Collection of all 9557 SMRPG event palettes.
+    """Collection of all 273 SMRPG event palettes.
 
     Provides methods to load palettes from ROM and render them back.
     """
@@ -462,7 +462,7 @@ class EventPaletteCollection(list[EventPalette]):
 
     @classmethod
     def empty(cls) -> "EventPaletteCollection":
-        """Create an empty EventPaletteCollection with 9557 black palettes."""
+        """Create an empty EventPaletteCollection with 273 black palettes."""
         collection = cls()
         for i in range(TOTAL_EVENT_PALETTES):
             collection.append(EventPalette(i))
@@ -492,3 +492,51 @@ classic_palette_offset = CLASSIC_PALETTE_OFFSET
 minecart_palette_offset = MINECART_PALETTE_OFFSET
 map_palette_offset = MAP_PALETTE_OFFSET
 hotspring_palette_offset = HOTSPRING_PALETTE_OFFSET
+
+
+def address_to_sprite_palette_index(address: int) -> int | None:
+    """Convert a ROM address to sprite palette index.
+
+    Args:
+        address: ROM address that should be within sprite palette range.
+
+    Returns:
+        Palette index (0-818) if address is in sprite palette range,
+        None if address is outside the range.
+    """
+    if address < SPRITE_PALETTE_OFFSET or address >= SPRITE_PALETTE_OFFSET + TOTAL_SPRITE_PALETTES * PALETTE_SIZE:
+        return None
+    offset = address - SPRITE_PALETTE_OFFSET
+    if offset % PALETTE_SIZE != 0:
+        # Address doesn't align to palette boundary
+        return None
+    return offset // PALETTE_SIZE
+
+
+def address_to_event_palette_index(address: int) -> int | None:
+    """Convert a ROM address to event palette index.
+
+    Args:
+        address: ROM address that should be within event palette range.
+
+    Returns:
+        Palette index (0-9556) if address is in event palette range,
+        None if address is outside the range.
+    """
+    if address < EVENT_PALETTE_OFFSET or address >= EVENT_PALETTE_END:
+        return None
+    offset = address - EVENT_PALETTE_OFFSET
+    if offset % PALETTE_SIZE != 0:
+        # Address doesn't align to palette boundary
+        return None
+    return offset // PALETTE_SIZE
+
+
+def sprite_palette_index_to_address(index: int) -> int:
+    """Convert a sprite palette index to ROM address."""
+    return SPRITE_PALETTE_OFFSET + index * PALETTE_SIZE
+
+
+def event_palette_index_to_address(index: int) -> int:
+    """Convert an event palette index to ROM address."""
+    return EVENT_PALETTE_OFFSET + index * PALETTE_SIZE
