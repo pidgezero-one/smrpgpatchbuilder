@@ -309,6 +309,26 @@ class FormationPack:
             # Store the 3 different formations
             self._formations = list(formations)
 
+    def set_formations(self, *formations: Formation) -> None:
+        """Replace the formations in this pack.
+
+        Args:
+            *formations: Either 1 Formation (will be used for all 3 slots)
+                        or 3 Formations (one for each slot)
+
+        Raises:
+            AssertionError: If not exactly 1 or 3 formations are provided
+        """
+        assert len(formations) in (1, 3), \
+            f"FormationPack requires exactly 1 or 3 formations, got {len(formations)}"
+
+        if len(formations) == 1:
+            # Store 3 references to the same formation
+            self._formations = [formations[0], formations[0], formations[0]]
+        else:
+            # Store the 3 different formations
+            self._formations = list(formations)
+
 class PackCollection:
     """Collection of 256 FormationPacks that renders formations and packs to ROM."""
 
