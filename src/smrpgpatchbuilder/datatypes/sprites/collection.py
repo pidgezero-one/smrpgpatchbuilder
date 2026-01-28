@@ -1445,9 +1445,9 @@ class SpriteCollection(list[SpriteContainer]):
 
             # get animation #, or create new
             animation_id_to_use = len(complete_animations)
-            for prev_sprite_index, _ in enumerate(wip_sprites[0:sprite_index]):
+            for prev_sprite_index, s in enumerate(wip_sprites[0:sprite_index]):
                 if _is_same_animation(
-                    wip_sprite.sprite.animation_data, wip_sprite.sprite.animation_data
+                    wip_sprite.sprite.animation_data, s.sprite.animation_data
                 ):
                     animation_id_to_use = complete_sprites[
                         prev_sprite_index
