@@ -63,8 +63,9 @@ class BattleDialogCollection:
             battle_messages: List of 46 battle message strings
             compression_table: Optional custom compression table. If None, uses default.
         """
-        # Use same compression table as psychopath messages with battle-specific additions
-        # Battle/menu text uses different byte values for some characters (KeystrokesMenu in LAZYSHELL)
+        # Battle dialogs use mostly the same encoding as overworld dialogs,
+        # but apostrophe has a different byte value (0x9B instead of 0x27).
+        # See LAZYSHELL TextHelperReduced.cs lines 185-189 and 260-264.
         if compression_table is None:
             compression_table = [
                 ("\n", b"\x01"),
@@ -72,13 +73,9 @@ class BattleDialogCollection:
                 ("[pause]", b"\x03"),
                 ("[delay]", b"\x0C"),
             ] + COMPRESSION_TABLE[17:] + [
-                # Battle/menu specific character mappings (from KeystrokesMenu 0x7B-0x7E)
-                # These MUST come after COMPRESSION_TABLE to override dialog encodings
-                ("!", b"\x7B"),
-                ("#", b"\x7C"),
-                ("-", b"\x7D"),
-                ("'", b"\x7E"),  # ASCII straight apostrophe
-                ("\u2019", b"\x7E"),  # Right single curly quote → same as apostrophe
+                # Battle-specific: apostrophe uses 0x9B (not 0x27 like overworld)
+                ("'", b"\x9B"),  # ASCII straight apostrophe
+                ("\u2019", b"\x9B"),  # Right single curly quote
             ]
 
         self.set_compression_table(compression_table)
