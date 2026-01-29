@@ -682,8 +682,8 @@ class SpriteCollection:
                                     for st in tile.subtile_ids:
                                         if st not in subtile_indexes:
                                             subtile_indexes.append(st)
-                                tile_bytes.append(tile.y ^ 0x80)
-                                tile_bytes.append(tile.x ^ 0x80)
+                                tile_bytes.append((tile.y & 0xFF) ^ 0x80)
+                                tile_bytes.append((tile.x & 0xFF) ^ 0x80)
                                 byte_upper_1 = 0
                                 for i, subtile_id in enumerate(tile.subtile_ids):
                                     if subtile_id > 0:
