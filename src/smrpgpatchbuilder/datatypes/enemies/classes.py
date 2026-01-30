@@ -717,6 +717,9 @@ class EnemyCollection:
 
         # check if total message data exceeds available space
         max_message_size = PSYCHOPATH_DATA_END + 1 - PSYCHOPATH_DATA_START
+        print(f"DEBUG: Psychopath messages total {total_message_bytes} bytes, max allowed {max_message_size} bytes")
+        print(f"DEBUG: Data written from 0x{PSYCHOPATH_DATA_START:06X} to 0x{current_data_addr - 1:06X}")
+        print(f"DEBUG: Expected end: 0x{PSYCHOPATH_DATA_END:06X}, cursor starts at 0x{CURSOR_BASE_ADDRESS:06X}")
         if total_message_bytes > max_message_size:
             raise ValueError(
                 f"Psychopath messages total {total_message_bytes} bytes, "
