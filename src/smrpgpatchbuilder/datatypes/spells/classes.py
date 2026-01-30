@@ -428,12 +428,15 @@ class SpellCollection:
         """
         self.spells = spells
 
-        # Count character spells
-        character_spells = [s for s in spells if isinstance(s, CharacterSpell)]
+        # Count character spells with valid indices (0-26 / 0x1A)
+        character_spells = [
+            s for s in spells
+            if isinstance(s, CharacterSpell) and s.index <= 0x1A
+        ]
         if len(character_spells) != 27:
             raise ValueError(
-                f"SpellCollection must contain exactly 27 CharacterSpell instances for descriptions, "
-                f"but {len(character_spells)} were found."
+                f"SpellCollection must contain exactly 27 CharacterSpell instances "
+                f"with indices 0-26 for descriptions, but {len(character_spells)} were found."
             )
 
     def render(self) -> dict[int, bytearray]:
@@ -449,11 +452,16 @@ class SpellCollection:
             spell_patch = spell.render()
             patch.update(spell_patch)
 
-        # Now handle descriptions for character spells only
-        character_spells = [s for s in self.spells if isinstance(s, CharacterSpell)]
+        # Now handle descriptions for character spells only (index <= 0x1A / 26)
+        character_spells = [
+            s for s in self.spells
+            if isinstance(s, CharacterSpell) and s.index <= 0x1A
+        ]
+
+        # Sort by index to ensure correct pointer table ordering
+        character_spells.sort(key=lambda s: s.index)
 
         current_desc_addr = SPELL_BASE_DESC_DATA_START
-        desc_pointer_table = bytearray()
         total_desc_bytes = 0
 
         for spell in character_spells:
@@ -472,9 +480,12 @@ class SpellCollection:
             # Calculate pointer value (16-bit address within bank 0x3A)
             pointer_value = current_desc_addr & 0xFFFF
 
-            # Add pointer to pointer table (little-endian)
-            desc_pointer_table.append(pointer_value & 0xFF)
-            desc_pointer_table.append((pointer_value >> 8) & 0xFF)
+            # Write pointer at the correct position based on spell index
+            pointer_addr = SPELL_BASE_DESC_POINTER_ADDRESS + spell.index * 2
+            patch[pointer_addr] = bytearray([
+                pointer_value & 0xFF,
+                (pointer_value >> 8) & 0xFF
+            ])
 
             # Write description to ROM
             patch[current_desc_addr] = desc_bytes
@@ -490,8 +501,5 @@ class SpellCollection:
                 f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
                 f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
             )
-
-        # Write the pointer table (27 pointers * 2 bytes = 54 bytes)
-        patch[SPELL_BASE_DESC_POINTER_ADDRESS] = desc_pointer_table
 
         return patch
