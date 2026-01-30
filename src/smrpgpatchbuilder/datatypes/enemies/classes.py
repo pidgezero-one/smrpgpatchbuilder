@@ -696,7 +696,17 @@ class EnemyCollection:
         from smrpgpatchbuilder.datatypes.dialogs.utils import compress, COMPRESSION_TABLE
 
         # use compression table from entry with byte 0x22 onward (index 17)
-        psychopath_compression_table = [("\n", b"\x01"), ("[await]", b"\x02")] + COMPRESSION_TABLE[17:]
+        # Psychopath messages use the same font as battle dialogs, so apostrophe
+        # must use 0x9B (not 0x27 like overworld dialogs).
+        # See LAZYSHELL TextHelperReduced.cs lines 185-189 and 260-264.
+        psychopath_compression_table = [
+            ("\n", b"\x01"),
+            ("[await]", b"\x02"),
+        ] + COMPRESSION_TABLE[17:] + [
+            # Battle-specific: apostrophe uses 0x9B (not 0x27 like overworld)
+            ("'", b"\x9B"),  # ASCII straight apostrophe
+            ("\u2019", b"\x9B"),  # Right single curly quote
+        ]
 
         current_data_addr = PSYCHOPATH_DATA_START
         pointer_table = bytearray()

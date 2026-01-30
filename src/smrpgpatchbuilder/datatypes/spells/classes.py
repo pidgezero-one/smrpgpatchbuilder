@@ -397,14 +397,16 @@ class CharacterSpell(Spell):
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch = super().render()
 
-        if self.timing_modifiers != 0:
-            patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
-                self.timing_modifiers
-            ).as_bytes()
-        if self.damage_modifiers != 0:
-            patch[SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
-                self.damage_modifiers
-            ).as_bytes()
+        # Only write timing/damage pointers for spells with index < 32
+        if self.index < 32:
+            if self.timing_modifiers != 0:
+                patch[SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
+                    self.timing_modifiers
+                ).as_bytes()
+            if self.damage_modifiers != 0:
+                patch[SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2] = ByteField(
+                    self.damage_modifiers
+                ).as_bytes()
 
         return patch
 
