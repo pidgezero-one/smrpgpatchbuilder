@@ -707,6 +707,7 @@ class EnemyCollection:
             "~poison~": 131,
             "~ohko~": 132,
             "~jump~": 133,
+            "~empty~": 141,  # Invisible placeholder (same width as element symbols)
             # Punctuation remapped to higher values
             ":": 142, ";": 143, "<": 144, ">": 145,
             "…": 146, "···": 146,  # Ellipsis
@@ -734,8 +735,12 @@ class EnemyCollection:
                     if 32 <= char_ord <= 156:
                         result.append(char_ord)
                     i += 1
-            # Null terminate
-            result.append(0x00)
+            # Trim trailing empty placeholders (141 = 0x8D)
+            while result and result[-1] == 141:
+                result.pop()
+            # End with [await] (0x02) then null terminator (0x00)
+            result.append(0x02)  # [await] - pauses for user input
+            result.append(0x00)  # null terminator
             return result
 
         # Sort enemies by monster_id to ensure correct pointer table ordering
