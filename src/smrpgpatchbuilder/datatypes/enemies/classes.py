@@ -662,21 +662,81 @@ class EnemyCollection:
             patch.update(enemy_patch)
 
         # now handle psychopath messages
-        # import compression utilities
-        from smrpgpatchbuilder.datatypes.dialogs.utils import compress, COMPRESSION_TABLE
+        # Battle dialog character encoding (NO word compression like overworld dialogs)
+        # These byte values are specific to SMRPG's battle text rendering
+        BATTLE_CHAR_MAP: dict[str, int] = {
+            # Control characters
+            "\n": 0x01,
+            # Standard ASCII characters that map directly
+            " ": 32, "!": 33,
+            "(": 40, ")": 41, ",": 44, "-": 45, ".": 46, "/": 47,
+            "0": 48, "1": 49, "2": 50, "3": 51, "4": 52,
+            "5": 53, "6": 54, "7": 55, "8": 56, "9": 57,
+            "?": 63,
+            "A": 65, "B": 66, "C": 67, "D": 68, "E": 69, "F": 70, "G": 71,
+            "H": 72, "I": 73, "J": 74, "K": 75, "L": 76, "M": 77, "N": 78,
+            "O": 79, "P": 80, "Q": 81, "R": 82, "S": 83, "T": 84, "U": 85,
+            "V": 86, "W": 87, "X": 88, "Y": 89, "Z": 90,
+            "a": 97, "b": 98, "c": 99, "d": 100, "e": 101, "f": 102, "g": 103,
+            "h": 104, "i": 105, "j": 106, "k": 107, "l": 108, "m": 109, "n": 110,
+            "o": 111, "p": 112, "q": 113, "r": 114, "s": 115, "t": 116, "u": 117,
+            "v": 118, "w": 119, "x": 120, "y": 121, "z": 122,
+            # Quote characters (remapped from ASCII)
+            '"': 34,  # Opening double quote (ASCII " is 34)
+            """: 34,  # Curly opening double quote
+            """: 35,  # Curly closing double quote
+            "'": 39,  # ASCII apostrophe -> closing single quote
+            "\u2018": 38,  # Curly opening single quote
+            "\u2019": 39,  # Curly closing single quote
+            # Special symbols
+            "♥": 36, "♪": 37,
+            "•": 42, "··": 43,  # Note: •• handled specially below
+            "~": 58,
+            "「": 59, "」": 60, "『": 61, "』": 62,
+            "©": 64,
+            # Elemental/status symbols for psychopath messages
+            "{": 123,   # Weakness symbol
+            "|": 124,   # Resistance symbol
+            "}": 125,   # Ice symbol (repurposed from ASCII })
+            "~ice~": 125,
+            "~fire~": 126,
+            "~thunder~": 127,
+            "~sleep~": 128,
+            "~fear~": 129,
+            "~mute~": 130,
+            "~poison~": 131,
+            "~ohko~": 132,
+            "~jump~": 133,
+            # Punctuation remapped to higher values
+            ":": 142, ";": 143, "<": 144, ">": 145,
+            "…": 146, "···": 146,  # Ellipsis
+            "#": 147, "+": 148, "×": 149, "%": 150,
+            "↑": 151, "→": 152, "←": 153, "*": 154, "&": 156,
+        }
 
-        # use compression table from entry with byte 0x22 onward (index 17)
-        # Psychopath messages use the same font as battle dialogs, so apostrophe
-        # must use 0x9B (not 0x27 like overworld dialogs).
-        # See LAZYSHELL TextHelperReduced.cs lines 185-189 and 260-264.
-        psychopath_compression_table = [
-            ("\n", b"\x01"),
-            ("[await]", b"\x02"),
-        ] + COMPRESSION_TABLE[17:] + [
-            # Battle-specific: apostrophe uses 0x9B (not 0x27 like overworld)
-            ("'", b"\x9B"),  # ASCII straight apostrophe
-            ("\u2019", b"\x9B"),  # Right single curly quote
-        ]
+        def encode_battle_text(text: str) -> bytearray:
+            """Encode text for battle dialogs/psychopath messages (no word compression)."""
+            result = bytearray()
+            i = 0
+            while i < len(text):
+                # Check for multi-char sequences first (longest match)
+                matched = False
+                for length in range(min(10, len(text) - i), 0, -1):
+                    substr = text[i:i+length]
+                    if substr in BATTLE_CHAR_MAP:
+                        result.append(BATTLE_CHAR_MAP[substr])
+                        i += length
+                        matched = True
+                        break
+                if not matched:
+                    # Unknown character - use its ordinal if in valid range, else skip
+                    char_ord = ord(text[i])
+                    if 32 <= char_ord <= 156:
+                        result.append(char_ord)
+                    i += 1
+            # Null terminate
+            result.append(0x00)
+            return result
 
         # Sort enemies by monster_id to ensure correct pointer table ordering
         sorted_enemies = sorted(self.enemies, key=lambda e: e.monster_id)
@@ -688,14 +748,12 @@ class EnemyCollection:
             # get the psychopath message
             message = enemy.psychopath_message if enemy.psychopath_message else ""
 
-            # encode message using compression
-            message_bytes = bytearray()
+            # encode message using battle text encoding (no compression)
             if message:
-                # compress() automatically adds 0x00 terminator
-                message_bytes.extend(compress(message, psychopath_compression_table))
+                message_bytes = encode_battle_text(message)
             else:
                 # empty message, just the terminator
-                message_bytes.append(0x00)
+                message_bytes = bytearray([0x00])
 
             total_message_bytes += len(message_bytes)
 
@@ -717,9 +775,6 @@ class EnemyCollection:
 
         # check if total message data exceeds available space
         max_message_size = PSYCHOPATH_DATA_END + 1 - PSYCHOPATH_DATA_START
-        print(f"DEBUG: Psychopath messages total {total_message_bytes} bytes, max allowed {max_message_size} bytes")
-        print(f"DEBUG: Data written from 0x{PSYCHOPATH_DATA_START:06X} to 0x{current_data_addr - 1:06X}")
-        print(f"DEBUG: Expected end: 0x{PSYCHOPATH_DATA_END:06X}, cursor starts at 0x{CURSOR_BASE_ADDRESS:06X}")
         if total_message_bytes > max_message_size:
             raise ValueError(
                 f"Psychopath messages total {total_message_bytes} bytes, "
