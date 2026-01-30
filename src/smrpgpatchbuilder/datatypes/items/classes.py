@@ -390,14 +390,19 @@ class Item:
         return str(self)
     
     def set_name(self, name: str) -> None:
-        """Set the item's display name (must be latin-1 encodable or contain closing single quote ’)."""
-        # Validate that the name can be encoded (latin-1 + special character ’)
+        """Set the item's display name.
+
+        Supported characters: latin-1 characters plus special menu characters (-, ', !, #).
+        """
+        # Special characters that are encoded differently in item menu names
+        special_chars = {'-', "'", "'", '!', '#'}
+        # Validate that the name can be encoded
         try:
             for char in name:
-                if char != "’" and char != "'":
+                if char not in special_chars:
                     char.encode('latin-1')
         except UnicodeEncodeError:
-            raise ValueError("name contains characters not encodable in latin-1")
+            raise ValueError("name contains characters not encodable for item names")
         self._item_name = name
 
     def render(self) -> dict[int, bytearray]:
@@ -412,14 +417,25 @@ class Item:
         if self._prefix is not None and self._prefix != ItemPrefix.NONE:
             name_bytes.append(self._prefix)
 
-        # encode the name
-        # special character mapping: ' (closing single quote) -> 0x3A
+        # encode the name using item menu character mapping (KeystrokesMenu)
+        # Item names use a different encoding than dialogs/descriptions
+        # Special characters that differ from latin-1:
+        #   - (hyphen) -> 0x7D (125) - NOT 0x2D which is the consumable icon
+        #   ' (apostrophe) -> 0x7E (126)
+        #   ! (exclamation) -> 0x7B (123)
+        #   # (hash) -> 0x7C (124)
         if self._item_name:
             max_name_length = 15 - len(name_bytes)
             encoded_name = bytearray()
             for char in self._item_name:
-                if char == "’" or char == "'":
+                if char == '-':
+                    encoded_name.append(0x7D)
+                elif char == "'" or char == "'":
                     encoded_name.append(0x7E)
+                elif char == '!':
+                    encoded_name.append(0x7B)
+                elif char == '#':
+                    encoded_name.append(0x7C)
                 else:
                     encoded_name.extend(char.encode('latin-1'))
             name_bytes.extend(encoded_name[:max_name_length])

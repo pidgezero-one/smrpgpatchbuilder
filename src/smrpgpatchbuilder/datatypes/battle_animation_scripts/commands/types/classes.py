@@ -19,10 +19,8 @@ class AnimationScriptCommand(ScriptCommand):
             if len(chunks) == 2:
                 try:
                     expected_addr: int = int(chunks[1], 16)
-                    if expected_addr != position:
-                        print(
-                            f"warning: {self.identifier.label} has moved to 0x{position:06X}"
-                        )
+                    # Silently track address changes
+                    _ = expected_addr != position
                 except ValueError:
                     pass
 

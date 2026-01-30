@@ -291,10 +291,6 @@ class Spell:
         """Get data for this spell in `{0x123456: bytearray([0x00])}` format"""
         patch: dict[int, bytearray] = {}
 
-        # Debug: warn about potentially invalid spell indices
-        if self.index > 127:
-            print(f"DEBUG Spell.render(): WARNING - spell '{self.name}' has high index {self.index}, may write to invalid addresses")
-
         # Build spell name with prefix
         name_bytes = bytearray()
         if self._prefix is not None and self._prefix != ItemPrefix.NONE:
@@ -407,7 +403,6 @@ class CharacterSpell(Spell):
         if self.index < 32:
             timing_addr = SPELL_TIMING_MODIFIERS_BASE_ADDRESS + self.index * 2
             damage_addr = SPELL_DAMAGE_MODIFIERS_BASE_ADDRESS + self.index * 2
-            print(f"DEBUG CharacterSpell.render(): spell '{self.name}' index={self.index} writing timing to 0x{timing_addr:06X}, damage to 0x{damage_addr:06X}")
             patch[timing_addr] = ByteField(
                 self.timing_modifiers
             ).as_bytes()
@@ -508,18 +503,5 @@ class SpellCollection:
                 f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
                 f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
             )
-
-        # Debug: summarize all addresses being written
-        if patch:
-            addrs = sorted(patch.keys())
-            print(f"DEBUG SpellCollection.render(): Writing to {len(addrs)} addresses")
-            print(f"DEBUG   Address range: 0x{addrs[0]:06X} - 0x{addrs[-1]:06X}")
-            # Check for any writes below 0x100000 (bank 0x00-0x0F, typically code)
-            low_addrs = [a for a in addrs if a < 0x100000]
-            if low_addrs:
-                print(f"DEBUG   WARNING: {len(low_addrs)} writes below 0x100000:")
-                for addr in low_addrs:
-                    data = patch[addr]
-                    print(f"DEBUG     0x{addr:06X}: {len(data)} bytes = {data.hex()}")
 
         return patch

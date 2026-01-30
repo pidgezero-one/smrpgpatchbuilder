@@ -652,7 +652,6 @@ class RoomCollection:
                         f"  Parent assigned_npc: {obj.assigned_npc}\n"
                         f"  Base action_script: {base_action_script}"
                     )
-                    print(msg)
                     logging.warning(msg)
             else:
                 # ChestNPC and BattlePackNPC: no assigned_npc offset, just use npc_index directly
@@ -678,7 +677,6 @@ class RoomCollection:
                     f"  Parent action_script: {obj.action_script}\n"
                     f"  Base action_script: {base_action_script}"
                 )
-                print(msg)
                 logging.warning(msg)
 
             # Bytes 3-5: NPC ID and action script (packed)
@@ -713,7 +711,6 @@ class RoomCollection:
                         f"  Parent battle_pack: {obj.battle_pack}\n"
                         f"  All battle_packs in group: {all_battle_packs}"
                     )
-                    print(msg)
                     logging.warning(msg)
                 if battle_pack_offset > 15:
                     import logging
@@ -723,7 +720,6 @@ class RoomCollection:
                         f"  Parent battle_pack: {obj.battle_pack}\n"
                         f"  Base battle_pack: {base_battle_pack}"
                     )
-                    print(msg)
                     logging.warning(msg)
 
                 # Byte 6: base_battle_pack
@@ -755,7 +751,6 @@ class RoomCollection:
                         f"  Parent event_script: {obj.event_script}\n"
                         f"  Base event_script: {base_event_script}"
                     )
-                    print(msg)
                     logging.warning(msg)
 
                 # Regular or Chest NPC

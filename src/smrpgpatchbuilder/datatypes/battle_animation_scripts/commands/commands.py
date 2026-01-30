@@ -503,7 +503,6 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
             self._opcode = 0x74
             self._condition = condition
         else:
-            print(self, self.frames)
             raise InvalidCommandArgumentException(
                 f"invalid pause condition: {condition}"
             )
