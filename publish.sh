@@ -89,7 +89,7 @@ NEW_VERSION="$NEW_VERSION" perl -0777 -i -pe '
 rm -rf dist/
 
 # python -m build
-python -m build
+python3 -m build
 
 # git add .
 git add .
