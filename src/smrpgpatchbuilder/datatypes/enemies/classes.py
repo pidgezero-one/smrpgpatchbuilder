@@ -651,45 +651,15 @@ class EnemyCollection:
         """
         patch: dict[int, bytearray] = {}
 
-        # build enemy pointer table and write enemy data sequentially
-        enemy_pointer_table = bytearray()
-        reward_pointer_table = bytearray()
-        current_enemy_addr = BASE_ENEMY_ADDRESS
-        current_reward_addr = BASE_REWARD_ADDRESS
-
+        # Render enemy and reward data at their default addresses (calculated from monster_id).
+        # Unlike LAZYSHELL which reads the existing pointer table, we assume enemies are
+        # laid out sequentially at BASE_ENEMY_ADDRESS and BASE_REWARD_ADDRESS.
+        # We do NOT write to the enemy or reward pointer tables - LAZYSHELL doesn't modify
+        # them either, and the original ROM already has correct pointers for sequential layout.
         for enemy in self.enemies:
-            # calculate enemy pointer value (16-bit relative to bank)
-            enemy_pointer_value = current_enemy_addr & 0xFFFF
-
-            # add enemy pointer to table (little-endian)
-            enemy_pointer_table.append(enemy_pointer_value & 0xFF)
-            enemy_pointer_table.append((enemy_pointer_value >> 8) & 0xFF)
-
-            # calculate reward pointer value (16-bit relative to bank)
-            reward_pointer_value = current_reward_addr & 0xFFFF
-
-            # add reward pointer to table (little-endian)
-            reward_pointer_table.append(reward_pointer_value & 0xFF)
-            reward_pointer_table.append((reward_pointer_value >> 8) & 0xFF)
-
-            # render enemy data at current addresses
-            enemy_patch = enemy.render(
-                enemy_address=current_enemy_addr,
-                reward_address=current_reward_addr
-            )
+            # render enemy data at default addresses (based on monster_id)
+            enemy_patch = enemy.render()
             patch.update(enemy_patch)
-
-            # move to next enemy slot (16 bytes for main data)
-            current_enemy_addr += 16
-
-            # move to next reward slot (6 bytes for reward data)
-            current_reward_addr += 6
-
-        # write the enemy pointer table
-        patch[ENEMY_POINTER_TABLE_ADDRESS] = enemy_pointer_table
-
-        # write the reward pointer table
-        patch[REWARD_POINTER_TABLE_ADDRESS] = reward_pointer_table
 
         # now handle psychopath messages
         # import compression utilities
@@ -708,11 +678,13 @@ class EnemyCollection:
             ("\u2019", b"\x9B"),  # Right single curly quote
         ]
 
+        # Sort enemies by monster_id to ensure correct pointer table ordering
+        sorted_enemies = sorted(self.enemies, key=lambda e: e.monster_id)
+
         current_data_addr = PSYCHOPATH_DATA_START
-        pointer_table = bytearray()
         total_message_bytes = 0
 
-        for enemy in self.enemies:
+        for enemy in sorted_enemies:
             # get the psychopath message
             message = enemy.psychopath_message if enemy.psychopath_message else ""
 
@@ -730,9 +702,12 @@ class EnemyCollection:
             # calculate pointer value (16-bit address)
             pointer_value = current_data_addr & 0xFFFF
 
-            # add pointer to pointer table (little-endian)
-            pointer_table.append(pointer_value & 0xFF)
-            pointer_table.append((pointer_value >> 8) & 0xFF)
+            # write pointer at the correct position based on monster_id
+            pointer_addr = PSYCHOPATH_POINTER_ADDRESS + enemy.monster_id * 2
+            patch[pointer_addr] = bytearray([
+                pointer_value & 0xFF,
+                (pointer_value >> 8) & 0xFF
+            ])
 
             # write message to rom
             patch[current_data_addr] = message_bytes
@@ -748,8 +723,5 @@ class EnemyCollection:
                 f"which exceeds the maximum allowed size of {max_message_size} bytes. "
                 f"Reduce message lengths by {total_message_bytes - max_message_size} bytes."
             )
-
-        # write the pointer table
-        patch[PSYCHOPATH_POINTER_ADDRESS] = pointer_table
 
         return patch
