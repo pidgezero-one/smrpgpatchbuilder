@@ -54,7 +54,7 @@ class BattleDialogCollection:
         self,
         battle_dialogs: list[str],
         battle_messages: list[str],
-        compression_table: list[tuple[str, bytes]] = None,
+        compression_table: list[tuple[str, bytes]] | None = None,
     ) -> None:
         """Initialize the battle dialog collection.
 
@@ -67,16 +67,24 @@ class BattleDialogCollection:
         # but apostrophe has a different byte value (0x9B instead of 0x27).
         # See LAZYSHELL TextHelperReduced.cs lines 185-189 and 260-264.
         if compression_table is None:
+            # Battle dialogs and messages use the same character encoding as overworld,
+            # just without the word compression. Characters fall back to ASCII for
+            # letters/numbers, with special mappings for punctuation in COMPRESSION_TABLE.
+            # For battle dialogs, apostrophe encodes to 0x9B (not 0x27 like overworld).
+            # Special tokens for item/menu font characters (used by some battle messages):
+            #   [item_apos] -> 0x7E (apostrophe in item font)
+            #   [item_excl] -> 0x7C (exclamation in item font)
+            #   [item_hyphen] -> 0x7D (hyphen in item font)
             compression_table = [
                 ("\n", b"\x01"),
                 ("[await]", b"\x02"),
                 ("[pause]", b"\x03"),
                 ("[delay]", b"\x0C"),
-            ] + COMPRESSION_TABLE[17:] + [
-                # Battle-specific: apostrophe uses 0x9B (not 0x27 like overworld)
-                ("'", b"\x9B"),  # ASCII straight apostrophe
-                ("\u2019", b"\x9B"),  # Right single curly quote
-            ]
+                ("'", b"\x9B"),  # Apostrophe in battle dialogs (LazyShell TextHelperReduced.cs line 186)
+                ("[item_apos]", b"\x7E"),  # Apostrophe in item/menu font
+                ("[item_excl]", b"\x7C"),  # Exclamation in item/menu font
+                ("[item_hyphen]", b"\x7D"),  # Hyphen in item/menu font
+            ] + COMPRESSION_TABLE[17:]
 
         self.set_compression_table(compression_table)
         self.set_battle_dialogs(battle_dialogs)
