@@ -44,6 +44,7 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.area_object i
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.party_character import (
     PartyCharacter,
 )
+from smrpgpatchbuilder.datatypes.spells.classes import CharacterSpell
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import (
     Battlefield,
 )
@@ -101,6 +102,7 @@ from smrpgpatchbuilder.utils.number import bits_to_int, bools_to_int
 
 # script operations
 
+
 class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
     """Loop all commands (over a number of frames) between this command and the next `EndLoop` command.\n
 
@@ -137,6 +139,7 @@ class StartLoopNFrames(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.length)
+
 
 class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
     """Loop all commands (over a number of iterations) that are between this command and the next `EndLoop` command.\n
@@ -175,6 +178,7 @@ class StartLoopNTimes(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.count)
 
+
 class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """If previous commands were part of a loop, this is where the loop ends.\n
 
@@ -192,6 +196,7 @@ class EndLoop(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0xD7
+
 
 class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a specific command. This uses another event's label instead of its address, which is calculated at build time.\n
@@ -215,6 +220,7 @@ class Jmp(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     """Goto event script by ID.\n
@@ -256,6 +262,7 @@ class JmpToEvent(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.destination)
 
+
 class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return to the beginning of the script containing this command.
     (Unknown how this differs from `JmpToStartOfThisScriptFA`.)
@@ -275,6 +282,7 @@ class JmpToStartOfThisScript(UsableEventScriptCommand, EventScriptCommandNoArgs)
 
     _opcode = 0xF9
 
+
 class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return to the beginning of the script containing this command.
     (Unknown how this differs from `JmpToStartOfThisScript`.)
@@ -293,6 +301,7 @@ class JmpToStartOfThisScriptFA(UsableEventScriptCommand, EventScriptCommandNoArg
     """
 
     _opcode = 0xFA
+
 
 class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Run a chunk of event script code as a subroutine starting at a specified command. This uses another event's label instead of its address, which is calculated at build time.\n
@@ -317,6 +326,7 @@ class JmpToSubroutine(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script from being a background process to being the main process.\n
 
@@ -334,6 +344,7 @@ class MoveScriptToMainThread(UsableEventScriptCommand, EventScriptCommandNoArgs)
     """
 
     _opcode = bytearray([0xFD, 0x40])
+
 
 class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the first of two background processes.\n
@@ -353,6 +364,7 @@ class MoveScriptToBackgroundThread1(UsableEventScriptCommand, EventScriptCommand
 
     _opcode = bytearray([0xFD, 0x41])
 
+
 class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Move this script to run as the second of two background processes.\n
 
@@ -370,6 +382,7 @@ class MoveScriptToBackgroundThread2(UsableEventScriptCommand, EventScriptCommand
     """
 
     _opcode = bytearray([0xFD, 0x42])
+
 
 class Pause(UsableEventScriptCommand, EventScriptCommand):
     """Pause the active script for a number of frames.\n
@@ -426,6 +439,7 @@ class Pause(UsableEventScriptCommand, EventScriptCommand):
             return super().render(0xF0, frames)
         return super().render(0xF1, frames)
 
+
 class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)\n
 
@@ -443,6 +457,7 @@ class RememberLastObject(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x32])
+
 
 class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """If a background event is paused, resume it.\n
@@ -480,6 +495,7 @@ class ResumeBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
+
 
 class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Run an event (by ID) as a background event.\n
@@ -568,6 +584,7 @@ class RunBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
         arg_byte = UInt16(self.event_id + flags)
         return super().render(arg_byte)
 
+
 class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
     """(unknown exactly how this differs from `RunBackgroundEvent`)\n
 
@@ -653,6 +670,7 @@ class RunBackgroundEventWithPause(UsableEventScriptCommand, EventScriptCommand):
         timer = self.timer_var.to_byte() << 14
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
+
 
 class RunBackgroundEventWithPauseReturnOnExit(
     UsableEventScriptCommand, EventScriptCommand
@@ -742,6 +760,7 @@ class RunBackgroundEventWithPauseReturnOnExit(
         arg_byte = UInt16(self.event_id + timer + flags)
         return super().render(arg_byte)
 
+
 class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
     """When the current script ends, start running the script denoted by ID.\n
 
@@ -780,6 +799,7 @@ class RunEventAtReturn(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.event_id)
+
 
 class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
     """Run another event by ID as a subroutine (function).\n
@@ -822,6 +842,7 @@ class RunEventAsSubroutine(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.event_id)
 
+
 class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt all background events on all threads.\n
 
@@ -839,6 +860,7 @@ class StopAllBackgroundEvents(UsableEventScriptCommand, EventScriptCommandNoArgs
     """
 
     _opcode = bytearray([0xFD, 0x43])
+
 
 class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     """Stop a background event."\n
@@ -877,6 +899,7 @@ class StopBackgroundEvent(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.timer_var)
 
+
 class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Ends the script or subroutine.
     Every event needs to include this or `ReturnAll` because it indicates where the next script starts.\n
@@ -895,6 +918,7 @@ class Return(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0xFE
+
 
 class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Ends the script or subroutine. If this is run as part of a subroutine, it will also exit whatever code called the subroutine.
@@ -916,6 +940,7 @@ class ReturnAll(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xFF
 
+
 class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown, some kind of unused return command, unsure how it differs from others)\n
 
@@ -933,6 +958,7 @@ class ReturnFD(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xFE])
+
 
 _valid_unknowncmd_opcodes: list[int] = [
     0,  # 00
@@ -1451,6 +1477,7 @@ _valid_unknowncmd_opcodes_fd: list[int] = [
     0,
 ]
 
+
 class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
     """Catch-all class for most undocumented commands that don't act as GOTOs.
     Use this sparingly. This command will verify that your bytearray is the correct length, but cannot validate it otherwise.
@@ -1515,7 +1542,9 @@ class UnknownCommand(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
+
 # memory operations
+
 
 class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -1540,6 +1569,7 @@ class If0210Bits012ClearDoNotJump(UsableEventScriptCommand, EventScriptCommandWi
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
 
@@ -1562,6 +1592,7 @@ class JmpIf316DIs3(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If all of the stated bits are clear on $7000, jump to the script command indicated by the given label.
@@ -1610,6 +1641,7 @@ class JmpIf7000AllBitsClear(UsableEventScriptCommand, EventScriptCommandWithJmps
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
 
+
 class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If any of the stated bits are set on $7000, go to to the script command indicated by the given label.
 
@@ -1656,6 +1688,7 @@ class JmpIf7000AnyBitsSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         flags = UInt16(bits_to_int(list(self.bits)))
         return super().render(flags, *self.destinations)
+
 
 class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is set.
@@ -1709,6 +1742,7 @@ class JmpIfBitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
+
 
 class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Goto a command indicated by its label, but only if the memory bit is clear.
@@ -1768,6 +1802,7 @@ class JmpIfBitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg, *self.destinations)
 
+
 class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was zero (both values were equal).
 
@@ -1790,6 +1825,7 @@ class JmpIfLoadedMemoryIs0(UsableEventScriptCommand, EventScriptCommandWithJmps)
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIfLoadedMemoryIsAboveOrEqual0(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -1816,6 +1852,7 @@ class JmpIfLoadedMemoryIsAboveOrEqual0(
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to another command (by label) if the comparison result indicated that the first value was greater than the second value.
 
@@ -1839,6 +1876,7 @@ class JmpIfLoadedMemoryIsBelow0(UsableEventScriptCommand, EventScriptCommandWith
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """'Loaded Memory' in most cases refers to the result of a comparison command. Jump to the code indicated by the given label if the comparison result was not zero (values were not equal, irrespective of which was larger or smaller).
 
@@ -1861,6 +1899,7 @@ class JmpIfLoadedMemoryIsNot0(UsableEventScriptCommand, EventScriptCommandWithJm
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is set.
@@ -1886,6 +1925,7 @@ class JmpIfMem704XAt7000BitSet(UsableEventScriptCommand, EventScriptCommandWithJ
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Jump to a command by label, but only if the bit corresponding to the index indicated by the value of $7000 is clear.
     For example, if $7000 is set to 5, then this command will jump to the code beginning at the given destination if $7040 bit 5 is clear. If $7000 is set to 12, then the jump will occur if $7041 bit 4 is clear.
@@ -1910,6 +1950,7 @@ class JmpIfMem704XAt7000BitClear(UsableEventScriptCommand, EventScriptCommandWit
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the literal value currently stored at $7000, set the bit that corresponds to this index (starting from $7040 bit 0).
     For example, if $7000 is set to 5, then $7040 bit 5 will be set. If $7000 is set to 12, then $7041 bit 4 will be set.
@@ -1928,6 +1969,7 @@ class SetMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0xA3
+
 
 class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the literal value currently stored at $7000, clear the bit that corresponds to this index (starting from $7040 bit 0).
@@ -1948,6 +1990,7 @@ class ClearMem704XAt7000Bit(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xA7
 
+
 class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7010, $7012, and $7014 to replace the 16 bit values stored at $7016, $7018, and $701A.
 
@@ -1966,6 +2009,7 @@ class Move70107015To7016701B(UsableEventScriptCommand, EventScriptCommandNoArgs)
 
     _opcode = 0xBE
 
+
 class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Copy the 16 bit values stored at $7016, $7018, and $701A to replace the 16 bit values stored at $7010, $7012, and $7014.
 
@@ -1983,6 +2027,7 @@ class Move7016701BTo70107015(UsableEventScriptCommand, EventScriptCommandNoArgs)
     """
 
     _opcode = 0xBF
+
 
 class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
     """Set the longterm mem var to a constant number value.
@@ -2068,6 +2113,7 @@ class SetVarToConst(UsableEventScriptCommand, EventScriptCommand):
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
+
 class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2104,6 +2150,7 @@ class ReadFromAddress(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.address)
+
 
 class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
     """Set the value of $7000 to the value of any address between $7FF800 and $7FFFFF. This includes long term battle memory like Super Jump PBs.
@@ -2143,6 +2190,7 @@ class Set7000To7FMemVar(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(UInt16(self.address - 0xF800))
+
 
 class SetBit(UsableEventScriptCommand, EventScriptCommand):
     """Set a bit in the range of long-term memory bits dedicated for use in event and action scripts.
@@ -2191,6 +2239,7 @@ class SetBit(UsableEventScriptCommand, EventScriptCommand):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
+
 
 class ClearBit(UsableEventScriptCommand, EventScriptCommand):
     """Clear a bit in the range of long-term memory bits dedicated for use in event and action scripts.
@@ -2245,6 +2294,7 @@ class ClearBit(UsableEventScriptCommand, EventScriptCommand):
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
 
+
 class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2284,6 +2334,7 @@ class Set0158Bit3Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte = (self.address - 0x0158) // 2
         address_byte &= 0x7F
         return super().render(address_byte)
+
 
 class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -2340,6 +2391,7 @@ class Set0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte += self.bit_7 << 7
         return super().render(address_byte)
 
+
 class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2395,6 +2447,7 @@ class Clear0158Bit7Offset(UsableEventScriptCommand, EventScriptCommand):
         address_byte += self.bit_7 << 7
         return super().render(address_byte)
 
+
 class Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -2415,6 +2468,7 @@ class Clear7016To7018AndIsolate701AHighByteIf7018Bit0Set(
 
     _opcode = bytearray([0xFD, 0xC6])
     _size: int = 2
+
 
 class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
     """Copy the value from one variable to another variable.
@@ -2511,6 +2565,7 @@ class CopyVarToVar(UsableEventScriptCommand, EventScriptCommand):
             0x{self.from_var:04x} 0x{self.to_var:04x}"""
         )
 
+
 class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -2562,6 +2617,7 @@ class StoreBytesTo0335And0556(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.value_1, self.value_2)
 
+
 class Store00To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
 
@@ -2579,6 +2635,7 @@ class Store00To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xFC])
+
 
 class Store00To0334(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2598,6 +2655,7 @@ class Store00To0334(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x93])
 
+
 class Store01To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
 
@@ -2615,6 +2673,7 @@ class Store01To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xFB])
+
 
 class Store01To0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2634,6 +2693,7 @@ class Store01To0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x92])
 
+
 class Store02To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
 
@@ -2651,6 +2711,7 @@ class Store02To0248(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xFD])
+
 
 class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
@@ -2670,6 +2731,7 @@ class StoreFFTo0335(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x91])
 
+
 class Set7000ToMinecartTimer(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the value of $7000 to the latest value of the minecraft timer.
 
@@ -2687,6 +2749,7 @@ class Set7000ToMinecartTimer(UsableEventScriptCommand, EventScriptCommandNoArgs)
     """
 
     _opcode = bytearray([0xFD, 0xB8])
+
 
 class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
@@ -2736,6 +2799,7 @@ class StoreSetBits(UsableEventScriptCommand, EventScriptCommand):
             offset = ShortVar(0x7040)
         arg = UInt8(((self.bit.byte - offset) << 3) + self.bit.bit)
         return super().render(opcode, arg)
+
 
 class SwapVars(UsableEventScriptCommand, EventScriptCommand):
     """Swap the two variables' vales.
@@ -2791,7 +2855,9 @@ class SwapVars(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.memory_b, self.memory_a)
 
+
 # math operations
+
 
 class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
     """Add a const number value to a longterm mem var.
@@ -2882,6 +2948,7 @@ class AddConstToVar(UsableEventScriptCommand, EventScriptCommand):
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
+
 class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
     """Increase a variable by 1.
 
@@ -2914,6 +2981,7 @@ class Inc(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
         raise InvalidCommandArgumentException(
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
+
 
 class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
     """Decrease a variable by 1.
@@ -2948,6 +3016,7 @@ class Dec(UsableEventScriptCommand, EventScriptCommandAnySizeMem):
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}"
         )
 
+
 class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Add the value stored at the given variable to $7000.
 
@@ -2968,6 +3037,7 @@ class AddVarTo7000(UsableEventScriptCommand, EventScriptCommandShortMem):
     _opcode = 0xB8
     _size: int = 2
 
+
 class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Subtract the value stored at the given variable from $7000.
 
@@ -2987,6 +3057,7 @@ class DecVarFrom7000(UsableEventScriptCommand, EventScriptCommandShortMem):
 
     _opcode = 0xB9
     _size: int = 2
+
 
 class GenerateRandomNumFromRangeVar(
     UsableEventScriptCommand, EventScriptCommandShortMem
@@ -3009,6 +3080,7 @@ class GenerateRandomNumFromRangeVar(
 
     _opcode = bytearray([0xFD, 0xB7])
     _size: int = 3
+
 
 class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """There is a 2/3 chance that, when this command is executed, the script will jump to one of the two commands indicated by label.
@@ -3033,6 +3105,7 @@ class JmpIfRandom2of3(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """There is a 50/50 chance that, when this command is executed, a goto will be performed to the command indicated by the given label.
 
@@ -3055,6 +3128,7 @@ class JmpIfRandom1of2(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly):
     """Set the given variable to a random number between 0 and the given upper bound.
@@ -3081,6 +3155,7 @@ class SetVarToRandom(UsableEventScriptCommand, EventScriptCommandShortAddrAndVal
         if self.address == ShortVar(0x7000):
             return super().render(0xB6, self.value)
         return super().render(0xB7, self.address, self.value)
+
 
 class CompareVarToConst(
     UsableEventScriptCommand, EventScriptCommandShortAddrAndValueOnly
@@ -3124,6 +3199,7 @@ class CompareVarToConst(
             addr = ShortVar(addr)
         super().__init__(addr, value, identifier)
 
+
 class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Compare the value stored at $7000 to the value stored at a given variable.
     The result of this comparison can be used in `JmpIfComparisonResultIs`... commands
@@ -3145,6 +3221,7 @@ class Compare7000ToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
 
     _opcode = 0xC1
     _size: int = 2
+
 
 class JmpIfComparisonResultIsGreaterOrEqual(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -3171,6 +3248,7 @@ class JmpIfComparisonResultIsGreaterOrEqual(
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfComparisonResultIsLesser(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
@@ -3195,6 +3273,7 @@ class JmpIfComparisonResultIsLesser(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the given variable matches the given value, jump to the section of code beginning with the given label.
@@ -3295,6 +3374,7 @@ class JmpIfVarEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
+
 class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the given variable does not match the given value, jump to the section of code beginning with the given label.
 
@@ -3394,6 +3474,7 @@ class JmpIfVarNotEqualsConst(UsableEventScriptCommand, EventScriptCommandWithJmp
             f"illegal args for {self.identifier.label}: 0x{self.address:04x}: {self.value}"
         )
 
+
 class Mem7000AndConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise AND operation between the value of $7000 and a given literal number, save the result to $7000.
 
@@ -3412,6 +3493,7 @@ class Mem7000AndConst(UsableEventScriptCommand, EventScriptCommandBasicShortOper
     """
 
     _opcode = bytearray([0xFD, 0xB0])
+
 
 class Mem7000AndVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise AND operation between the value of $7000 and another variable, save the result to $7000.
@@ -3433,6 +3515,7 @@ class Mem7000AndVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     _opcode = bytearray([0xFD, 0xB3])
     _size: int = 3
 
+
 class Mem7000OrConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise OR operation between the value of $7000 and a given literal number, save the result to $7000.
 
@@ -3451,6 +3534,7 @@ class Mem7000OrConst(UsableEventScriptCommand, EventScriptCommandBasicShortOpera
     """
 
     _opcode = bytearray([0xFD, 0xB1])
+
 
 class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise OR operation between the value of $7000 and another variable, save the result to $7000.
@@ -3472,6 +3556,7 @@ class Mem7000OrVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     _opcode = bytearray([0xFD, 0xB4])
     _size: int = 3
 
+
 class Mem7000XorConst(UsableEventScriptCommand, EventScriptCommandBasicShortOperation):
     """Perform a bitwise XOR operation between the value of $7000 and a given literal number, save the result to $7000.
 
@@ -3490,6 +3575,7 @@ class Mem7000XorConst(UsableEventScriptCommand, EventScriptCommandBasicShortOper
     """
 
     _opcode = bytearray([0xFD, 0xB2])
+
 
 class Mem7000XorVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """Perform a bitwise XOR operation between the value of $7000 and another variable, save the result to $7000.
@@ -3510,6 +3596,7 @@ class Mem7000XorVar(UsableEventScriptCommand, EventScriptCommandShortMem):
 
     _opcode = bytearray([0xFD, 0xB5])
     _size: int = 3
+
 
 class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
     """Shift the specified variable to the left by the given amount of bits.
@@ -3562,6 +3649,7 @@ class VarShiftLeft(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.address, 0xFF - self._shift)
+
 
 class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
     UsableEventScriptCommand, EventScriptCommand
@@ -3616,6 +3704,7 @@ class MultiplyAndAddMem3148StoreToOffset7fB000PlusOutputX2(
     def render(self, *args) -> bytearray:
         return super().render(self.adding, self.multiplying)
 
+
 class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
 
@@ -3634,7 +3723,9 @@ class Xor3105With01(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xFE])
 
+
 # room objects & camera
+
 
 class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
@@ -3670,6 +3761,7 @@ class ActionQueueAsync(UsableEventScriptCommand, ActionQueuePrototype):
             script = deepcopy(subscript)
         super().__init__(target, False, script, identifier)
 
+
 class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
     """The specified NPC performs the given set of action script commands.
     The included action script does not need to achieve completion in order for the parent event script to continue.
@@ -3701,6 +3793,7 @@ class ActionQueueSync(UsableEventScriptCommand, ActionQueuePrototype):
         if subscript is None:
             subscript = []
         super().__init__(target, True, subscript, identifier)
+
 
 class StartAsyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
@@ -3737,6 +3830,7 @@ class StartAsyncEmbeddedActionScript(
             subscript = []
         super().__init__(target, prefix, False, subscript, identifier)
 
+
 class StartSyncEmbeddedActionScript(
     UsableEventScriptCommand, StartEmbeddedActionScriptPrototype
 ):
@@ -3772,6 +3866,7 @@ class StartSyncEmbeddedActionScript(
             subscript = []
         super().__init__(target, prefix, True, subscript, identifier)
 
+
 class NonEmbeddedActionQueue(UsableEventScriptCommand, NonEmbeddedActionQueuePrototype):
     """A section of unheadered code to be run as an action script instead of an event script.\n
     When assembled, these queues contain no header to indicate where they begin.
@@ -3793,6 +3888,7 @@ class NonEmbeddedActionQueue(UsableEventScriptCommand, NonEmbeddedActionQueuePro
     Args:
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
+
 
 class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Force a given NPC to run an action script by ID.\n
@@ -3851,6 +3947,7 @@ class _SetActionScript(UsableEventScriptCommand, EventScriptCommand):
         header_byte: int = (not self.sync) + 0xF2
         return super().render(self.target, header_byte, self.action_script_id)
 
+
 class SetAsyncActionScript(
     _SetActionScript,
     UsableEventScriptCommand,
@@ -3882,6 +3979,7 @@ class SetAsyncActionScript(
     ) -> None:
         super().__init__(target, action_script_id, False, identifier)
 
+
 class SetSyncActionScript(_SetActionScript, UsableEventScriptCommand):
     """Force an actor to run an action script by ID.
     The action script does not need to complete before further commands in the event script can run.
@@ -3909,6 +4007,7 @@ class SetSyncActionScript(_SetActionScript, UsableEventScriptCommand):
         identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, True, identifier)
+
 
 class _SetTempActionScript(EventScriptCommand):
     """Force a given NPC to run an action script by ID, where they will resume
@@ -3968,6 +4067,7 @@ class _SetTempActionScript(EventScriptCommand):
         header_byte: int = (not self.sync) + 0xF4
         return super().render(self.target, header_byte, self.action_script_id)
 
+
 class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     """The specified actor acts out an action script by ID.
     The actor will resume their original assigned action script upon completion.
@@ -3997,6 +4097,7 @@ class SetTempAsyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     ) -> None:
         super().__init__(target, action_script_id, False, identifier)
 
+
 class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
     """The specified actor acts out an action script by ID.
     The actor will resume their original assigned action script upon completion.
@@ -4025,6 +4126,7 @@ class SetTempSyncActionScript(_SetTempActionScript, UsableEventScriptCommand):
         identifier: str | None = None,
     ) -> None:
         super().__init__(target, action_script_id, True, identifier)
+
 
 class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Changes an async script (blocks the progression of the main thread until completion) to
@@ -4063,6 +4165,7 @@ class UnsyncActionScript(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF6)
+
 
 class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Summon a NPC to the given level by its NPC ID within the level.
@@ -4119,6 +4222,7 @@ class SummonObjectToSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
         arg: int = UInt16(self.level_id + (self.target_npc << 9) + (1 << 15))
         return super().render(arg)
 
+
 class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
     """
     The target actor will become present in the level (`visible` set to true).
@@ -4156,6 +4260,7 @@ class SummonObjectToCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF8)
+
 
 class SummonObjectToCurrentLevelAtMariosCoords(
     UsableEventScriptCommand, EventScriptCommand
@@ -4197,6 +4302,7 @@ class SummonObjectToCurrentLevelAtMariosCoords(
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF7)
 
+
 class SummonObjectAt70A8ToCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -4217,6 +4323,7 @@ class SummonObjectAt70A8ToCurrentLevel(
     """
 
     _opcode = 0xF4
+
 
 class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Remove a NPC from the given level by its NPC ID within the level.
@@ -4275,6 +4382,7 @@ class RemoveObjectFromSpecificLevel(UsableEventScriptCommand, EventScriptCommand
         arg: int = UInt16(arg_raw)
         return super().render(arg)
 
+
 class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand):
     """The specified NPC will no longer be present in the level (`visible` set to false).
 
@@ -4312,6 +4420,7 @@ class RemoveObjectFromCurrentLevel(UsableEventScriptCommand, EventScriptCommand)
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xF9)
 
+
 class RemoveObjectAt70A8FromCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -4332,6 +4441,7 @@ class RemoveObjectAt70A8FromCurrentLevel(
     """
 
     _opcode = 0xF5
+
 
 class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
     """The actor's action script will pause until a `ResumeActionScript`
@@ -4371,6 +4481,7 @@ class PauseActionScript(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFA)
 
+
 class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
     """Resumes a paused action script for the target actor.
     This probably won't do anything if there was no `PauseActionScript` before this.
@@ -4409,6 +4520,7 @@ class ResumeActionScript(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFB)
 
+
 class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
     """The specified actor can now be interacted with.
 
@@ -4446,6 +4558,7 @@ class EnableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFC)
 
+
 class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
     """The actor will enter a state in which it cannot be interacted with.
 
@@ -4482,6 +4595,7 @@ class DisableObjectTrigger(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFD)
+
 
 class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Enable the object trigger of the NPC to the given level.
@@ -4540,6 +4654,7 @@ class EnableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCo
         arg_raw = self.level_id + (self.target_npc << 9) + (1 << 15)
         arg: int = UInt16(arg_raw)
         return super().render(arg)
+
 
 class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptCommand):
     """Disable the object trigger of the NPC to the given level.
@@ -4600,6 +4715,7 @@ class DisableObjectTriggerInSpecificLevel(UsableEventScriptCommand, EventScriptC
         arg: int = UInt16(arg_raw)
         return super().render(arg)
 
+
 class EnableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -4622,6 +4738,7 @@ class EnableTriggerOfObjectAt70A8InCurrentLevel(
 
     _opcode = 0xF6
 
+
 class DisableTriggerOfObjectAt70A8InCurrentLevel(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -4642,6 +4759,7 @@ class DisableTriggerOfObjectAt70A8InCurrentLevel(
     """
 
     _opcode = 0xF7
+
 
 class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
     """If the NPC is running an action script that was applied to it
@@ -4682,6 +4800,7 @@ class StopEmbeddedActionScript(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFE)
 
+
 class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
     """The given NPC will return to the coordinates as set in the room definition.
 
@@ -4720,6 +4839,7 @@ class ResetCoords(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, 0xFF)
+
 
 class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet spawning at any NPC's current coordinates.
@@ -4778,6 +4898,7 @@ class CreatePacketAtObjectCoords(UsableEventScriptCommand, EventScriptCommandWit
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.target_npc, *self.destinations)
 
+
 class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014.
 
@@ -4821,6 +4942,7 @@ class CreatePacketAt7010(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, *self.destinations)
+
 
 class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Create a packet at pixel coordinates determined by the current values of $7010, $7012, and $7014. When touched, the packet will run the event specified by the given ID.\n
@@ -4881,6 +5003,7 @@ class CreatePacketAt7010WithEvent(UsableEventScriptCommand, EventScriptCommandWi
     def render(self, *args) -> bytearray:
         return super().render(self.packet_id, self.event_id, *self.destinations)
 
+
 class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """All NPCs in the room will have their current actions frozen until the next
     `Return` command is run.
@@ -4900,6 +5023,7 @@ class FreezeAllNPCsUntilReturn(UsableEventScriptCommand, EventScriptCommandNoArg
 
     _opcode = 0x30
 
+
 class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Cancels any commands that have frozen NPCs in the room.
 
@@ -4917,6 +5041,7 @@ class UnfreezeAllNPCs(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x31
+
 
 class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The camera will no longer adjust to the player's position.
@@ -4936,6 +5061,7 @@ class FreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x31])
 
+
 class UnfreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The camera will resume following the player's position.
 
@@ -4953,6 +5079,7 @@ class UnfreezeCamera(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x30])
+
 
 class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently on top of the specific NPC,
@@ -4998,6 +5125,7 @@ class JmpIfMarioOnObject(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(self._target, *self.destinations)
 
+
 class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Accepts two identifiers for commands to go to:\n
     One in the case where the player is on top of any object, and
@@ -5022,6 +5150,7 @@ class JmpIfMarioOnAnObjectOrNot(UsableEventScriptCommand, EventScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is currently airborne, jump to the command matching the label.
@@ -5065,6 +5194,7 @@ class JmpIfObjectInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
 
     def render(self, *args) -> bytearray:
         return super().render(self._target_npc, *self.destinations)
+
 
 class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is present in the specified level, jump to the command matching the specified label.
@@ -5125,6 +5255,7 @@ class JmpIfObjectInSpecificLevel(UsableEventScriptCommand, EventScriptCommandWit
         arg = UInt16(0x8000 + (self.target_npc << 9) + self.level_id)
         return super().render(arg, *self.destinations)
 
+
 class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is present in the current level, jump to the code section beginning with the specified identifier.
 
@@ -5167,6 +5298,7 @@ class JmpIfObjectInCurrentLevel(UsableEventScriptCommand, EventScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
+
 
 class JmpIfObjectNotInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5230,6 +5362,7 @@ class JmpIfObjectNotInSpecificLevel(
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
 
+
 class JmpIfObjectTriggerEnabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
@@ -5290,6 +5423,7 @@ class JmpIfObjectTriggerEnabledInSpecificLevel(
     def render(self, *args) -> bytearray:
         arg: int = UInt16(self.level_id + (self.target << 9) + (1 << 15))
         return super().render(arg, *self.destinations)
+
 
 class JmpIfObjectTriggerDisabledInSpecificLevel(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5353,6 +5487,7 @@ class JmpIfObjectTriggerDisabledInSpecificLevel(
         assert 0 <= arg <= 0x7FFF
         return super().render(arg, *self.destinations)
 
+
 class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the specified NPC is underwater in the current level,
     jump to the code section beginning with the specified identifier.
@@ -5396,6 +5531,7 @@ class JmpIfObjectIsUnderwater(UsableEventScriptCommand, EventScriptCommandWithJm
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
+
 
 class JmpIfObjectActionScriptIsRunning(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5442,6 +5578,7 @@ class JmpIfObjectActionScriptIsRunning(
 
     def render(self, *args) -> bytearray:
         return super().render(self.target, *self.destinations)
+
 
 class JmpIfObjectsAreLessThanXYStepsApart(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -5534,6 +5671,7 @@ class JmpIfObjectsAreLessThanXYStepsApart(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
 
+
 class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
     UsableEventScriptCommand, EventScriptCommandWithJmps
 ):
@@ -5624,6 +5762,7 @@ class JmpIfObjectsAreLessThanXYStepsApartSameZCoord(
             self.object_1, self.object_2, self.x, self.y, *self.destinations
         )
 
+
 class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -5646,6 +5785,7 @@ class ReactivateObject70A8TriggerIfMarioOnTopOfIt(
     """
 
     _opcode = 0x5D
+
 
 class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
     """Sets $7000 to the pixel or isometric coordinate value of one dimension from any NPC's current coordinates.
@@ -5743,6 +5883,7 @@ class Set7000ToObjectCoord(UsableEventScriptCommand, EventScriptCommand):
         )
         return super().render(opcode, arg)
 
+
 class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     """Copy the X, Y, and Z pixel coordinates of the NPC to $7010, $7012, and $7014.
 
@@ -5810,6 +5951,7 @@ class Set70107015ToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
+
 class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     """Copy the X, Y, and Z pixel coordinates of the NPC to $7016, $7018, and $701A.
 
@@ -5875,6 +6017,7 @@ class Set7016701BToObjectXYZ(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target + (self.bit_6 << 6) + (self.bit_7 << 7))
 
+
 class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem):
     """(unknown)
 
@@ -5895,7 +6038,9 @@ class SetObjectMemoryToVar(UsableEventScriptCommand, EventScriptCommandShortMem)
     _opcode = 0xD6
     _size: int = 2
 
+
 # controls
+
 
 class EnableControls(UsableEventScriptCommand, EventScriptCommand):
     """Buttons included in this command will be enabled, and buttons excluded will be disabled.
@@ -5952,6 +6097,7 @@ class EnableControls(UsableEventScriptCommand, EventScriptCommand):
         )
         arg: int = bits_to_int(buttons_as_ints)
         return super().render(arg)
+
 
 class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
     """Buttons included in this command will be enabled, and buttons excluded will be disabled.\n
@@ -6012,6 +6158,7 @@ class EnableControlsUntilReturn(UsableEventScriptCommand, EventScriptCommand):
         arg: int = bits_to_int(buttons_as_ints)
         return super().render(arg)
 
+
 class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the bits of $7000 to correspond to all currently pressed buttons.
     Dpad Left = 0
@@ -6037,6 +6184,7 @@ class Set7000ToPressedButton(UsableEventScriptCommand, EventScriptCommandNoArgs)
     """
 
     _opcode = 0xCA
+
 
 class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the bits of $7000 to correspond to an individual tapped button.
@@ -6064,7 +6212,9 @@ class Set7000ToTappedButton(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xCB
 
+
 # inventory / party
+
 
 class AddCoins(UsableEventScriptCommand, EventScriptCommand):
     """Add this many coins to the player's coin count.
@@ -6110,6 +6260,7 @@ class AddCoins(UsableEventScriptCommand, EventScriptCommand):
             return super().render(bytearray([0xFD, 0x52]))
         return super().render(0x52, self.amount)
 
+
 class Dec7000FromCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's coin count by the amount stored to $7000.
 
@@ -6127,6 +6278,7 @@ class Dec7000FromCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x53])
+
 
 class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
     """Add this many coins to the player's frog coin count.
@@ -6172,6 +6324,7 @@ class AddFrogCoins(UsableEventScriptCommand, EventScriptCommand):
             return super().render(bytearray([0xFD, 0x54]))
         return super().render(0x53, self.amount)
 
+
 class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's frog coin count by the amount stored to $7000.
 
@@ -6189,6 +6342,7 @@ class Dec7000FromFrogCoins(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x55])
+
 
 class Add7000ToCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Add the amount stored to $7000 to the player's current FP fill.
@@ -6208,6 +6362,7 @@ class Add7000ToCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x56])
 
+
 class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Decrease the player's current FP fill by the amount stored to $7000.
 
@@ -6226,6 +6381,7 @@ class Dec7000FromCurrentFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0x57
 
+
 class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Add the amount stored to $7000 to the player's current max FP threshold.
 
@@ -6243,6 +6399,7 @@ class Add7000ToMaxFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x57])
+
 
 class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
     """Decrease the given character's current HP fill by the amount stored to $7000.
@@ -6282,6 +6439,7 @@ class Dec7000FromCurrentHP(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.character)
+
 
 class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
     """Arbitrarily equip an item to a specified character. The item does not need to exist in the player's inventory.
@@ -6337,6 +6495,7 @@ class EquipItemToCharacter(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.character, self.item().item_id)
 
+
 class IncEXPByPacket(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The amount of EXP belonging to the packet index designated by `SetEXPPacketTo7000` will be added to the EXP of all recruited characters.
 
@@ -6354,6 +6513,7 @@ class IncEXPByPacket(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x4B])
+
 
 class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
     """The specified character is recruited.
@@ -6395,6 +6555,7 @@ class CharacterJoinsParty(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.character + (1 << 7))
 
+
 class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
     """The specified character is dismissed from the party.
 
@@ -6435,6 +6596,64 @@ class CharacterLeavesParty(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.character & 0x7F)
 
+
+class LearnSpell(UsableEventScriptCommand, EventScriptCommand):
+    """**DO NOT ATTEMPT TO USE THIS UNLESS YOU ARE DEVELOPING FOR SMRPG RANDOMIZER! It is a custom command that does not exist in the original game.**
+
+    ## Lazy Shell command
+        `Memory $7000 = tapped button`
+
+    ## Opcode
+        `0xCE`
+
+    ## Size
+        1 byte
+
+    Args:
+        character (PartyCharacter): The character who should learn the spell
+        spell (Type[CharacterSpell]): The character spell class to learn.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
+    """
+
+    _size: int = 2
+    _character: PartyCharacter
+    _spell: type[CharacterSpell]
+    _opcode = 0xCE
+
+    @property
+    def character(self) -> PartyCharacter:
+        """The character being dismissed."""
+        return self._character
+
+    def set_character(self, character: PartyCharacter) -> None:
+        """Indicate the character being dismissed."""
+        self._character = character
+
+    @property
+    def spell(self) -> type[CharacterSpell]:
+        """The character spell being learned."""
+        return self._spell
+
+    def set_spell(self, spell: type[CharacterSpell]) -> None:
+        """Set the character spell being learned."""
+        self._spell = spell
+
+    def __init__(
+        self,
+        character: PartyCharacter,
+        spell: type[CharacterSpell],
+        identifier: str | None = None,
+    ) -> None:
+        super().__init__(identifier)
+        assert character <= 4
+        self.set_character(character)
+        assert spell().index <= 0x1A
+        self.set_spell(spell)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.spell().index | (self.character << 5))
+
+
 class Store70A7ToEquipsInventory(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The item whose ID matches the current value of $70A7 is added to the equips inventory pocket.
 
@@ -6452,6 +6671,7 @@ class Store70A7ToEquipsInventory(UsableEventScriptCommand, EventScriptCommandNoA
     """
 
     _opcode = bytearray([0xFD, 0x51])
+
 
 class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
     """The item matching the given ID, or the ID stored at $70A7, will be added to the appropriate inventory pocket.
@@ -6501,6 +6721,7 @@ class AddToInventory(UsableEventScriptCommand, EventScriptCommand):
         item = self.item
         return super().render(0x50, item().item_id)
 
+
 class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand):
     """One item matching the given ID will be removed from inventory.
 
@@ -6538,6 +6759,7 @@ class RemoveOneOfItemFromInventory(UsableEventScriptCommand, EventScriptCommand)
     def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
 
+
 class RestoreAllFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's FP will be filled to its current maximum.
 
@@ -6555,6 +6777,7 @@ class RestoreAllFP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x5C])
+
 
 class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """All recruited characters' HP will be filled to their current maximum.
@@ -6574,6 +6797,7 @@ class RestoreAllHP(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x5B])
 
+
 class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the active EXP packet to the ID corresponding to the current value of $7000.
     This will be used by `IncEXPByPacket`.
@@ -6592,6 +6816,7 @@ class SetEXPPacketTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x64])
+
 
 class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
     """The value of $7000 will be set to the character ID who currently occupies the given slot by party index (0 to 4).
@@ -6631,6 +6856,7 @@ class Set7000ToIDOfMemberInSlot(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(0x08 + self.slot)
 
+
 class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Store the total party size to $7000.
 
@@ -6649,6 +6875,7 @@ class Set7000ToPartySize(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0x37
 
+
 class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """For the item whose ID matches the current value of $70A7, check how many of that item are currently in the player inventory, and store that amount to $7000.
 
@@ -6666,6 +6893,7 @@ class StoreItemAt70A7QuantityTo7000(UsableEventScriptCommand, EventScriptCommand
     """
 
     _opcode = bytearray([0xFD, 0x5E])
+
 
 class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand):
     """For the given equipment type on the given character, store the ID of the currently equipped item to $7000
@@ -6722,6 +6950,7 @@ class StoreCharacterEquipmentTo7000(UsableEventScriptCommand, EventScriptCommand
     def render(self, *args) -> bytearray:
         return super().render(self.character, self.equip_slot().item_id)
 
+
 class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current FP fill amount is stored to $7000.
 
@@ -6739,6 +6968,7 @@ class StoreCurrentFPTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x58
+
 
 class StoreEmptyItemInventorySlotCountTo7000(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -6760,6 +6990,7 @@ class StoreEmptyItemInventorySlotCountTo7000(
 
     _opcode = 0x55
 
+
 class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's current coin count is stored to $7000.
 
@@ -6777,6 +7008,7 @@ class StoreCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x59])
+
 
 class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
     """Check how many of the given item are currently in the player's inventory, and store that amount to $7000.
@@ -6815,6 +7047,7 @@ class StoreItemAmountTo7000(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.item().item_id)
 
+
 class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player's current Frog Coin count is stored to $7000.
 
@@ -6833,7 +7066,9 @@ class StoreFrogCoinCountTo7000(UsableEventScriptCommand, EventScriptCommandNoArg
 
     _opcode = bytearray([0xFD, 0x5A])
 
+
 # yourself
+
 
 class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """If the player is currently airborne, go to the section of code beginning with the specified identifier.
@@ -6858,6 +7093,7 @@ class JmpIfMarioInAir(UsableEventScriptCommand, EventScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class MarioGlows(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The player will glow as they normally do during an EXP star animation.
 
@@ -6875,6 +7111,7 @@ class MarioGlows(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xF9])
+
 
 class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The effect of a prior `MarioGlows` command is canceled.
@@ -6894,7 +7131,9 @@ class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xFA])
 
+
 # palettes & screen effects
+
 
 class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
     """(The inner workings of this command are unknown.)
@@ -7005,6 +7244,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         arg_1 = UInt8(flags + ((self.row - 1) << 4))
         return super().render(arg_1, self.palette_set)
 
+
 class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
     """(The inner workings of this command are unknown.)
 
@@ -7088,6 +7328,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         arg_1 = UInt8(self.duration + (self.palette_type << 4))
         return super().render(arg_1, self.row, self.palette_set)
 
+
 class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The script will not continue until an active graphical effect has finished.
 
@@ -7105,6 +7346,7 @@ class PauseScriptUntilEffectDone(UsableEventScriptCommand, EventScriptCommandNoA
     """
 
     _opcode = 0x7F
+
 
 class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
     """Pixelate the given layers according to the given stylistic rules.
@@ -7207,6 +7449,7 @@ class PixelateLayers(UsableEventScriptCommand, EventScriptCommand):
             arg_1, self.duration + (self.bit_6 << 6) + (self.bit_7 << 7)
         )
 
+
 class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
     """(unknown)
 
@@ -7283,6 +7526,7 @@ class PrioritySet(UsableEventScriptCommand, EventScriptCommand):
         colour_math: int = bits_to_int(cast(list[int], self.colour_math))
         return super().render(mainscreen, subscreen, colour_math)
 
+
 class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """(unknown)
 
@@ -7300,6 +7544,7 @@ class ResetPrioritySet(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x82
+
 
 class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
     """Briefly flash a colour over the whole screen.
@@ -7341,6 +7586,7 @@ class ScreenFlashesWithColour(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.colour)
+
 
 class TintLayers(UsableEventScriptCommand, EventScriptCommand):
     """Tint the selected layers with an RGB value.
@@ -7461,7 +7707,9 @@ class TintLayers(UsableEventScriptCommand, EventScriptCommand):
         assembled_layers = UInt8(assembled_layers_raw)
         return super().render(assembled_short, assembled_layers, self.speed)
 
+
 # screen transitions
+
 
 class CircleMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
@@ -7483,6 +7731,7 @@ class CircleMaskExpandFromScreenCenter(
 
     _opcode = 0x7C
 
+
 class CircleMaskShrinkToScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -7502,6 +7751,7 @@ class CircleMaskShrinkToScreenCenter(
     """
 
     _opcode = 0x7D
+
 
 class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
     """A circle mask shrinks to surround a given object, blacking out most of the level.
@@ -7585,6 +7835,7 @@ class CircleMaskShrinkToObject(UsableEventScriptCommand, EventScriptCommand):
         opcode: int = 0x8F if self.static else 0x87
         return super().render(opcode, self.target, self.width, self.speed)
 
+
 class StarMaskExpandFromScreenCenter(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -7605,6 +7856,7 @@ class StarMaskExpandFromScreenCenter(
 
     _opcode = 0x7A
 
+
 class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """A star mask shrinks to the screen center to black out most of the level.
 
@@ -7622,6 +7874,7 @@ class StarMaskShrinkToScreenCenter(UsableEventScriptCommand, EventScriptCommandN
     """
 
     _opcode = 0x7B
+
 
 class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen in from being unloaded.
@@ -7693,6 +7946,7 @@ class FadeInFromBlack(UsableEventScriptCommand, EventScriptCommand):
             return super().render(opcode, self.duration)
         return super().render(opcode)
 
+
 class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
     """Draw an opaque colour over the screen, and then fade the screen in.
 
@@ -7743,6 +7997,7 @@ class FadeInFromColour(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
+
 
 class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen out to solid black.
@@ -7814,6 +8069,7 @@ class FadeOutToBlack(UsableEventScriptCommand, EventScriptCommand):
             return super().render(opcode, self.duration)
         return super().render(opcode)
 
+
 class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
     """Fade the screen out to any solid colour.
 
@@ -7865,6 +8121,7 @@ class FadeOutToColour(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.colour)
 
+
 class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Perform the screen effect that precedes a battle.
 
@@ -7883,7 +8140,9 @@ class InitiateBattleMask(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0x7E
 
+
 # music
+
 
 class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to slow down the music.
@@ -7937,6 +8196,7 @@ class SlowDownMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
 
+
 class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to speed up the music.
 
@@ -7988,6 +8248,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
+
 
 class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to lower the pitch.
@@ -8041,6 +8302,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, 256 - self.change)
 
+
 class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     """Designate a numerical temp (0 to 127) by which to increase the pitch.
 
@@ -8093,6 +8355,7 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.change)
 
+
 class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
     """Sound channels identified by the given bits (0-7) will be silenced.
 
@@ -8137,6 +8400,7 @@ class DeactivateSoundChannels(UsableEventScriptCommand, EventScriptCommand):
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(flags)
 
+
 class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
     """Fade music in from a silent state.
     It is recommended to use music ID constant names for this.
@@ -8177,6 +8441,7 @@ class FadeInMusic(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.music)
 
+
 class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current background music fades out to silence.
 
@@ -8194,6 +8459,7 @@ class FadeOutMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x93
+
 
 class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """The current background music fades out to silence.
@@ -8214,6 +8480,7 @@ class FadeOutMusicFDA3(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xA3])
     _size: int = 2
+
 
 class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
     """Fade out the currently playing background music to a specified volume over a specified time period (in frames).
@@ -8266,6 +8533,7 @@ class FadeOutMusicToVolume(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
 
+
 class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
     """Fade out the currently playing sound to a specified volume over a specified time period (in frames).
 
@@ -8317,6 +8585,7 @@ class FadeOutSoundToVolume(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration, self.volume)
 
+
 class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
 
@@ -8359,6 +8628,7 @@ class JmpIfAudioMemoryIsAtLeast(UsableEventScriptCommand, EventScriptCommandWith
 
     def render(self, *args) -> bytearray:
         return super().render(self.threshold, *self.destinations)
+
 
 class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """(unknown)
@@ -8403,6 +8673,7 @@ class JmpIfAudioMemoryEquals(UsableEventScriptCommand, EventScriptCommandWithJmp
     def render(self, *args) -> bytearray:
         return super().render(self.value, *self.destinations)
 
+
 class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track.
 
@@ -8441,6 +8712,7 @@ class PlayMusic(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
+
 
 class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track, at the same volume as the current track.
@@ -8481,6 +8753,7 @@ class PlayMusicAtCurrentVolume(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.music)
 
+
 class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
     """Begin playing a specific background music track (at default volume).
 
@@ -8519,6 +8792,7 @@ class PlayMusicAtDefaultVolume(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
+
 
 class PlaySound(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect by ID on the specified channel.
@@ -8572,15 +8846,14 @@ class PlaySound(UsableEventScriptCommand, EventScriptCommand):
             self._size = 2
             self._opcode = 0x9C
 
-    def __init__(
-        self, sound: int, channel: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, sound: int, channel: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
         self.set_channel(channel)
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound)
+
 
 class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect at a given balance.
@@ -8625,15 +8898,14 @@ class PlaySoundBalance(UsableEventScriptCommand, EventScriptCommand):
         """Set the balance level to play the sound at."""
         self._balance = UInt8(balance)
 
-    def __init__(
-        self, sound: int, balance: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, sound: int, balance: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
         self.set_balance(balance)
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
+
 
 class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
     """Play a sound effect at a given balance.
@@ -8679,15 +8951,14 @@ class PlaySoundBalanceFD9D(UsableEventScriptCommand, EventScriptCommand):
         """Set the balance level to play the sound at."""
         self._balance = UInt8(balance)
 
-    def __init__(
-        self, sound: int, balance: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, sound: int, balance: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_sound(sound)
         self.set_balance(balance)
 
     def render(self, *args) -> bytearray:
         return super().render(self.sound, self.balance)
+
 
 class SlowDownMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Show down the current music to an unspecified tempo, over a constant duration.
@@ -8707,6 +8978,7 @@ class SlowDownMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xA4])
 
+
 class SpeedUpMusicToDefault(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Return the current music tempo to default, over a constant duration.
 
@@ -8725,6 +8997,7 @@ class SpeedUpMusicToDefault(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xA5])
 
+
 class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
 
@@ -8742,6 +9015,7 @@ class StopMusic(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x94
+
 
 class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8762,6 +9036,7 @@ class StopMusicFD9F(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0x9F])
 
+
 class StopMusicFDA0(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
     It is unknown how this differs from `StopMusic`.
@@ -8780,6 +9055,7 @@ class StopMusicFDA0(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xA0])
+
 
 class StopMusicFDA1(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8800,6 +9076,7 @@ class StopMusicFDA1(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xA1])
 
+
 class StopMusicFDA2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
     It is unknown how this differs from `StopMusic`.
@@ -8818,6 +9095,7 @@ class StopMusicFDA2(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xA2])
+
 
 class StopMusicFDA6(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Stop playing the background music entirely.
@@ -8838,6 +9116,7 @@ class StopMusicFDA6(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = bytearray([0xFD, 0xA6])
 
+
 class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Halt the playback of any sound effect that is currently playing.
 
@@ -8856,7 +9135,9 @@ class StopSound(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0x9B
 
+
 # dialogs
+
 
 class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCommand):
     """The dialog whose ID corresponds to the current value of $7000 will be appended to the end of a dialog that is already being displayed.
@@ -8912,6 +9193,7 @@ class AppendDialogAt7000ToCurrentDialog(UsableEventScriptCommand, EventScriptCom
         flags = (self.closable << 5) + ((not self.sync) << 7)
         return super().render(flags)
 
+
 class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """If there is an open dialog, it will be forcibly closed.
 
@@ -8929,6 +9211,7 @@ class CloseDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x64
+
 
 class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWithJmps):
     """Depends on the results of a previously displayed dialog which had only 2 options. If the second option was selected, go to the section of code beginning with the command matching the given label.
@@ -8952,6 +9235,7 @@ class JmpIfDialogOptionBSelected(UsableEventScriptCommand, EventScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class JmpIfDialogOptionBOrCSelected(
     UsableEventScriptCommand, EventScriptCommandWithJmps
@@ -8978,6 +9262,7 @@ class JmpIfDialogOptionBOrCSelected(
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class PauseScriptResumeOnNextDialogPageA(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -8999,6 +9284,7 @@ class PauseScriptResumeOnNextDialogPageA(
 
     _opcode = bytearray([0xFD, 0x60])
 
+
 class PauseScriptResumeOnNextDialogPageB(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -9019,6 +9305,7 @@ class PauseScriptResumeOnNextDialogPageB(
     """
 
     _opcode = bytearray([0xFD, 0x61])
+
 
 class RunDialog(UsableEventScriptCommand, EventScriptCommand):
     """Display a dialog by ID, or whose ID matches the current value of $7000.
@@ -9172,6 +9459,7 @@ class RunDialog(UsableEventScriptCommand, EventScriptCommand):
         id_arg = UInt16((flags_lower << 8) + self.dialog_id)
         return super().render(id_arg, final_arg)
 
+
 class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
     """Display a dialog by ID for a given duration in frames.
 
@@ -9243,6 +9531,7 @@ class RunDialogForDuration(UsableEventScriptCommand, EventScriptCommand):
         arg = UInt16(self.dialog_id + (self.duration << 13) + ((not self.sync) << 15))
         return super().render(arg)
 
+
 class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Event scripts and player movements will resume without waiting for the dialog to close.
 
@@ -9261,7 +9550,9 @@ class UnsyncDialog(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0x65
 
+
 # levels
+
 
 class EnterArea(UsableEventScriptCommand, EventScriptCommand):
     """Immediately teleport to a specified level.
@@ -9407,6 +9698,7 @@ class EnterArea(UsableEventScriptCommand, EventScriptCommand):
         direction_z_arg = UInt8(self.z + (self.face_direction << 5))
         return super().render(room_short, self.x, y_z_arg, direction_z_arg)
 
+
 class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
     """If the specified room has tile modifications available, this command can apply one.
 
@@ -9481,6 +9773,7 @@ class ApplyTileModToLevel(UsableEventScriptCommand, EventScriptCommand):
         )
         return super().render(UInt16(assembled_raw))
 
+
 class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
     """If the specified room has collision modifications available, this command can apply one.
     It is recommended to use room ID constant names for this.
@@ -9553,6 +9846,7 @@ class ApplySolidityModToLevel(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         assembled_raw: int = self.room_id + (self.mod_id << 9) + (self.permanent << 15)
         return super().render(UInt16(assembled_raw))
+
 
 class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
     """Leaves the given level forcibly, and returns to the world map.
@@ -9639,6 +9933,7 @@ class ExitToWorldMap(UsableEventScriptCommand, EventScriptCommand):
         flags = flags << 5
         return super().render(self.area, flags)
 
+
 class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Set the value of $7000 to the ID of the currently loaded level.
 
@@ -9657,7 +9952,9 @@ class Set7000ToCurrentLevel(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xC3
 
+
 # scenes
+
 
 class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
     """Text that normally appears in the game intro. Unused in rando.
@@ -9710,6 +10007,7 @@ class DisplayIntroTitleText(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.y, self.text)
 
+
 class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Run the cutscene where Exor shatters the star road.
     Unused in rando.
@@ -9728,6 +10026,7 @@ class ExorCrashesIntoKeep(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0xF8])
+
 
 class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
     """Runs one of a various selection of menus or automatic cutscenes.
@@ -9766,6 +10065,7 @@ class RunMenuOrEventSequence(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.scene)
 
+
 class OpenSaveMenu(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Open the save menu.
 
@@ -9783,6 +10083,7 @@ class OpenSaveMenu(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x4A])
+
 
 class OpenShop(UsableEventScriptCommand, EventScriptCommand):
     """Open a shop by ID.
@@ -9824,6 +10125,7 @@ class OpenShop(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.shop_id)
 
+
 class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Pauses the running script if a menu is opened.
 
@@ -9841,6 +10143,7 @@ class PauseScriptIfMenuOpen(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = 0x5B
+
 
 class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Reloads your last save. Character EXP is not reset.
@@ -9860,6 +10163,7 @@ class ResetAndChooseGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xFB
 
+
 class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Reset to the file select screen (presumably?).
 
@@ -9878,6 +10182,7 @@ class ResetGame(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
     _opcode = 0xFC
 
+
 class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Begin the ending credits sequence.
 
@@ -9895,6 +10200,7 @@ class RunEndingCredits(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """
 
     _opcode = bytearray([0xFD, 0x67])
+
 
 class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
     """Run a special cutscene. Normally used for star pieces in the ending credits.
@@ -9947,6 +10253,7 @@ class RunEventSequence(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.scene, self.value)
 
+
 class RunLevelupBonusSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Launch the levelup screen.
 
@@ -9964,6 +10271,7 @@ class RunLevelupBonusSequence(UsableEventScriptCommand, EventScriptCommandNoArgs
     """
 
     _opcode = bytearray([0xFD, 0x65])
+
 
 class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
     """Run a specific menu tutorial.
@@ -10002,6 +10310,7 @@ class RunMenuTutorial(UsableEventScriptCommand, EventScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.tutorial)
 
+
 class RunMolevilleMountainIntroSequence(
     UsableEventScriptCommand, EventScriptCommandNoArgs
 ):
@@ -10022,6 +10331,7 @@ class RunMolevilleMountainIntroSequence(
 
     _opcode = bytearray([0xFD, 0x4F])
 
+
 class RunMolevilleMountainSequence(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Enter the Moleville Mountain minigame.
 
@@ -10039,6 +10349,7 @@ class RunMolevilleMountainSequence(UsableEventScriptCommand, EventScriptCommandN
     """
 
     _opcode = bytearray([0xFD, 0x4E])
+
 
 class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
     """Run a star piece collection cutscene.
@@ -10077,6 +10388,7 @@ class RunStarPieceSequence(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.star)
+
 
 class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
     """Enter into a battle with a given pack ID and battlefield.
@@ -10131,6 +10443,7 @@ class StartBattleAtBattlefield(UsableEventScriptCommand, EventScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(UInt16(self.pack_id), self.battlefield)
+
 
 class StartBattleWithPackAt700E(UsableEventScriptCommand, EventScriptCommandNoArgs):
     """Initiates a battle on the default battlefield associated to the current level against the pack ID matching the current value of $700E.

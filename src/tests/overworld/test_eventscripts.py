@@ -1,12 +1,15 @@
 import pytest
 
 from smrpgpatchbuilder.datatypes.items.classes import Accessory, RegularItem
-from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import Battlefield
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.battlefield import (
+    Battlefield,
+)
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.flag import Flag
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.packet import Packet
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *
+from smrpgpatchbuilder.datatypes.spells.classes import CharacterSpell
 
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *
@@ -22,7 +25,8 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.ids import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import (
-    EventScriptBank, EventScript
+    EventScriptBank,
+    EventScript,
 )
 from smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands import *
@@ -37,16 +41,51 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 
 from dataclasses import dataclass
 
+
 class TroopaPinItem(Accessory):
     _item_id: int = 92
+
 
 class CricketPieItem(RegularItem):
     _item_id: int = 130
 
+
 class WalletItem(RegularItem):
     _item_id: int = 129
+
+
 class YoshiCookieItem(RegularItem):
     _item_id: int = 109
+
+
+# Test spells for LearnSpell tests
+class JumpSpell(CharacterSpell):
+    _index: int = 0
+
+
+class FireOrbSpell(CharacterSpell):
+    _index: int = 1
+
+
+class SuperJumpSpell(CharacterSpell):
+    _index: int = 2
+
+
+class TherapySpell(CharacterSpell):
+    _index: int = 6
+
+
+class GenoBeamSpell(CharacterSpell):
+    _index: int = 16
+
+
+class ThunderboltSpell(CharacterSpell):
+    _index: int = 21
+
+
+class StarRainSpell(CharacterSpell):
+    _index: int = 26
+
 
 @dataclass
 class Case:
@@ -55,6 +94,7 @@ class Case:
     expected_bytes: list[int] | None = None
     exception: str | None = None
     exception_type: type | None = None
+
 
 test_cases = [
     #
@@ -514,9 +554,7 @@ test_cases = [
     Case(
         label="RemoveObjectFromSpecificLevel",
         commands_factory=lambda: [
-            RemoveObjectFromSpecificLevel(
-                NPC_10, 23
-            ),
+            RemoveObjectFromSpecificLevel(NPC_10, 23),
         ],
         expected_bytes=[0xF2, 0x17, 0x3C],
     ),
@@ -570,9 +608,7 @@ test_cases = [
     Case(
         label="DisableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
-            DisableObjectTriggerInSpecificLevel(
-                NPC_8, 125
-            ),
+            DisableObjectTriggerInSpecificLevel(NPC_8, 125),
         ],
         expected_bytes=[0xF3, 0x7D, 0x38],
     ),
@@ -676,6 +712,45 @@ test_cases = [
         label="Set7000ToTappedButton",
         commands_factory=lambda: [Set7000ToTappedButton()],
         expected_bytes=[0xCB],
+    ),
+    Case(
+        label="LearnSpell_Mario_Jump",
+        commands_factory=lambda: [LearnSpell(MARIO, JumpSpell)],
+        expected_bytes=[0xCE, 0x00],  # character=0, spell=0: (0 << 5) | 0 = 0x00
+    ),
+    Case(
+        label="LearnSpell_Toadstool_Therapy",
+        commands_factory=lambda: [LearnSpell(TOADSTOOL, TherapySpell)],
+        expected_bytes=[0xCE, 0x26],  # character=1, spell=6: (1 << 5) | 6 = 0x26
+    ),
+    Case(
+        label="LearnSpell_Bowser_FireOrb",
+        commands_factory=lambda: [LearnSpell(BOWSER, FireOrbSpell)],
+        expected_bytes=[0xCE, 0x41],  # character=2, spell=1: (2 << 5) | 1 = 0x41
+    ),
+    Case(
+        label="LearnSpell_Geno_GenoBeam",
+        commands_factory=lambda: [LearnSpell(GENO, GenoBeamSpell)],
+        expected_bytes=[0xCE, 0x70],  # character=3, spell=16: (3 << 5) | 16 = 0x70
+    ),
+    Case(
+        label="LearnSpell_Mallow_Thunderbolt",
+        commands_factory=lambda: [LearnSpell(MALLOW, ThunderboltSpell)],
+        expected_bytes=[0xCE, 0x95],  # character=4, spell=21: (4 << 5) | 21 = 0x95
+    ),
+    Case(
+        label="LearnSpell_Mario_StarRain",
+        commands_factory=lambda: [LearnSpell(MARIO, StarRainSpell)],
+        expected_bytes=[0xCE, 0x1A],  # character=0, spell=26: (0 << 5) | 26 = 0x1A
+    ),
+    Case(
+        label="LearnSpell_Multiple",
+        commands_factory=lambda: [
+            LearnSpell(MARIO, JumpSpell),
+            LearnSpell(TOADSTOOL, TherapySpell),
+            LearnSpell(MALLOW, ThunderboltSpell),
+        ],
+        expected_bytes=[0xCE, 0x00, 0xCE, 0x26, 0xCE, 0x95],
     ),
     Case(
         label="AddCoins",
@@ -1065,9 +1140,7 @@ test_cases = [
     ),
     Case(
         label="PlaySoundBalance",
-        commands_factory=lambda: [
-            PlaySoundBalance(sound=68, balance=64)
-        ],
+        commands_factory=lambda: [PlaySoundBalance(sound=68, balance=64)],
         expected_bytes=[0x9D, 0x44, 0x40],
     ),
     Case(
@@ -1250,24 +1323,16 @@ test_cases = [
     Case(
         label="ApplyTileModToLevel",
         commands_factory=lambda: [
-            ApplyTileModToLevel(
-                use_alternate=True, room_id=96, mod_id=1
-            ),
-            ApplyTileModToLevel(
-                use_alternate=False, room_id=52, mod_id=0
-            ),
+            ApplyTileModToLevel(use_alternate=True, room_id=96, mod_id=1),
+            ApplyTileModToLevel(use_alternate=False, room_id=52, mod_id=0),
         ],
         expected_bytes=[0x6A, 0x60, 0x82, 0x6A, 0x34, 0x00],
     ),
     Case(
         label="ApplySolidityModToLevel",
         commands_factory=lambda: [
-            ApplySolidityModToLevel(
-                permanent=False, room_id=84, mod_id=0
-            ),
-            ApplySolidityModToLevel(
-                permanent=True, room_id=83, mod_id=3
-            ),
+            ApplySolidityModToLevel(permanent=False, room_id=84, mod_id=0),
+            ApplySolidityModToLevel(permanent=True, room_id=83, mod_id=3),
         ],
         expected_bytes=[0x6B, 0x54, 0x00, 0x6B, 0x53, 0x86],
     ),
@@ -1286,7 +1351,7 @@ test_cases = [
     Case(
         label="DisplayIntroTitleText",
         commands_factory=lambda: [
-            DisplayIntroTitleText(KING_BOWSER, y=6),
+            DisplayIntroTitleText(KING_BOWSER_TITLE, y=6),
         ],
         expected_bytes=[0xFD, 0x66, 0x06, 0x02],
     ),
@@ -1371,9 +1436,7 @@ test_cases = [
     Case(
         label="StartBattleAtBattlefield",
         commands_factory=lambda: [
-            StartBattleAtBattlefield(
-                198, Battlefield(21)
-            ),
+            StartBattleAtBattlefield(198, Battlefield(21)),
         ],
         expected_bytes=[0x4A, 0xC6, 0x00, 0x15],
     ),
@@ -1680,7 +1743,7 @@ test_cases = [
                 ["jmp_here"],
             ),
             JmpIfVarNotEqualsConst(ShortVar(0x7000), 4, ["jmp_here"]),
-            JmpIfVarNotEqualsConst(ShortVar(0x701a), 4, ["jmp_here"]),
+            JmpIfVarNotEqualsConst(ShortVar(0x701A), 4, ["jmp_here"]),
             Return(identifier="jmp_here"),
         ],
         expected_bytes=[
@@ -1709,7 +1772,9 @@ test_cases = [
             CreatePacketAtObjectCoords(
                 packet=Packet(
                     packet_id=33,
-                ), target_npc=NPC_3, destinations=["jmp_here"]
+                ),
+                target_npc=NPC_3,
+                destinations=["jmp_here"],
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1728,7 +1793,8 @@ test_cases = [
             CreatePacketAt7010(
                 packet=Packet(
                     packet_id=16,
-                ), destinations=["jmp_here"]
+                ),
+                destinations=["jmp_here"],
             ),
             Return(identifier="jmp_here"),
         ],
@@ -1845,9 +1911,7 @@ test_cases = [
     Case(
         label="JmpIfObjectNotInSpecificLevel",
         commands_factory=lambda: [
-            JmpIfObjectNotInSpecificLevel(
-                NPC_1, 9, ["jmp_here"]
-            ),
+            JmpIfObjectNotInSpecificLevel(NPC_1, 9, ["jmp_here"]),
             Return(identifier="jmp_here"),
         ],
         expected_bytes=[
@@ -1862,9 +1926,7 @@ test_cases = [
     Case(
         label="JmpIfObjectTriggerEnabledInSpecificLevel",
         commands_factory=lambda: [
-            JmpIfObjectTriggerEnabledInSpecificLevel(
-                NPC_5, 263, ["jmp_here"]
-            ),
+            JmpIfObjectTriggerEnabledInSpecificLevel(NPC_5, 263, ["jmp_here"]),
             Return(identifier="jmp_here"),
         ],
         expected_bytes=[
@@ -1880,9 +1942,7 @@ test_cases = [
     Case(
         label="JmpIfObjectTriggerDisabledInSpecificLevel",
         commands_factory=lambda: [
-            JmpIfObjectTriggerDisabledInSpecificLevel(
-                NPC_0, 9, ["jmp_here"]
-            ),
+            JmpIfObjectTriggerDisabledInSpecificLevel(NPC_0, 9, ["jmp_here"]),
             Return(identifier="jmp_here"),
         ],
         expected_bytes=[
@@ -2301,6 +2361,7 @@ test_cases = [
         exception_type=InvalidCommandArgumentException,
     ),
 ]
+
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
