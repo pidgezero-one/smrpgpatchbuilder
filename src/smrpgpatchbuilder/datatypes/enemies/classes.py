@@ -508,7 +508,9 @@ class Enemy:
 
         # main stats.
         data = bytearray()
-        data += ByteField(self.hp).as_bytes()
+        hp_field = ByteField(self.hp)
+        hp_bytes = hp_field.as_bytes()
+        data += hp_bytes
         data += ByteField(self.speed).as_bytes()
         data += ByteField(self.attack).as_bytes()
         data += ByteField(self.defense).as_bytes()
@@ -652,14 +654,31 @@ class EnemyCollection:
         patch: dict[int, bytearray] = {}
 
         # Render enemy and reward data at their default addresses (calculated from monster_id).
-        # Unlike LAZYSHELL which reads the existing pointer table, we assume enemies are
-        # laid out sequentially at BASE_ENEMY_ADDRESS and BASE_REWARD_ADDRESS.
-        # We do NOT write to the enemy or reward pointer tables - LAZYSHELL doesn't modify
-        # them either, and the original ROM already has correct pointers for sequential layout.
+        # We MUST write to the enemy and reward pointer tables to ensure consistency.
+        # The pointer table tells the game where to find each enemy's data.
         for enemy in self.enemies:
             # render enemy data at default addresses (based on monster_id)
             enemy_patch = enemy.render()
             patch.update(enemy_patch)
+
+            # Write enemy data pointer table entry
+            # Pointer table is at 0x390026, each entry is 2 bytes
+            # The pointer value is the offset from 0x390000
+            enemy_ptr_addr = ENEMY_POINTER_TABLE_ADDRESS + enemy.monster_id * 2
+            enemy_data_offset = enemy.address - 0x390000  # Offset from bank start
+            patch[enemy_ptr_addr] = bytearray([
+                enemy_data_offset & 0xFF,
+                (enemy_data_offset >> 8) & 0xFF
+            ])
+
+            # Write reward data pointer table entry
+            # Reward pointer table is at 0x39142A, each entry is 2 bytes
+            reward_ptr_addr = REWARD_POINTER_TABLE_ADDRESS + enemy.monster_id * 2
+            reward_data_offset = enemy.reward_address - REWARD_DATA_BANK
+            patch[reward_ptr_addr] = bytearray([
+                reward_data_offset & 0xFF,
+                (reward_data_offset >> 8) & 0xFF
+            ])
 
         # now handle psychopath messages
         # Battle dialog character encoding (NO word compression like overworld dialogs)
