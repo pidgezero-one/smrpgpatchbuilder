@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: smrpgpatchbuilder
-Version: 1.1.61
+Version: 1.1.62
 Summary: Patchable base class support for some SMRPG concepts similar to their definitions in Lazy Shell
 Author-email: pidgezero_one <s.kischak@gmail.com>
 License-Expression: MIT
