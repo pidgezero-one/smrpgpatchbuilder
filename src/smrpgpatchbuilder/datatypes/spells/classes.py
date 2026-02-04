@@ -1,6 +1,7 @@
 """Base classes fors spells."""
 
 from copy import deepcopy
+from typing import Generic, TypeVar
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
@@ -416,15 +417,18 @@ class EnemySpell(Spell):
     """Grouping class for enemy-specific spells."""
     pass
 
-class SpellCollection:
+SpellT = TypeVar("SpellT", bound=Spell)
+
+
+class SpellCollection(Generic[SpellT]):
     """Collection of spells with rendering support for character spell descriptions."""
 
-    spells: list[Spell]
+    spells: list[SpellT]
     additional_desc_ranges: list[tuple[int, int]]
 
     def __init__(
         self,
-        spells: list[Spell],
+        spells: list[SpellT],
         additional_desc_ranges: list[tuple[int, int]] | None = None
     ):
         """Initialize the collection with a list of spells.
