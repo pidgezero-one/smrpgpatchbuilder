@@ -88,6 +88,13 @@ class DialogCollection:
         raw_index = dialog.bank - DIALOG_BANK_22
         self.raw_data[raw_index][dialog.index] = content
 
+    def search_and_replace_in_dialog(self, identifier: int, search: str, replace: str):
+        """Replace all instances of the substring in a specific dialog by its unique ID."""
+        dialog = self.dialogs[identifier]
+        raw_index = dialog.bank - DIALOG_BANK_22
+        current_content = self.raw_data[raw_index][dialog.index]
+        self.raw_data[raw_index][dialog.index] = current_content.replace(search, replace)
+
     def search_and_replace_in_all_dialogs(self, search: str, replace: str):
         """Replace all instances of the substring across all dialogs."""
         for bank_index, bank in enumerate(self.raw_data):
