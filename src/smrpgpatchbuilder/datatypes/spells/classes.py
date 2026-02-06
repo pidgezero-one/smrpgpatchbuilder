@@ -1,6 +1,7 @@
 """Base classes fors spells."""
 
 from copy import deepcopy
+from typing import Generic, TypeVar
 
 from smrpgpatchbuilder.datatypes.numbers.classes import BitMapSet, ByteField, UInt8
 from smrpgpatchbuilder.datatypes.items.enums import ItemPrefix
@@ -416,19 +417,32 @@ class EnemySpell(Spell):
     """Grouping class for enemy-specific spells."""
     pass
 
-class SpellCollection:
+SpellT = TypeVar("SpellT", bound=Spell)
+
+
+class SpellCollection(Generic[SpellT]):
     """Collection of spells with rendering support for character spell descriptions."""
 
-    def __init__(self, spells: list[Spell]):
+    spells: list[SpellT]
+    additional_desc_ranges: list[tuple[int, int]]
+
+    def __init__(
+        self,
+        spells: list[SpellT],
+        additional_desc_ranges: list[tuple[int, int]] | None = None
+    ):
         """Initialize the collection with a list of spells.
 
         Args:
             spells: list of Spell objects (can include both CharacterSpell and EnemySpell)
+            additional_desc_ranges: optional list of (start, end) address tuples for
+                overflow spell descriptions when the default range runs out of room
 
         Raises:
             ValueError: if there aren't exactly 27 character spells
         """
         self.spells = spells
+        self.additional_desc_ranges = additional_desc_ranges or []
 
         # Count character spells with valid indices (0-26 / 0x1A)
         character_spells = [
@@ -463,8 +477,15 @@ class SpellCollection:
         # Sort by index to ensure correct pointer table ordering
         character_spells.sort(key=lambda s: s.index)
 
-        current_desc_addr = SPELL_BASE_DESC_DATA_START
-        total_desc_bytes = 0
+        # Build list of available ranges: default range first, then additional ranges
+        available_ranges: list[tuple[int, int]] = [
+            (SPELL_BASE_DESC_DATA_START, SPELL_BASE_DESC_DATA_END)
+        ]
+        available_ranges.extend(self.additional_desc_ranges)
+
+        current_range_index = 0
+        current_range_start, current_range_end = available_ranges[current_range_index]
+        current_desc_addr = current_range_start
 
         for spell in character_spells:
             # Get the description
@@ -477,9 +498,26 @@ class SpellCollection:
             # Add terminating 0x00
             desc_bytes.append(0x00)
 
-            total_desc_bytes += len(desc_bytes)
+            # Check if this description fits in the current range
+            bytes_remaining_in_range = current_range_end - current_desc_addr + 1
+            if len(desc_bytes) > bytes_remaining_in_range:
+                # Try to move to the next available range
+                current_range_index += 1
+                if current_range_index >= len(available_ranges):
+                    # Calculate total available space for error message
+                    total_available = sum(
+                        end - start + 1 for start, end in available_ranges
+                    )
+                    raise ValueError(
+                        f"Spell descriptions exceed all available space. "
+                        f"Total available: {total_available} bytes across "
+                        f"{len(available_ranges)} range(s). "
+                        f"Reduce description lengths or add more ranges."
+                    )
+                current_range_start, current_range_end = available_ranges[current_range_index]
+                current_desc_addr = current_range_start
 
-            # Calculate pointer value (16-bit address within bank 0x3A)
+            # Calculate pointer value (16-bit address within bank)
             pointer_value = current_desc_addr & 0xFFFF
 
             # Write pointer at the correct position based on spell index
@@ -494,14 +532,5 @@ class SpellCollection:
 
             # Move to next description address
             current_desc_addr += len(desc_bytes)
-
-        # Check if total description data exceeds available space
-        max_desc_size = SPELL_BASE_DESC_DATA_END - SPELL_BASE_DESC_DATA_START + 1
-        if total_desc_bytes > max_desc_size:
-            raise ValueError(
-                f"Spell descriptions total {total_desc_bytes} bytes, "
-                f"which exceeds the maximum allowed size of {max_desc_size} bytes. "
-                f"Reduce description lengths by {total_desc_bytes - max_desc_size} bytes."
-            )
 
         return patch
