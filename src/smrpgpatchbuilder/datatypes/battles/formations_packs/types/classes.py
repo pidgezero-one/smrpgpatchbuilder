@@ -30,6 +30,16 @@ class FormationMember:
     _y_pos: UInt8
     _anchor: bool
     _include_in_stat_totaling: bool
+    _use: bool
+
+    @property
+    def use(self) -> bool:
+        """If true, this enemy slot is active in the formation (LazyShell 'Use' checkbox)."""
+        return self._use
+
+    def set_use(self, use: bool) -> None:
+        """Set whether this enemy slot is active in the formation."""
+        self._use = use
 
     @property
     def hidden_at_start(self) -> bool:
@@ -97,6 +107,7 @@ class FormationMember:
         hidden_at_start: bool = False,
         anchor: bool = False,
         include_in_stat_totaling: bool = True,
+        use: bool = True,
     ) -> None:
         self.set_enemy(enemy)
         self.set_x_pos(x_pos)
@@ -104,6 +115,7 @@ class FormationMember:
         self.set_hidden_at_start(hidden_at_start)
         self.set_anchor(anchor)
         self.set_include_in_stat_totaling(include_in_stat_totaling)
+        self.set_use(use)
 
 class Formation:
     """A subclass that defines an arrangement of enemies in a battle."""
@@ -236,17 +248,18 @@ class Formation:
         patch: dict[int, bytearray] = {}
         data = bytearray()
 
-        # monsters present bitmap.
+        # monsters present bitmap (Use checkbox in LazyShell).
         monsters_present = [
-            7 - index for (index, enemy) in enumerate(self.members) if enemy is not None
+            7 - index for (index, member) in enumerate(self.members)
+            if member is not None and member.use
         ]
         data += BitMapSet(1, monsters_present).as_bytes()
 
         # monsters hidden bitmap.
         monsters_hidden = [
             7 - index
-            for (index, enemy) in enumerate(self.members)
-            if enemy is not None and enemy.hidden_at_start
+            for (index, member) in enumerate(self.members)
+            if member is not None and member.use and member.hidden_at_start
         ]
         data += BitMapSet(1, monsters_hidden).as_bytes()
 

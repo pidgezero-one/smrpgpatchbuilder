@@ -299,6 +299,14 @@ class RoomCollection:
         unique_npcs, clone_group_mapping = self._build_sequential_placement(clone_groups)
 
         # Verify NPC count doesn't exceed maximum
+        import sys
+        print(f"DEBUG: RoomCollection.render() - {len(unique_npcs)} unique NPCs to patch")
+        sys.stdout.flush()
+        # Debug: Check for sprite 717 in unique NPCs
+        for idx, npc in enumerate(unique_npcs):
+            if npc.sprite_id == 717:
+                print(f"DEBUG: NPC table index {idx} has sprite_id=717")
+                sys.stdout.flush()
         if len(unique_npcs) > 1462:
             raise ValueError(
                 f"Too many unique NPCs: {len(unique_npcs)} exceeds maximum of 1462. "
