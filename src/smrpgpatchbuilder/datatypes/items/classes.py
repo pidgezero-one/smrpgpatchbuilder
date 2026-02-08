@@ -701,11 +701,17 @@ class ItemCollection:
 
     _additional_desc_ranges: list[tuple[int, int]]
 
-    def __init__(self, items: list[Item]):
+    def __init__(
+        self,
+        items: list[Item],
+        additional_desc_ranges: list[tuple[int, int]] | None = None
+    ):
         """initialize the collection with a list of items.
 
         args:
             items: list of item objects (should be 256 items, indexed by item_id)
+            additional_desc_ranges: optional list of (start, end) address tuples for
+                overflow item descriptions when the default range runs out of room
 
         raises:
             valueerror: if the collection contains more than 256 items
@@ -715,7 +721,7 @@ class ItemCollection:
                 f"ItemCollection can contain at most 256 items, but {len(items)} were provided."
             )
         self.items = items
-        self._additional_desc_ranges = []
+        self._additional_desc_ranges = additional_desc_ranges or []
 
     def set_additional_desc_ranges(self, ranges: list[tuple[int, int]]) -> None:
         """Set additional address ranges for writing item descriptions.
