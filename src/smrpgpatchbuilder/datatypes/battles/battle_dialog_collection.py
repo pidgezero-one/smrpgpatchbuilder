@@ -73,7 +73,7 @@ class BattleDialogCollection:
             # For battle dialogs, apostrophe encodes to 0x9B (not 0x27 like overworld).
             # Special tokens for item/menu font characters (used by some battle messages):
             #   [item_apos] -> 0x7E (apostrophe in item font)
-            #   [item_excl] -> 0x7C (exclamation in item font)
+            #   [item_excl] -> 0x7B (exclamation in item font)
             #   [item_hyphen] -> 0x7D (hyphen in item font)
             compression_table = [
                 ("\n", b"\x01"),
@@ -82,7 +82,7 @@ class BattleDialogCollection:
                 ("[delay]", b"\x0C"),
                 ("'", b"\x9B"),  # Apostrophe in battle dialogs (LazyShell TextHelperReduced.cs line 186)
                 ("[item_apos]", b"\x7E"),  # Apostrophe in item/menu font
-                ("[item_excl]", b"\x7C"),  # Exclamation in item/menu font
+                ("[item_excl]", b"\x7B"),  # Exclamation in item/menu font
                 ("[item_hyphen]", b"\x7D"),  # Hyphen in item/menu font
             ] + COMPRESSION_TABLE[17:]
 
