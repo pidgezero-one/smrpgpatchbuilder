@@ -97,6 +97,7 @@ class Command(BaseCommand):
             writeline(file, f"    byte5_bit6={npc.byte5_bit6!r},")
             writeline(file, f"    byte5_bit7={npc.byte5_bit7!r},")
             writeline(file, f"    byte6_bit2={npc.byte6_bit2!r},")
+            writeline(file, f"    force_id={npc_index},")
             writeline(file, ")")
             writeline(file, "")
 

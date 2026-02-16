@@ -11,13 +11,23 @@ class RoomCollection:
 
     _rooms: list[Room | None]
     _large_partition_table: bool
+    _force_first_npc: NPC | None
+    _empty_npc: NPC | None
 
-    def __init__(self, rooms: list[Room | None], large_partition_table: bool = False):
+    def __init__(
+        self,
+        rooms: list[Room | None],
+        large_partition_table: bool = False,
+        force_first_npc: NPC | None = None,
+        empty_npc: NPC | None = None,
+    ):
         """Initialize the room collection.
 
         Args:
             rooms: List of 512 rooms (some can be None)
             large_partition_table: If True, use extended partition table at 0x1DEBE0
+            force_first_npc: If provided, this NPC is always placed at index 0 in the NPC table
+            empty_npc: The EMPTY_NPC to use for filling gaps when NPCs have force_id set
         """
         assert len(rooms) == 512, f"Expected 512 rooms, got {len(rooms)}"
         # Ensure last room (511) is None
@@ -25,6 +35,8 @@ class RoomCollection:
 
         self._rooms = rooms
         self._large_partition_table = large_partition_table
+        self._force_first_npc = force_first_npc
+        self._empty_npc = empty_npc
 
     def _get_npc_signature(self, npc: NPC, room_obj: BaseRoomObject | None = None) -> tuple:
         """Get a unique signature for an NPC that includes all properties.
@@ -134,20 +146,58 @@ class RoomCollection:
             - unique_npcs: List of NPC objects in the table
             - clone_group_mapping: dict[(room_idx, parent_obj_idx), dict[signature, table_index]]
         """
-        unique_npcs = []
         clone_group_mapping = {}
         global_sig_to_npc = {}  # signature -> NPC object (for creating copies)
 
         # First pass: collect all unique signatures and create NPC objects
+        # Also collect NPCs with force_id set
         all_signatures = set()
+        forced_npcs: dict[int, NPC] = {}  # force_id -> NPC
         for room_idx, room in enumerate(self._rooms):
             if room is None:
                 continue
             for obj in room.objects:
                 sig = self._get_npc_signature(obj._npc, obj)
                 if sig not in global_sig_to_npc:
-                    global_sig_to_npc[sig] = self._create_merged_npc(obj._npc, obj)
+                    merged_npc = self._create_merged_npc(obj._npc, obj)
+                    global_sig_to_npc[sig] = merged_npc
+                    # Check if the base NPC has a force_id
+                    if obj._npc.force_id is not None:
+                        forced_npcs[obj._npc.force_id] = merged_npc
                 all_signatures.add(sig)
+
+        # Determine minimum table size based on forced NPCs
+        min_table_size = 0
+        if forced_npcs:
+            min_table_size = max(forced_npcs.keys()) + 1
+
+        # Initialize table with None placeholders
+        unique_npcs: list[NPC | None] = [None] * min_table_size
+        reserved_indices: set[int] = set()
+
+        # Place forced NPCs at their specified indices
+        for idx, npc in forced_npcs.items():
+            unique_npcs[idx] = npc
+            reserved_indices.add(idx)
+
+        # If force_first_npc is set, place it at index 0 unconditionally
+        # This NPC is completely separate and excluded from deduplication
+        if self._force_first_npc is not None:
+            if len(unique_npcs) == 0:
+                unique_npcs.append(self._force_first_npc)
+            else:
+                unique_npcs[0] = self._force_first_npc
+            reserved_indices.add(0)
+
+        # Track which signatures have been placed via force_id
+        sig_to_forced_index: dict[tuple, int] = {}
+        for room_idx, room in enumerate(self._rooms):
+            if room is None:
+                continue
+            for obj in room.objects:
+                if obj._npc.force_id is not None:
+                    sig = self._get_npc_signature(obj._npc, obj)
+                    sig_to_forced_index[sig] = obj._npc.force_id
 
         # Second pass: process clone groups and create sequential placements
         for room_idx, parent_obj_idx, signatures in clone_groups:
@@ -169,13 +219,22 @@ class RoomCollection:
 
             # Create a sequential block for this clone group using only unique signatures
             sig_to_index = {}
+
+            # Find a contiguous block of available indices
             base_index = len(unique_npcs)
+            # Extend the list to accommodate this clone group
+            for _ in range(len(unique_signatures)):
+                unique_npcs.append(None)
 
             for i, sig in enumerate(unique_signatures):
-                # Add NPC to table at sequential index
-                npc_obj = global_sig_to_npc[sig]
-                unique_npcs.append(npc_obj)
-                sig_to_index[sig] = base_index + i
+                # Check if this signature was already placed via force_id
+                if sig in sig_to_forced_index:
+                    sig_to_index[sig] = sig_to_forced_index[sig]
+                else:
+                    # Add NPC to table at sequential index
+                    npc_obj = global_sig_to_npc[sig]
+                    unique_npcs[base_index + i] = npc_obj
+                    sig_to_index[sig] = base_index + i
 
             # Store mapping for this clone group
             clone_group_mapping[(room_idx, parent_obj_idx)] = sig_to_index
@@ -186,6 +245,11 @@ class RoomCollection:
         # but as a standalone object in another room
         global_fallback_mapping = {}
         for sig in all_signatures:
+            # Check if this signature was placed via force_id
+            if sig in sig_to_forced_index:
+                global_fallback_mapping[sig] = sig_to_forced_index[sig]
+                continue
+
             # Check if this signature is already in the NPC table (from a clone group)
             already_in_table = False
             existing_index = None
@@ -199,7 +263,7 @@ class RoomCollection:
                 # Reuse the existing table index
                 global_fallback_mapping[sig] = existing_index
             else:
-                # Add new entry to table
+                # Add new entry to table at next available index
                 idx = len(unique_npcs)
                 unique_npcs.append(global_sig_to_npc[sig])
                 global_fallback_mapping[sig] = idx
@@ -207,7 +271,20 @@ class RoomCollection:
         # Store fallback mapping for non-clone-group objects
         clone_group_mapping[(-1, -1)] = global_fallback_mapping
 
-        return unique_npcs, clone_group_mapping
+        # Fill any remaining None slots with EMPTY_NPC
+        if self._empty_npc is not None:
+            for i in range(len(unique_npcs)):
+                if unique_npcs[i] is None:
+                    unique_npcs[i] = self._empty_npc
+
+        # Convert to non-optional list (all Nones should be filled now)
+        final_npcs: list[NPC] = []
+        for npc in unique_npcs:
+            if npc is None:
+                raise ValueError("NPC table has unfilled slots but no empty_npc was provided")
+            final_npcs.append(npc)
+
+        return final_npcs, clone_group_mapping
 
     def _create_merged_npc(self, base_npc: NPC, room_obj: BaseRoomObject) -> NPC:
         """Create a new NPC with room-level overrides merged in."""

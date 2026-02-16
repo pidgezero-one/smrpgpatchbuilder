@@ -794,6 +794,17 @@ class NPC:
     _byte5_bit6: bool = False
     _byte5_bit7: bool = False
     _byte6_bit2: bool = False
+    _force_id: int | None = None
+
+    @property
+    def force_id(self) -> int | None:
+        """If set, this NPC will always be placed at this specific index in the NPC table,
+        regardless of whether it appears in any rooms."""
+        return self._force_id
+
+    def set_force_id(self, force_id: int | None) -> None:
+        """Set the forced NPC table index for this NPC."""
+        self._force_id = force_id
 
     @property
     def sprite_id(self) -> UInt16:
@@ -1022,7 +1033,8 @@ class NPC:
                  byte2_bit4: bool = False,
                  byte5_bit6: bool = False,
                  byte5_bit7: bool = False,
-                 byte6_bit2: bool = False) -> None:
+                 byte6_bit2: bool = False,
+                 force_id: int | None = None) -> None:
         self._sprite_id = UInt16(sprite_id)
         self._shadow_size = shadow_size
         self._acute_axis = UInt4(acute_axis)
@@ -1044,6 +1056,7 @@ class NPC:
         self._byte5_bit6 = byte5_bit6
         self._byte5_bit7 = byte5_bit7
         self._byte6_bit2 = byte6_bit2
+        self._force_id = force_id
 
 class BaseRoomObject:
     """The base definition for a room NPC, including placement and

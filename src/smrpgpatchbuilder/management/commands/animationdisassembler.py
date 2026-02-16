@@ -196,7 +196,7 @@ POINTER_MUST_REMAIN_STATIC: list[StaticPointer] = [
     StaticPointer(0x358271, True, None, "weapon_sound_oq", 37),
     StaticPointer(0x358916, False, None, "weapon_wrapper_mario"),
     StaticPointer(0x3589D5, False, None, "weapon_wrapper_toadstool"),
-    StaticPointer(0x358AC6, False, None, "weapon_wrapper_bowser"),
+    StaticPointer(0x358A6C, False, None, "weapon_wrapper_bowser"),
     StaticPointer(0x358B57, False, None, "weapon_wrapper_geno"),
     StaticPointer(0x358BEC, False, None, "weapon_wrapper_mallow"),
     # items: range(0x35C761, 0x35C802, 2) = 81 pointers
