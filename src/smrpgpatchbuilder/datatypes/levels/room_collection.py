@@ -208,6 +208,56 @@ class RoomCollection:
                     sig = self._get_npc_signature(obj._npc, obj)
                     sig_to_forced_index[sig] = obj._npc.force_id
 
+        # Build list of available indices (gaps in the forced range)
+        # IMPORTANT: base_assigned_npc is encoded as 10 bits, max value 1023
+        MAX_NPC_INDEX = 1023
+        available_indices: list[int] = []
+        for i in range(min_table_size):
+            if i not in reserved_indices:
+                available_indices.append(i)
+        # Also track next index beyond forced range
+        next_index_after_forced = min_table_size
+
+        def get_next_available_index() -> int:
+            """Get the next available index, preferring gaps in forced range."""
+            nonlocal next_index_after_forced
+            if available_indices:
+                return available_indices.pop(0)
+            else:
+                idx = next_index_after_forced
+                next_index_after_forced += 1
+                return idx
+
+        def get_contiguous_indices(count: int) -> list[int]:
+            """Get 'count' contiguous indices for a clone group."""
+            nonlocal next_index_after_forced
+            if count == 0:
+                return []
+            # Clone groups need contiguous indices
+            # First, try to find a contiguous block in the available_indices (gaps)
+            for start_pos in range(len(available_indices) - count + 1):
+                # Check if indices at positions start_pos to start_pos+count-1 are contiguous
+                candidate = available_indices[start_pos:start_pos + count]
+                is_contiguous = all(
+                    candidate[i+1] == candidate[i] + 1
+                    for i in range(len(candidate) - 1)
+                )
+                if is_contiguous:
+                    # Found a contiguous block in gaps, use it
+                    for _ in range(count):
+                        available_indices.pop(start_pos)
+                    return candidate
+            # No contiguous gaps found, allocate at the end
+            base = next_index_after_forced
+            if base + count - 1 > MAX_NPC_INDEX:
+                raise ValueError(
+                    f"NPC index would exceed maximum of {MAX_NPC_INDEX}. "
+                    f"Clone group needs {count} contiguous indices starting at {base}. "
+                    f"Too many unique NPCs. Consider reducing forced NPC indices or total NPC count."
+                )
+            next_index_after_forced += count
+            return list(range(base, base + count))
+
         # Second pass: process clone groups and create sequential placements
         for room_idx, parent_obj_idx, signatures in clone_groups:
             # Deduplicate signatures while preserving order
@@ -226,24 +276,27 @@ class RoomCollection:
                     f"Clone group has {len(unique_signatures)} different NPCs (max 8)"
                 )
 
-            # Create a sequential block for this clone group using only unique signatures
+            # Count how many signatures actually need new indices (not forced)
+            sigs_needing_indices = [s for s in unique_signatures if s not in sig_to_forced_index]
+            new_indices = get_contiguous_indices(len(sigs_needing_indices))
+
+            # Create mapping for this clone group
             sig_to_index = {}
+            new_idx_iter = iter(new_indices)
 
-            # Find a contiguous block of available indices
-            base_index = len(unique_npcs)
-            # Extend the list to accommodate this clone group
-            for _ in range(len(unique_signatures)):
-                unique_npcs.append(None)
-
-            for i, sig in enumerate(unique_signatures):
+            for sig in unique_signatures:
                 # Check if this signature was already placed via force_id
                 if sig in sig_to_forced_index:
                     sig_to_index[sig] = sig_to_forced_index[sig]
                 else:
-                    # Add NPC to table at sequential index
+                    # Assign next contiguous index
+                    idx = next(new_idx_iter)
+                    # Extend list if needed
+                    while len(unique_npcs) <= idx:
+                        unique_npcs.append(None)
                     npc_obj = global_sig_to_npc[sig]
-                    unique_npcs[base_index + i] = npc_obj
-                    sig_to_index[sig] = base_index + i
+                    unique_npcs[idx] = npc_obj
+                    sig_to_index[sig] = idx
 
             # Store mapping for this clone group
             clone_group_mapping[(room_idx, parent_obj_idx)] = sig_to_index
@@ -272,10 +325,18 @@ class RoomCollection:
                 # Reuse the existing table index
                 global_fallback_mapping[sig] = existing_index
             else:
-                # Add new entry to table at next available index
-                idx = len(unique_npcs)
-                unique_npcs.append(global_sig_to_npc[sig])
+                # Use a gap in the forced range if available, otherwise extend
+                idx = get_next_available_index()
+                # Extend list if needed
+                while len(unique_npcs) <= idx:
+                    unique_npcs.append(None)
+                unique_npcs[idx] = global_sig_to_npc[sig]
                 global_fallback_mapping[sig] = idx
+                if idx > MAX_NPC_INDEX:
+                    raise ValueError(
+                        f"NPC index {idx} exceeds maximum of {MAX_NPC_INDEX}. "
+                        f"Too many unique NPCs. Consider reducing forced NPC indices or total NPC count."
+                    )
 
         # Store fallback mapping for non-clone-group objects
         clone_group_mapping[(-1, -1)] = global_fallback_mapping
