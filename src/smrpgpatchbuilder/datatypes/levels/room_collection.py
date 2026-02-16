@@ -150,9 +150,7 @@ class RoomCollection:
         global_sig_to_npc = {}  # signature -> NPC object (for creating copies)
 
         # First pass: collect all unique signatures and create NPC objects
-        # Also collect NPCs with force_id set
         all_signatures = set()
-        forced_npcs: dict[int, NPC] = {}  # force_id -> NPC
         for room_idx, room in enumerate(self._rooms):
             if room is None:
                 continue
@@ -161,10 +159,21 @@ class RoomCollection:
                 if sig not in global_sig_to_npc:
                     merged_npc = self._create_merged_npc(obj._npc, obj)
                     global_sig_to_npc[sig] = merged_npc
-                    # Check if the base NPC has a force_id
-                    if obj._npc.force_id is not None:
-                        forced_npcs[obj._npc.force_id] = merged_npc
                 all_signatures.add(sig)
+
+        # Collect NPCs with force_id set (must be separate from signature deduplication
+        # because the first object with a given signature might not have force_id,
+        # but a later object with the same signature might)
+        forced_npcs: dict[int, NPC] = {}  # force_id -> NPC
+        for room_idx, room in enumerate(self._rooms):
+            if room is None:
+                continue
+            for obj in room.objects:
+                if obj._npc.force_id is not None:
+                    sig = self._get_npc_signature(obj._npc, obj)
+                    # Use the merged NPC from global_sig_to_npc to ensure consistency
+                    if obj._npc.force_id not in forced_npcs:
+                        forced_npcs[obj._npc.force_id] = global_sig_to_npc[sig]
 
         # Determine minimum table size based on forced NPCs
         min_table_size = 0
