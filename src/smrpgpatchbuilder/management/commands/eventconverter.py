@@ -11,7 +11,12 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *
 
-from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config, load_flags_from_input_files, load_variables_from_input_files
+from .input_file_parser import (
+    load_arrays_from_input_files,
+    load_class_names_from_config,
+    load_flags_from_input_files,
+    load_variables_from_input_files,
+)
 
 DIRECTIONS = [
     "EAST",
@@ -124,7 +129,7 @@ TUTORIALS = [
     "TU00_HOW_TO_EQUIP",
     "TU01_HOW_TO_USE_ITEMS",
     "TU02_HOW_TO_SWITCH",
-    "TU02_HOW_TO_PLAY_BEETLEMANIA"
+    "TU02_HOW_TO_PLAY_BEETLEMANIA",
 ]
 
 SCENES = [
@@ -153,6 +158,7 @@ searchable_vars = globals()
 
 actions_jumped_to = []
 events_jumped_to = []
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -296,7 +302,10 @@ class Command(BaseCommand):
                 cls = "AppendDialogAt7000ToCurrentDialog"
                 args["closable"] = "True" if 5 in cmdargs[0] else "False"
                 args["sync"] = "False" if 7 in cmdargs[0] else "True"
-            elif cmd["command"] == "apply_tile_mod" or cmd["command"] == "apply_solidity_mod":
+            elif (
+                cmd["command"] == "apply_tile_mod"
+                or cmd["command"] == "apply_solidity_mod"
+            ):
                 if cmd["command"] == "apply_tile_mod":
                     cls = "ApplyTileModToLevel"
                     args["use_alternate"] = "True" if 15 in cmdargs[2] else "False"
@@ -523,7 +532,10 @@ class Command(BaseCommand):
                 cls = "JmpIf316DIs3"
                 args["destinations"] = '["%s"]' % cmdargs[0]
                 include_argnames = False
-            elif cmd["command"] in ["jmp_if_7000_all_bits_clear", "jmp_if_7000_any_bits_set"]:
+            elif cmd["command"] in [
+                "jmp_if_7000_all_bits_clear",
+                "jmp_if_7000_any_bits_set",
+            ]:
                 if cmd["command"] == "jmp_if_7000_all_bits_clear":
                     cls = "JmpIf7000AllBitsClear"
                 elif cmd["command"] == "jmp_if_7000_any_bits_set":
@@ -605,7 +617,10 @@ class Command(BaseCommand):
                 include_argnames = False
                 args["object"] = AREA_OBJECTS[cmdargs[0]]
                 args["destinations"] = '["%s"]' % cmdargs[1]
-            elif cmd["command"] in ["jmp_if_object_in_level", "jmp_if_object_not_in_level"]:
+            elif cmd["command"] in [
+                "jmp_if_object_in_level",
+                "jmp_if_object_not_in_level",
+            ]:
                 if cmd["command"] == "jmp_if_object_in_level":
                     cls = "JmpIfObjectInSpecificLevel"
                 elif cmd["command"] == "jmp_if_object_not_in_level":
@@ -642,7 +657,10 @@ class Command(BaseCommand):
             ]:
                 if cmd["command"] == "jmp_if_objects_less_than_xy_steps_apart":
                     cls = "JmpIfObjectsAreLessThanXYStepsApart"
-                elif cmd["command"] == "jmp_if_objects_less_than_xy_steps_apart_same_z_coord":
+                elif (
+                    cmd["command"]
+                    == "jmp_if_objects_less_than_xy_steps_apart_same_z_coord"
+                ):
                     cls = "JmpIfObjectsAreLessThanXYStepsApartSameZCoord"
                 include_argnames = False
                 args["object_1"] = AREA_OBJECTS[cmdargs[0]]
@@ -1291,6 +1309,8 @@ class Command(BaseCommand):
                 upper = (cmdargs[0] & 0xF0) >> 4
                 if upper != 0:
                     args["upper"] = str(upper)
+            elif cmd["command"] == "inc_palette_row":
+                cls = "A_IncPaletteRow"
             elif cmd["command"] == "set_animation_speed":
                 include_argnames = False
                 speed = cmdargs[0]
@@ -1318,7 +1338,9 @@ class Command(BaseCommand):
                 elif 0 in flags and 1 in flags:
                     cls = "A_SetAllSpeeds"
                 else:
-                    raise Exception("%s %r speed has no type" % (cmd["identifier"], flags))
+                    raise Exception(
+                        "%s %r speed has no type" % (cmd["identifier"], flags)
+                    )
             elif cmd["command"] == "set_object_memory_bits":
                 cls = "A_SetObjectMemoryBits"
                 args["arg_1"] = f"0x{cmdargs[0]:02X}"
@@ -1527,7 +1549,8 @@ class Command(BaseCommand):
                 include_argnames = False
                 args["count"] = str(cmdargs[0])
             elif (
-                cmd["command"] == "jump_to_height_silent" or cmd["command"] == "jump_to_height"
+                cmd["command"] == "jump_to_height_silent"
+                or cmd["command"] == "jump_to_height"
             ):
                 cls = "A_JumpToHeight"
                 args["height"] = str(cmdargs[0])
@@ -1662,7 +1685,8 @@ class Command(BaseCommand):
                 args["address"] = vars_lookup.get(cmdargs[0])
                 args["value"] = str(cmdargs[1])
             elif (
-                cmd["command"] == "add_var_to_700C" or cmd["command"] == "add_short_mem_to_700C"
+                cmd["command"] == "add_var_to_700C"
+                or cmd["command"] == "add_short_mem_to_700C"
             ):
                 cls = "A_AddVarTo700C"
                 include_argnames = False
@@ -1795,7 +1819,10 @@ class Command(BaseCommand):
                 else:
                     args["value"] = str(cmdargs[1])
                 args["destinations"] = '["%s"]' % cmdargs[2]
-            elif cmd["command"] in ["jmp_if_700C_all_bits_clear", "jmp_if_700C_any_bits_set"]:
+            elif cmd["command"] in [
+                "jmp_if_700C_all_bits_clear",
+                "jmp_if_700C_any_bits_set",
+            ]:
                 if cmd["command"] == "jmp_if_700C_all_bits_clear":
                     cls = "A_JmpIf700CAllBitsClear"
                 elif cmd["command"] == "jmp_if_700C_any_bits_set":
@@ -1864,7 +1891,10 @@ class Command(BaseCommand):
                 cls = "A_EnableTriggerOfObjectAt70A8InCurrentLevel"
             elif cmd["command"] == "disable_trigger_at_70A8":
                 cls = "A_DisableTriggerOfObjectAt70A8InCurrentLevel"
-            elif cmd["command"] in ["jmp_if_object_in_level", "jmp_if_object_not_in_level"]:
+            elif cmd["command"] in [
+                "jmp_if_object_in_level",
+                "jmp_if_object_not_in_level",
+            ]:
                 if cmd["command"] == "jmp_if_object_in_level":
                     cls = "A_JmpIfObjectInSpecificLevel"
                 elif cmd["command"] == "jmp_if_object_not_in_level":
@@ -1961,7 +1991,9 @@ class Command(BaseCommand):
 
             for cmd in script:
                 identifier = ""
-                cls, args, use_identifier, include_argnames = converter(cmd, valid_identifiers)
+                cls, args, use_identifier, include_argnames = converter(
+                    cmd, valid_identifiers
+                )
 
                 if cls is not None:
                     arg_strings = []
@@ -1986,14 +2018,10 @@ class Command(BaseCommand):
 
         def produce_action_script(index, script, valid_identifiers):
             output = "#%s" % varnames["action_scripts"][index]
-            output += (
-                "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
-            )
+            output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
-            output += (
-                "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
-            )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *"
 
@@ -2006,7 +2034,9 @@ class Command(BaseCommand):
             output += "\nfrom ....items import *"
             output += "\n\nscript = ActionScript([\n\t"
 
-            contents = convert_script(script, valid_identifiers, convert_action_script_command)
+            contents = convert_script(
+                script, valid_identifiers, convert_action_script_command
+            )
             output += ",\n\t".join(contents)
 
             output += "\n])"
@@ -2015,29 +2045,19 @@ class Command(BaseCommand):
 
         def produce_event_script(index, script, valid_identifiers):
             output = "# %s" % varnames["event_scripts"][index]
-            output += (
-                "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import EventScript"
-            )
+            output += "\n\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.classes import EventScript"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.event_scripts.commands import *"
-            output += (
-                "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
-            )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.commands import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.area_objects import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.colours import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.controller_inputs import *"
-            output += (
-                "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
-            )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.coords import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
-            output += (
-                "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
-            )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
-            output += (
-                "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
-            )
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.action_scripts.arguments import *"
             output += "\nfrom ....variables.action_script_names import *"
@@ -2055,7 +2075,9 @@ class Command(BaseCommand):
             output += "\nfrom ....packets import *"
             output += "\n\nscript = EventScript([\n\t"
 
-            contents = convert_script(script, valid_identifiers, convert_event_script_command)
+            contents = convert_script(
+                script, valid_identifiers, convert_event_script_command
+            )
             output += ",\n\t".join(contents)
 
             output += "\n])"
