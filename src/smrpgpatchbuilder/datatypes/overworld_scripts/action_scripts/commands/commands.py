@@ -6969,6 +6969,7 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
 
     _rows = UInt4(0)
     _upper = UInt4(0)
+    _size = 2
 
     @property
     def upper(self) -> UInt4:
