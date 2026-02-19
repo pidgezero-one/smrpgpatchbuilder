@@ -6984,12 +6984,6 @@ class A_IncPaletteRowBy(UsableActionScriptCommand, ActionScriptCommand):
         """The row offset to increase by, relative to the current palette."""
         return self._rows
 
-    @property
-    def size(self) -> int:
-        if self.rows == 1 and self.upper == 0:
-            return 1
-        return 2
-
     def set_rows(self, rows: int) -> None:
         """Designate the row offset to increase by, relative to the current palette,
         for this command."""
