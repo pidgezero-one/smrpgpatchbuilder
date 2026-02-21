@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 import sys, os, shutil
 
 from smrpgpatchbuilder.utils.disassembler_common import (
+    bytearray_hex_literal,
     writeline,
 )
 from .legacy.eventdisassembler import Command as EventDisassemblerCommand
@@ -1074,7 +1075,7 @@ class Command(BaseCommand):
                         args["bit_7"] = "True"
                 except:
                     cls = "UnknownCommand"
-                    args["args"] = "%r" % bytearray([0xC7, cmdargs[0]])
+                    args["args"] = bytearray_hex_literal(bytearray([0xC7, cmdargs[0]]))
             elif cmd["command"] == "set_7016_to_object_xyz":
                 try:
                     cls = "Set7016701BToObjectXYZ"
@@ -1085,7 +1086,7 @@ class Command(BaseCommand):
                         args["bit_7"] = "True"
                 except:
                     cls = "UnknownCommand"
-                    args["args"] = "%r" % bytearray([0xC8, cmdargs[0]])
+                    args["args"] = bytearray_hex_literal(bytearray([0xC8, cmdargs[0]]))
             elif cmd["command"] == "set_experience_packet_7000":
                 cls = "SetEXPPacketTo7000"
             elif cmd["command"] == "set_object_memory_to":
@@ -1216,7 +1217,7 @@ class Command(BaseCommand):
             elif cmd["command"] == "db":
                 cls = "UnknownCommand"
                 include_argnames = False
-                args["args"] = "%r" % bytearray(cmdargs)
+                args["args"] = bytearray_hex_literal(bytearray(cmdargs))
             else:
                 raise Exception("%s not found" % cmd["command"])
 
@@ -1365,7 +1366,7 @@ class Command(BaseCommand):
             elif cmd["command"] == "embedded_animation_routine":
                 cls = "A_EmbeddedAnimationRoutine"
                 include_argnames = False
-                args["args"] = "%r" % bytearray(cmdargs)
+                args["args"] = bytearray_hex_literal(bytearray(cmdargs))
             elif cmd["command"] == "bpl_26_27":
                 cls = "A_BPL2627"
             elif (
@@ -1980,7 +1981,7 @@ class Command(BaseCommand):
             elif cmd["command"] == "db":
                 cls = "A_UnknownCommand"
                 include_argnames = False
-                args["args"] = "%r" % bytearray(cmdargs)
+                args["args"] = bytearray_hex_literal(bytearray(cmdargs))
             else:
                 raise Exception("%s not found" % cmd["command"])
 

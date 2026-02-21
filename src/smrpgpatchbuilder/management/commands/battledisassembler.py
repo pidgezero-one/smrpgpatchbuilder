@@ -3,7 +3,7 @@
 import os
 import shutil
 from django.core.management.base import BaseCommand
-from smrpgpatchbuilder.utils.disassembler_common import shortify, writeline
+from smrpgpatchbuilder.utils.disassembler_common import bytearray_hex_literal, shortify, writeline
 from .input_file_parser import load_arrays_from_input_files, load_class_names_from_config
 
 TARGETS = [
@@ -655,7 +655,7 @@ class Command(BaseCommand):
                         include_argnames = False
                     else:
                         cls = "UnknownCommand"
-                        args["bytes"] = "%r" % command
+                        args["bytes"] = bytearray_hex_literal(command)
                         include_argnames = False
             arg_strings = []
             for key in args:

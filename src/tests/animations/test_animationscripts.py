@@ -1301,6 +1301,14 @@ test_cases = [
         expected_bytes=[0x51, 0x05, 0xC0, 0x11],
     ),
     Case(
+        label="UnknownJmp52",
+        commands_factory=lambda: [
+            UnknownJmp52(param=0x1234, destinations=["jmp"]),
+            ReturnSubroutine(identifier="jmp"),
+        ],
+        expected_bytes=[0x52, 0x34, 0x12, 0x07, 0xC0, 0x11],
+    ),
+    Case(
         label="SpriteQueue",
         commands_factory=lambda: [
             UseSpriteQueue(
@@ -1787,7 +1795,7 @@ test_cases = [
     Case(
         # this one doesn't have as many protections as event and action scripts do, just don't fuck it up
         label="UnknownCommand",
-        commands_factory=lambda: [UnknownCommand(bytearray(b"\x16"))],
+        commands_factory=lambda: [UnknownCommand(bytearray([0x16]))],
         expected_bytes=[0x16],
     ),
     Case(
@@ -1800,7 +1808,7 @@ test_cases = [
         label="should error if expected size is wrong",
         commands_factory=lambda: [StoreOMEM60ToItemInventory(), StoreOMEM60ToItemInventory()],
         expected_length=1,
-        exception="animation script output too long: got 2 expected 1",
+        exception="has 1 oversized script(s)",
         exception_type=ScriptBankTooLongException,
     ),
 ]

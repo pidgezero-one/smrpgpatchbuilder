@@ -32,6 +32,7 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 
 from dataclasses import dataclass
 
+
 @dataclass
 class Case:
     label: str
@@ -39,6 +40,7 @@ class Case:
     expected_bytes: list[int] | None = None
     exception: str | None = None
     exception_type: type | None = None
+
 
 test_cases = [
     #
@@ -579,8 +581,13 @@ test_cases = [
         expected_bytes=[0x0E, 0x2E],
     ),
     Case(
-        "A_IncPaletteRowBy (1)",
+        "A_IncPaletteRowBy_1",
         commands_factory=lambda: [A_IncPaletteRowBy(1)],
+        expected_bytes=[0x0E, 0x01],
+    ),
+    Case(
+        "A_IncPaletteRow",
+        commands_factory=lambda: [A_IncPaletteRow()],
         expected_bytes=[0x0F],
     ),
     Case(
@@ -1000,11 +1007,6 @@ test_cases = [
         expected_bytes=[0x0E, 0x00],
     ),
     Case(
-        "A_IncPaletteRowBy1",
-        commands_factory=lambda: [A_IncPaletteRowBy(1)],
-        expected_bytes=[0x0F],
-    ),
-    Case(
         "A_IncPaletteRowBy2",
         commands_factory=lambda: [A_IncPaletteRowBy(rows=2)],
         expected_bytes=[0x0E, 0x02],
@@ -1145,9 +1147,7 @@ test_cases = [
     Case(
         label="A_SummonObjectToSpecificLevel",
         commands_factory=lambda: [
-            A_SummonObjectToSpecificLevel(
-                target_npc=NPC_4, level_id=20
-            )
+            A_SummonObjectToSpecificLevel(target_npc=NPC_4, level_id=20)
         ],
         expected_bytes=[0xF2, 0x14, 0xB0],
     ),
@@ -1159,9 +1159,7 @@ test_cases = [
     Case(
         label="A_RemoveObjectFromSpecificLevel",
         commands_factory=lambda: [
-            A_RemoveObjectFromSpecificLevel(
-                target_npc=NPC_1, level_id=76
-            )
+            A_RemoveObjectFromSpecificLevel(target_npc=NPC_1, level_id=76)
         ],
         expected_bytes=[0xF2, 0x4C, 0x2A],
     ),
@@ -1173,9 +1171,7 @@ test_cases = [
     Case(
         label="A_EnableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
-            A_EnableObjectTriggerInSpecificLevel(
-                target_npc=NPC_3, level_id=311
-            )
+            A_EnableObjectTriggerInSpecificLevel(target_npc=NPC_3, level_id=311)
         ],
         expected_bytes=[0xF3, 0x37, 0xAF],
     ),
@@ -1187,9 +1183,7 @@ test_cases = [
     Case(
         label="A_DisableObjectTriggerInSpecificLevel",
         commands_factory=lambda: [
-            A_DisableObjectTriggerInSpecificLevel(
-                target_npc=NPC_6, level_id=509
-            )
+            A_DisableObjectTriggerInSpecificLevel(target_npc=NPC_6, level_id=509)
         ],
         expected_bytes=[0xF3, 0xFD, 0x35],
     ),
@@ -1793,7 +1787,8 @@ test_cases = [
             A_CreatePacketAt7010(
                 packet=Packet(
                     packet_id=24,
-                ), destinations=["end_here"]
+                ),
+                destinations=["end_here"],
             ),
             A_ReturnQueue(identifier="end_here"),
         ],
@@ -1816,9 +1811,7 @@ test_cases = [
     Case(
         label="A_JmpIfObjectInSpecificLevel",
         commands_factory=lambda: [
-            A_JmpIfObjectInSpecificLevel(
-                NPC_6, 251, ["end_here"]
-            ),
+            A_JmpIfObjectInSpecificLevel(NPC_6, 251, ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[0xF8, 0xFB, 0xB4, 0x07, 0x00, 0xFE],
@@ -1826,9 +1819,7 @@ test_cases = [
     Case(
         label="A_JmpIfObjectNotInSpecificLevel",
         commands_factory=lambda: [
-            A_JmpIfObjectNotInSpecificLevel(
-                NPC_2, 43, ["end_here"]
-            ),
+            A_JmpIfObjectNotInSpecificLevel(NPC_2, 43, ["end_here"]),
             A_ReturnQueue(identifier="end_here"),
         ],
         expected_bytes=[0xF8, 0x2B, 0x2C, 0x07, 0x00, 0xFE],
@@ -1899,6 +1890,7 @@ test_cases = [
         exception_type=InvalidCommandArgumentException,
     ),
 ]
+
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
