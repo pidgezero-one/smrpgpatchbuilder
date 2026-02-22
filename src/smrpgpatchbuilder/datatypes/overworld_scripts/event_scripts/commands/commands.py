@@ -8235,8 +8235,8 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         return self._change
 
     def set_change(self, change: int) -> None:
-        """Set he difference in tempo to apply as a speedup (0 to 128)."""
-        assert 0 < change <= 128
+        """Set he difference in tempo to apply as a speedup (0 to 127)."""
+        assert 0 < change <= 127
         self._change = UInt8(change)
 
     def __init__(
@@ -8247,7 +8247,7 @@ class SpeedUpMusicTempoBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_change(change)
 
     def render(self, *args) -> bytearray:
-        return super().render(self.duration, 256 - self.change)
+        return super().render(self.duration, 255 - self.change)
 
 
 class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
@@ -8300,7 +8300,7 @@ class ReduceMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         self.set_change(change)
 
     def render(self, *args) -> bytearray:
-        return super().render(self.duration, 256 - self.change)
+        return super().render(self.duration, 255 - self.change)
 
 
 class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
@@ -8341,8 +8341,8 @@ class IncreaseMusicPitchBy(UsableEventScriptCommand, EventScriptCommand):
         return self._change
 
     def set_change(self, change: int) -> None:
-        """Set the difference in pitch to raise by (0 to 128)."""
-        assert 0 < change <= 128
+        """Set the difference in pitch to raise by (0 to 127)."""
+        assert 0 < change <= 127
         self._change = UInt8(change)
 
     def __init__(

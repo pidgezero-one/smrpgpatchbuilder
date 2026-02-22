@@ -660,6 +660,7 @@ jmp_cmds_double = [0x42, 0x67, 0xE9]
 
 jmp_cmds_fd = [0x3E, 0x62, 0x96, 0x97, 0x3D, 0xF0, 0x34, 0x33, 0xE9]
 
+
 def is_eligible_nonembedded_command(cmd):
     if cmd[0] == 0x10:
         return True
@@ -670,7 +671,9 @@ def is_eligible_nonembedded_command(cmd):
     else:
         return False
 
+
 jumped_to_from_action_queue = []
+
 
 def tok(rom, start, end, bank):
     dex = start
@@ -754,6 +757,7 @@ def tok(rom, start, end, bank):
         dex += l
     return script
 
+
 def parse_line(line, offset, with_comments=True):
     if offset in jumped_to_from_action_queue and is_eligible_nonembedded_command(
         line[0:2]
@@ -775,8 +779,10 @@ def parse_line(line, offset, with_comments=True):
 
     return name, args
 
+
 fd_names = [None] * 256
 names = [None] * 256
+
 
 def is_jump(line):
     if line[0] == 0xFD:
@@ -785,21 +791,24 @@ def is_jump(line):
         is_jump = line[0] in jmp_cmds or line[0] in jmp_cmds_double
     return is_jump
 
+
 def get_jump_args(line, args):
     if line[0] in jmp_cmds_double:
         return -2
     else:
         return -1
 
+
 def adjust_music_calc(args):
     duration = args[0]
     speed_byte = args[1]
     direction = bit(args, 1, 7)
     if speed_byte > 127:
-        change = 256 - speed_byte
+        change = 255 - speed_byte
     else:
         change = speed_byte
     return direction, change, duration
+
 
 def adjust_music_pitch(args):
     direction, change, duration = adjust_music_calc(args)
@@ -809,6 +818,7 @@ def adjust_music_pitch(args):
         duration,
     ]
 
+
 def adjust_music_tempo(args):
     direction, change, duration = adjust_music_calc(args)
     return "adjust_music_tempo", [
@@ -816,6 +826,7 @@ def adjust_music_tempo(args):
         change,
         duration,
     ]
+
 
 def level_mod(args, prefix, table):
     area_byte = shortify(args, 0)
@@ -828,20 +839,26 @@ def level_mod(args, prefix, table):
         use_alternate,
     ]
 
+
 def apply_tile_mod(args):
     return "apply_tile_mod", level_mod(args, "_0x6AFlags", _0x6A_flags)
+
 
 def apply_solidity_mod(args):
     return "apply_solidity_mod", level_mod(args, "_0x6BFlags", _0x6B_flags)
 
+
 def circle_mask(args):
     return args
+
 
 def circle_mask_nonstatic(args):
     return "circle_mask_nonstatic", circle_mask(args)
 
+
 def circle_mask_static(args):
     return "circle_mask_static", circle_mask(args)
+
 
 def enter_area(args):
     room_short = shortify(args, 0)
@@ -861,11 +878,14 @@ def enter_area(args):
         flags,
     ]
 
+
 def fade_out_music_to_volume(args):
     return "fade_out_music_to_volume", args
 
+
 def fade_out_sound_to_volume(args):
     return "fade_out_sound_to_volume", args
+
 
 def jmp_depending_on_object_event_trigger(args):
     presence = bit(args, 1, 7)
@@ -882,6 +902,7 @@ def jmp_depending_on_object_event_trigger(args):
         addr,
     ]
 
+
 def jmp_depending_on_object_presence(args):
     presence = bit(args, 1, 7)
     obj = (args[1] & 0x7F) >> 1
@@ -897,10 +918,12 @@ def jmp_depending_on_object_presence(args):
         addr,
     ]
 
+
 def mem_7000_shift_left(args):
     addr = 2 * args[0] + 0x7000
     shift = 256 - args[1]
     return "mem_7000_shift_left", [addr, shift]
+
 
 def modify_party(args):
     char_byte = args[0]
@@ -911,11 +934,13 @@ def modify_party(args):
     else:
         return "leave_party", [char]
 
+
 def palette_set(args):
     palette_set = args[1]
     row = (args[0] >> 4) + 1
     unknown_bits = args[0] & 0x0F
     return "palette_set", [palette_set, row, parse_flags(unknown_bits)]
+
 
 def palette_set_morphs(args):
     morph_type = args[0] >> 4
@@ -928,6 +953,7 @@ def palette_set_morphs(args):
         palette_set,
         row,
     ]
+
 
 def parse_object_coord(cmd):
     def inner_parse_object_coord(args):
@@ -944,6 +970,7 @@ def parse_object_coord(cmd):
         return "set_7000_to_object_coord", func_params
 
     return inner_parse_object_coord
+
 
 def parse_obj_fxn(obj):
     def inner_parse_obj_fxn(args):
@@ -1025,18 +1052,22 @@ def parse_obj_fxn(obj):
 
     return inner_parse_obj_fxn
 
+
 def pause(args):
     return "pause", [args[0] + 1]
+
 
 def pauseshort(args):
     s = shortify(args, 0)
     return "pause", [s + 1]
+
 
 def pixelate_layers(args):
     layers = parse_flags(args[0], "_0x84Flags", _0x84_flags, bits=[0, 1, 2, 3])
     size = args[0] >> 4
     duration = args[1]
     return "pixelate_layers", [layers, size, duration]
+
 
 def priority_set(args):
     mainscreen = parse_flags(args[0], "_0x81Flags", _0x81_flags)
@@ -1048,15 +1079,18 @@ def priority_set(args):
         color_math,
     ]
 
+
 def resume_background_event(args):
     timer_memory = 0x701C + args[0] * 2
     return "resume_background_event", [timer_memory]
+
 
 def run_background_event(args):
     event_byte = shortify(args, 0)
     event_id = event_byte & 0x0FFF
     f = parse_flags(event_byte, "_0x40Flags", _0x40_flags, [13, 14, 15])
     return "run_background_event", [event_id, f]
+
 
 def run_bkgd_event_pause_math(args):
     s = shortify(args, 0)
@@ -1068,13 +1102,16 @@ def run_bkgd_event_pause_math(args):
         parse_flags(s, bits=[12, 13]),
     ]
 
+
 def run_background_event_with_pause(args):
     return "run_background_event_with_pause", run_bkgd_event_pause_math(args)
+
 
 def run_background_event_with_pause_return_on_exit(args):
     return "run_background_event_with_pause_return_on_exit", run_bkgd_event_pause_math(
         args
     )
+
 
 # what to do about flags for this?
 # maybe make a shared fxn that gets full byte as one number & extracts bits that way
@@ -1099,6 +1136,7 @@ def run_dialog(args):
         flags,
     ]
 
+
 def run_dialog_duration(args):
     dialog_id = shortify(args, 0) & 0x0FFF
     flags = parse_flags(args[1], "_0x60Flags", _0x60_flags, [7])
@@ -1109,14 +1147,17 @@ def run_dialog_duration(args):
         flags,
     ]
 
+
 def run_event_sequence(args):
 
     return "run_event_sequence", args
+
 
 def parse_target_bit(cmd, args):
     bit = args[0] & 0x07
     addr = 0x7040 + (0x0020 * (cmd & 0x0F)) + (args[0] >> 3)
     return addr, bit
+
 
 # name bit vars eventually
 def set_bit(cmd):
@@ -1126,6 +1167,7 @@ def set_bit(cmd):
 
     return inner_set_bit
 
+
 def clear_bit(cmd):
     def inner_clear_bit(args):
         addr, bit = parse_target_bit(cmd - 0xA4, args)
@@ -1133,12 +1175,14 @@ def clear_bit(cmd):
 
     return inner_clear_bit
 
+
 def store_set_bits(cmd):
     def inner_set_bit(args):
         addr, bit = parse_target_bit(cmd - 0xA8, args)
         return "store_set_bits", [addr, bit]
 
     return inner_set_bit
+
 
 def jmp_if_bit_clear(cmd):
     def inner_jmp_if_bit_clear(args):
@@ -1152,6 +1196,7 @@ def jmp_if_bit_clear(cmd):
 
     return inner_jmp_if_bit_clear
 
+
 def jmp_if_bit_set(cmd):
     def inner_jmp_if_bit_set(args):
         addr, bit = parse_target_bit(cmd - 0xD8, args)
@@ -1164,9 +1209,11 @@ def jmp_if_bit_set(cmd):
 
     return inner_jmp_if_bit_set
 
+
 def set_7000_to_member_in_slot(args):
     slot = args[0] - 0x08
     return "set_7000_to_member_in_slot", [slot]
+
 
 def set_object_presence_in_level(args):
     presence = bit(args, 1, 7)
@@ -1178,6 +1225,7 @@ def set_object_presence_in_level(args):
         func = "remove_from_level"
     return func, [obj, level]
 
+
 def set_object_trigger_in_level(args):
     presence = bit(args, 1, 7)
     obj = (args[1] & 0x7F) >> 1
@@ -1188,19 +1236,23 @@ def set_object_trigger_in_level(args):
         func = "disable_trigger_in_level"
     return func, [obj, level]
 
+
 def stop_background_event(args):
     timer_memory = 0x701C + args[0] * 2
     return "stop_background_event", [timer_memory]
+
 
 def set_bit_7_offset(args):
     target = 0x0158 + (args[0] & 0x7F) * 2
     unknown_bits = parse_flags(args[0], bits=[7])
     return "set_bit_7_offset", [target, unknown_bits]
 
+
 def clear_bit_7_offset(args):
     target = 0x0158 + (args[0] & 0x7F) * 2
     unknown_bits = parse_flags(args[0], bits=[7])
     return "clear_bit_7_offset", [target, unknown_bits]
+
 
 def tint_layers(args):
     colour_bytes = shortify(args, 0)
@@ -1211,6 +1263,7 @@ def tint_layers(args):
     flags = parse_flags(args[2], "_0x81Flags", _0x81_flags, [0, 1, 2, 3, 4, 5, 6, 7])
     unknown_flags = parse_flags(args[1], bits=[7])
     return "tint_layers", [red, green, blue, speed, flags, unknown_flags]
+
 
 names[0x00] = parse_obj_fxn(0x00)
 names[0x01] = parse_obj_fxn(0x01)
@@ -1335,9 +1388,7 @@ names[0x4F] = named(
     byte(prefix="EventSequences", table=event_sequence_table),
 )
 names[0x50] = named("put_inventory", byte_int())
-names[0x51] = named(
-    "remove_one_from_inventory", byte_int()
-)
+names[0x51] = named("remove_one_from_inventory", byte_int())
 names[0x52] = named("add_coins", byte_int())
 names[0x53] = named("add_frog_coins", byte_int())
 names[0x54] = named(
@@ -1477,9 +1528,7 @@ names[0xC6] = parse_object_coord(0xC6)
 names[0xC7] = named(
     "set_7010_to_object_xyz", byte(prefix="AreaObjects", table=area_object_table)
 )
-names[0xC8] = named(
-    "set_7016_to_object_xyz", byte_int()
-)
+names[0xC8] = named("set_7016_to_object_xyz", byte_int())
 names[0xC9] = parse_object_coord(0xC9)
 names[0xCA] = named("set_7000_to_pressed_button")
 names[0xCB] = named("set_7000_to_tapped_button")
@@ -1580,9 +1629,7 @@ fd_names[0x54] = named("add_frog_coins", con(0x7000))
 fd_names[0x55] = named("dec_7000_from_frog_coins")
 fd_names[0x56] = named("add_7000_to_current_FP")
 fd_names[0x57] = named("add_7000_to_max_FP")
-fd_names[0x58] = named(
-    "store_item_amount_7000", byte_int()
-)
+fd_names[0x58] = named("store_item_amount_7000", byte_int())
 fd_names[0x59] = named("store_coin_amount_7000")
 fd_names[0x5A] = named("store_frog_coin_amount_7000")
 fd_names[0x5B] = named("restore_all_hp")
@@ -1672,6 +1719,7 @@ fd_names[0xFB] = named("store_01_to_0248")
 fd_names[0xFC] = named("store_00_to_0248")
 fd_names[0xFD] = named("store_02_to_0248")
 fd_names[0xFE] = named("return_fd")
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -1957,5 +2005,6 @@ class Command(BaseCommand):
         for i in range(len(scripts_data)):
             writeline(file, "scripts[%i] = script_%i" % (i, i))
         file.close()
+
 
 # Do round-trip testing command-by-command
