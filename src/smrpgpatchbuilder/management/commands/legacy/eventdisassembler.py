@@ -939,7 +939,7 @@ def palette_set(args):
     palette_set_starts_at = args[1]
     from_row = args[0] & 0x0F
     num_extra = (args[0] >> 4) & 0x0F
-    to_row = from_row + num_extra
+    to_row = (from_row + num_extra) % 16
     return "palette_set", [palette_set_starts_at, from_row, to_row]
 
 

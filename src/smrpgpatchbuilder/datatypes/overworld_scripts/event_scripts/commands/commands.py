@@ -7139,13 +7139,8 @@ class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
-    """Write one or more consecutive event palettes into palette rows.
-
-    `palette_set_starts_at` is the index of the first event palette to read from.
-    `from_row` is the first palette row to write to. `to_row` is the last palette
-    row to write to (inclusive, defaults to `from_row`). The game copies
-    `(to_row - from_row + 1)` consecutive palettes starting at
-    `palette_set_starts_at` into rows `from_row` through `to_row`.
+    """Any number of palette rows (from level, Mario, or NPC) instantly take on a palette in 0x37Axxx.  
+    Consecutive rows determined by the to_row param will use consecutive palettes beginning with palette_set_starts_at.
 
     ## Lazy Shell command
         `Palette set = ...`
@@ -7158,8 +7153,8 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         palette_set_starts_at (int): The starting event palette index (0-255)
-        from_row (PaletteRow): The first palette row to write to (0-15)
-        to_row (PaletteRow | None): The last palette row to write to (inclusive, 0-15). Defaults to from_row.
+        from_row (PaletteRow): The first palette row to write to
+        to_row (PaletteRow | None): The last palette row to write to (inclusive, wraps around). Defaults to from_row
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
@@ -7193,9 +7188,8 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         return self._to_row
 
     def set_to_row(self, to_row: PaletteRow | int) -> None:
-        """Designate the last palette row to write to (inclusive)."""
+        """Designate the last palette row to write to (inclusive). Can wrap around past row 15."""
         self._to_row = PaletteRow(to_row)
-        assert self._to_row >= self._from_row
 
     def __init__(
         self,
@@ -7210,12 +7204,12 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         self.set_to_row(to_row if to_row is not None else from_row)
 
     def render(self, *args) -> bytearray:
-        arg_1 = UInt8(self.from_row + ((self.to_row - self.from_row) << 4))
+        arg_1 = UInt8(self.from_row + (((self.to_row - self.from_row) % 16) << 4))
         return super().render(arg_1, self.palette_set_starts_at)
 
 
 class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
-    """(The inner workings of this command are unknown.)
+    """A palette row (any from level, Mario, or NPC) shifts to a specific palette in 0x37Axxx.
 
     ## Lazy Shell command
         `Palette set morphs to {xx} set...`
