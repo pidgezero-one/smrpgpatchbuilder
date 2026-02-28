@@ -913,8 +913,8 @@ test_cases = [
     Case(
         label="PaletteSet",
         commands_factory=lambda: [
-            PaletteSet(palette_set=110, row=12),
-            PaletteSet(palette_set=89, row=2, upper=6),
+            PaletteSet(palette_set_starts_at=110, from_row=11),
+            PaletteSet(palette_set_starts_at=89, from_row=1, to_row=7),
         ],
         expected_bytes=[0x8A, 0x0B, 0x6E, 0x8A, 0x61, 0x59],
     ),
@@ -1059,12 +1059,12 @@ test_cases = [
         commands_factory=lambda: [
             SpeedUpMusicTempoBy(duration=255, change=24),
         ],
-        expected_bytes=[0x97, 0xFF, 0xE8],
+        expected_bytes=[0x97, 0xFF, 0xE7],
     ),
     Case(
         label="ReduceMusicPitchBy",
         commands_factory=lambda: [ReduceMusicPitchBy(duration=8, change=5)],
-        expected_bytes=[0x98, 0x08, 0xFB],
+        expected_bytes=[0x98, 0x08, 0xFA],
     ),
     Case(
         label="IncreaseMusicPitchBy",

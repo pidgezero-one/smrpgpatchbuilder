@@ -9,6 +9,7 @@ from .flag import Flag
 from .intro_title_text import IntroTitleText
 from .layer import Layer
 from .packet import Packet, PacketCollection
+from .palette_row import PaletteRow
 from .palette_type import PaletteType
 from .party_character import PartyCharacter
 from .scene import Scene

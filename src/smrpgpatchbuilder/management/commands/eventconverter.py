@@ -94,6 +94,25 @@ CONTROLLER_INPUTS = ["LEFT", "RIGHT", "DOWN", "UP", "X", "A", "Y", "B"]
 
 COLOURS = ["BLACK", "BLUE", "RED", "PINK", "GREEN", "AQUA", "YELLOW", "WHITE"]
 
+PALETTE_ROWS = [
+    "ROW_1",
+    "LEVEL_PALETTE_1",
+    "LEVEL_PALETTE_2",
+    "LEVEL_PALETTE_3",
+    "LEVEL_PALETTE_4",
+    "LEVEL_PALETTE_5",
+    "LEVEL_PALETTE_6",
+    "LEVEL_PALETTE_7",
+    "MARIO_PALETTE",
+    "NPC_PALETTE_ROW_1",
+    "NPC_PALETTE_ROW_2",
+    "NPC_PALETTE_ROW_3",
+    "NPC_PALETTE_ROW_4",
+    "NPC_PALETTE_ROW_5",
+    "NPC_PALETTE_ROW_6",
+    "NPC_PALETTE_ROW_7",
+]
+
 PALETTE_TYPES = [
     "NOTHING",
     None,
@@ -817,16 +836,16 @@ class Command(BaseCommand):
                 args["shop_id"] = varnames["shops"][cmdargs[0]]
             elif cmd["command"] == "palette_set":
                 cls = "PaletteSet"
-                args["palette_set"] = str(cmdargs[0])
-                args["row"] = str(cmdargs[1])
-                if cmdargs[2] != 0:
-                    args["upper"] = str(cmdargs[2])
+                args["palette_set_starts_at"] = str(cmdargs[0])
+                args["from_row"] = PALETTE_ROWS[cmdargs[1]]
+                if cmdargs[2] != cmdargs[1]:
+                    args["to_row"] = PALETTE_ROWS[cmdargs[2]]
             elif cmd["command"] == "palette_set_morphs":
                 cls = "PaletteSetMorphs"
                 args["palette_type"] = PALETTE_TYPES[cmdargs[0]]
                 args["duration"] = str(cmdargs[1])
                 args["palette_set"] = str(cmdargs[2])
-                args["row"] = str(cmdargs[3])
+                args["row"] = PALETTE_ROWS[cmdargs[3]]
             elif cmd["command"] == "pause":
                 cls = "Pause"
                 include_argnames = False
@@ -2051,6 +2070,7 @@ class Command(BaseCommand):
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.directions import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.intro_title_text import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.layers import *"
+            output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_rows import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.palette_types import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.scenes import *"
             output += "\nfrom smrpgpatchbuilder.datatypes.overworld_scripts.arguments.tutorials import *"

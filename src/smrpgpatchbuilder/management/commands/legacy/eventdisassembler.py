@@ -936,10 +936,11 @@ def modify_party(args):
 
 
 def palette_set(args):
-    palette_set = args[1]
-    row = (args[0] & 0x0F) + 1
-    upper = (args[0] >> 4) & 0x0F
-    return "palette_set", [palette_set, row, upper]
+    palette_set_starts_at = args[1]
+    from_row = args[0] & 0x0F
+    num_extra = (args[0] >> 4) & 0x0F
+    to_row = from_row + num_extra
+    return "palette_set", [palette_set_starts_at, from_row, to_row]
 
 
 def palette_set_morphs(args):
