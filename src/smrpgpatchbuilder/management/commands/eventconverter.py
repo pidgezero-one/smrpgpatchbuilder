@@ -800,14 +800,8 @@ class Command(BaseCommand):
                 cls = "PaletteSet"
                 args["palette_set"] = str(cmdargs[0])
                 args["row"] = str(cmdargs[1])
-                if 0 in cmdargs[2]:
-                    args["bit_0"] = "True"
-                if 1 in cmdargs[2]:
-                    args["bit_1"] = "True"
-                if 2 in cmdargs[2]:
-                    args["bit_2"] = "True"
-                if 3 in cmdargs[2]:
-                    args["bit_3"] = "True"
+                if cmdargs[2] != 0:
+                    args["upper"] = str(cmdargs[2])
             elif cmd["command"] == "palette_set_morphs":
                 cls = "PaletteSetMorphs"
                 args["palette_type"] = PALETTE_TYPES[cmdargs[0]]

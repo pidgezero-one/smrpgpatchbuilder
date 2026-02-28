@@ -86,7 +86,7 @@ from smrpgpatchbuilder.datatypes.items.classes import (
     Accessory,
 )
 
-from smrpgpatchbuilder.datatypes.numbers.classes import UInt16, UInt8
+from smrpgpatchbuilder.datatypes.numbers.classes import UInt4, UInt16, UInt8
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.byte_var import (
     ByteVar,
 )
@@ -7149,11 +7149,8 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
 
     Args:
         palette_set (int): The palette set to apply to the NPCs in the current level (8 bit)
-        row (int): The row offset relative to the palette (8 bit)
-        bit_0 (bool): (unknown)
-        bit_1 (bool): (unknown)
-        bit_2 (bool): (unknown)
-        bit_3 (bool): (unknown)
+        row (int): The palette row (lower 4 bits of arg byte, 1-16)
+        upper (int): Unknown upper 4 bits of arg byte (0-15)
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
@@ -7161,10 +7158,7 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
     _size: int = 3
     _palette_set: UInt8
     _row: UInt8
-    _bit_0: bool
-    _bit_1: bool
-    _bit_2: bool
-    _bit_3: bool
+    _upper: UInt4
 
     @property
     def palette_set(self) -> UInt8:
@@ -7177,71 +7171,38 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
 
     @property
     def row(self) -> UInt8:
-        """The row offset relative to the palette."""
+        """The palette row (lower 4 bits)."""
         return self._row
 
     def set_row(self, row: int) -> None:
-        """Designate the row offset relative to palette for this command."""
+        """Designate the palette row for this command."""
         assert 1 <= row <= 16
         self._row = UInt8(row)
 
     @property
-    def bit_0(self) -> bool:
-        """(unknown)"""
-        return self._bit_0
+    def upper(self) -> UInt4:
+        """Unknown upper 4 bits of the arg byte."""
+        return self._upper
 
-    def set_bit_0(self, bit_0: bool) -> None:
-        """(unknown)"""
-        self._bit_0 = bit_0
-
-    @property
-    def bit_1(self) -> bool:
-        """(unknown)"""
-        return self._bit_1
-
-    def set_bit_1(self, bit_1: bool) -> None:
-        """(unknown)"""
-        self._bit_1 = bit_1
-
-    @property
-    def bit_2(self) -> bool:
-        """(unknown)"""
-        return self._bit_2
-
-    def set_bit_2(self, bit_2: bool) -> None:
-        """(unknown)"""
-        self._bit_2 = bit_2
-
-    @property
-    def bit_3(self) -> bool:
-        """(unknown)"""
-        return self._bit_3
-
-    def set_bit_3(self, bit_3: bool) -> None:
-        """(unknown)"""
-        self._bit_3 = bit_3
+    def set_upper(self, upper: int) -> None:
+        """Set the unknown upper 4 bits of the arg byte."""
+        assert 0 <= upper <= 15
+        self._upper = UInt4(upper)
 
     def __init__(
         self,
         palette_set: int,
         row: int,
-        bit_0: bool = False,
-        bit_1: bool = False,
-        bit_2: bool = False,
-        bit_3: bool = False,
+        upper: int = 0,
         identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
         self.set_palette_set(palette_set)
         self.set_row(row)
-        self.set_bit_0(bit_0)
-        self.set_bit_1(bit_1)
-        self.set_bit_2(bit_2)
-        self.set_bit_3(bit_3)
+        self.set_upper(upper)
 
     def render(self, *args) -> bytearray:
-        flags: int = bools_to_int(self.bit_0, self.bit_1, self.bit_2, self.bit_3)
-        arg_1 = UInt8(flags + ((self.row - 1) << 4))
+        arg_1 = UInt8((self.row - 1) + (self.upper << 4))
         return super().render(arg_1, self.palette_set)
 
 

@@ -913,9 +913,9 @@ def modify_party(args):
 
 def palette_set(args):
     palette_set = args[1]
-    row = (args[0] >> 4) + 1
-    unknown_bits = args[0] & 0x0F
-    return "palette_set", [palette_set, row, parse_flags(unknown_bits)]
+    row = (args[0] & 0x0F) + 1
+    upper = (args[0] >> 4) & 0x0F
+    return "palette_set", [palette_set, row, upper]
 
 def palette_set_morphs(args):
     morph_type = args[0] >> 4

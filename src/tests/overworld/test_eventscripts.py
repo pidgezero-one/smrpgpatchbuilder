@@ -913,8 +913,8 @@ test_cases = [
     Case(
         label="PaletteSet",
         commands_factory=lambda: [
-            PaletteSet(palette_set=110, row=1, bit_0=True, bit_1=True, bit_3=True),
-            PaletteSet(palette_set=89, row=7, bit_0=True),
+            PaletteSet(palette_set=110, row=12),
+            PaletteSet(palette_set=89, row=2, upper=6),
         ],
         expected_bytes=[0x8A, 0x0B, 0x6E, 0x8A, 0x61, 0x59],
     ),
