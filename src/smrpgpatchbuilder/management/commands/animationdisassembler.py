@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from smrpgpatchbuilder.utils.disassembler_common import (
+    bytearray_hex_literal,
     shortify,
     shortify_signed,
     byte_signed,
@@ -628,6 +629,7 @@ jmp_cmds = [
     0x47, # experimental
     0x50,
     0x51,
+    0x52,
     0x5D,
     0x64,
     0x68,
@@ -1674,6 +1676,10 @@ class Command(BaseCommand):
                 cls = "JmpIfTargetEnabled"
                 args["destinations"] = '["%s"]' % command.parsed_data[0]
                 include_argnames = False
+            elif opcode == 0x52:
+                cls = "UnknownJmp52"
+                args["param"] = f"0x{shortify(cmd, 1):04X}"
+                args["destinations"] = '["%s"]' % command.parsed_data[0]
             elif opcode == 0x5D:
                 cls = "UseSpriteQueue"
                 args["field_object"] = str(cmd[2])
@@ -2046,7 +2052,7 @@ class Command(BaseCommand):
             else:
                 cls = "UnknownCommand"
                 include_argnames = False
-                args["args"] = "%r" % bytearray(cmd)
+                args["args"] = bytearray_hex_literal(bytearray(cmd))
 
             return cls, args, use_identifier, include_argnames
 

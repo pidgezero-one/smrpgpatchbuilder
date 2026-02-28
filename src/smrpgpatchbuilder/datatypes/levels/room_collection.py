@@ -1,10 +1,22 @@
 """RoomCollection class for managing and rendering all 512 rooms in the game."""
 
 from smrpgpatchbuilder.datatypes.levels.classes import (
-    Room, NPC, Partition, BaseRoomObject, RoomObject, Clone,
-    BattlePackNPC, RegularNPC, ChestNPC, BattlePackClone, RegularClone, ChestClone,
-    RoomExit, MapExit
+    Room,
+    NPC,
+    Partition,
+    BaseRoomObject,
+    RoomObject,
+    Clone,
+    BattlePackNPC,
+    RegularNPC,
+    ChestNPC,
+    BattlePackClone,
+    RegularClone,
+    ChestClone,
+    RoomExit,
+    MapExit,
 )
+
 
 class RoomCollection:
     """Manages all 512 rooms and handles rendering them to ROM format."""
@@ -38,7 +50,9 @@ class RoomCollection:
         self._force_first_npc = force_first_npc
         self._empty_npc = empty_npc
 
-    def _get_npc_signature(self, npc: NPC, room_obj: BaseRoomObject | None = None) -> tuple:
+    def _get_npc_signature(
+        self, npc: NPC, room_obj: BaseRoomObject | None = None
+    ) -> tuple:
         """Get a unique signature for an NPC that includes all properties.
 
         If room_obj is provided, include any BaseRoomObject-level overrides.
@@ -69,28 +83,38 @@ class RoomCollection:
 
         # Add BaseRoomObject overrides if present
         if room_obj:
-            sig.extend([
-                room_obj.show_shadow if room_obj.show_shadow is not None else None,
-                room_obj.shadow_size if room_obj.shadow_size is not None else None,
-                room_obj.y_shift if room_obj.y_shift is not None else None,
-                room_obj.acute_axis if room_obj.acute_axis is not None else None,
-                room_obj.obtuse_axis if room_obj.obtuse_axis is not None else None,
-                room_obj.height if room_obj.height is not None else None,
-                room_obj.directions if room_obj.directions is not None else None,
-                room_obj.min_vram_size if room_obj.min_vram_size is not None else None,
-                room_obj.priority_0 if room_obj.priority_0 is not None else None,
-                room_obj.priority_1 if room_obj.priority_1 is not None else None,
-                room_obj.priority_2 if room_obj.priority_2 is not None else None,
-                room_obj.cannot_clone if room_obj.cannot_clone is not None else None,
-                room_obj.byte2_bit0 if room_obj.byte2_bit0 is not None else None,
-                room_obj.byte2_bit1 if room_obj.byte2_bit1 is not None else None,
-                room_obj.byte2_bit2 if room_obj.byte2_bit2 is not None else None,
-                room_obj.byte2_bit3 if room_obj.byte2_bit3 is not None else None,
-                room_obj.byte2_bit4 if room_obj.byte2_bit4 is not None else None,
-                room_obj.byte5_bit6 if room_obj.byte5_bit6 is not None else None,
-                room_obj.byte5_bit7 if room_obj.byte5_bit7 is not None else None,
-                room_obj.byte6_bit2 if room_obj.byte6_bit2 is not None else None,
-            ])
+            sig.extend(
+                [
+                    room_obj.show_shadow if room_obj.show_shadow is not None else None,
+                    room_obj.shadow_size if room_obj.shadow_size is not None else None,
+                    room_obj.y_shift if room_obj.y_shift is not None else None,
+                    room_obj.acute_axis if room_obj.acute_axis is not None else None,
+                    room_obj.obtuse_axis if room_obj.obtuse_axis is not None else None,
+                    room_obj.height if room_obj.height is not None else None,
+                    room_obj.directions if room_obj.directions is not None else None,
+                    (
+                        room_obj.min_vram_size
+                        if room_obj.min_vram_size is not None
+                        else None
+                    ),
+                    room_obj.priority_0 if room_obj.priority_0 is not None else None,
+                    room_obj.priority_1 if room_obj.priority_1 is not None else None,
+                    room_obj.priority_2 if room_obj.priority_2 is not None else None,
+                    (
+                        room_obj.cannot_clone
+                        if room_obj.cannot_clone is not None
+                        else None
+                    ),
+                    room_obj.byte2_bit0 if room_obj.byte2_bit0 is not None else None,
+                    room_obj.byte2_bit1 if room_obj.byte2_bit1 is not None else None,
+                    room_obj.byte2_bit2 if room_obj.byte2_bit2 is not None else None,
+                    room_obj.byte2_bit3 if room_obj.byte2_bit3 is not None else None,
+                    room_obj.byte2_bit4 if room_obj.byte2_bit4 is not None else None,
+                    room_obj.byte5_bit6 if room_obj.byte5_bit6 is not None else None,
+                    room_obj.byte5_bit7 if room_obj.byte5_bit7 is not None else None,
+                    room_obj.byte6_bit2 if room_obj.byte6_bit2 is not None else None,
+                ]
+            )
 
         return tuple(sig)
 
@@ -119,8 +143,12 @@ class RoomCollection:
 
                     # Collect consecutive clones
                     clone_idx = obj_idx + 1
-                    while clone_idx < len(room.objects) and isinstance(room.objects[clone_idx], Clone):
-                        clone_sig = self._get_npc_signature(room.objects[clone_idx]._npc, room.objects[clone_idx])
+                    while clone_idx < len(room.objects) and isinstance(
+                        room.objects[clone_idx], Clone
+                    ):
+                        clone_sig = self._get_npc_signature(
+                            room.objects[clone_idx]._npc, room.objects[clone_idx]
+                        )
                         signatures.append(clone_sig)
                         clone_idx += 1
 
@@ -132,10 +160,9 @@ class RoomCollection:
 
         return clone_groups
 
-    def _build_sequential_placement(self, clone_groups: list[tuple[int, int, list[tuple]]]) -> tuple[
-        list[NPC],
-        dict[tuple[int, int], dict[tuple, int]]
-    ]:
+    def _build_sequential_placement(
+        self, clone_groups: list[tuple[int, int, list[tuple]]]
+    ) -> tuple[list[NPC], dict[tuple[int, int], dict[tuple, int]]]:
         """Build NPC table with strategic sequential placement for clone groups.
 
         Args:
@@ -237,9 +264,9 @@ class RoomCollection:
             # First, try to find a contiguous block in the available_indices (gaps)
             for start_pos in range(len(available_indices) - count + 1):
                 # Check if indices at positions start_pos to start_pos+count-1 are contiguous
-                candidate = available_indices[start_pos:start_pos + count]
+                candidate = available_indices[start_pos : start_pos + count]
                 is_contiguous = all(
-                    candidate[i+1] == candidate[i] + 1
+                    candidate[i + 1] == candidate[i] + 1
                     for i in range(len(candidate) - 1)
                 )
                 if is_contiguous:
@@ -277,7 +304,9 @@ class RoomCollection:
                 )
 
             # Count how many signatures actually need new indices (not forced)
-            sigs_needing_indices = [s for s in unique_signatures if s not in sig_to_forced_index]
+            sigs_needing_indices = [
+                s for s in unique_signatures if s not in sig_to_forced_index
+            ]
             new_indices = get_contiguous_indices(len(sigs_needing_indices))
 
             # Create mapping for this clone group
@@ -351,7 +380,9 @@ class RoomCollection:
         final_npcs: list[NPC] = []
         for npc in unique_npcs:
             if npc is None:
-                raise ValueError("NPC table has unfilled slots but no empty_npc was provided")
+                raise ValueError(
+                    "NPC table has unfilled slots but no empty_npc was provided"
+                )
             final_npcs.append(npc)
 
         return final_npcs, clone_group_mapping
@@ -361,26 +392,100 @@ class RoomCollection:
         # Start with base NPC properties
         merged = NPC(
             sprite_id=base_npc.sprite_id,
-            shadow_size=room_obj.shadow_size if room_obj.shadow_size is not None else base_npc.shadow_size,
-            acute_axis=room_obj.acute_axis if room_obj.acute_axis is not None else base_npc.acute_axis,
-            obtuse_axis=room_obj.obtuse_axis if room_obj.obtuse_axis is not None else base_npc.obtuse_axis,
+            shadow_size=(
+                room_obj.shadow_size
+                if room_obj.shadow_size is not None
+                else base_npc.shadow_size
+            ),
+            acute_axis=(
+                room_obj.acute_axis
+                if room_obj.acute_axis is not None
+                else base_npc.acute_axis
+            ),
+            obtuse_axis=(
+                room_obj.obtuse_axis
+                if room_obj.obtuse_axis is not None
+                else base_npc.obtuse_axis
+            ),
             height=room_obj.height if room_obj.height is not None else base_npc.height,
-            y_shift=room_obj.y_shift if room_obj.y_shift is not None else base_npc.y_shift,
-            show_shadow=room_obj.show_shadow if room_obj.show_shadow is not None else base_npc.show_shadow,
-            directions=room_obj.directions if room_obj.directions is not None else base_npc.directions,
-            min_vram_size=room_obj.min_vram_size if room_obj.min_vram_size is not None else base_npc.min_vram_size,
-            priority_0=room_obj.priority_0 if room_obj.priority_0 is not None else base_npc.priority_0,
-            priority_1=room_obj.priority_1 if room_obj.priority_1 is not None else base_npc.priority_1,
-            priority_2=room_obj.priority_2 if room_obj.priority_2 is not None else base_npc.priority_2,
-            cannot_clone=room_obj.cannot_clone if room_obj.cannot_clone is not None else base_npc.cannot_clone,
-            byte2_bit0=room_obj.byte2_bit0 if room_obj.byte2_bit0 is not None else base_npc.byte2_bit0,
-            byte2_bit1=room_obj.byte2_bit1 if room_obj.byte2_bit1 is not None else base_npc.byte2_bit1,
-            byte2_bit2=room_obj.byte2_bit2 if room_obj.byte2_bit2 is not None else base_npc.byte2_bit2,
-            byte2_bit3=room_obj.byte2_bit3 if room_obj.byte2_bit3 is not None else base_npc.byte2_bit3,
-            byte2_bit4=room_obj.byte2_bit4 if room_obj.byte2_bit4 is not None else base_npc.byte2_bit4,
-            byte5_bit6=room_obj.byte5_bit6 if room_obj.byte5_bit6 is not None else base_npc.byte5_bit6,
-            byte5_bit7=room_obj.byte5_bit7 if room_obj.byte5_bit7 is not None else base_npc.byte5_bit7,
-            byte6_bit2=room_obj.byte6_bit2 if room_obj.byte6_bit2 is not None else base_npc.byte6_bit2,
+            y_shift=(
+                room_obj.y_shift if room_obj.y_shift is not None else base_npc.y_shift
+            ),
+            show_shadow=(
+                room_obj.show_shadow
+                if room_obj.show_shadow is not None
+                else base_npc.show_shadow
+            ),
+            directions=(
+                room_obj.directions
+                if room_obj.directions is not None
+                else base_npc.directions
+            ),
+            min_vram_size=(
+                room_obj.min_vram_size
+                if room_obj.min_vram_size is not None
+                else base_npc.min_vram_size
+            ),
+            priority_0=(
+                room_obj.priority_0
+                if room_obj.priority_0 is not None
+                else base_npc.priority_0
+            ),
+            priority_1=(
+                room_obj.priority_1
+                if room_obj.priority_1 is not None
+                else base_npc.priority_1
+            ),
+            priority_2=(
+                room_obj.priority_2
+                if room_obj.priority_2 is not None
+                else base_npc.priority_2
+            ),
+            cannot_clone=(
+                room_obj.cannot_clone
+                if room_obj.cannot_clone is not None
+                else base_npc.cannot_clone
+            ),
+            byte2_bit0=(
+                room_obj.byte2_bit0
+                if room_obj.byte2_bit0 is not None
+                else base_npc.byte2_bit0
+            ),
+            byte2_bit1=(
+                room_obj.byte2_bit1
+                if room_obj.byte2_bit1 is not None
+                else base_npc.byte2_bit1
+            ),
+            byte2_bit2=(
+                room_obj.byte2_bit2
+                if room_obj.byte2_bit2 is not None
+                else base_npc.byte2_bit2
+            ),
+            byte2_bit3=(
+                room_obj.byte2_bit3
+                if room_obj.byte2_bit3 is not None
+                else base_npc.byte2_bit3
+            ),
+            byte2_bit4=(
+                room_obj.byte2_bit4
+                if room_obj.byte2_bit4 is not None
+                else base_npc.byte2_bit4
+            ),
+            byte5_bit6=(
+                room_obj.byte5_bit6
+                if room_obj.byte5_bit6 is not None
+                else base_npc.byte5_bit6
+            ),
+            byte5_bit7=(
+                room_obj.byte5_bit7
+                if room_obj.byte5_bit7 is not None
+                else base_npc.byte5_bit7
+            ),
+            byte6_bit2=(
+                room_obj.byte6_bit2
+                if room_obj.byte6_bit2 is not None
+                else base_npc.byte6_bit2
+            ),
         )
         return merged
 
@@ -443,22 +548,9 @@ class RoomCollection:
 
         # Build NPC table with intelligent sequential placement for clone groups
         clone_groups = self._collect_clone_group_requirements()
-        unique_npcs, clone_group_mapping = self._build_sequential_placement(clone_groups)
-
-        # Verify NPC count doesn't exceed maximum
-        import sys
-        print(f"DEBUG: RoomCollection.render() - {len(unique_npcs)} unique NPCs to patch")
-        sys.stdout.flush()
-        # Debug: Check for sprite 717 in unique NPCs
-        for idx, npc in enumerate(unique_npcs):
-            if npc.sprite_id == 717:
-                print(f"DEBUG: NPC table index {idx} has sprite_id=717")
-                sys.stdout.flush()
-        if len(unique_npcs) > 1462:
-            raise ValueError(
-                f"Too many unique NPCs: {len(unique_npcs)} exceeds maximum of 1462. "
-                f"Reduce the number of unique NPC variants across all rooms."
-            )
+        unique_npcs, clone_group_mapping = self._build_sequential_placement(
+            clone_groups
+        )
 
         # Build partition table
         partitions, room_to_partition_index = self._build_partition_table()
@@ -471,7 +563,9 @@ class RoomCollection:
 
             # Write partitions to 0x1DEBE0-0x1DF3DF (256 partitions * 4 bytes)
             partition_start = 0x1DEBE0
-            assert len(partitions) <= 256, f"Expected at most 256 partitions, got {len(partitions)}"
+            assert (
+                len(partitions) <= 256
+            ), f"Expected at most 256 partitions, got {len(partitions)}"
         else:
             # Write [0x00 0xDE] to 0x008BB0 and 0x008B9D
             patches[0x008BB0] = bytearray([0x00, 0xDE])
@@ -479,7 +573,9 @@ class RoomCollection:
 
             # Write partitions to 0x1DDE00-0x1DDFFF (128 partitions * 4 bytes)
             partition_start = 0x1DDE00
-            assert len(partitions) <= 128, f"Expected at most 128 partitions, got {len(partitions)}"
+            assert (
+                len(partitions) <= 128
+            ), f"Expected at most 128 partitions, got {len(partitions)}"
 
         for idx, partition in enumerate(partitions):
             offset = partition_start + (idx * 4)
@@ -510,7 +606,9 @@ class RoomCollection:
             patches[offset] = bytearray([0xFF] * 7)
 
         # Render room object data (NPCs)
-        room_object_patches = self._render_room_objects(clone_group_mapping, room_to_partition_index)
+        room_object_patches = self._render_room_objects(
+            clone_group_mapping, room_to_partition_index
+        )
         patches.update(room_object_patches)
 
         # Render event data
@@ -528,12 +626,21 @@ class RoomCollection:
         data = bytearray(4)
 
         # Byte 0
-        data[0] = (partition.ally_sprite_buffer_size << 5) | (0x10 if partition.allow_extra_sprite_buffer else 0) | partition.extra_sprite_buffer_size | (0x80 if partition.full_palette_buffer else 0)
+        data[0] = (
+            (partition.ally_sprite_buffer_size << 5)
+            | (0x10 if partition.allow_extra_sprite_buffer else 0)
+            | partition.extra_sprite_buffer_size
+            | (0x80 if partition.full_palette_buffer else 0)
+        )
 
         # Bytes 1-3: buffers
         for buf_idx in range(3):
             buf = partition.buffers[buf_idx]
-            byte_val = buf.buffer_type | (buf.main_buffer_space << 4) | (0x80 if buf.index_in_main_buffer else 0)
+            byte_val = (
+                buf.buffer_type
+                | (buf.main_buffer_space << 4)
+                | (0x80 if buf.index_in_main_buffer else 0)
+            )
             data[buf_idx + 1] = byte_val
 
         return data
@@ -544,38 +651,55 @@ class RoomCollection:
 
         # Bytes 0-1: sprite_id (10 bits) + vram_store (3 bits) + vram_size (3 bits)
         data[0] = npc.sprite_id & 0xFF
-        data[1] = ((npc.sprite_id >> 8) & 0x03) | ((npc.directions & 0x07) << 2) | ((npc.min_vram_size & 0x07) << 5)
+        data[1] = (
+            ((npc.sprite_id >> 8) & 0x03)
+            | ((npc.directions & 0x07) << 2)
+            | ((npc.min_vram_size & 0x07) << 5)
+        )
 
         # Byte 2: priority and misc bits
         data[2] = (
-            (1 if npc.byte2_bit0 else 0) |
-            ((1 if npc.byte2_bit1 else 0) << 1) |
-            ((1 if npc.byte2_bit2 else 0) << 2) |
-            ((1 if npc.byte2_bit3 else 0) << 3) |
-            ((1 if npc.byte2_bit4 else 0) << 4) |
-            ((1 if npc.priority_0 else 0) << 5) |
-            ((1 if npc.priority_1 else 0) << 6) |
-            ((1 if npc.priority_2 else 0) << 7)
+            (1 if npc.byte2_bit0 else 0)
+            | ((1 if npc.byte2_bit1 else 0) << 1)
+            | ((1 if npc.byte2_bit2 else 0) << 2)
+            | ((1 if npc.byte2_bit3 else 0) << 3)
+            | ((1 if npc.byte2_bit4 else 0) << 4)
+            | ((1 if npc.priority_0 else 0) << 5)
+            | ((1 if npc.priority_1 else 0) << 6)
+            | ((1 if npc.priority_2 else 0) << 7)
         )
 
         # Byte 3: y_shift (4 bits) + shift_16_px_down (1 bit) + shadow_size (2 bits) + cannot_clone (1 bit)
         y_shift_val = npc.y_shift if npc.y_shift >= 0 else npc.y_shift + 16
         shift_16_down = 1 if npc.y_shift < 0 else 0
-        data[3] = (y_shift_val & 0x0F) | ((shift_16_down) << 4) | ((npc.shadow_size & 0x03) << 5) | ((1 if npc.cannot_clone else 0) << 7)
+        data[3] = (
+            (y_shift_val & 0x0F)
+            | ((shift_16_down) << 4)
+            | ((npc.shadow_size & 0x03) << 5)
+            | ((1 if npc.cannot_clone else 0) << 7)
+        )
 
         # Byte 4: acute_axis (4 bits) + obtuse_axis (4 bits)
         data[4] = (npc.acute_axis & 0x0F) | ((npc.obtuse_axis & 0x0F) << 4)
 
         # Byte 5: height (5 bits) + show_shadow (1 bit) + byte5_bit6 (1 bit) + byte5_bit7 (1 bit)
-        data[5] = (npc.height & 0x1F) | ((1 if npc.show_shadow else 0) << 5) | ((1 if npc.byte5_bit6 else 0) << 6) | ((1 if npc.byte5_bit7 else 0) << 7)
+        data[5] = (
+            (npc.height & 0x1F)
+            | ((1 if npc.show_shadow else 0) << 5)
+            | ((1 if npc.byte5_bit6 else 0) << 6)
+            | ((1 if npc.byte5_bit7 else 0) << 7)
+        )
 
         # Byte 6: byte6_bit2 and reserved bits
-        data[6] = ((1 if npc.byte6_bit2 else 0) << 2)
+        data[6] = (1 if npc.byte6_bit2 else 0) << 2
 
         return data
 
-    def _render_room_objects(self, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
-                            room_to_partition_index: dict[int, int]) -> dict[int, bytearray]:
+    def _render_room_objects(
+        self,
+        clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
+        room_to_partition_index: dict[int, int],
+    ) -> dict[int, bytearray]:
         """Render room object (NPC) data.
 
         Pointer table: 0x148000-0x1483FF (512 rooms * 2 bytes)
@@ -596,10 +720,9 @@ class RoomCollection:
             room = self._rooms[room_idx]
 
             # Write pointer (offset without base address)
-            patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                offset_without_base & 0xFF,
-                (offset_without_base >> 8) & 0xFF
-            ])
+            patches[pointer_table_start + (room_idx * 2)] = bytearray(
+                [offset_without_base & 0xFF, (offset_without_base >> 8) & 0xFF]
+            )
 
             if room is None or len(room.objects) == 0:
                 # Empty room - next room will have same pointer (zero delta)
@@ -623,8 +746,14 @@ class RoomCollection:
                 if isinstance(obj, Clone):
                     # This is a clone, render it with base values from parent
                     obj_data, _ = self._render_room_object(
-                        obj, clone_group_mapping, last_parent, None,
-                        room_idx, obj_idx, last_parent_obj_idx, last_base_values
+                        obj,
+                        clone_group_mapping,
+                        last_parent,
+                        None,
+                        room_idx,
+                        obj_idx,
+                        last_parent_obj_idx,
+                        last_base_values,
                     )
                     room_data.extend(obj_data)
                     obj_idx += 1
@@ -632,14 +761,22 @@ class RoomCollection:
                     # This is a parent object - collect all consecutive clones
                     clones = []
                     check_idx = obj_idx + 1
-                    while check_idx < len(room.objects) and isinstance(room.objects[check_idx], Clone):
+                    while check_idx < len(room.objects) and isinstance(
+                        room.objects[check_idx], Clone
+                    ):
                         clones.append(room.objects[check_idx])
                         check_idx += 1
 
                     # Render parent with clones (to calculate proper base values and offsets)
                     obj_data, base_values = self._render_room_object(
-                        obj, clone_group_mapping, None, clones,
-                        room_idx, obj_idx, obj_idx, None
+                        obj,
+                        clone_group_mapping,
+                        None,
+                        clones,
+                        room_idx,
+                        obj_idx,
+                        obj_idx,
+                        None,
                     )
                     # Update byte 0 with clone count
                     obj_data[0] = (obj.object_type << 4) | (len(clones) & 0x0F)
@@ -659,10 +796,17 @@ class RoomCollection:
 
         return patches
 
-    def _render_room_object(self, obj: BaseRoomObject, clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
-                           parent: RoomObject | None = None, clones: list[Clone] | None = None,
-                           room_idx: int = -1, obj_idx: int = -1, parent_obj_idx: int = -1,
-                           base_values: tuple | None = None) -> tuple[bytearray, tuple | None]:
+    def _render_room_object(
+        self,
+        obj: BaseRoomObject,
+        clone_group_mapping: dict[tuple[int, int], dict[tuple, int]],
+        parent: RoomObject | None = None,
+        clones: list[Clone] | None = None,
+        room_idx: int = -1,
+        obj_idx: int = -1,
+        parent_obj_idx: int = -1,
+        base_values: tuple | None = None,
+    ) -> tuple[bytearray, tuple | None]:
         """Render a single room object to bytes.
 
         Args:
@@ -712,10 +856,14 @@ class RoomCollection:
             # IMPORTANT: All offsets are relative to BASE values, not parent's individual values!
             # LazyShell calculates: clone_value = base_value + clone_offset
             if base_values is None:
-                raise ValueError(f"base_values required for clone rendering at room {room_idx} obj {obj_idx}")
+                raise ValueError(
+                    f"base_values required for clone rendering at room {room_idx} obj {obj_idx}"
+                )
 
             if isinstance(obj, RegularClone):
-                assert isinstance(parent, RegularNPC), "Parent must be RegularNPC for RegularClone"
+                assert isinstance(
+                    parent, RegularNPC
+                ), "Parent must be RegularNPC for RegularClone"
                 # (event_offset << 5) + (action_offset << 3) + npc_offset
                 # Note: action_offset is only 2 bits (0-3 range) for RegularClone
 
@@ -727,13 +875,21 @@ class RoomCollection:
                 action_offset = obj.action_script - base_action_script
                 event_offset = obj.event_script - base_event_script
 
-                data[0] = ((event_offset & 0x07) << 5) | ((action_offset & 0x03) << 3) | (npc_offset & 0x07)
+                data[0] = (
+                    ((event_offset & 0x07) << 5)
+                    | ((action_offset & 0x03) << 3)
+                    | (npc_offset & 0x07)
+                )
             elif isinstance(obj, ChestClone):
-                assert isinstance(parent, ChestNPC), "Parent must be ChestNPC for ChestClone"
+                assert isinstance(
+                    parent, ChestNPC
+                ), "Parent must be ChestNPC for ChestClone"
                 # (upper_70a7 << 4) + lower_70a7
                 data[0] = (obj.upper_70a7 << 4) | (obj.lower_70a7 & 0x0F)
             elif isinstance(obj, BattlePackClone):
-                assert isinstance(parent, BattlePackNPC), "Parent must be BattlePackNPC for BattlePackClone"
+                assert isinstance(
+                    parent, BattlePackNPC
+                ), "Parent must be BattlePackNPC for BattlePackClone"
                 # (pack_offset << 4) + action_offset
 
                 # Unpack base values: (base_assigned_npc, base_action_script, base_battle_pack)
@@ -777,24 +933,24 @@ class RoomCollection:
             # speed (bits 0-2), face_on_trigger (bit 3), cant_enter_doors (bit 4),
             # byte2_bit5 (bit 5), set_sequence_playback (bit 6), cant_float (bit 7)
             data[1] = (
-                (obj.speed & 0x07) |
-                ((1 if obj.face_on_trigger else 0) << 3) |
-                ((1 if obj.cant_enter_doors else 0) << 4) |
-                ((1 if obj.byte2_bit5 else 0) << 5) |
-                ((1 if obj.set_sequence_playback else 0) << 6) |
-                ((1 if obj.cant_float else 0) << 7)
+                (obj.speed & 0x07)
+                | ((1 if obj.face_on_trigger else 0) << 3)
+                | ((1 if obj.cant_enter_doors else 0) << 4)
+                | ((1 if obj.byte2_bit5 else 0) << 5)
+                | ((1 if obj.set_sequence_playback else 0) << 6)
+                | ((1 if obj.cant_float else 0) << 7)
             )
 
             # Byte 2: Movement flags byte 2
             data[2] = (
-                (1 if obj.cant_walk_up_stairs else 0) |
-                ((1 if obj.cant_walk_under else 0) << 1) |
-                ((1 if obj.cant_pass_walls else 0) << 2) |
-                ((1 if obj.cant_jump_through else 0) << 3) |
-                ((1 if obj.cant_pass_npcs else 0) << 4) |
-                ((1 if obj.byte3_bit5 else 0) << 5) |
-                ((1 if obj.cant_walk_through else 0) << 6) |
-                ((1 if obj.byte3_bit7 else 0) << 7)
+                (1 if obj.cant_walk_up_stairs else 0)
+                | ((1 if obj.cant_walk_under else 0) << 1)
+                | ((1 if obj.cant_pass_walls else 0) << 2)
+                | ((1 if obj.cant_jump_through else 0) << 3)
+                | ((1 if obj.cant_pass_npcs else 0) << 4)
+                | ((1 if obj.byte3_bit5 else 0) << 5)
+                | ((1 if obj.cant_walk_through else 0) << 6)
+                | ((1 if obj.byte3_bit7 else 0) << 7)
             )
 
             # Calculate base values and offsets for parent + clones
@@ -805,6 +961,15 @@ class RoomCollection:
             # - battle_pack (for BattlePackNPC)
 
             clones = clones if clones is not None else []
+
+            # Initialize variables that are set in isinstance branches below.
+            # Pyright can't track that the same isinstance check guards both
+            # definition and usage across separate if/elif chains.
+            all_npc_indices: list[int] = []
+            event_script_offset: int = 0
+            base_event_script: int = 0
+            battle_pack_offset: int = 0
+            base_battle_pack: int = 0
 
             # Calculate base_assigned_npc (minimum NPC index among parent + clones)
             # NOTE: Only RegularNPC/RegularClone use assigned_npc offsets in byte 8!
@@ -821,11 +986,12 @@ class RoomCollection:
 
                 if assigned_npc_offset > 7:
                     import logging
+
                     msg = (
                         f"⚠️  Room {room_idx} object {obj_idx}: Large assigned_npc offset detected!\n"
                         f"  assigned_npc offset: {assigned_npc_offset} out of range [0, 7]\n"
-                        f"  Parent assigned_npc: {obj.assigned_npc}\n"
-                        f"  Base action_script: {base_action_script}"
+                        f"  Parent NPC index: {npc_index}\n"
+                        f"  Base assigned_npc: {base_assigned_npc}"
                     )
                     logging.warning(msg)
             else:
@@ -846,6 +1012,7 @@ class RoomCollection:
 
             if action_script_offset > (15 if isinstance(obj, BattlePackNPC) else 3):
                 import logging
+
                 msg = (
                     f"⚠️  Room {room_idx} object {obj_idx}: Large action_script offset detected!\n"
                     f"  action_script offset: {action_script_offset} out of range [0, 15]\n"
@@ -859,13 +1026,21 @@ class RoomCollection:
             # base_action_script = ((d[offset + 5] & 0x3F) << 4) + ((d[offset + 4] & 0xFF) >> 4)
 
             # Byte 3: (base_npc_id << 2) low 8 bits + slidable_along_walls (bit 0) + cant_move_if_in_air (bit 1)
-            data[3] = ((base_assigned_npc << 2) & 0xFF) | (1 if obj.slidable_along_walls else 0) | ((1 if obj.cant_move_if_in_air else 0) << 1)
+            data[3] = (
+                ((base_assigned_npc << 2) & 0xFF)
+                | (1 if obj.slidable_along_walls else 0)
+                | ((1 if obj.cant_move_if_in_air else 0) << 1)
+            )
 
             # Byte 4: (action_script low 4 bits << 4) + (base_npc_id >> 6)
-            data[4] = ((base_action_script & 0x0F) << 4) | ((base_assigned_npc >> 6) & 0x0F)
+            data[4] = ((base_action_script & 0x0F) << 4) | (
+                (base_assigned_npc >> 6) & 0x0F
+            )
 
             # Byte 5: byte7_upper2 (bits 6-7) + (action_script >> 4 in low 6 bits)
-            data[5] = ((obj.byte7_upper2 & 0x03) << 6) | ((base_action_script >> 4) & 0x3F)
+            data[5] = ((obj.byte7_upper2 & 0x03) << 6) | (
+                (base_action_script >> 4) & 0x3F
+            )
 
             # Bytes 6-7: Event ID or battle pack + initiator
             if isinstance(obj, BattlePackNPC):
@@ -880,6 +1055,7 @@ class RoomCollection:
                 # Debug logging for battle_pack (LazyShell max is 255 for BattlePack NPCs!)
                 if base_battle_pack > 255:
                     import logging
+
                     msg = (
                         f"⚠️  Room {room_idx} object {obj_idx}: Large battle_pack detected!\n"
                         f"  base_battle_pack: {base_battle_pack} (LazyShell max for BattlePack NPC: 255)\n"
@@ -889,6 +1065,7 @@ class RoomCollection:
                     logging.warning(msg)
                 if battle_pack_offset > 15:
                     import logging
+
                     msg = (
                         f"⚠️  Room {room_idx} object {obj_idx}: Large battle_pack offset detected!\n"
                         f"  battle_pack offset: {battle_pack_offset} out of range [0, 15]\n"
@@ -899,10 +1076,13 @@ class RoomCollection:
 
                 # Byte 6: base_battle_pack
                 data[6] = base_battle_pack & 0xFF
-                # Byte 7: (initiator << 4) + after_battle
-                data[7] = (obj.initiator << 4) | (obj.after_battle & 0x0F)
+                # Byte 7: (initiator << 4) + (after_battle << 1)
+                # after_battle occupies bits 1-3, bit 0 is unused
+                data[7] = (obj.initiator << 4) | ((obj.after_battle << 1) & 0x0F)
             else:
-                assert isinstance(obj, (RegularNPC, ChestNPC)), "Parent object must be RegularNPC, ChestNPC, or BattlePackNPC"
+                assert isinstance(
+                    obj, (RegularNPC, ChestNPC)
+                ), "Parent object must be RegularNPC, ChestNPC, or BattlePackNPC"
 
                 if isinstance(obj, RegularNPC):
                     # Calculate base_event_script (minimum event_script among parent + clones)
@@ -920,6 +1100,7 @@ class RoomCollection:
                 # Debug logging for event_script
                 if event_script_offset > 7:
                     import logging
+
                     msg = (
                         f"⚠️  Room {room_idx} object {obj_idx}: Large event_script offset detected!\n"
                         f"  event_script offset: {event_script_offset} out of range [0, 7]\n"
@@ -945,7 +1126,7 @@ class RoomCollection:
                     for clone in clones:
                         if isinstance(clone, RegularClone):
                             clone_sig = self._get_npc_signature(clone._npc, clone)
-                            clone_npc_index = npc_signature_to_index[clone_sig]
+                            clone_npc_index = sig_to_index[clone_sig]
                             clone_indices.append(clone_npc_index)
 
                     raise ValueError(
@@ -971,7 +1152,11 @@ class RoomCollection:
                         f"  Base event_script: {base_event_script}"
                     )
 
-                data[8] = ((event_script_offset & 0x07) << 5) | ((action_script_offset & 0x03) << 3) | (assigned_npc_offset & 0x07)
+                data[8] = (
+                    ((event_script_offset & 0x07) << 5)
+                    | ((action_script_offset & 0x03) << 3)
+                    | (assigned_npc_offset & 0x07)
+                )
             elif isinstance(obj, ChestNPC):
                 # (upper_70a7 << 4) + lower_70a7
                 data[8] = (obj.upper_70a7 << 4) | (obj.lower_70a7 & 0x0F)
@@ -993,7 +1178,9 @@ class RoomCollection:
                         f"  Base action_script: {base_action_script}"
                     )
 
-                data[8] = ((battle_pack_offset & 0x0F) << 4) | (action_script_offset & 0x0F)
+                data[8] = ((battle_pack_offset & 0x0F) << 4) | (
+                    action_script_offset & 0x0F
+                )
             else:
                 data[8] = 0
 
@@ -1035,10 +1222,9 @@ class RoomCollection:
             room = self._rooms[room_idx]
 
             # Write pointer (offset without base address)
-            patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                offset_without_base & 0xFF,
-                (offset_without_base >> 8) & 0xFF
-            ])
+            patches[pointer_table_start + (room_idx * 2)] = bytearray(
+                [offset_without_base & 0xFF, (offset_without_base >> 8) & 0xFF]
+            )
 
             # Build this room's data
             room_data = bytearray()
@@ -1106,9 +1292,9 @@ class RoomCollection:
             # Byte 5 (optional): length and flags
             if event.length > 1:
                 data.append(
-                    ((event.length - 1) & 0x0F) |
-                    ((1 if event.byte_8_bit_4 else 0) << 4) |
-                    ((event.f & 0x01) << 7)
+                    ((event.length - 1) & 0x0F)
+                    | ((1 if event.byte_8_bit_4 else 0) << 4)
+                    | ((event.f & 0x01) << 7)
                 )
 
             return data
@@ -1137,10 +1323,9 @@ class RoomCollection:
             room = self._rooms[room_idx]
 
             # Write pointer (offset without base address)
-            patches[pointer_table_start + (room_idx * 2)] = bytearray([
-                offset_without_base & 0xFF,
-                (offset_without_base >> 8) & 0xFF
-            ])
+            patches[pointer_table_start + (room_idx * 2)] = bytearray(
+                [offset_without_base & 0xFF, (offset_without_base >> 8) & 0xFF]
+            )
 
             if room is None or not room.exit_fields:
                 # Empty room - next room will have same pointer (zero delta)
@@ -1188,7 +1373,7 @@ class RoomCollection:
             # dst = ((field_data[1] << 8) + field_data[0]) & 0x1FF
             # length_determinant = field_data[1] & 0x80 == 0x80
             byte1 = (exit_obj.destination >> 8) & 0x01  # Bit 0 of destination
-            byte1 |= (0 << 5)  # Exit type 0 for ROOM (bits 5-6)
+            byte1 |= 0 << 5  # Exit type 0 for ROOM (bits 5-6)
             if exit_obj.show_message:
                 byte1 |= 0x08
             if exit_obj.byte_2_bit_2:
@@ -1197,23 +1382,36 @@ class RoomCollection:
             data.append(byte1)
 
             # Byte 2: x + (nw_se_edge_active << 7)
-            data.append((exit_obj.x & 0x7F) | ((1 if exit_obj.nw_se_edge_active else 0) << 7))
+            data.append(
+                (exit_obj.x & 0x7F) | ((1 if exit_obj.nw_se_edge_active else 0) << 7)
+            )
 
             # Byte 3: y + (ne_sw_edge_active << 7)
-            data.append((exit_obj.y & 0x7F) | ((1 if exit_obj.ne_sw_edge_active else 0) << 7))
+            data.append(
+                (exit_obj.y & 0x7F) | ((1 if exit_obj.ne_sw_edge_active else 0) << 7)
+            )
 
             # Byte 4: z + (height << 5)
             data.append((exit_obj.z & 0x1F) | ((exit_obj.height & 0x07) << 5))
 
             # Bytes 5-7: Destination properties (for ROOM exits)
             # Byte 5: dst_x + (x_bit_7 << 7)
-            data.append((exit_obj.destination_props.x & 0x7F) | ((1 if exit_obj.destination_props.x_bit_7 else 0) << 7))
+            data.append(
+                (exit_obj.destination_props.x & 0x7F)
+                | ((1 if exit_obj.destination_props.x_bit_7 else 0) << 7)
+            )
 
             # Byte 6: dst_y + (dst_z_half << 7)
-            data.append((exit_obj.destination_props.y & 0x7F) | ((1 if exit_obj.destination_props.z_half else 0) << 7))
+            data.append(
+                (exit_obj.destination_props.y & 0x7F)
+                | ((1 if exit_obj.destination_props.z_half else 0) << 7)
+            )
 
             # Byte 7: dst_z + (dst_f << 5)
-            data.append((exit_obj.destination_props.z & 0x1F) | ((exit_obj.destination_props.f & 0x07) << 5))
+            data.append(
+                (exit_obj.destination_props.z & 0x1F)
+                | ((exit_obj.destination_props.f & 0x07) << 5)
+            )
 
             # Optional length byte
             if exit_obj.length > 1 or exit_obj.f != 0:
@@ -1231,7 +1429,7 @@ class RoomCollection:
 
             # Byte 1: Complex flags byte
             byte1 = 0
-            byte1 |= (1 << 6)  # Exit type 1 for MAP (bits 5-6 = 01)
+            byte1 |= 1 << 6  # Exit type 1 for MAP (bits 5-6 = 01)
             if exit_obj.show_message:
                 byte1 |= 0x08
             if exit_obj.byte_2_bit_2:
@@ -1244,10 +1442,14 @@ class RoomCollection:
             data.append(byte1)
 
             # Byte 2: x + (nw_se_edge_active << 7)
-            data.append((exit_obj.x & 0x7F) | ((1 if exit_obj.nw_se_edge_active else 0) << 7))
+            data.append(
+                (exit_obj.x & 0x7F) | ((1 if exit_obj.nw_se_edge_active else 0) << 7)
+            )
 
             # Byte 3: y + (ne_sw_edge_active << 7)
-            data.append((exit_obj.y & 0x7F) | ((1 if exit_obj.ne_sw_edge_active else 0) << 7))
+            data.append(
+                (exit_obj.y & 0x7F) | ((1 if exit_obj.ne_sw_edge_active else 0) << 7)
+            )
 
             # Byte 4: z + (height << 5)
             data.append((exit_obj.z & 0x1F) | ((exit_obj.height & 0x07) << 5))

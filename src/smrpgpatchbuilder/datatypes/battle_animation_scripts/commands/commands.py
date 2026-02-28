@@ -4606,6 +4606,47 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+class UnknownJmp52(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+    """Unknown jump command 0x52.
+
+    ## Opcode
+        `0x52`
+
+    ## Size
+        5 bytes
+
+    Args:
+        param (int): Unknown UInt16 parameter.
+        destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to jump to.
+        identifier (str | None): Give this command a label if you want another command to jump to it.
+    """
+
+    _opcode = 0x52
+    _size: int = 5
+
+    _param: UInt16
+
+    @property
+    def param(self) -> UInt16:
+        """Unknown argument"""
+        return self._param
+
+    def set_param(self, param: int) -> None:
+        """Set value of unknown argument"""
+        self._param = UInt16(param)
+
+    def __init__(
+        self,
+        param: int,
+        destinations: list[str],
+        identifier: str | None = None,
+    ) -> None:
+        super().__init__(destinations, identifier)
+        self.set_param(param)
+
+    def render(self, *args) -> bytearray:
+        return super().render(self.param, *self.destinations)
+
 class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Perform a set of script commands at the specified address on the specified field target.
 

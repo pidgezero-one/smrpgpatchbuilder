@@ -2133,7 +2133,7 @@ test_cases = [
             ActionQueueAsync(
                 target=MEM_70AA,
                 subscript=[
-                    A_UnknownCommand(bytearray(b"\xfd$\x12\x00")),
+                    A_UnknownCommand(bytearray([0xFD, 0x24, 0x12, 0x00])),
                     A_Mem700CAndConst(0x00C0),
                     A_JmpIfVarEqualsConst(
                         ShortVar(0x700C),
@@ -2269,7 +2269,7 @@ test_cases = [
                 prefix=0xF1,
                 subscript=[
                     A_SetObjectMemoryBits(arg_1=0x0B, bits=[0, 1]),
-                    A_UnknownCommand(bytearray(b"\xfd\xf2")),
+                    A_UnknownCommand(bytearray([0xFD, 0xF2])),
                 ],
             ),
         ],

@@ -254,6 +254,9 @@ def parse_flags(value, prefix="", table=None, bits=None):
             b.append(i)
     return b
 
+def bytearray_hex_literal(data: bytearray) -> str:
+    return "bytearray([%s])" % ", ".join(f"0x{b:02X}" for b in data)
+
 def writeline(f, ln):
     print(ln.replace("\x00", ""), file=f)
 
