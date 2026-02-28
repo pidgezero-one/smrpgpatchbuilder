@@ -109,6 +109,7 @@ src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/coords.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/directions.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/intro_title_text.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/layers.py
+src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/palette_rows.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/palette_types.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/scenes.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/tutorials.py
@@ -124,6 +125,7 @@ src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/flag.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/intro_title_text.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/layer.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/packet.py
+src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/palette_row.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/palette_type.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/party_character.py
 src/smrpgpatchbuilder/datatypes/overworld_scripts/arguments/types/scene.py
