@@ -59,6 +59,9 @@ from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.direction imp
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.intro_title_text import (
     IntroTitleText,
 )
+from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.palette_row import (
+    PaletteRow,
+)
 from smrpgpatchbuilder.datatypes.overworld_scripts.arguments.types.palette_type import (
     PaletteType,
 )
@@ -7136,7 +7139,8 @@ class MarioStopsGlowing(UsableEventScriptCommand, EventScriptCommandNoArgs):
 
 
 class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
-    """(The inner workings of this command are unknown.)
+    """Any number of palette rows (from level, Mario, or NPC) instantly take on a palette in 0x37Axxx.  
+    Consecutive rows determined by the to_row param will use consecutive palettes beginning with palette_set_starts_at.
 
     ## Lazy Shell command
         `Palette set = ...`
@@ -7148,105 +7152,64 @@ class PaletteSet(UsableEventScriptCommand, EventScriptCommand):
         3 bytes
 
     Args:
-        palette_set (int): The palette set to apply to the NPCs in the current level (8 bit)
-        row (int): The row offset relative to the palette (8 bit)
-        bit_0 (bool): (unknown)
-        bit_1 (bool): (unknown)
-        bit_2 (bool): (unknown)
-        bit_3 (bool): (unknown)
+        palette_set_starts_at (int): The starting event palette index (0-255)
+        from_row (PaletteRow): The first palette row to write to
+        to_row (PaletteRow | None): The last palette row to write to (inclusive, wraps around). Defaults to from_row
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
     _opcode = 0x8A
     _size: int = 3
-    _palette_set: UInt8
-    _row: UInt8
-    _bit_0: bool
-    _bit_1: bool
-    _bit_2: bool
-    _bit_3: bool
+    _palette_set_starts_at: UInt8
+    _from_row: PaletteRow
+    _to_row: PaletteRow
 
     @property
-    def palette_set(self) -> UInt8:
-        """The palette set to apply to the NPCs in the current level."""
-        return self._palette_set
+    def palette_set_starts_at(self) -> UInt8:
+        """The starting event palette index."""
+        return self._palette_set_starts_at
 
-    def set_palette_set(self, palette_set: int) -> None:
-        """Designate the palette set to apply to the NPCs in the current level."""
-        self._palette_set = UInt8(palette_set)
-
-    @property
-    def row(self) -> UInt8:
-        """The row offset relative to the palette."""
-        return self._row
-
-    def set_row(self, row: int) -> None:
-        """Designate the row offset relative to palette for this command."""
-        assert 1 <= row <= 16
-        self._row = UInt8(row)
+    def set_palette_set_starts_at(self, palette_set_starts_at: int) -> None:
+        """Designate the starting event palette index."""
+        self._palette_set_starts_at = UInt8(palette_set_starts_at)
 
     @property
-    def bit_0(self) -> bool:
-        """(unknown)"""
-        return self._bit_0
+    def from_row(self) -> PaletteRow:
+        """The first palette row to write to."""
+        return self._from_row
 
-    def set_bit_0(self, bit_0: bool) -> None:
-        """(unknown)"""
-        self._bit_0 = bit_0
-
-    @property
-    def bit_1(self) -> bool:
-        """(unknown)"""
-        return self._bit_1
-
-    def set_bit_1(self, bit_1: bool) -> None:
-        """(unknown)"""
-        self._bit_1 = bit_1
+    def set_from_row(self, from_row: PaletteRow | int) -> None:
+        """Designate the first palette row to write to."""
+        self._from_row = PaletteRow(from_row)
 
     @property
-    def bit_2(self) -> bool:
-        """(unknown)"""
-        return self._bit_2
+    def to_row(self) -> PaletteRow:
+        """The last palette row to write to (inclusive)."""
+        return self._to_row
 
-    def set_bit_2(self, bit_2: bool) -> None:
-        """(unknown)"""
-        self._bit_2 = bit_2
-
-    @property
-    def bit_3(self) -> bool:
-        """(unknown)"""
-        return self._bit_3
-
-    def set_bit_3(self, bit_3: bool) -> None:
-        """(unknown)"""
-        self._bit_3 = bit_3
+    def set_to_row(self, to_row: PaletteRow | int) -> None:
+        """Designate the last palette row to write to (inclusive). Can wrap around past row 15."""
+        self._to_row = PaletteRow(to_row)
 
     def __init__(
         self,
-        palette_set: int,
-        row: int,
-        bit_0: bool = False,
-        bit_1: bool = False,
-        bit_2: bool = False,
-        bit_3: bool = False,
+        palette_set_starts_at: int,
+        from_row: PaletteRow | int,
+        to_row: PaletteRow | int | None = None,
         identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
-        self.set_palette_set(palette_set)
-        self.set_row(row)
-        self.set_bit_0(bit_0)
-        self.set_bit_1(bit_1)
-        self.set_bit_2(bit_2)
-        self.set_bit_3(bit_3)
+        self.set_palette_set_starts_at(palette_set_starts_at)
+        self.set_from_row(from_row)
+        self.set_to_row(to_row if to_row is not None else from_row)
 
     def render(self, *args) -> bytearray:
-        flags: int = bools_to_int(self.bit_0, self.bit_1, self.bit_2, self.bit_3)
-        arg_1 = UInt8(flags + ((self.row - 1) << 4))
-        return super().render(arg_1, self.palette_set)
+        arg_1 = UInt8(self.from_row + (((self.to_row - self.from_row) % 16) << 4))
+        return super().render(arg_1, self.palette_set_starts_at)
 
 
 class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
-    """(The inner workings of this command are unknown.)
+    """A palette row (any from level, Mario, or NPC) shifts to a specific palette in 0x37Axxx.
 
     ## Lazy Shell command
         `Palette set morphs to {xx} set...`
@@ -7261,7 +7224,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         palette_type (PaletteType): The effect to use in applying this palette
         palette_set (int): The palette set to apply to the NPCs in the current level
         duration (int): The number of frames over which this palette morph should occur
-        row (int): The row offset relative to the palette
+        row (PaletteRow): The palette row (0-15)
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
 
@@ -7270,7 +7233,7 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
     _palette_type: PaletteType
     _palette_set: UInt8
     _duration: UInt8
-    _row: UInt8
+    _row: PaletteRow
 
     @property
     def palette_type(self) -> PaletteType:
@@ -7301,21 +7264,20 @@ class PaletteSetMorphs(UsableEventScriptCommand, EventScriptCommand):
         self._duration = UInt8(duration)
 
     @property
-    def row(self) -> UInt8:
-        """The row offset relative to the palette."""
+    def row(self) -> PaletteRow:
+        """The palette row."""
         return self._row
 
-    def set_row(self, row: int) -> None:
-        """Designate the row offset relative to palette for this command."""
-        assert 1 <= row <= 16
-        self._row = UInt8(row)
+    def set_row(self, row: PaletteRow | int) -> None:
+        """Designate the palette row for this command."""
+        self._row = PaletteRow(row)
 
     def __init__(
         self,
         palette_type: PaletteType,
         palette_set: int,
         duration: int,
-        row: int,
+        row: PaletteRow | int,
         identifier: str | None = None,
     ) -> None:
         super().__init__(identifier)
