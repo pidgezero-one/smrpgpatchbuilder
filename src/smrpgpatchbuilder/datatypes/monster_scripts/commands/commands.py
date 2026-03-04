@@ -27,6 +27,7 @@ from .types.classes import (
     UsableMonsterScriptCommand,
 )
 
+
 class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Issue an attack, or one of three attacks at random. Each of the three attacks do not have to be unique from each other.
 
@@ -74,7 +75,9 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
         """The optional second attack that can be issued by this command."""
         return self._attack_2
 
-    def set_attack_2(self, attack_2: type[EnemyAttack] | type[DoNothing] | None) -> None:
+    def set_attack_2(
+        self, attack_2: type[EnemyAttack] | type[DoNothing] | None
+    ) -> None:
         """Set the optional second attack that can be issued by this command.
         Will fail if attack_3 is None."""
         self.set_attacks(self.attack_1, attack_2, self.attack_3)
@@ -84,7 +87,9 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
         """The optional third attack that can be issued by this command."""
         return self._attack_3
 
-    def set_attack_3(self, attack_3: type[EnemyAttack] | type[DoNothing] | None) -> None:
+    def set_attack_3(
+        self, attack_3: type[EnemyAttack] | type[DoNothing] | None
+    ) -> None:
         """Set the optional third attack that can be issued by this command.
         Will fail if attack_2 is None."""
         self.set_attacks(self.attack_1, self.attack_2, attack_3)
@@ -126,13 +131,14 @@ class Attack(UsableMonsterScriptCommand, MonsterScriptCommand):
             attack_3,
         )
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         if self.attack_2 is None and self.attack_3 is None:
             return super().render(self.attack_1().index)
         assert self.attack_2 is not None and self.attack_3 is not None
         return super().render(
             0xE0, self.attack_1().index, self.attack_2().index, self.attack_3().index
         )
+
 
 class SetTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Choose the target for the actions following this command.
@@ -153,8 +159,9 @@ class SetTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     _opcode = 0xE2
     _size: int = 2
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
+
 
 class RunBattleDialog(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Run a battle dialog (by ID).
@@ -191,8 +198,9 @@ class RunBattleDialog(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_dialog_id(dialog_id)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.dialog_id)
+
 
 class RunBattleEvent(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Run a battle event by ID. It is encouraged to use battle ID constants for this.
@@ -231,8 +239,9 @@ class RunBattleEvent(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_event_id(event_id)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.event_id)
+
 
 class IncreaseVarBy1(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """Increase the given 0x7EE00# variable by 1.
@@ -253,8 +262,9 @@ class IncreaseVarBy1(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     _opcode = bytearray([0xE6, 0x00])
     _size: int = 3
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.render_var())
+
 
 class DecreaseVarBy1(IncreaseVarBy1):
     """Decrease the given 0x7EE00X variable by 1.
@@ -273,6 +283,7 @@ class DecreaseVarBy1(IncreaseVarBy1):
     """
 
     _opcode = bytearray([0xE6, 0x01])
+
 
 class SetVarBits(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """For the given 0x7EE00# variable, set bits denoted by an ordinality array.
@@ -314,8 +325,9 @@ class SetVarBits(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
         super().__init__(variable, identifier)
         self.set_bits(bits)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.render_var(), bits_to_int(list(self.bits)))
+
 
 class ClearVarBits(SetVarBits):
     """For the given 0x7EE00# variable, clear bits denoted by an ordinality array.
@@ -352,6 +364,7 @@ class ClearVarBits(SetVarBits):
         """Overwrite the ordinality array of bits to be cleared on the given variable."""
         self.set_bits(bits)
 
+
 class ClearVar(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """Set the given 0x7EE00# variable to 0.
 
@@ -371,8 +384,9 @@ class ClearVar(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     _opcode = 0xE8
     _size: int = 2
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.render_var())
+
 
 class RemoveTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will no longer be active or targetable.
@@ -394,8 +408,9 @@ class RemoveTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     _opcode = bytearray([0xEA, 0x00, 0x00])
     _size: int = 4
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
+
 
 class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will become active and targetable.
@@ -417,8 +432,9 @@ class CallTarget(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     _opcode = bytearray([0xEA, 0x01, 0x00])
     _size: int = 4
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
+
 
 class MakeInvulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will not take damage from any source.
@@ -440,8 +456,9 @@ class MakeInvulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand
     _opcode = bytearray([0xEB, 0x00])
     _size: int = 3
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
+
 
 class MakeVulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """The given target will be susceptible to damage. This reverses the effects of any previous `MakeInvulnerable` commands applied to this target.
@@ -463,8 +480,9 @@ class MakeVulnerable(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     _opcode = bytearray([0xEB, 0x01])
     _size: int = 3
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target)
+
 
 class ExitBattle(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Abort the battle and return to the level.
@@ -483,6 +501,7 @@ class ExitBattle(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """
 
     _opcode = 0xEC
+
 
 class Set7EE005ToRandomNumber(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Set a designated random number storage variable to a random number in a given range.
@@ -521,8 +540,9 @@ class Set7EE005ToRandomNumber(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_upper_bound(upper_bound)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.upper_bound)
+
 
 class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Cast an spell, or one of three spells at random. Each of the three spells do not have to be unique from each other.
@@ -623,13 +643,14 @@ class CastSpell(UsableMonsterScriptCommand, MonsterScriptCommand):
             spell_3,
         )
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         if self.spell_2 is None and self.spell_3 is None:
             return super().render(0xEF, self.spell_1().index)
         assert self.spell_2 is not None and self.spell_3 is not None
         return super().render(
             0xF0, self.spell_1().index, self.spell_2().index, self.spell_3().index
         )
+
 
 class RunObjectSequence(UsableMonsterScriptCommand, MonsterScriptCommand):
     """(unknown).
@@ -667,8 +688,9 @@ class RunObjectSequence(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_animation_id(animation_id)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.animation_id)
+
 
 class SetUntargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCommand):
     """The target will not be targetable by any subsequent commands.
@@ -690,8 +712,9 @@ class SetUntargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptC
     _opcode = bytearray([0xF2, 0x00])
     _size: int = 3
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render()
+
 
 class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCommand):
     """The target will become targetable by subsequent commands. This reverses the effects of any previous SetUntargetable commands applied to this target.
@@ -713,8 +736,9 @@ class SetTargetable(MonsterScriptCommandOneTargetLimited, UsableMonsterScriptCom
     _opcode = bytearray([0xF2, 0x01])
     _size: int = 3
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render()
+
 
 class EnableCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Enable the given party command types (Attack, Spell, Item).
@@ -754,11 +778,12 @@ class EnableCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_commands(commands)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         byte1 = 0
         for item in self.commands:
             byte1 += 1 << int(item)
         return super().render(byte1)
+
 
 class DisableCommand(EnableCommand):
     """Disable the given party command types (Attack, Spell, Item).
@@ -790,6 +815,7 @@ class DisableCommand(EnableCommand):
         """Overwrite the list of command types to be disabled by this command."""
         super().set_commands(commands)
 
+
 class RemoveAllInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Temporarily remove all items from party inventory.
 
@@ -808,6 +834,7 @@ class RemoveAllInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand)
 
     _opcode = bytearray([0xF4, 0x00, 0x00, 0x00])
 
+
 class RestoreInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Restore all temporarily-removed items from party inventory, reversing the effects of RemoveAllInventory.
 
@@ -825,6 +852,7 @@ class RestoreInventory(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """
 
     _opcode = bytearray([0xF4, 0x00, 0x01, 0x00])
+
 
 class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by being targeted by any command in a list of command types. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -866,13 +894,14 @@ class IfTargetedByCommand(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_commands(commands)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         effective_commands = deepcopy(self.commands)
-        byte_2 = 0
+        byte_2 = effective_commands[0]
         if len(effective_commands) > 1:
             byte_2 = effective_commands[1]
 
         return super().render(effective_commands[0] + 2, byte_2 + 2)
+
 
 class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by being targeted by any spell in a list of spells. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -914,13 +943,14 @@ class IfTargetedBySpell(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_commands(spells)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         effective_spells = deepcopy(self.spells)
         byte_2 = 0
         if len(effective_spells) > 1:
             byte_2 = effective_spells[1]().index
 
         return super().render(effective_spells[0]().index, byte_2)
+
 
 class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by being targeted by an item in a list of items. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -956,19 +986,18 @@ class IfTargetedByItem(UsableMonsterScriptCommand, MonsterScriptCommand):
         assert len(items) in [1, 2]
         self._items = deepcopy(items)
 
-    def __init__(
-        self, items: list[type[Item]], identifier: str | None = None
-    ) -> None:
+    def __init__(self, items: list[type[Item]], identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_commands(items)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         effective_items = deepcopy(self.items)
         byte_2 = 0
         if len(effective_items) > 1:
             byte_2 = effective_items[1]().item_id
 
         return super().render(effective_items[0]().item_id, byte_2)
+
 
 class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by being targeted by an item in a list of items. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1003,16 +1032,15 @@ class IfTargetedByElement(UsableMonsterScriptCommand, MonsterScriptCommand):
         assert len(elements) == len(set(elements))
         self._elements = deepcopy(elements)
 
-    def __init__(
-        self, elements: list[Element], identifier: str | None = None
-    ) -> None:
+    def __init__(self, elements: list[Element], identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_elements(elements)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             sum(element.spell_value for element in self.elements), 0x00
         )
+
 
 class IfTargetedByRegularAttack(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Begin an if-block triggered by being targeted by an A-attack. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1031,6 +1059,7 @@ class IfTargetedByRegularAttack(MonsterScriptCommandNoArgs, UsableMonsterScriptC
     """
 
     _opcode = bytearray([0xFC, 0x05, 0x00, 0x00])
+
 
 class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Begin an if-block triggered by the target's HP falling below a certain threshold. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1071,8 +1100,9 @@ class IfTargetHPBelow(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand)
         super().__init__(target, identifier)
         self.set_threshold(threshold)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.target, self.threshold // 16)
+
 
 class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by the monster's HP falling below a certain threshold. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1109,8 +1139,9 @@ class IfHPBelow(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_threshold(threshold)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.threshold)
+
 
 class IfTargetAfflictedBy(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Begin an if-block triggered by the monster being afflicted by a status in a list of statuses. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1155,10 +1186,11 @@ class IfTargetAfflictedBy(MonsterScriptCommandOneTarget, UsableMonsterScriptComm
         super().__init__(target, identifier)
         self.set_statuses(statuses)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(
             self.target, bits_to_int([status.spell_value for status in self.statuses])
         )
+
 
 class IfTargetNotAfflictedBy(IfTargetAfflictedBy):
     """Begin an if-block triggered by the monster not being afflicted by a status in a list of statuses. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1191,6 +1223,7 @@ class IfTargetNotAfflictedBy(IfTargetAfflictedBy):
         trigger the if-block.
         Given statuses must be unique."""
         super().set_statuses(statuses)
+
 
 class IfTurnCounterEquals(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block triggered by the turn counter reaching a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1227,8 +1260,9 @@ class IfTurnCounterEquals(UsableMonsterScriptCommand, MonsterScriptCommand):
         super().__init__(identifier)
         self.set_phase(phase)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.phase, 0x00)
+
 
 class IfVarLessThan(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
     """Begin an if-block triggered by a certain variable value being below a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1271,8 +1305,9 @@ class IfVarLessThan(MonsterScriptCommandOneVar, UsableMonsterScriptCommand):
         super().__init__(variable, identifier)
         self.set_threshold(threshold)
 
-    def render(self, *args) ->bytearray:
+    def render(self, *args) -> bytearray:
         return super().render(self.render_var(), self.threshold)
+
 
 class IfVarEqualOrGreaterThan(IfVarLessThan):
     """Begin an if-block triggered by a certain variable value not being below a given amount. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1304,6 +1339,7 @@ class IfVarEqualOrGreaterThan(IfVarLessThan):
         """Set the value which, if the given variable is below it, will trigger this if-block."""
         super().set_threshold(threshold)
 
+
 class IfTargetAlive(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Begin an if-block triggered by a certain target still being present in the battle. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
 
@@ -1327,6 +1363,7 @@ class IfTargetAlive(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     def render(self, *args):
         return super().render(self.target)
 
+
 class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
     """Begin an if-block triggered by a certain target no longer being present in the battle. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
 
@@ -1349,6 +1386,7 @@ class IfTargetKOed(MonsterScriptCommandOneTarget, UsableMonsterScriptCommand):
 
     def render(self, *args):
         return super().render(self.target)
+
 
 class IfVarBitsSet(SetVarBits):
     """Begin an if-block triggered by the given bits being set on the given variable. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1380,6 +1418,7 @@ class IfVarBitsSet(SetVarBits):
     def set_bits(self, bits: list[int]) -> None:
         """Set the bits which, if set on the given variable, trigger this if-block."""
         super().set_bits(bits)
+
 
 class IfVarBitsClear(ClearVarBits):
     """Begin an if-block triggered by the given bits being cleared on the given variable. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1415,6 +1454,7 @@ class IfVarBitsClear(ClearVarBits):
     def clear_bits(self, bits: list[int]) -> None:
         """Set the bits which, if cleared on the given variable, trigger this if-block."""
         self.set_bits(bits)
+
 
 class IfCurrentlyInFormationID(UsableMonsterScriptCommand, MonsterScriptCommand):
     """Begin an if-block which this monster will only run if the player is currently in battle against the formation indicated by this command's ID. It is highly encouraged to use formation constants for this. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
@@ -1457,6 +1497,7 @@ class IfCurrentlyInFormationID(UsableMonsterScriptCommand, MonsterScriptCommand)
     def render(self, *args) -> bytearray:
         return super().render(self.formation_id)
 
+
 class IfLastMonsterStanding(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Begin an if-block triggered by the monster's turn arriving when no other monsters remain. Any following commands between this one and the next Return command will only be executed if the condition of this command is met.
 
@@ -1474,6 +1515,7 @@ class IfLastMonsterStanding(MonsterScriptCommandNoArgs, UsableMonsterScriptComma
     """
 
     _opcode = bytearray([0xFC, 0x14, 0x00, 0x00])
+
 
 class Wait1Turn(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """The monster's turn ends here, and will resume on the next line after this one on its next turn.
@@ -1493,6 +1535,7 @@ class Wait1Turn(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
 
     _opcode = 0xFD
 
+
 class Wait1TurnandRestartScript(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """The monster's turn ends here, and will resume at the beginning of its script on its next turn.
 
@@ -1511,6 +1554,7 @@ class Wait1TurnandRestartScript(MonsterScriptCommandNoArgs, UsableMonsterScriptC
 
     _opcode = 0xFE
 
+
 class StartCounterCommands(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Begins the block of code indicating what the monster does in response to a player action that targeted it.
 
@@ -1528,6 +1572,7 @@ class StartCounterCommands(MonsterScriptCommandNoArgs, UsableMonsterScriptComman
     """
 
     _opcode = 0xFF
+
 
 class UnknownCommand(MonsterScriptCommandNoArgs, UsableMonsterScriptCommand):
     """Catch-all for any unknown commands. Unlike in action/event scripts, there are no safeguards on this command.
