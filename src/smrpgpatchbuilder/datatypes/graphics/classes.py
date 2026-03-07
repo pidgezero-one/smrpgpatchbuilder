@@ -739,7 +739,7 @@ class SpriteCollection:
         
         return bytearray(sprite_data), bytearray(image_data), bytearray(animation_pointers), anim_tile_ranges, output_tile_ranges
 
-    def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
+    def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False, shared_image_groups: list[list[int]] | None = None) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
         # CRITICAL: Reset all banks before assembling to prevent data from previous runs
         for bank in self.uncompressed_tile_banks:
             bank.tiles = bytearray([])
@@ -900,6 +900,32 @@ class SpriteCollection:
             wip_sprite.relative_offset = 0
             wip_sprites.append(wip_sprite)
 
+        # Force specified sprite groups to share the same tile group
+        # (and thus the same image) for SNES engine compatibility
+        if shared_image_groups is not None:
+            for forced_group in shared_image_groups:
+                # Collect all unique subtiles from sprites in this forced group
+                all_subtiles: list[tuple[int, ...]] = []
+                for sprite_idx in forced_group:
+                    for subtile in wip_sprites[sprite_idx].tiles:
+                        if subtile not in all_subtiles:
+                            all_subtiles.append(subtile)
+
+                # Create a new unified tile group
+                new_group_id = random_tile_id()
+                while new_group_id in tile_groups:
+                    new_group_id = random_tile_id()
+                tile_groups[new_group_id] = TileGroup(
+                    tiles=all_subtiles, used_by=list(forced_group), extra=[]
+                )
+
+                # Remove forced sprites from their old groups, assign to new
+                for sprite_idx in forced_group:
+                    old_group_id = wip_sprites[sprite_idx].tile_group
+                    if sprite_idx in tile_groups[old_group_id].used_by:
+                        tile_groups[old_group_id].used_by.remove(sprite_idx)
+                    wip_sprites[sprite_idx].tile_group = new_group_id
+
         # within each tile group, determine which sprites actually use which tiles
         for k in tile_groups:
             # group tiles together by proximity
@@ -929,9 +955,18 @@ class SpriteCollection:
         complete_images: list[ImagePack] = []
         complete_animations: list[AnimationPack] = []
 
+        # Build set of sprite indices that have forced image sharing
+        # (these keep relative_offset = 0 to ensure same graphics_pointer)
+        forced_sprite_indices: set[int] = set()
+        if shared_image_groups is not None:
+            for group in shared_image_groups:
+                forced_sprite_indices.update(group)
+
         # find sprites which are going to cause problems because os ubtile deltas > 512
         # and duplicate tiles where necessary
         for sprite_index, sprite in enumerate(wip_sprites):
+            if sprite_index in forced_sprite_indices:
+                continue  # Keep relative_offset = 0 for shared image groups
             tile_key = sprite.tile_group
             available_tiles = tile_groups[tile_key].tiles
             if len(sprite.tiles) == 0:
@@ -1121,8 +1156,8 @@ class SpriteCollection:
 
         return self.assemble_from_tables_(complete_sprites, complete_images, complete_animations, output_tile_ranges)
 
-    def render(self, whitespace: bool = False) -> list[tuple[int, bytearray]]:
-        sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace)
+    def render(self, whitespace: bool = False, shared_image_groups: list[list[int]] | None = None) -> list[tuple[int, bytearray]]:
+        sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace, shared_image_groups)
 
         # Zero out all sprite data ranges before writing to prevent leftover data
         zero_ranges = []
