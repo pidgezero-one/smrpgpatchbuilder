@@ -113,6 +113,12 @@ def _tokenize(text: str, widths: tuple[int, ...] = VANILLA_DIALOG_FONT_WIDTHS) -
             cursor += len(delay_match.group())
             continue
 
+        # 1b. Match [center] as a zero-width marker token
+        if text[cursor:cursor + 8] == "[center]":
+            tokens.append(Token(text="[center]", width_px=0))
+            cursor += 8
+            continue
+
         # 2. Match control tokens (longest first)
         matched = False
         for ctrl in _CONTROL_TOKENS:
@@ -326,6 +332,9 @@ def format_dialog(
     result = "".join(output_parts)
 
     if has_center:
+        # Trim trailing spaces before newlines, control tokens, and end of string.
+        # Centered text pads from the left; trailing spaces waste dialog space.
+        result = re.sub(r' +(?=\n|\[(?:await|page|end|select)|$)', '', result)
         result = "[center]" + result
 
     return result
@@ -486,6 +495,77 @@ def format_wish(
         return "\n" + text
     else:
         return text
+
+
+def center_marked_lines(
+    text: str,
+    char_widths: tuple[int, ...] | None = None,
+    left_margin: int | None = None,
+) -> str:
+    """Center only lines that begin with [center], leaving other lines untouched.
+
+    For each line (split by bare \\n) that starts with ``[center]``:
+    1. Strip the ``[center]`` marker
+    2. Trim trailing spaces from the line content
+    3. Calculate content width and add leading-space padding to center it
+
+    Lines without ``[center]`` are passed through unchanged.
+
+    Args:
+        text: The dialog string with \\n line breaks already inserted.
+        char_widths: Font width table. Defaults to VANILLA_DIALOG_FONT_WIDTHS.
+        left_margin: Left margin in pixels. Defaults to DEFAULT_LEFT_MARGIN.
+
+    Returns:
+        The text with per-line centering applied where marked.
+    """
+    if char_widths is None:
+        char_widths = VANILLA_DIALOG_FONT_WIDTHS
+    if left_margin is None:
+        left_margin = DEFAULT_LEFT_MARGIN
+
+    space_width = _calculate_char_width(" ", char_widths)
+    available_width = (CANVAS_WIDTH - left_margin) - (left_margin + 1)
+
+    # Tokenize so we can split on bare \n while preserving control tokens
+    tokens = _tokenize(text, char_widths)
+
+    # Split tokens into lines at bare \n boundaries
+    lines: list[list[Token]] = [[]]
+    for tok in tokens:
+        if tok.is_line_break and not tok.is_await:
+            lines.append([])
+        elif tok.is_page_break or (tok.is_line_break and tok.is_await):
+            lines[-1].append(tok)
+            lines.append([])
+        else:
+            lines[-1].append(tok)
+
+    result_parts: list[str] = []
+    for line_tokens in lines:
+        # Check if line starts with [center] (skipping leading spaces)
+        line_str = "".join(t.text for t in line_tokens)
+        if line_str.lstrip(" ").startswith("[center]"):
+            # Strip [center] marker
+            center_pos = line_str.index("[center]")
+            line_content = line_str[center_pos + len("[center]"):]
+            # Trim trailing spaces before any control token or end
+            line_content = re.sub(
+                r' +(?=\n|\[(?:await|page|end|select)|$)', '', line_content
+            )
+            # Calculate centering padding from the stripped content
+            content_tokens = _tokenize(line_content, char_widths)
+            content_width = sum(t.width_px for t in content_tokens)
+            remaining = available_width - content_width
+            if remaining > 0 and space_width > 0:
+                pad_spaces = math.floor((remaining / 2) / space_width)
+            else:
+                pad_spaces = 0
+            result_parts.append(" " * pad_spaces + line_content)
+        else:
+            result_parts.append(line_str)
+
+    return "\n".join(result_parts)
 
 
 def calculate_text_width(

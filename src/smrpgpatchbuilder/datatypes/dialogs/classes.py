@@ -15,7 +15,7 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
-from .formatter import center_lines, format_dialog
+from .formatter import center_lines, center_marked_lines, format_dialog
 from .utils import compress, COMPRESSION_TABLE
 
 class Dialog:
@@ -167,6 +167,10 @@ class DialogCollection:
                     s = s[len("[center]"):]
                     s = format_dialog(s)
                     s = center_lines(s)
+                    self._raw_data[bank_idx][str_idx] = s
+                elif "\n[center]" in s:
+                    s = format_dialog(s)
+                    s = center_marked_lines(s)
                     self._raw_data[bank_idx][str_idx] = s
 
         compressed_text = [
