@@ -1132,7 +1132,23 @@ class SpriteCollection:
 
             # create sprite pack
             complete_sprites.append(Sprite(len(complete_sprites), image_index_to_use, animation_num_to_use, sprite.sprite_data.palette_offset, sprite.sprite_data.unknown_num))
-        
+
+        # For forced image groups, the first group's sprites must use image 0
+        # (the SNES engine hardcodes image 0 for the overworld protagonist).
+        if shared_image_groups is not None and len(shared_image_groups) > 0:
+            first_forced_sprite = shared_image_groups[0][0]
+            current_image = complete_sprites[first_forced_sprite].image_num
+            if current_image != 0:
+                # Swap image data at positions 0 and current_image
+                complete_images[0], complete_images[current_image] = (
+                    complete_images[current_image], complete_images[0]
+                )
+                # Update all sprite references
+                for s in complete_sprites:
+                    if s.image_num == 0:
+                        s.image_num = current_image
+                    elif s.image_num == current_image:
+                        s.image_num = 0
 
         output_tile_ranges: list[tuple[int, bytearray]] = []
         final_offset = self.uncompressed_tile_banks[0].start
