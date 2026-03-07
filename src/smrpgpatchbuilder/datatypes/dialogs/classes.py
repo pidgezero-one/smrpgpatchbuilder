@@ -15,6 +15,7 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 from .ids.dialog_bank_ids import (
     DIALOG_BANK_22,
 )
+from .formatter import center_lines, format_dialog
 from .utils import compress, COMPRESSION_TABLE
 
 class Dialog:
@@ -158,6 +159,15 @@ class DialogCollection:
 
         self._unused_ranges = []  # Reset unused ranges tracking
         new_pointer_table: list[int] = [-1] * 4096
+
+        # Process [center] tags: auto-format line breaks and add centering padding
+        for bank_idx, bank_strings in enumerate(self._raw_data):
+            for str_idx, s in enumerate(bank_strings):
+                if s.startswith("[center]"):
+                    s = s[len("[center]"):]
+                    s = format_dialog(s)
+                    s = center_lines(s)
+                    self._raw_data[bank_idx][str_idx] = s
 
         compressed_text = [
             [compress(d, self.compression_table) for d in self._raw_data[0]],
