@@ -903,16 +903,13 @@ class SpriteCollection:
         # Force specified sprite groups to share the same tile group
         # (and thus the same image) for SNES engine compatibility
         if shared_image_groups is not None:
-            print(f"[SHARED_IMAGE] shared_image_groups={shared_image_groups}")
             for forced_group in shared_image_groups:
                 # Collect all unique subtiles from sprites in this forced group
                 all_subtiles: list[tuple[int, ...]] = []
                 for sprite_idx in forced_group:
-                    print(f"[SHARED_IMAGE] sprite {sprite_idx}: {len(wip_sprites[sprite_idx].tiles)} unique subtiles, tile_group={wip_sprites[sprite_idx].tile_group}")
                     for subtile in wip_sprites[sprite_idx].tiles:
                         if subtile not in all_subtiles:
                             all_subtiles.append(subtile)
-                print(f"[SHARED_IMAGE] combined group {forced_group}: {len(all_subtiles)} unique subtiles total")
 
                 # Create a new unified tile group
                 new_group_id = random_tile_id()
@@ -928,7 +925,6 @@ class SpriteCollection:
                     if sprite_idx in tile_groups[old_group_id].used_by:
                         tile_groups[old_group_id].used_by.remove(sprite_idx)
                     wip_sprites[sprite_idx].tile_group = new_group_id
-                    print(f"[SHARED_IMAGE] sprite {sprite_idx} moved to group {new_group_id}")
 
         # within each tile group, determine which sprites actually use which tiles
         for k in tile_groups:
@@ -1061,7 +1057,11 @@ class SpriteCollection:
             # check if this tile group has already been placed
             offset = tile_groups[tile_key].offset + sprite.relative_offset * 0x20
 
-            if len(available_tiles) > 510:
+            if sprite_index in forced_sprite_indices:
+                # Forced sprites must keep subtile_subtract = 0 so they all
+                # share the same offset and thus the same image ID.
+                subtile_subtract = 0
+            elif len(available_tiles) > 510:
                 subtile_subtract = lowest_subtile_index
             else:
                 subtile_subtract = 0
@@ -1069,7 +1069,8 @@ class SpriteCollection:
             # Safety check: verify all subtile indices will fit in 9 bits (max 511).
             # The shared tile group + extras can grow beyond what the cutoff failsafe
             # anticipated, so fall back to a dedicated tile placement if needed.
-            if len(sprite.tiles) > 0:
+            # (Skip for forced sprites — they must share the same offset.)
+            if sprite_index not in forced_sprite_indices and len(sprite.tiles) > 0:
                 max_subtile_index = highest_subtile_index + 1 - subtile_subtract
                 if max_subtile_index > 511:
                     dedicated_tiles = list(sprite.tiles)
@@ -1085,16 +1086,12 @@ class SpriteCollection:
                 offset += ((subtile_subtract) * 0x20)
             # need to change this to accommodate diff offsets in same tile group
             palette_ptr = PALETTE_OFFSET + sprite.sprite_data.palette_id * 30
-            if sprite_index in forced_sprite_indices:
-                print(f"[SHARED_IMAGE] sprite {sprite_index}: tile_group={tile_key}, relative_offset={sprite.relative_offset}, offset=0x{offset:06X}, palette_ptr=0x{palette_ptr:06X}, palette_id={sprite.sprite_data.palette_id}, subtile_subtract={subtile_subtract}, available_tiles={len(available_tiles)}")
             image_index_to_use = len(complete_images)
             for image_index, image in enumerate(complete_images):
                 if image.graphics_pointer == offset and image.palette_pointer == palette_ptr:
                     image_index_to_use = image_index
             if image_index_to_use == len(complete_images):
                 complete_images.append(ImagePack(image_index_to_use, offset, palette_ptr))
-            if sprite_index in forced_sprite_indices:
-                print(f"[SHARED_IMAGE] sprite {sprite_index}: assigned image {image_index_to_use}")
 
             # get animation #, or create new
             animation_num_to_use = len(complete_animations)
