@@ -50,6 +50,7 @@ src/smrpgpatchbuilder/datatypes/characters/constants.py
 src/smrpgpatchbuilder/datatypes/characters/enums.py
 src/smrpgpatchbuilder/datatypes/dialogs/__init__.py
 src/smrpgpatchbuilder/datatypes/dialogs/classes.py
+src/smrpgpatchbuilder/datatypes/dialogs/formatter.py
 src/smrpgpatchbuilder/datatypes/dialogs/utils.py
 src/smrpgpatchbuilder/datatypes/dialogs/ids/__init__.py
 src/smrpgpatchbuilder/datatypes/dialogs/ids/dialog_bank_ids.py
@@ -235,6 +236,8 @@ src/smrpgpatchbuilder/utils/npcs.py
 src/smrpgpatchbuilder/utils/number.py
 src/smrpgpatchbuilder/utils/strings.py
 src/tests/animations/test_animationscripts.py
+src/tests/dialogs/__init__.py
+src/tests/dialogs/test_formatter.py
 src/tests/monsters/test_ai.py
 src/tests/overworld/test_actionscripts.py
 src/tests/overworld/test_eventscripts.py
