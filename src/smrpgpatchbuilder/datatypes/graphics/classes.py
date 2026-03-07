@@ -868,6 +868,11 @@ class SpriteCollection:
                 for tile in [t for t in mold.tiles if isinstance(t, Tile)]:
                     for subtile in tile.subtile_bytes:
                         if subtile is not None:
+                            if len(subtile) != 32:
+                                raise ValueError(
+                                    f"Sprite {index}: subtile has {len(subtile)} bytes (expected 32). "
+                                    f"Hex: {subtile.hex()}"
+                                )
                             hashable = tuple(subtile)
                             if hashable not in unique_subtiles:
                                 unique_subtiles.append(hashable)
@@ -1021,6 +1026,21 @@ class SpriteCollection:
                 subtile_subtract = lowest_subtile_index
             else:
                 subtile_subtract = 0
+
+            # Safety check: verify all subtile indices will fit in 9 bits (max 511).
+            # The shared tile group + extras can grow beyond what the cutoff failsafe
+            # anticipated, so fall back to a dedicated tile placement if needed.
+            if len(sprite.tiles) > 0:
+                max_subtile_index = highest_subtile_index + 1 - subtile_subtract
+                if max_subtile_index > 511:
+                    dedicated_tiles = list(sprite.tiles)
+                    dedicated_bytes = bytearray()
+                    for t in dedicated_tiles:
+                        dedicated_bytes += bytearray(t)
+                    offset = place_bytes(dedicated_bytes, f"dedicated_sprite_{sprite_index}")
+                    available_tiles = dedicated_tiles
+                    subtile_subtract = 0
+
             # get image pack #, or create new
             if not inserting_whitespace_before:
                 offset += ((subtile_subtract) * 0x20)

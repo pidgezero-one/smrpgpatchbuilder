@@ -1275,8 +1275,11 @@ def _create_dummy_sprite() -> _WorkingAnimationData:
 class SpriteCollection(list[SpriteContainer]):
     """Managerial class for everything relating to NPC sprites."""
 
-    def render(self) -> dict[int, bytearray]:
-        """Get data for all NPC sprite data in `{0x123456: bytearray([0x00])}` format"""
+    def render(self, shared_image_groups: list[list[int]] | None = None) -> dict[int, bytearray]:
+        """Get data for all NPC sprite data in `{0x123456: bytearray([0x00])}` format.
+        shared_image_groups: optional list of sprite index groups that must share
+        the same image ID (e.g. [[31,32,33,34],[35,36]] forces sprites 31-34
+        to share one image and 35-36 to share another)."""
         ### produce rom bytes
         tile_groups = _TileGroupSet()
         wip_sprites: _WIPSprites = _WIPSprites()
@@ -1310,6 +1313,33 @@ class SpriteCollection(list[SpriteContainer]):
             wip_sprite = _WIPSprite(wip_sprite, unique_subtiles, key, 0)
             wip_sprites.append(wip_sprite)
 
+        # Force specified sprite groups to share the same tile group
+        # (and thus the same image) for SNES engine compatibility
+        if shared_image_groups is not None:
+            for forced_group in shared_image_groups:
+                # Collect all unique subtiles from sprites in this forced group
+                all_subtiles: list[_SubtileTuple] = []
+                for sprite_idx in forced_group:
+                    for subtile in wip_sprites[sprite_idx].subtiles:
+                        if subtile not in all_subtiles:
+                            all_subtiles.append(subtile)
+
+                # Create a new unified tile group
+                new_group_id = _random_tile_id()
+                while new_group_id in tile_groups:
+                    new_group_id = _random_tile_id()
+                tile_groups[new_group_id] = _SubtileGroup(
+                    list(forced_group), all_subtiles
+                )
+
+                # Remove forced sprites from their old groups, assign to new
+                for sprite_idx in forced_group:
+                    old_group_id = wip_sprites[sprite_idx].subtile_group_id
+                    old_group = tile_groups[old_group_id]
+                    if sprite_idx in old_group.used_by:
+                        old_group.used_by.remove(sprite_idx)
+                    wip_sprites[sprite_idx].set_subtile_group(new_group_id)
+
         # within each tile group, determine which sprites actually use which tiles
         for key in tile_groups:
             tile_group = tile_groups[key]
@@ -1339,9 +1369,18 @@ class SpriteCollection(list[SpriteContainer]):
         free_tiles -= 64
         free_tiles = max(free_tiles, 0)
 
+        # Build set of sprite indices that have forced image sharing
+        # (these keep relative_offset = 0 to ensure same graphics_pointer)
+        forced_sprite_indices: set[int] = set()
+        if shared_image_groups is not None:
+            for group in shared_image_groups:
+                forced_sprite_indices.update(group)
+
         # find sprites which are going to cause problems because of subtile deltas > 512
         # and duplicate tiles where necessary
         for sprite_index, wip_sprite in enumerate(wip_sprites):
+            if sprite_index in forced_sprite_indices:
+                continue  # Keep relative_offset = 0 for shared image groups
             tile_key: str = wip_sprite.subtile_group_id
             available_tiles = tile_groups[tile_key].subtiles
 
