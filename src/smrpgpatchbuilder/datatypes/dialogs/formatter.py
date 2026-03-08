@@ -326,10 +326,13 @@ def format_dialog(
 
     result = "".join(output_parts)
 
+    # Strip trailing spaces before any newline
+    result = re.sub(r' +\n', '\n', result)
+
     if has_center:
-        # Trim trailing spaces before newlines, control tokens, and end of string.
+        # Also trim trailing spaces before control tokens and end of string.
         # Centered text pads from the left; trailing spaces waste dialog space.
-        result = re.sub(r' +(?=\n|\[(?:await|page|end|select)|$)', '', result)
+        result = re.sub(r' +(?=\[(?:await|page|end|select)|$)', '', result)
         result = "[center]" + result
 
     return result
