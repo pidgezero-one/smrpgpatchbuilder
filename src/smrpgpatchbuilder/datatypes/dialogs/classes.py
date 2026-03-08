@@ -120,6 +120,7 @@ class DialogCollection:
         dialogs: list[Dialog],
         raw_data: list[list[str]],
         compression_table: list[tuple[str, bytes | bytearray]],
+        auto_format: bool = False,
         dialog_bank_22_begins=DIALOG_BANK_22_BEGINS,
         dialog_bank_22_ends=DIALOG_BANK_22_ENDS,
         dialog_bank_23_begins=DIALOG_BANK_23_BEGINS,
@@ -130,6 +131,7 @@ class DialogCollection:
         self._set_dialogs(dialogs)
         self._set_raw_data(raw_data)
         self._set_compression_table([*COMPRESSION_TABLE, *compression_table])
+        self._auto_format = auto_format
         self._dialog_bank_22_begins = dialog_bank_22_begins
         self._dialog_bank_22_ends = dialog_bank_22_ends
         self._dialog_bank_23_begins = dialog_bank_23_begins
@@ -172,18 +174,22 @@ class DialogCollection:
                     '[await][page]\n', s
                 )
 
-        # Process [center] tags: auto-format line breaks and add centering padding
-        for bank_idx, bank_strings in enumerate(self._raw_data):
-            for str_idx, s in enumerate(bank_strings):
-                if s.startswith("[center]"):
-                    s = s[len("[center]"):]
-                    s = format_dialog(s)
-                    s = center_lines(s)
-                    self._raw_data[bank_idx][str_idx] = s
-                elif "\n[center]" in s:
-                    s = format_dialog(s)
-                    s = center_marked_lines(s)
-                    self._raw_data[bank_idx][str_idx] = s
+        # Auto-format dialogs: insert line breaks and handle centering
+        if self._auto_format:
+            for bank_idx, bank_strings in enumerate(self._raw_data):
+                for str_idx, s in enumerate(bank_strings):
+                    if s.startswith("[center]"):
+                        s = s[len("[center]"):]
+                        s = format_dialog(s)
+                        s = center_lines(s)
+                        self._raw_data[bank_idx][str_idx] = s
+                    elif "\n[center]" in s:
+                        s = format_dialog(s)
+                        s = center_marked_lines(s)
+                        self._raw_data[bank_idx][str_idx] = s
+                    else:
+                        s = format_dialog(s)
+                        self._raw_data[bank_idx][str_idx] = s
 
         compressed_text = [
             [compress(d, self.compression_table) for d in self._raw_data[0]],
