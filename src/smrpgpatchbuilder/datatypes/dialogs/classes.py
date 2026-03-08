@@ -1,5 +1,7 @@
 """Base classes related to dialogs and dialog collections"""
 
+import re
+
 from smrpgpatchbuilder.datatypes.dialogs.ids.misc import (
     DIALOG_BANK_22_BEGINS,
     DIALOG_BANK_22_ENDS,
@@ -159,6 +161,16 @@ class DialogCollection:
 
         self._unused_ranges = []  # Reset unused ranges tracking
         new_pointer_table: list[int] = [-1] * 4096
+
+        # Convert mid-dialog standalone [await] (0x00 = null terminator) to
+        # [await][page]\n (0x03) so the game continues to the next page instead
+        # of treating it as end-of-dialog.
+        _mid_await = re.compile(r'\[await\](?!\[page\]|\[pause\]|\n|$)')
+        for bank_idx, bank_strings in enumerate(self._raw_data):
+            for str_idx, s in enumerate(bank_strings):
+                self._raw_data[bank_idx][str_idx] = _mid_await.sub(
+                    '[await][page]\n', s
+                )
 
         # Process [center] tags: auto-format line breaks and add centering padding
         for bank_idx, bank_strings in enumerate(self._raw_data):
