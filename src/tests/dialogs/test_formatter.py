@@ -19,12 +19,12 @@ class TestCalculateCharWidth:
         assert _calculate_char_width("!") == 7
 
     def test_uppercase_a_width(self):
-        # 'A' is char 0x41 (index 0x21), raw width = 7, rendered = 8
-        assert _calculate_char_width("A") == 8
+        # 'A' is char 0x41 (index 0x21), raw width = 8, rendered = 9
+        assert _calculate_char_width("A") == 9
 
     def test_lowercase_a_width(self):
-        # 'a' is char 0x61 (index 0x41 = 65), raw width = 5, rendered = 6
-        assert _calculate_char_width("a") == 6
+        # 'a' is char 0x61 (index 0x41 = 65), raw width = 6, rendered = 7
+        assert _calculate_char_width("a") == 7
 
     def test_zero_width_char(self):
         # Some chars have 0 raw width (index 0x38-0x3C are 0x00)
@@ -50,12 +50,28 @@ class TestCalculateCharWidth:
         assert _calculate_char_width("\xB0") == 0
 
     def test_digit_zero_width(self):
-        # '0' is char 0x30 (index 0x10), raw width = 7, rendered = 8
+        # '0' is char 0x30 (index 0x10 = 16), raw width = 7, rendered = 8
         assert _calculate_char_width("0") == 8
 
     def test_digit_one_width(self):
-        # '1' is char 0x31 (index 0x11), raw width = 5, rendered = 6
+        # '1' is char 0x31 (index 0x11 = 17), raw width = 5, rendered = 6
         assert _calculate_char_width("1") == 6
+
+    def test_uppercase_xyz_width(self):
+        # X=0x58 (index 56), raw=7, rendered=8
+        assert _calculate_char_width("X") == 8
+        # Y=0x59 (index 57), raw=6, rendered=7
+        assert _calculate_char_width("Y") == 7
+        # Z=0x5A (index 58), raw=6, rendered=7
+        assert _calculate_char_width("Z") == 7
+
+    def test_lowercase_xyz_width(self):
+        # x=0x78 (index 88), raw=6, rendered=7
+        assert _calculate_char_width("x") == 7
+        # y=0x79 (index 89), raw=5, rendered=6
+        assert _calculate_char_width("y") == 6
+        # z=0x7A (index 90), raw=6, rendered=7
+        assert _calculate_char_width("z") == 7
 
 
 class TestTokenize:
@@ -131,10 +147,10 @@ class TestFormatDialog:
         assert "\n" not in result
         assert result == "Hello world"
 
-    def test_strips_bare_newlines(self):
+    def test_preserves_bare_newlines(self):
         result = format_dialog("Hello\nworld")
-        # Bare \n should be stripped, then re-inserted only if wrapping needed
-        assert result in ("Hello world", "Hello\n world")
+        # Bare \n should be preserved as-is
+        assert result == "Hello\nworld"
 
     def test_preserves_await_newline(self):
         result = format_dialog("Hello[await]\nworld")
@@ -241,13 +257,13 @@ class TestFormatWish:
 
 class TestCalculateTextWidth:
     def test_simple_word(self):
-        # "Hi" = H(7) + i(8) = 15px
-        # H at index 40: raw 6, rendered 7; i at index 73: raw 7, rendered 8
-        assert calculate_text_width("Hi") == 15
+        # "Hi" = H(8) + i(4) = 12px
+        # H at index 40: raw 7, rendered 8; i at index 73: raw 3, rendered 4
+        assert calculate_text_width("Hi") == 12
 
     def test_with_space(self):
-        # "H i" = H(7) + space(5) + i(8) = 20px
-        assert calculate_text_width("H i") == 20
+        # "H i" = H(8) + space(5) + i(4) = 17px
+        assert calculate_text_width("H i") == 17
 
     def test_empty_string(self):
         assert calculate_text_width("") == 0
