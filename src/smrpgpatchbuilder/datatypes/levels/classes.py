@@ -2241,6 +2241,16 @@ class ChestClone(Clone):
         super().set_byte5_bit7(byte5_bit7)
         super().set_byte6_bit2(byte6_bit2)
 
+GLOWING_SAVE_POINT_NPC_BYTES = {
+    0: 0x07,
+    1: 0x0B,
+    2: 0x0D,
+    3: 0x10,
+}
+
+GLOWING_SAVE_POINT_NPC_INDEX = {v: k for k, v in GLOWING_SAVE_POINT_NPC_BYTES.items()}
+
+
 class Room(Generic[BaseRoomObjectT, ExitT]):
     """The base definition for each of the 512 levels in the game."""
 
@@ -2250,6 +2260,7 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
     _event_tiles: list[Event] = []
     _exit_fields: list[ExitT] = []
     _objects: list[BaseRoomObjectT] = []
+    _effects_npc: int = 0
 
     @property
     def partition(self) -> Partition | None:
@@ -2298,6 +2309,15 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
         """Overwrite list of specific tile designations that load other rooms or the world map."""
         self._exit_fields = exit_fields
 
+    @property
+    def effects_npc(self) -> int:
+        """The raw ROM byte for the NPC sprite layer animation effect (area map byte 16)."""
+        return self._effects_npc
+
+    def set_effects_npc(self, effects_npc: int) -> None:
+        """Set the NPC sprite layer animation effect byte."""
+        self._effects_npc = effects_npc
+
     def add_object(self, item: BaseRoomObjectT) -> None:
         """Add an object to the room."""
         assert len(self.objects) + 1 <= 28
@@ -2331,6 +2351,7 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
         events: list[Event] | None = None,
         exits: list[ExitT] | None = None,
         objects: list[BaseRoomObjectT] | None = None,
+        effects_npc: int = 0,
     ):
         if events is None:
             events = []
@@ -2344,6 +2365,7 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
         self.set_event_tiles(events)
         self.set_exit_fields(exits)
         self.set_objects(objects)
+        self.set_effects_npc(effects_npc)
 
     def get_npc_by_target_id(self, target: AreaObject) -> BaseRoomObjectT:
         """Get the first NPC in the room that matches the given target ID."""
