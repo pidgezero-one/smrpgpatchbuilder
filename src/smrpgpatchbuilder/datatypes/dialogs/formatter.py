@@ -41,11 +41,21 @@ CANVAS_WIDTH = 256
 # Variable tokens like [0x7000] are estimated as 2x the widest digit rendered width.
 _VARIABLE_TOKEN_WIDTH = 2 * (7 + 1)  # 16px
 
-# Variable-width tokens that estimate as _VARIABLE_TOKEN_WIDTH
-_VARIABLE_WIDTH_TOKENS = ["[0x7000]", "[0x7024]", "[0x7000timer]"]
+# Widest letter is 'M'/'W' at raw width 9, rendered = 10px.
+# Item names ([0x70A7]) are up to 12 chars; filenames are up to 8 chars.
+_WIDEST_LETTER_WIDTH = 10
+
+# Variable-width token estimated widths (token → pixel width)
+_VARIABLE_TOKEN_WIDTHS: dict[str, int] = {
+    "[0x7000]": _VARIABLE_TOKEN_WIDTH,
+    "[0x7024]": _VARIABLE_TOKEN_WIDTH,
+    "[0x7000timer]": _VARIABLE_TOKEN_WIDTH,
+    "[0x70A7]": 12 * _WIDEST_LETTER_WIDTH,   # item name, up to 12 chars
+    "[filename]": 8 * _WIDEST_LETTER_WIDTH,   # save file name, up to 8 chars
+}
 
 # Tokens that are "long" -- force a line break after them
-_LONG_TOKENS = ["[0x70A7]", "[filename]"]
+_LONG_TOKENS: list[str] = []
 
 # ALL-CAPS-followed-by-colon pattern: lines starting with this don't get a leading space
 _CAPS_COLON_PATTERN = re.compile(r"^[A-Z][A-Z0-9 ,.'!?\-]*:")
@@ -141,8 +151,8 @@ def _tokenize(text: str, widths: tuple[int, ...] = VANILLA_DIALOG_FONT_WIDTHS) -
                     tok.is_select = True
                 elif ctrl == "\n":
                     tok.is_line_break = True
-                elif ctrl in _VARIABLE_WIDTH_TOKENS:
-                    tok.width_px = _VARIABLE_TOKEN_WIDTH
+                elif ctrl in _VARIABLE_TOKEN_WIDTHS:
+                    tok.width_px = _VARIABLE_TOKEN_WIDTHS[ctrl]
                     tok.is_variable = True
                 elif ctrl in _LONG_TOKENS:
                     tok.is_long_variable = True
