@@ -103,6 +103,39 @@ class BufferSpace(IntEnum):
     BYTES_1536 = 0x06
     BYTES_1792 = 0x07
 
+class EffectsNpc(IntEnum):
+    """NPC sprite layer animation effect for a room (area map byte 16).
+
+    Values correspond to the Lazy Shell editor's "Sprites" dropdown in the
+    level layer properties.  The ROM byte is stored directly as the enum value.
+    """
+
+    NOTHING = 0x00
+    WATERFALL = 0x05
+    UNKNOWN_06 = 0x06
+    SAVE_POINT_NPC0 = 0x07
+    FLASHING_CHANDELIER = 0x0A
+    SAVE_POINT_NPC1 = 0x0B
+    UNKNOWN_0C = 0x0C
+    SAVE_POINT_NPC2 = 0x0D
+    WATER_TUNNEL = 0x0F
+    SAVE_POINT_NPC3 = 0x10
+    UNKNOWN_12 = 0x12
+    UNKNOWN_13 = 0x13
+    UNKNOWN_15 = 0x15
+    UNKNOWN_16 = 0x16
+    UNKNOWN_17 = 0x17
+    UNKNOWN_18 = 0x18
+    GLOWING_MAGMA = 0x19
+    UNKNOWN_1A = 0x1A
+    UNKNOWN_1B = 0x1B
+    UNKNOWN_1D = 0x1D
+    UNKNOWN_1E = 0x1E
+    UNKNOWN_1F = 0x1F
+    UNKNOWN_20 = 0x20
+    UNKNOWN_21 = 0x21
+    UNKNOWN_22 = 0x22
+
 class Buffer:
     """Partition buffer, controls how sprites are loaded. Three to a partition"""
 
@@ -2241,14 +2274,16 @@ class ChestClone(Clone):
         super().set_byte5_bit7(byte5_bit7)
         super().set_byte6_bit2(byte6_bit2)
 
-GLOWING_SAVE_POINT_NPC_BYTES = {
-    0: 0x07,
-    1: 0x0B,
-    2: 0x0D,
-    3: 0x10,
+GLOWING_SAVE_POINT_NPC_BYTES: dict[int, EffectsNpc] = {
+    0: EffectsNpc.SAVE_POINT_NPC0,
+    1: EffectsNpc.SAVE_POINT_NPC1,
+    2: EffectsNpc.SAVE_POINT_NPC2,
+    3: EffectsNpc.SAVE_POINT_NPC3,
 }
 
-GLOWING_SAVE_POINT_NPC_INDEX = {v: k for k, v in GLOWING_SAVE_POINT_NPC_BYTES.items()}
+GLOWING_SAVE_POINT_NPC_INDEX: dict[EffectsNpc, int] = {
+    v: k for k, v in GLOWING_SAVE_POINT_NPC_BYTES.items()
+}
 
 
 class Room(Generic[BaseRoomObjectT, ExitT]):
@@ -2260,7 +2295,7 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
     _event_tiles: list[Event] = []
     _exit_fields: list[ExitT] = []
     _objects: list[BaseRoomObjectT] = []
-    _effects_npc: int = 0
+    _effects_npc: EffectsNpc = EffectsNpc.NOTHING
 
     @property
     def partition(self) -> Partition | None:
@@ -2310,13 +2345,13 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
         self._exit_fields = exit_fields
 
     @property
-    def effects_npc(self) -> int:
-        """The raw ROM byte for the NPC sprite layer animation effect (area map byte 16)."""
+    def effects_npc(self) -> EffectsNpc:
+        """The NPC sprite layer animation effect (area map byte 16)."""
         return self._effects_npc
 
-    def set_effects_npc(self, effects_npc: int) -> None:
-        """Set the NPC sprite layer animation effect byte."""
-        self._effects_npc = effects_npc
+    def set_effects_npc(self, effects_npc: EffectsNpc) -> None:
+        """Set the NPC sprite layer animation effect."""
+        self._effects_npc = EffectsNpc(effects_npc)
 
     def add_object(self, item: BaseRoomObjectT) -> None:
         """Add an object to the room."""
@@ -2351,7 +2386,7 @@ class Room(Generic[BaseRoomObjectT, ExitT]):
         events: list[Event] | None = None,
         exits: list[ExitT] | None = None,
         objects: list[BaseRoomObjectT] | None = None,
-        effects_npc: int = 0,
+        effects_npc: EffectsNpc = EffectsNpc.NOTHING,
     ):
         if events is None:
             events = []
