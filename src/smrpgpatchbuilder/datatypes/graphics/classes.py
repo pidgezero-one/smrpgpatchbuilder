@@ -1017,6 +1017,36 @@ class SpriteCollection:
 
             wip_sprites[sprite_index].relative_offset = lowest_subtile_index
 
+        # Post-mitigation validation: verify all sprites' tile ranges actually fit
+        # in 9 bits after extras from other sprites may have grown the group.
+        # If not, give the sprite its own dedicated tile group so it gets placed
+        # in Phase 3 alongside everything else (when banks still have space).
+        for sprite_index, sprite in enumerate(wip_sprites):
+            if sprite_index in forced_sprite_indices:
+                continue
+            if len(sprite.tiles) == 0:
+                continue
+            tile_key = sprite.tile_group
+            available = tile_groups[tile_key].tiles[sprite.relative_offset:] + tile_groups[tile_key].extra
+            max_idx = 0
+            for t in sprite.tiles:
+                idx = available.index(t)
+                if idx > max_idx:
+                    max_idx = idx
+            if max_idx <= 510:
+                continue
+            # This sprite still overflows — give it a dedicated tile group
+            dedicated_key = f"dedicated_{sprite_index}"
+            tile_groups[dedicated_key] = TileGroup(
+                tiles=list(sprite.tiles),
+                used_by=[sprite_index],
+                extra=[],
+            )
+            if sprite_index in tile_groups[tile_key].used_by:
+                tile_groups[tile_key].used_by.remove(sprite_index)
+            wip_sprites[sprite_index].tile_group = dedicated_key
+            wip_sprites[sprite_index].relative_offset = 0
+
         # start placing tile groups and get offsets for them
         sortable_tile_groups: list[tuple[str, TileGroup]] = []
         for key in tile_groups:
