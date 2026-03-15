@@ -198,6 +198,7 @@ class Partition:
     """Determines how NPC sprites within the room are loaded into VRAM"""
 
     _ally_sprite_buffer_size: UInt4 = UInt4(1)
+    _original_ally_sprite_buffer_size: UInt4 = UInt4(1)
     _allow_extra_sprite_buffer: bool = False
     _extra_sprite_buffer_size: UInt4 = UInt4(0)
     _buffers: list[Buffer] = []
@@ -219,6 +220,11 @@ class Partition:
         Must be 3 or less."""
         assert ally_sprite_buffer_size <= 3
         self._ally_sprite_buffer_size = UInt4(ally_sprite_buffer_size)
+
+    @property
+    def original_ally_sprite_buffer_size(self) -> UInt4:
+        """The ally_sprite_buffer_size value as originally set during initialization."""
+        return self._original_ally_sprite_buffer_size
 
     @property
     def allow_extra_sprite_buffer(self) -> bool:
@@ -269,6 +275,7 @@ class Partition:
         if buffers is None:
             buffers = [Buffer(), Buffer(), Buffer()]
         self.set_ally_sprite_buffer_size(ally_sprite_buffer_size)
+        self._original_ally_sprite_buffer_size = UInt4(ally_sprite_buffer_size)
         self.set_allow_extra_sprite_buffer(allow_extra_sprite_buffer)
         self.set_extra_sprite_buffer_size(extra_sprite_buffer_size)
         self.set_buffers(buffers)

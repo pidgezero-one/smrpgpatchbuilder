@@ -150,6 +150,7 @@ class Formation:
         """Overwrite the list of containers including info about enemies and their positioning."""
         self._members = members
         self._members.extend([None] * (8 - len(self._members)))
+        assert len(self._members) == 8, f"Formation must have exactly 8 members, got {len(self._members)}"
 
     @property
     def run_event_at_load(self) -> UInt8 | None:
