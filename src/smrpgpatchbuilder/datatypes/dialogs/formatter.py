@@ -451,7 +451,7 @@ def center_lines(
         content_width = sum(t.width_px for t in line_tokens)
 
         remaining = available_width - content_width
-        if remaining > 0 and space_width > 0:
+        if remaining >= 2 * space_width and space_width > 0:
             pad_spaces = math.floor((remaining / 2) / space_width)
         else:
             pad_spaces = 0
@@ -565,7 +565,7 @@ def center_marked_lines(
             content_tokens = _tokenize(line_content, char_widths)
             content_width = sum(t.width_px for t in content_tokens)
             remaining = available_width - content_width
-            if remaining > 0 and space_width > 0:
+            if remaining >= 2 * space_width and space_width > 0:
                 pad_spaces = math.floor((remaining / 2) / space_width)
             else:
                 pad_spaces = 0
