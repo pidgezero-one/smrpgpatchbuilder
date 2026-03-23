@@ -335,7 +335,7 @@ class RoomCollection:
         # We need ALL signatures here because a signature might appear in a clone group in one room
         # but as a standalone object in another room
         global_fallback_mapping = {}
-        for sig in all_signatures:
+        for sig in sorted(all_signatures):
             # Check if this signature was placed via force_id
             if sig in sig_to_forced_index:
                 global_fallback_mapping[sig] = sig_to_forced_index[sig]
