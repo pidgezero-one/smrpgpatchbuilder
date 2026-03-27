@@ -10,19 +10,24 @@ from smrpgpatchbuilder.datatypes.scripts_common.classes import (
 
 from dataclasses import dataclass
 
+
 class SheepAttackItem(RegularItem):
     _item_id: int = 136
 
+
 class LambsLureItem(RegularItem):
     _item_id: int = 143
+
 
 class RareFrogCoinItem(RegularItem):
     _item_name: str = "RareFrogCoin"
 
     _item_id: int = 128
 
+
 class YARIDOVICH(Enemy):
     _monster_id: int = 226
+
 
 @dataclass
 class Case:
@@ -32,6 +37,7 @@ class Case:
     exception: str | None = None
     exception_type: type | None = None
     expected_length: int | None = None
+
 
 test_cases = [
     Case(
@@ -818,53 +824,57 @@ test_cases = [
         expected_bytes=[0x2F, 0x42, 0xF7, 0x00],
     ),
     Case(
-        label="SetAMEM8BitTo7E5x",
+        label="SetAMEM8BitToRAMRelative7E",
         commands_factory=lambda: [
-            SetAMEM8BitTo7E5x(0x60, 0x7E002C),
+            SetAMEM8BitToRAMRelative7E(0x60, 0x7E002C),
         ],
         expected_bytes=[0x20, 0x50, 0x2C, 0x00],
     ),
     Case(
-        label="SetAMEM16BitTo7E5x",
+        label="SetAMEM16BitToRAMRelative7E",
         commands_factory=lambda: [
-            SetAMEM16BitTo7E5x(0x60, 0x7E002C),
+            SetAMEM16BitToRAMRelative7E(0x60, 0x7E002C),
         ],
         expected_bytes=[0x21, 0x50, 0x2C, 0x00],
     ),
     Case(
-        label="Set7E5xToAMEM8Bit",
+        label="SetRAMRelative7EToAMEM8Bit",
         commands_factory=lambda: [
-            Set7E5xToAMEM8Bit(0x7E0000, 0x62),
+            SetRAMRelative7EToAMEM8Bit(0x7E0000, 0x62),
         ],
         expected_bytes=[0x22, 0x52, 0x00, 0x00],
     ),
     Case(
-        label="Set7E5xToAMEM16Bit",
+        label="SetRAMRelative7EToAMEM16Bit",
         commands_factory=lambda: [
-            Set7E5xToAMEM16Bit(0x7E0070, 0x62),
+            SetRAMRelative7EToAMEM16Bit(0x7E0070, 0x62),
         ],
         expected_bytes=[0x23, 0x52, 0x70, 0x00],
     ),
     Case(
-        label="JmpIfAMEM8BitEquals7E5x",
+        label="JmpIfAMEM8BitEqualsRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM8BitEquals7E5x(amem=0x61, address=0x7EFFF0, destinations=["jmp"]),
+            JmpIfAMEM8BitEqualsRAMRelative7E(
+                amem=0x61, address=0x7EFFF0, destinations=["jmp"]
+            ),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x24, 0x51, 0xF0, 0xFF, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM16BitEquals7E5x",
+        label="JmpIfAMEM16BitEqualsRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM16BitEquals7E5x(amem=0x61, address=0x7EFFF0, destinations=["jmp"]),
+            JmpIfAMEM16BitEqualsRAMRelative7E(
+                amem=0x61, address=0x7EFFF0, destinations=["jmp"]
+            ),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x25, 0x51, 0xF0, 0xFF, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM8BitNotEquals7E5x",
+        label="JmpIfAMEM8BitNotEqualsRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM8BitNotEquals7E5x(
+            JmpIfAMEM8BitNotEqualsRAMRelative7E(
                 amem=0x6A, address=0x7E01B0, destinations=["jmp"]
             ),
             ReturnSubroutine(identifier="jmp"),
@@ -872,9 +882,9 @@ test_cases = [
         expected_bytes=[0x26, 0x5A, 0xB0, 0x01, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM16BitNotEquals7E5x",
+        label="JmpIfAMEM16BitNotEqualsRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM16BitNotEquals7E5x(
+            JmpIfAMEM16BitNotEqualsRAMRelative7E(
                 amem=0x6A, address=0x7E01B0, destinations=["jmp"]
             ),
             ReturnSubroutine(identifier="jmp"),
@@ -882,55 +892,67 @@ test_cases = [
         expected_bytes=[0x27, 0x5A, 0xB0, 0x01, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM8BitLessThan7E5x",
+        label="JmpIfAMEM8BitLessThanRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM8BitLessThan7E5x(0x65, 0x7E1A00, destinations=["jmp"]),
+            JmpIfAMEM8BitLessThanRAMRelative7E(0x65, 0x7E1A00, destinations=["jmp"]),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x28, 0x55, 0x00, 0x1A, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM16BitLessThan7E5x",
+        label="JmpIfAMEM16BitLessThanRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM16BitLessThan7E5x(0x65, 0x7E1A00, destinations=["jmp"]),
+            JmpIfAMEM16BitLessThanRAMRelative7E(0x65, 0x7E1A00, destinations=["jmp"]),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x29, 0x55, 0x00, 0x1A, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM8BitGreaterOrEqualThan7E5x",
+        label="JmpIfAMEM8BitGreaterOrEqualThanRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM8BitGreaterOrEqualThan7E5x(0x66, 0x7E0500, destinations=["jmp"]),
+            JmpIfAMEM8BitGreaterOrEqualThanRAMRelative7E(
+                0x66, 0x7E0500, destinations=["jmp"]
+            ),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x2A, 0x56, 0x00, 0x05, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="JmpIfAMEM16BitGreaterOrEqualThan7E5x",
+        label="JmpIfAMEM16BitGreaterOrEqualThanRAMRelative7E",
         commands_factory=lambda: [
-            JmpIfAMEM16BitGreaterOrEqualThan7E5x(0x66, 0x7E0500, destinations=["jmp"]),
+            JmpIfAMEM16BitGreaterOrEqualThanRAMRelative7E(
+                0x66, 0x7E0500, destinations=["jmp"]
+            ),
             ReturnSubroutine(identifier="jmp"),
         ],
         expected_bytes=[0x2B, 0x56, 0x00, 0x05, 0x08, 0xC0, 0x11],
     ),
     Case(
-        label="IncAMEM8BitBy7E5x",
-        commands_factory=lambda: [IncAMEM8BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        label="IncAMEM8BitByRAMRelative7E",
+        commands_factory=lambda: [
+            IncAMEM8BitByRAMRelative7E(amem=0x63, address=0x7EAA00)
+        ],
         expected_bytes=[0x2C, 0x53, 0x00, 0xAA],
     ),
     Case(
-        label="IncAMEM16BitBy7E5x",
-        commands_factory=lambda: [IncAMEM16BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        label="IncAMEM16BitByRAMRelative7E",
+        commands_factory=lambda: [
+            IncAMEM16BitByRAMRelative7E(amem=0x63, address=0x7EAA00)
+        ],
         expected_bytes=[0x2D, 0x53, 0x00, 0xAA],
     ),
     Case(
-        label="DecAMEM8BitBy7E5x",
-        commands_factory=lambda: [DecAMEM8BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        label="DecAMEM8BitByRAMRelative7E",
+        commands_factory=lambda: [
+            DecAMEM8BitByRAMRelative7E(amem=0x63, address=0x7EAA00)
+        ],
         expected_bytes=[0x2E, 0x53, 0x00, 0xAA],
     ),
     Case(
-        label="DecAMEM16BitBy7E5x",
-        commands_factory=lambda: [DecAMEM16BitBy7E5x(amem=0x63, address=0x7EAA00)],
+        label="DecAMEM16BitByRAMRelative7E",
+        commands_factory=lambda: [
+            DecAMEM16BitByRAMRelative7E(amem=0x63, address=0x7EAA00)
+        ],
         expected_bytes=[0x2F, 0x53, 0x00, 0xAA],
     ),
     Case(
@@ -1333,9 +1355,7 @@ test_cases = [
         commands_factory=lambda: [
             DefineObjectQueue(["destination_1"], identifier="objqueue"),
             ReturnObjectQueue(identifier="destination_1"),
-            UseObjectQueueAtOffsetWithAMEM60Index(
-                destinations=["objqueue"]
-            ),
+            UseObjectQueueAtOffsetWithAMEM60Index(destinations=["objqueue"]),
             ReturnSubroutine(),
         ],
         expected_bytes=[0x04, 0xC0, 0x07, 0x64, 0x02, 0xC0, 0x11],
@@ -1353,7 +1373,23 @@ test_cases = [
             ),
             ReturnSubroutine(),
         ],
-        expected_bytes=[0x06, 0xC0, 0x08, 0xC0, 0x0A, 0xC0, 0x0B, 0xC0, 0x07, 0x07, 0x68, 0x02, 0xC0, 0x01, 0x11],
+        expected_bytes=[
+            0x06,
+            0xC0,
+            0x08,
+            0xC0,
+            0x0A,
+            0xC0,
+            0x0B,
+            0xC0,
+            0x07,
+            0x07,
+            0x68,
+            0x02,
+            0xC0,
+            0x01,
+            0x11,
+        ],
     ),
     Case(
         label="SetOMEM60To072C",
@@ -1585,9 +1621,7 @@ test_cases = [
     Case(
         label="PlaySound",
         commands_factory=lambda: [
-            PlaySound(
-                sound=89, identifier="command_0x3505e8"
-            ),
+            PlaySound(sound=89, identifier="command_0x3505e8"),
         ],
         expected_bytes=[0xAB, 0x59],
     ),
@@ -1802,16 +1836,20 @@ test_cases = [
         label="should fill in expected length when not long enough",
         commands_factory=lambda: [StoreOMEM60ToItemInventory()],
         expected_bytes=[0xE0, 0x11, 0x11, 0x11],
-        expected_length=4
+        expected_length=4,
     ),
     Case(
         label="should error if expected size is wrong",
-        commands_factory=lambda: [StoreOMEM60ToItemInventory(), StoreOMEM60ToItemInventory()],
+        commands_factory=lambda: [
+            StoreOMEM60ToItemInventory(),
+            StoreOMEM60ToItemInventory(),
+        ],
         expected_length=1,
         exception="has 1 oversized script(s)",
         exception_type=ScriptBankTooLongException,
     ),
 ]
+
 
 @pytest.mark.parametrize("case", test_cases, ids=lambda case: case.label)
 def test_add(case: Case):
@@ -1820,10 +1858,14 @@ def test_add(case: Case):
     if case.exception or case.exception_type:
         with pytest.raises(case.exception_type) as exc_info:
             commands = case.commands_factory()
-            expected_size=1000
+            expected_size = 1000
             if case.expected_length is not None:
-                expected_size=case.expected_length
-            script = AnimationScriptBlock(expected_size=expected_size, expected_beginning=0x35C002, script=commands)
+                expected_size = case.expected_length
+            script = AnimationScriptBlock(
+                expected_size=expected_size,
+                expected_beginning=0x35C002,
+                script=commands,
+            )
             bank = AnimationScriptBank(
                 name=case.label,
                 scripts=[script],
@@ -1835,10 +1877,12 @@ def test_add(case: Case):
         commands = case.commands_factory()
         script = AnimationScript(commands)
         expected_bytes = bytearray(case.expected_bytes)
-        expected_size=len(case.expected_bytes)
+        expected_size = len(case.expected_bytes)
         if case.expected_length is not None:
-            expected_size=case.expected_length
-        script = AnimationScriptBlock(expected_size=expected_size, expected_beginning=0x35C002, script=commands)
+            expected_size = case.expected_length
+        script = AnimationScriptBlock(
+            expected_size=expected_size, expected_beginning=0x35C002, script=commands
+        )
         bank = AnimationScriptBank(
             name=case.label,
             scripts=[script],

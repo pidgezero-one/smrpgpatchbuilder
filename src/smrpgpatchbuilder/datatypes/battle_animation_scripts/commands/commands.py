@@ -65,6 +65,7 @@ from .types import (
     UsableAnimationScriptCommand,
 )
 
+
 class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draws a new sprite by absolute ID at the given coords with the given properties.
 
@@ -284,6 +285,7 @@ class NewSpriteAtCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
             byte1, byte2, self.sprite_id, self.sequence, byte6, self.vram_address
         )
 
+
 class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """Store XYZ coords of sprite to AMEM $32.
 
@@ -308,6 +310,7 @@ class SetAMEM32ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """
 
     _opcode = 0x01
+
 
 class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw sprite at XYZ coords stored at AMEM 32.
@@ -457,12 +460,12 @@ class DrawSpriteAtAMEM32Coords(UsableAnimationScriptCommand, AnimationScriptComm
             + self.overlap_all_sprites * 0x80
         )
         byte2 = (
-            (self.looping * 0x08)
-            + (self.store_palette * 0x20)
-            + (self.bit_4 * 0x10)
-            
+            (self.looping * 0x08) + (self.store_palette * 0x20) + (self.bit_4 * 0x10)
         )
-        return super().render(byte1, byte2, self.sprite_id, self.sequence + (self.bit_7 * 0x80))
+        return super().render(
+            byte1, byte2, self.sprite_id, self.sequence + (self.bit_7 * 0x80)
+        )
+
 
 class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Pause the active script until a certain condition is met.
@@ -535,6 +538,7 @@ class PauseScriptUntil(UsableAnimationScriptCommand, AnimationScriptCommand):
             return super().render(self.condition)
         raise InvalidOpcodeException(f"invalid opcode {self.opcode}")
 
+
 class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Removes the sprite queue target from the scene entirely.
 
@@ -553,6 +557,7 @@ class RemoveObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
 
     _opcode = 0x05
 
+
 class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """End object queue script.
 
@@ -570,6 +575,7 @@ class ReturnObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
     """
 
     _opcode = 0x07
+
 
 class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Move this object along the given axes.
@@ -730,6 +736,7 @@ class MoveObject(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.speed,
         )
 
+
 class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """A simple goto with no conditions.
 
@@ -753,6 +760,7 @@ class Jmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Pause for exactly one frame.
 
@@ -770,6 +778,7 @@ class Pause1Frame(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """
 
     _opcode = 0x0A
+
 
 class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """Store XYZ coords of sprite to AMEM $40.
@@ -795,6 +804,7 @@ class SetAMEM40ToXYZCoords(UsableAnimationScriptCommand, SetAMEMToXYZCoords):
     """
 
     _opcode = 0x0B
+
 
 class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Move sprite to coords stored at AMEM $40.
@@ -866,6 +876,7 @@ class MoveSpriteToCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.shift_type, self.speed, self.arch_height)
 
+
 class ResetTargetMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -886,6 +897,7 @@ class ResetTargetMappingMemory(
 
     _opcode = 0x0E
 
+
 class ResetObjectMappingMemory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -905,6 +917,7 @@ class ResetObjectMappingMemory(
     """
 
     _opcode = 0x0F
+
 
 class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Launches the section of code beginning with this goto as a subroutine.
@@ -929,6 +942,7 @@ class RunSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Ends code intended to be run as a subroutine.
 
@@ -946,6 +960,7 @@ class ReturnSubroutine(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
     """
 
     _opcode = 0x11
+
 
 class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object visible.
@@ -985,6 +1000,7 @@ class VisibilityOn(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte)
 
+
 class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Makes the object invisible.
 
@@ -1023,6 +1039,7 @@ class VisibilityOff(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte)
 
+
 class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Set 8bit AMEM $60-6F to the given const value.
 
@@ -1051,6 +1068,7 @@ class SetAMEM8BitToConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
 
+
 class SetAMEM16BitToConst(SetAMEM8BitToConst):
     """Set 16bit AMEM $60-6F to the given const value.
 
@@ -1070,6 +1088,7 @@ class SetAMEM16BitToConst(SetAMEM8BitToConst):
     """
 
     _opcode = 0x21
+
 
 class JmpIfAMEM8BitEqualsConst(
     UsableAnimationScriptCommand,
@@ -1111,6 +1130,7 @@ class JmpIfAMEM8BitEqualsConst(
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value, *self.destinations)
 
+
 class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F equals the given const value, go to destination indicated by name.
 
@@ -1131,6 +1151,7 @@ class JmpIfAMEM16BitEqualsConst(JmpIfAMEM8BitEqualsConst):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
@@ -1153,6 +1174,7 @@ class JmpIfAMEM8BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F does not equal the given const value, go to destination indicated by name.
 
@@ -1173,6 +1195,7 @@ class JmpIfAMEM16BitNotEqualsConst(JmpIfAMEM8BitEqualsConst):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
@@ -1195,6 +1218,7 @@ class JmpIfAMEM8BitLessThanConst(JmpIfAMEM8BitEqualsConst):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F is less than the given const value, go to destination indicated by name.
 
@@ -1215,6 +1239,7 @@ class JmpIfAMEM16BitLessThanConst(JmpIfAMEM8BitEqualsConst):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     """If 8bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
@@ -1237,6 +1262,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     """If 16bit AMEM $60-6F is NOT less than the given const value, go to destination indicated by name.
 
@@ -1257,6 +1283,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanConst(JmpIfAMEM8BitEqualsConst):
     """
 
     _opcode = 0x2B
+
 
 class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
     """Increase 8bit AMEM $60-6F by given const value.
@@ -1286,6 +1313,7 @@ class IncAMEM8BitByConst(UsableAnimationScriptCommand, AnimationScriptAMEMAndCon
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.value)
 
+
 class IncAMEM16BitByConst(IncAMEM8BitByConst):
     """Increase 16bit AMEM $60-6F by given const value.
 
@@ -1305,6 +1333,7 @@ class IncAMEM16BitByConst(IncAMEM8BitByConst):
     """
 
     _opcode = 0x2D
+
 
 class DecAMEM8BitByConst(IncAMEM8BitByConst):
     """Decrease 8bit AMEM $60-6F by given const value.
@@ -1326,6 +1355,7 @@ class DecAMEM8BitByConst(IncAMEM8BitByConst):
 
     _opcode = 0x2E
 
+
 class DecAMEM16BitByConst(IncAMEM8BitByConst):
     """Decrease 16bit AMEM $60-6F by given const value.
 
@@ -1346,7 +1376,8 @@ class DecAMEM16BitByConst(IncAMEM8BitByConst):
 
     _opcode = 0x2F
 
-class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
+
+class SetAMEM8BitToAbsolute7E(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1366,9 +1397,7 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
     _opcode = 0x20
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -1377,7 +1406,8 @@ class SetAMEM8BitTo7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
 
-class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
+
+class SetAMEM16BitToAbsolute7E(SetAMEM8BitToAbsolute7E):
     """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1397,7 +1427,8 @@ class SetAMEM16BitTo7E1x(SetAMEM8BitTo7E1x):
 
     _opcode = 0x21
 
-class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
+
+class SetAbsolute7EToAMEM8Bit(SetAMEM8BitToAbsolute7E):
     """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
 
     ## Lazy Shell command
@@ -1417,12 +1448,11 @@ class Set7E1xToAMEM8Bit(SetAMEM8BitTo7E1x):
 
     _opcode = 0x22
 
-    def __init__(
-        self, address: int, amem: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, address: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, address, identifier)
 
-class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
+
+class SetAbsolute7EToAMEM16Bit(SetAbsolute7EToAMEM8Bit):
     """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
 
     ## Lazy Shell command
@@ -1442,7 +1472,8 @@ class Set7E1xToAMEM16Bit(Set7E1xToAMEM8Bit):
 
     _opcode = 0x23
 
-class JmpIfAMEM8BitEquals7E1x(
+
+class JmpIfAMEM8BitEqualsAbsolute7E(
     UsableAnimationScriptCommand,
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAnd7E,
@@ -1483,7 +1514,8 @@ class JmpIfAMEM8BitEquals7E1x(
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr, *self.destinations)
 
-class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM16BitEqualsAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1504,7 +1536,8 @@ class JmpIfAMEM16BitEquals7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x25
 
-class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM8BitNotEqualsAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1525,7 +1558,8 @@ class JmpIfAMEM8BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x26
 
-class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM16BitNotEqualsAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1546,7 +1580,8 @@ class JmpIfAMEM16BitNotEquals7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x27
 
-class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM8BitLessThanAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1567,7 +1602,8 @@ class JmpIfAMEM8BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x28
 
-class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM16BitLessThanAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1588,7 +1624,8 @@ class JmpIfAMEM16BitLessThan7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x29
 
-class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM8BitGreaterOrEqualThanAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1609,7 +1646,8 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x2A
 
-class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
+
+class JmpIfAMEM16BitGreaterOrEqualThanAbsolute7E(JmpIfAMEM8BitEqualsAbsolute7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1630,7 +1668,8 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E1x(JmpIfAMEM8BitEquals7E1x):
 
     _opcode = 0x2B
 
-class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
+
+class IncAMEM8BitByAbsolute7E(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1650,9 +1689,7 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
     _opcode = 0x2C
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -1661,7 +1698,8 @@ class IncAMEM8BitBy7E1x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x10 + self._amem_bits(), addr)
 
-class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
+
+class IncAMEM16BitByAbsolute7E(IncAMEM8BitByAbsolute7E):
     """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1681,7 +1719,8 @@ class IncAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
 
     _opcode = 0x2D
 
-class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
+
+class DecAMEM8BitByAbsolute7E(IncAMEM8BitByAbsolute7E):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1701,7 +1740,8 @@ class DecAMEM8BitBy7E1x(IncAMEM8BitBy7E1x):
 
     _opcode = 0x2E
 
-class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
+
+class DecAMEM16BitByAbsolute7E(IncAMEM8BitByAbsolute7E):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -1720,6 +1760,7 @@ class DecAMEM16BitBy7E1x(IncAMEM8BitBy7E1x):
     """
 
     _opcode = 0x2F
+
 
 class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     """Set 8bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
@@ -1741,9 +1782,7 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
 
     _opcode = 0x20
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -1751,6 +1790,7 @@ class SetAMEM8BitTo7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
+
 
 class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
     """Set 16bit AMEM $60-6F to value stored at given $7Fxxxx memory address.
@@ -1772,6 +1812,7 @@ class SetAMEM16BitTo7F(SetAMEM8BitTo7F):
 
     _opcode = 0x21
 
+
 class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
     """Set given $7Fxxxx memory address to value at 8bit AMEM $60-6F.
 
@@ -1792,10 +1833,9 @@ class Set7FToAMEM8Bit(SetAMEM8BitTo7F):
 
     _opcode = 0x22
 
-    def __init__(
-        self, address: int, amem: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, address: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, address, identifier)
+
 
 class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
     """Set given $7Fxxxx memory address to value at 16bit AMEM $60-6F.
@@ -1816,6 +1856,7 @@ class Set7FToAMEM16Bit(Set7FToAMEM8Bit):
     """
 
     _opcode = 0x23
+
 
 class JmpIfAMEM8BitEquals7F(
     UsableAnimationScriptCommand,
@@ -1858,6 +1899,7 @@ class JmpIfAMEM8BitEquals7F(
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr, *self.destinations)
 
+
 class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Fxxxx memory address.
 
@@ -1878,6 +1920,7 @@ class JmpIfAMEM16BitEquals7F(JmpIfAMEM8BitEquals7F):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
@@ -1900,6 +1943,7 @@ class JmpIfAMEM8BitNotEquals7F(JmpIfAMEM8BitEquals7F):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Fxxxx memory address.
 
@@ -1920,6 +1964,7 @@ class JmpIfAMEM16BitNotEquals7F(JmpIfAMEM8BitEquals7F):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
@@ -1942,6 +1987,7 @@ class JmpIfAMEM8BitLessThan7F(JmpIfAMEM8BitEquals7F):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Fxxxx memory address.
 
@@ -1962,6 +2008,7 @@ class JmpIfAMEM16BitLessThan7F(JmpIfAMEM8BitEquals7F):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
@@ -1984,6 +2031,7 @@ class JmpIfAMEM8BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Fxxxx memory address.
 
@@ -2005,6 +2053,7 @@ class JmpIfAMEM16BitGreaterOrEqualThan7F(JmpIfAMEM8BitEquals7F):
 
     _opcode = 0x2B
 
+
 class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     """Increase 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
 
@@ -2025,9 +2074,7 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
 
     _opcode = 0x2C
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -2035,6 +2082,7 @@ class IncAMEM8BitBy7F(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7F):
     def render(self, *args) -> bytearray:
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x20 + self._amem_bits(), addr)
+
 
 class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
     """Increase 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
@@ -2056,6 +2104,7 @@ class IncAMEM16BitBy7F(IncAMEM8BitBy7F):
 
     _opcode = 0x2D
 
+
 class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
 
@@ -2076,6 +2125,7 @@ class DecAMEM8BitBy7F(IncAMEM8BitBy7F):
 
     _opcode = 0x2E
 
+
 class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Fxxxx memory address.
 
@@ -2095,6 +2145,7 @@ class DecAMEM16BitBy7F(IncAMEM8BitBy7F):
     """
 
     _opcode = 0x2F
+
 
 class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 8bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2134,6 +2185,7 @@ class SetAMEM8BitToAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
 
+
 class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
     """Copy the value at the source_amem $60-6F address to the amem $60-6F 16bit address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
 
@@ -2154,6 +2206,7 @@ class SetAMEM16BitToAMEM(SetAMEM8BitToAMEM):
     """
 
     _opcode = 0x21
+
 
 class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Copy the value of the amem $60-6F 8bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
@@ -2193,6 +2246,7 @@ class SetAMEMToAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
 
+
 class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
     """Copy the value of the amem $60-6F 16bit address to the dest_amem $60-6F address. Occasionally the amem can be outside of that range, but I have no idea why or what it does.
 
@@ -2213,6 +2267,7 @@ class SetAMEMToAMEM16Bit(SetAMEMToAMEM8Bit):
     """
 
     _opcode = 0x23
+
 
 class JmpIfAMEM8BitEqualsAMEM(
     UsableAnimationScriptCommand,
@@ -2261,6 +2316,7 @@ class JmpIfAMEM8BitEqualsAMEM(
             *self.destinations,
         )
 
+
 class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
 
@@ -2282,6 +2338,7 @@ class JmpIfAMEM16BitEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at source AMEM $60-6F.
@@ -2305,6 +2362,7 @@ class JmpIfAMEM8BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at source AMEM $60-6F.
 
@@ -2326,6 +2384,7 @@ class JmpIfAMEM16BitNotEqualsAMEM(JmpIfAMEM8BitEqualsAMEM):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
@@ -2349,6 +2408,7 @@ class JmpIfAMEM8BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at source AMEM $60-6F.
 
@@ -2370,6 +2430,7 @@ class JmpIfAMEM16BitLessThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
@@ -2393,6 +2454,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at source AMEM $60-6F.
 
@@ -2414,6 +2476,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanAMEM(JmpIfAMEM8BitEqualsAMEM):
     """
 
     _opcode = 0x2B
+
 
 class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM):
     """Increase 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2453,6 +2516,7 @@ class IncAMEM8BitByAMEM(UsableAnimationScriptCommand, AnimationScriptAMEMAndAMEM
             0x30 + self._amem_bits(), UInt16((self.source_amem & 0x0F) + self.upper)
         )
 
+
 class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """Increase 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
 
@@ -2473,6 +2537,7 @@ class IncAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """
 
     _opcode = 0x2D
+
 
 class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
     """Decrease 8bit AMEM $60-6F by value stored at source AMEM $60-6F.
@@ -2495,6 +2560,7 @@ class DecAMEM8BitByAMEM(IncAMEM8BitByAMEM):
 
     _opcode = 0x2E
 
+
 class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """Decrease 16bit AMEM $60-6F by value stored at source AMEM $60-6F.
 
@@ -2515,6 +2581,7 @@ class DecAMEM16BitByAMEM(IncAMEM8BitByAMEM):
     """
 
     _opcode = 0x2F
+
 
 class SetAMEM8BitToOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
@@ -2546,6 +2613,7 @@ class SetAMEM8BitToOMEMCurrent(
     def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
 
+
 class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
     """Set 16bit AMEM $60-6F to value stored at OMEM (current).
 
@@ -2565,6 +2633,7 @@ class SetAMEM16BitToOMEMCurrent(SetAMEM8BitToOMEMCurrent):
     """
 
     _opcode = 0x21
+
 
 class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
     """Set OMEM (current) to value of 8bit AMEM $60-6F.
@@ -2589,6 +2658,7 @@ class SetOMEMCurrentToAMEM8Bit(SetAMEM8BitToOMEMCurrent):
     def __init__(self, omem: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, omem, identifier)
 
+
 class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
     """Set OMEM (current) to value of 16bit AMEM $60-6F.
 
@@ -2608,6 +2678,7 @@ class SetOMEMCurrentToAMEM16Bit(SetOMEMCurrentToAMEM8Bit):
     """
 
     _opcode = 0x23
+
 
 class JmpIfAMEM8BitEqualsOMEMCurrent(
     UsableAnimationScriptCommand,
@@ -2651,6 +2722,7 @@ class JmpIfAMEM8BitEqualsOMEMCurrent(
             0x40 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
 
+
 class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (current).
 
@@ -2671,6 +2743,7 @@ class JmpIfAMEM16BitEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (current).
@@ -2693,6 +2766,7 @@ class JmpIfAMEM8BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (current).
 
@@ -2713,6 +2787,7 @@ class JmpIfAMEM16BitNotEqualsOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
@@ -2735,6 +2810,7 @@ class JmpIfAMEM8BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (current).
 
@@ -2755,6 +2831,7 @@ class JmpIfAMEM16BitLessThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (current).
@@ -2777,6 +2854,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent)
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (current).
 
@@ -2797,6 +2875,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent(JmpIfAMEM8BitEqualsOMEMCurrent
     """
 
     _opcode = 0x2B
+
 
 class IncAMEM8BitByOMEMCurrent(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM
@@ -2828,6 +2907,7 @@ class IncAMEM8BitByOMEMCurrent(
     def render(self, *args) -> bytearray:
         return super().render(0x40 + self._amem_bits(), UInt16(self.omem))
 
+
 class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Increase 16bit AMEM $60-6F by value stored at OMEM (current).
 
@@ -2847,6 +2927,7 @@ class IncAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """
 
     _opcode = 0x2D
+
 
 class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Decrease 8bit AMEM $60-6F by value stored at OMEM (current).
@@ -2868,6 +2949,7 @@ class DecAMEM8BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
 
     _opcode = 0x2E
 
+
 class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
     """Decrease 16bit AMEM $60-6F by value stored at OMEM (current).
 
@@ -2888,7 +2970,10 @@ class DecAMEM16BitByOMEMCurrent(IncAMEM8BitByOMEMCurrent):
 
     _opcode = 0x2F
 
-class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
+
+class SetAMEM8BitToRAMRelative7E(
+    UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E
+):
     """Set 8bit AMEM $60-6F to value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -2908,9 +2993,7 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
     _opcode = 0x20
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -2919,7 +3002,8 @@ class SetAMEM8BitTo7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
 
-class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
+
+class SetAMEM16BitToRAMRelative7E(SetAMEM8BitToRAMRelative7E):
     """Set 16bit AMEM $60-6F to value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -2939,7 +3023,8 @@ class SetAMEM16BitTo7E5x(SetAMEM8BitTo7E5x):
 
     _opcode = 0x21
 
-class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
+
+class SetRAMRelative7EToAMEM8Bit(SetAMEM8BitToRAMRelative7E):
     """Set value stored at given $7Exxxx memory address to value stored at 8bit AMEM $60-6F.
 
     ## Lazy Shell command
@@ -2959,12 +3044,11 @@ class Set7E5xToAMEM8Bit(SetAMEM8BitTo7E5x):
 
     _opcode = 0x22
 
-    def __init__(
-        self, address: int, amem: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, address: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, address, identifier)
 
-class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
+
+class SetRAMRelative7EToAMEM16Bit(SetRAMRelative7EToAMEM8Bit):
     """Set value stored at given $7Exxxx memory address to value stored at 16bit AMEM $60-6F.
 
     ## Lazy Shell command
@@ -2984,7 +3068,8 @@ class Set7E5xToAMEM16Bit(Set7E5xToAMEM8Bit):
 
     _opcode = 0x23
 
-class JmpIfAMEM8BitEquals7E5x(
+
+class JmpIfAMEM8BitEqualsRAMRelative7E(
     UsableAnimationScriptCommand,
     AnimationScriptCommandWithJmps,
     AnimationScriptAMEMAnd7E,
@@ -3025,7 +3110,8 @@ class JmpIfAMEM8BitEquals7E5x(
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr, *self.destinations)
 
-class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM16BitEqualsRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3046,7 +3132,8 @@ class JmpIfAMEM16BitEquals7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x25
 
-class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM8BitNotEqualsRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3067,7 +3154,8 @@ class JmpIfAMEM8BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x26
 
-class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM16BitNotEqualsRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3088,7 +3176,8 @@ class JmpIfAMEM16BitNotEquals7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x27
 
-class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM8BitLessThanRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3109,7 +3198,8 @@ class JmpIfAMEM8BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x28
 
-class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM16BitLessThanRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3130,7 +3220,8 @@ class JmpIfAMEM16BitLessThan7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x29
 
-class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM8BitGreaterOrEqualThanRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3151,7 +3242,8 @@ class JmpIfAMEM8BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x2A
 
-class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
+
+class JmpIfAMEM16BitGreaterOrEqualThanRAMRelative7E(JmpIfAMEM8BitEqualsRAMRelative7E):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3172,7 +3264,8 @@ class JmpIfAMEM16BitGreaterOrEqualThan7E5x(JmpIfAMEM8BitEquals7E5x):
 
     _opcode = 0x2B
 
-class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
+
+class IncAMEM8BitByRAMRelative7E(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
     """Increase 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3192,9 +3285,7 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
 
     _opcode = 0x2C
 
-    def __init__(
-        self, amem: int, address: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, amem: int, address: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_amem(amem)
         self.set_address(address)
@@ -3203,7 +3294,8 @@ class IncAMEM8BitBy7E5x(UsableAnimationScriptCommand, AnimationScriptAMEMAnd7E):
         addr = UInt16(self.address & 0xFFFF)
         return super().render(0x50 + self._amem_bits(), addr)
 
-class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
+
+class IncAMEM16BitByRAMRelative7E(IncAMEM8BitByRAMRelative7E):
     """Increase 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3223,7 +3315,8 @@ class IncAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
 
     _opcode = 0x2D
 
-class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
+
+class DecAMEM8BitByRAMRelative7E(IncAMEM8BitByRAMRelative7E):
     """Decrease 8bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3243,7 +3336,8 @@ class DecAMEM8BitBy7E5x(IncAMEM8BitBy7E5x):
 
     _opcode = 0x2E
 
-class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
+
+class DecAMEM16BitByRAMRelative7E(IncAMEM8BitByRAMRelative7E):
     """Decrease 16bit AMEM $60-6F by value stored at given $7Exxxx memory address.
 
     ## Lazy Shell command
@@ -3262,6 +3356,7 @@ class DecAMEM16BitBy7E5x(IncAMEM8BitBy7E5x):
     """
 
     _opcode = 0x2F
+
 
 class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
     """Set 8bit AMEM $60-6F to value stored at OMEM (main).
@@ -3291,6 +3386,7 @@ class SetAMEM8BitToOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
     def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
 
+
 class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
     """Set 16bit AMEM $60-6F to value stored at OMEM (main).
 
@@ -3310,6 +3406,7 @@ class SetAMEM16BitToOMEMMain(SetAMEM8BitToOMEMMain):
     """
 
     _opcode = 0x21
+
 
 class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
     """Set OMEM (main) to value of 8bit AMEM $60-6F.
@@ -3334,6 +3431,7 @@ class SetOMEMMainToAMEM8Bit(SetAMEM8BitToOMEMMain):
     def __init__(self, omem: int, amem: int, identifier: str | None = None) -> None:
         super().__init__(amem, omem, identifier)
 
+
 class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
     """Set OMEM (main) to value of 16bit AMEM $60-6F.
 
@@ -3353,6 +3451,7 @@ class SetOMEMMainToAMEM16Bit(SetOMEMMainToAMEM8Bit):
     """
 
     _opcode = 0x23
+
 
 class JmpIfAMEM8BitEqualsOMEMMain(
     UsableAnimationScriptCommand,
@@ -3396,6 +3495,7 @@ class JmpIfAMEM8BitEqualsOMEMMain(
             0x60 + self._amem_bits(), UInt16(self.omem), *self.destinations
         )
 
+
 class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F equals the value stored at OMEM (main).
 
@@ -3416,6 +3516,7 @@ class JmpIfAMEM16BitEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F does not equal the value stored at OMEM (main).
@@ -3438,6 +3539,7 @@ class JmpIfAMEM8BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F does not equal the value stored at OMEM (main).
 
@@ -3458,6 +3560,7 @@ class JmpIfAMEM16BitNotEqualsOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F is less than the value stored at OMEM (main).
@@ -3480,6 +3583,7 @@ class JmpIfAMEM8BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F is less than the value stored at OMEM (main).
 
@@ -3500,6 +3604,7 @@ class JmpIfAMEM16BitLessThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 8bit AMEM $60-6F is not less than the value stored at OMEM (main).
@@ -3522,6 +3627,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """Goto destination indicated by name if 16bit AMEM $60-6F is not less than the value stored at OMEM (main).
 
@@ -3542,6 +3648,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanOMEMMain(JmpIfAMEM8BitEqualsOMEMMain):
     """
 
     _opcode = 0x2B
+
 
 class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAndOMEM):
     """Increase 8bit AMEM $60-6F by value stored at OMEM (main).
@@ -3571,6 +3678,7 @@ class IncAMEM8BitByOMEMMain(UsableAnimationScriptCommand, AnimationScriptAMEMAnd
     def render(self, *args) -> bytearray:
         return super().render(0x60 + self._amem_bits(), UInt16(self.omem))
 
+
 class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Increase 16bit AMEM $60-6F by value stored at OMEM (main).
 
@@ -3590,6 +3698,7 @@ class IncAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """
 
     _opcode = 0x2D
+
 
 class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Decrease 8bit AMEM $60-6F by value stored at OMEM (main).
@@ -3611,6 +3720,7 @@ class DecAMEM8BitByOMEMMain(IncAMEM8BitByOMEMMain):
 
     _opcode = 0x2E
 
+
 class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
     """Decrease 16bit AMEM $60-6F by value stored at OMEM (main).
 
@@ -3631,7 +3741,10 @@ class DecAMEM16BitByOMEMMain(IncAMEM8BitByOMEMMain):
 
     _opcode = 0x2F
 
-class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAMEMAndConst):
+
+class SetAMEM8BitToUnknownShort(
+    UsableAnimationScriptCommand, AnimationScriptAMEMAndConst
+):
     """Set 8bit AMEM $60-6F to the given value of the given type
 
     ## Lazy Shell command
@@ -3671,6 +3784,7 @@ class SetAMEM8BitToUnknownShort(UsableAnimationScriptCommand, AnimationScriptAME
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
+
 class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
     """Set 16bit AMEM $60-6F to the given value of the given type
 
@@ -3692,7 +3806,10 @@ class SetAMEM16BitToUnknownShort(SetAMEM8BitToUnknownShort):
 
     _opcode = 0x21
 
-class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScriptCommand):
+
+class SetUnknownShortToAMEM8Bit(
+    AnimationScriptAMEMAndConst, UsableAnimationScriptCommand
+):
     """Set variable type 0x7-0xB to AMEM 8 bit
 
     ## Lazy Shell command
@@ -3732,6 +3849,7 @@ class SetUnknownShortToAMEM8Bit(AnimationScriptAMEMAndConst, UsableAnimationScri
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
+
 class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
     """Set variable type 0x7-0xB to AMEM 16 bit
 
@@ -3752,6 +3870,7 @@ class SetUnknownShortToAMEM16Bit(SetUnknownShortToAMEM8Bit):
     """
 
     _opcode = 0x23
+
 
 class JmpIfAMEM8BitEqualsUnknownShort(
     UsableAnimationScriptCommand,
@@ -3806,6 +3925,7 @@ class JmpIfAMEM8BitEqualsUnknownShort(
             self._amem_bits() + (self.type << 4), self.value, *self.destinations
         )
 
+
 class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F equals the given value of the given type, go to destination indicated by name.
 
@@ -3827,6 +3947,7 @@ class JmpIfAMEM16BitEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """
 
     _opcode = 0x25
+
 
 class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
@@ -3850,6 +3971,7 @@ class JmpIfAMEM8BitNotEqualsUnknownShort(JmpIfAMEM16BitEqualsUnknownShort):
 
     _opcode = 0x26
 
+
 class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F does not equal the given value of the given type, go to destination indicated by name.
 
@@ -3871,6 +3993,7 @@ class JmpIfAMEM16BitNotEqualsUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """
 
     _opcode = 0x27
+
 
 class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
@@ -3894,6 +4017,7 @@ class JmpIfAMEM8BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
 
     _opcode = 0x28
 
+
 class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is less than the given value of the given type, go to destination indicated by name.
 
@@ -3915,6 +4039,7 @@ class JmpIfAMEM16BitLessThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """
 
     _opcode = 0x29
+
 
 class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 8bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
@@ -3938,6 +4063,7 @@ class JmpIfAMEM8BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShor
 
     _opcode = 0x2A
 
+
 class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownShort):
     """If 16bit AMEM $60-6F is greater than or equal to the given value of the given type, go to destination indicated by name.
 
@@ -3959,6 +4085,7 @@ class JmpIfAMEM16BitGreaterOrEqualThanUnknownShort(JmpIfAMEM8BitEqualsUnknownSho
     """
 
     _opcode = 0x2B
+
 
 class IncAMEM8BitByUnknownShort(
     UsableAnimationScriptCommand, AnimationScriptAMEMAndConst
@@ -4002,6 +4129,7 @@ class IncAMEM8BitByUnknownShort(
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits() + (self.type << 4), self.value)
 
+
 class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Increase 26bit AMEM $60-6F by given value of the given type.
 
@@ -4023,6 +4151,7 @@ class IncAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
 
     _opcode = 0x2D
     _type: int
+
 
 class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Decrease 8bit AMEM $60-6F by given value of the given type.
@@ -4046,6 +4175,7 @@ class DecAMEM8BitByUnknownShort(IncAMEM8BitByUnknownShort):
     _opcode = 0x2E
     _type: int
 
+
 class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     """Decrease 16bit AMEM $60-6F by given value of the given type.
 
@@ -4068,6 +4198,7 @@ class DecAMEM16BitByUnknownShort(IncAMEM8BitByUnknownShort):
     _opcode = 0x2F
     _type: int
 
+
 class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Increase 8bit AMEM $60-6F by 1.
 
@@ -4086,6 +4217,7 @@ class IncAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
     """
 
     _opcode = 0x30
+
 
 class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Increase 16bit AMEM $60-6F by 1.
@@ -4106,6 +4238,7 @@ class IncAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
 
     _opcode = 0x31
 
+
 class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Decrease 8bit AMEM $60-6F by 1.
 
@@ -4124,6 +4257,7 @@ class DecAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand
     """
 
     _opcode = 0x32
+
 
 class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Decrease 16bit AMEM $60-6F by 1.
@@ -4144,6 +4278,7 @@ class DecAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComman
 
     _opcode = 0x33
 
+
 class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Set specified 8bit AMEM $60-6F to 0.
 
@@ -4163,6 +4298,7 @@ class ClearAMEM8Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComma
 
     _opcode = 0x34
 
+
 class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloCommand):
     """Set specified 16bit AMEM $60-6F to 0.
 
@@ -4181,6 +4317,7 @@ class ClearAMEM16Bit(UsableAnimationScriptCommand, AnimationScriptAMEM6XSoloComm
     """
 
     _opcode = 0x35
+
 
 class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set the specified bits to high in specified AMEM $60-6F.
@@ -4223,6 +4360,7 @@ class SetAMEMBits(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
 
+
 class ClearAMEMBits(SetAMEMBits):
     """Set the specified bits to low in specified AMEM $60-6F.
 
@@ -4242,6 +4380,7 @@ class ClearAMEMBits(SetAMEMBits):
     """
 
     _opcode = 0x37
+
 
 class JmpIfAMEMBitsSet(
     UsableAnimationScriptCommand,
@@ -4295,6 +4434,7 @@ class JmpIfAMEMBitsSet(
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags, *self.destinations)
 
+
 class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
     """Goto destination indicated by name if AMEM $60-6F specified bits are all clear.
 
@@ -4316,6 +4456,7 @@ class JmpIfAMEMBitsClear(JmpIfAMEMBitsSet):
 
     _opcode = 0x39
 
+
 class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Start the attack timer.
 
@@ -4333,6 +4474,7 @@ class AttackTimerBegins(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
     """
 
     _opcode = 0x3A
+
 
 class PauseScriptUntilAMEMBitsSet(
     UsableAnimationScriptCommand, AnimationScriptAMEMCommand
@@ -4377,6 +4519,7 @@ class PauseScriptUntilAMEMBitsSet(
         flags = UInt8(bits_to_int(list(self.bits)))
         return super().render(self._amem_bits(), flags)
 
+
 class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
     """Pause the active script until specified bits in AMEM $60-6F are clear.
 
@@ -4396,6 +4539,7 @@ class PauseScriptUntilAMEMBitsClear(PauseScriptUntilAMEMBitsSet):
     """
 
     _opcode = 0x41
+
 
 class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Run a specific sequence for the sprite this command is applied to.
@@ -4500,6 +4644,7 @@ class SpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(UInt8(byte1))
 
+
 class SetAMEM60ToCurrentTarget(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -4519,6 +4664,7 @@ class SetAMEM60ToCurrentTarget(
     """
 
     _opcode = 0x45
+
 
 class GameOverIfNoAlliesStanding(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -4540,6 +4686,7 @@ class GameOverIfNoAlliesStanding(
 
     _opcode = 0x46
 
+
 class PauseScriptUntilSpriteSequenceDone(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -4559,6 +4706,7 @@ class PauseScriptUntilSpriteSequenceDone(
     """
 
     _opcode = 0x4E
+
 
 class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Goto destination indicated by name if target is disabled.
@@ -4583,6 +4731,7 @@ class JmpIfTargetDisabled(UsableAnimationScriptCommand, AnimationScriptCommandWi
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Goto destination indicated by name if target is enabled.
 
@@ -4605,6 +4754,7 @@ class JmpIfTargetEnabled(UsableAnimationScriptCommand, AnimationScriptCommandWit
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class UnknownJmp52(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Unknown jump command 0x52.
@@ -4646,6 +4796,7 @@ class UnknownJmp52(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps)
 
     def render(self, *args) -> bytearray:
         return super().render(self.param, *self.destinations)
+
 
 class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """Perform a set of script commands at the specified address on the specified field target.
@@ -4818,6 +4969,7 @@ class UseSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmp
         )
         return super().render(byte1, self.field_object, *self.destinations)
 
+
 class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Terminate a series of commands intended to be run as a animation for a specific object.
 
@@ -4835,6 +4987,7 @@ class ReturnSpriteQueue(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
     """
 
     _opcode = 0x5E
+
 
 class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the context under which to run the dialog ID corresponding to the current value at AMEM $60.
@@ -4876,6 +5029,7 @@ class DisplayMessageAtOMEM60As(UsableAnimationScriptCommand, AnimationScriptComm
     def render(self, *args) -> bytearray:
         return super().render(self.message_type)
 
+
 class UseObjectQueueAtOffsetWithAMEM60Index(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
@@ -4911,6 +5065,7 @@ class UseObjectQueueAtOffsetWithAMEM60Index(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -4963,8 +5118,9 @@ class UseObjectQueueAtOffsetWithAMEM60PointerOffset(
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations, self.index)
 
+
 class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
-    """This structure should only contain destinations.  
+    """This structure should only contain destinations.
     If destinations point to other object queues, then this should be targeted with `UseObjectQueueAtOffsetWithAMEM60PointerOffset`.
 
     Args:
@@ -4988,6 +5144,7 @@ class DefineObjectQueue(UsableAnimationScriptCommand, AnimationScriptCommandWith
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """(unknown)
 
@@ -5005,6 +5162,7 @@ class SetOMEM60To072C(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
     """
 
     _opcode = 0x69
+
 
 class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
@@ -5048,6 +5206,7 @@ class SetAMEMToRandomByte(UsableAnimationScriptCommand, AnimationScriptAMEMComma
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
 
+
 class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMCommand):
     """Set a specific AMEM $60-6F to a random value between 0 and a specified upper bound. The upper bound can be any unsigned 16 bit value.
 
@@ -5090,6 +5249,7 @@ class SetAMEMToRandomShort(UsableAnimationScriptCommand, AnimationScriptAMEMComm
     def render(self, *args) -> bytearray:
         return super().render(self._amem_bits(), self.upper_bound)
 
+
 class EnableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -5110,6 +5270,7 @@ class EnableSpritesOnSubscreen(
 
     _opcode = 0x70
 
+
 class DisableSpritesOnSubscreen(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -5129,6 +5290,7 @@ class DisableSpritesOnSubscreen(
     """
 
     _opcode = 0x71
+
 
 class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a new effect (by ID) on screen. It is recommended to use effect constants for this.
@@ -5231,6 +5393,7 @@ class NewEffectObject(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1, self.effect)
 
+
 class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Pause the script for exactly 2 frames.
 
@@ -5248,6 +5411,7 @@ class Pause2Frames(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """
 
     _opcode = 0x73
+
 
 class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Pause the active script until specified bits (belonging to unknown var) are clear.
@@ -5287,6 +5451,7 @@ class PauseScriptUntilBitsClear(UsableAnimationScriptCommand, AnimationScriptCom
     def render(self, *args) -> bytearray:
         return super().render(self.bits)
 
+
 class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """(unknown, something regarding an active drawn effect)
 
@@ -5304,6 +5469,7 @@ class ClearEffectIndex(UsableAnimationScriptCommand, AnimationScriptCommandNoArg
     """
 
     _opcode = 0x76
+
 
 class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Turn on layer 3
@@ -5402,6 +5568,7 @@ class Layer3On(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1)
 
+
 class Layer3Off(Layer3On):
     """Turn off layer 3
 
@@ -5419,6 +5586,7 @@ class Layer3Off(Layer3On):
     """
 
     _opcode = 0x78
+
 
 class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a dialog in battle with a given context.
@@ -5475,6 +5643,7 @@ class DisplayMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.message_type, self.dialog_id)
 
+
 class PauseScriptUntilDialogClosed(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -5494,6 +5663,7 @@ class PauseScriptUntilDialogClosed(
     """
 
     _opcode = 0x7B
+
 
 class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Fade out the object on which this queue is running.
@@ -5532,6 +5702,7 @@ class FadeOutObject(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.duration)
 
+
 class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Reset the active sprite sequence for the object on which this queue is running.
 
@@ -5549,6 +5720,7 @@ class ResetSpriteSequence(UsableAnimationScriptCommand, AnimationScriptCommandNo
     """
 
     _opcode = 0x7F
+
 
 class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a shine effect on screen.
@@ -5658,6 +5830,7 @@ class ShineEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.glow_duration,
         )
 
+
 class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the active effect for a given duration in frames.
 
@@ -5677,6 +5850,7 @@ class FadeOutEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     def render(self, *args) -> bytearray:
         return super().render(0, self.duration)
+
 
 class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the active sprite for a given duration in frames.
@@ -5698,6 +5872,7 @@ class FadeOutSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     def render(self, *args) -> bytearray:
         return super().render(0x10, self.duration)
 
+
 class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade out the screen for a given duration in frames.
 
@@ -5717,6 +5892,7 @@ class FadeOutScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     def render(self, *args) -> bytearray:
         return super().render(0x20, self.duration)
+
 
 class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the active effect for a given duration in frames.
@@ -5738,6 +5914,7 @@ class FadeInEffect(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     def render(self, *args) -> bytearray:
         return super().render(2, self.duration)
 
+
 class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the active sprite for a given duration in frames.
 
@@ -5758,6 +5935,7 @@ class FadeInSprite(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     def render(self, *args) -> bytearray:
         return super().render(0x12, self.duration)
 
+
 class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
     """Fade in the screen for a given duration in frames.
 
@@ -5777,6 +5955,7 @@ class FadeInScreen(UsableAnimationScriptCommand, AnimationScriptFadeObject):
 
     def render(self, *args) -> bytearray:
         return super().render(0x22, self.duration)
+
 
 class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the screen for a given number of times at a given speed.
@@ -5799,6 +5978,7 @@ class ShakeScreen(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     def render(self, *args) -> bytearray:
         return super().render(1)
 
+
 class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the visible sprites for a given number of times at a given speed.
 
@@ -5819,6 +5999,7 @@ class ShakeSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
 
     def render(self, *args) -> bytearray:
         return super().render(2)
+
 
 class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeObject):
     """Shake the screen AND visible sprites for a given number of times at a given speed.
@@ -5841,6 +6022,7 @@ class ShakeScreenAndSprites(UsableAnimationScriptCommand, AnimationScriptShakeOb
     def render(self, *args) -> bytearray:
         return super().render(4)
 
+
 class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Halt an active shake command.
 
@@ -5858,6 +6040,7 @@ class StopShakingObject(UsableAnimationScriptCommand, AnimationScriptCommandNoAr
     """
 
     _opcode = 0x87
+
 
 class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Flash a colour over the screen for a given duration.
@@ -5928,6 +6111,7 @@ class ScreenFlashWithDuration(UsableAnimationScriptCommand, AnimationScriptComma
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour, self.duration)
 
+
 class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Briefly flash a colour over the screen.
 
@@ -5984,6 +6168,7 @@ class ScreenFlash(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.colour)
 
+
 class InitializeBonusMessageSequence(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -6003,6 +6188,7 @@ class InitializeBonusMessageSequence(
     """
 
     _opcode = 0x95
+
 
 class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a pre-set bonus message, usually for bonus flowers and certain items.
@@ -6068,6 +6254,7 @@ class DisplayBonusMessage(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(0, self.message, self.x, self.y)
 
+
 class PauseScriptUntilBonusMessageComplete(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -6087,6 +6274,7 @@ class PauseScriptUntilBonusMessageComplete(
     """
 
     _opcode = 0x97
+
 
 class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Wave effect animation
@@ -6244,6 +6432,7 @@ class WaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
             self.byte_1, UInt8(arg_1), self.depth, self.intensity, self.speed
         )
 
+
 class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Stop an existing wave effect
 
@@ -6281,6 +6470,7 @@ class StopWaveEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(2 + (self.bit_7 << 7))
+
 
 class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Display a screen effect by ID.
@@ -6321,6 +6511,7 @@ class ScreenEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.effect)
 
+
 class JmpIfTimedHitSuccess(
     UsableAnimationScriptCommand,
     AnimationScriptCommandWithJmps,
@@ -6346,6 +6537,7 @@ class JmpIfTimedHitSuccess(
 
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
+
 
 class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a sound by ID.
@@ -6406,6 +6598,7 @@ class PlaySound(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.sound)
 
+
 class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID without changing volume.
 
@@ -6444,6 +6637,7 @@ class PlayMusicAtCurrentVolume(UsableAnimationScriptCommand, AnimationScriptComm
 
     def render(self, *args) -> bytearray:
         return super().render(self.music)
+
 
 class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Play a song by ID at specified volume.
@@ -6487,15 +6681,14 @@ class PlayMusicAtVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
         "Set the relative volume of the music to play (0 to 65535)."
         self._volume = UInt16(volume)
 
-    def __init__(
-        self, music: int, volume: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, music: int, volume: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_music(music)
         self.set_volume(volume)
 
     def render(self, *args) -> bytearray:
         return super().render(self.music, self.volume)
+
 
 class StopCurrentSoundEffect(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -6516,6 +6709,7 @@ class StopCurrentSoundEffect(
     """
 
     _opcode = 0xB2
+
 
 class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Gradually modify the volume of the current music from the current volume to the specified volume.
@@ -6559,15 +6753,14 @@ class FadeCurrentMusicToVolume(UsableAnimationScriptCommand, AnimationScriptComm
         """Set the volume for the music to reach (0 to 65535)."""
         self._volume = UInt8(volume)
 
-    def __init__(
-        self, speed: int, volume: int, identifier: str | None = None
-    ) -> None:
+    def __init__(self, speed: int, volume: int, identifier: str | None = None) -> None:
         super().__init__(identifier)
         self.set_speed(speed)
         self.set_volume(volume)
 
     def render(self, *args) -> bytearray:
         return super().render(self.speed, self.volume)
+
 
 class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set battle target so a specific object.
@@ -6607,6 +6800,7 @@ class SetTarget(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.target)
 
+
 class AddItemToStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
@@ -6630,6 +6824,7 @@ class AddItemToStandardInventory(
 
     def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
+
 
 class RemoveItemFromStandardInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
@@ -6655,6 +6850,7 @@ class RemoveItemFromStandardInventory(
     def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
 
+
 class AddItemToKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
@@ -6679,6 +6875,7 @@ class AddItemToKeyItemInventory(
     def render(self, *args) -> bytearray:
         return super().render(self.item_id, 0)
 
+
 class RemoveItemFromKeyItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandInventory
 ):
@@ -6702,6 +6899,7 @@ class RemoveItemFromKeyItemInventory(
 
     def render(self, *args) -> bytearray:
         return super().render(256 - self.item_id, 0xFF)
+
 
 class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Gain coins according to the specified amount.
@@ -6741,6 +6939,7 @@ class AddCoins(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.amount)
 
+
 class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Add Yoshi Cookies to your inventory according to the specified amount.
 
@@ -6778,6 +6977,7 @@ class AddYoshiCookiesToInventory(UsableAnimationScriptCommand, AnimationScriptCo
 
     def render(self, *args) -> bytearray:
         return super().render(self.amount)
+
 
 class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Draw a specific screen mask effect by ID.
@@ -6834,6 +7034,7 @@ class DoMaskEffect(UsableAnimationScriptCommand, AnimationScriptCommand):
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_upper + self.effect)
+
 
 class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the coords at which to draw a four-pointed mask effect. Not sure if anyone really knows how this works.
@@ -6901,6 +7102,7 @@ class SetMaskCoords(UsableAnimationScriptCommand, AnimationScriptCommand):
             *points,
         )
 
+
 class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Set the speed at which the sprite animation should run.
 
@@ -6939,6 +7141,7 @@ class SetSequenceSpeed(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.speed)
 
+
 class StartTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -6959,6 +7162,7 @@ class StartTrackingAllyButtonInputs(
 
     _opcode = 0xCC
 
+
 class EndTrackingAllyButtonInputs(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -6978,6 +7182,7 @@ class EndTrackingAllyButtonInputs(
     """
 
     _opcode = 0xCD
+
 
 class TimingForOneTieredButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
@@ -7126,6 +7331,7 @@ class TimingForOneTieredButtonPress(
             *self.destinations,
         )
 
+
 class TimingForOneBinaryButtonPress(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
@@ -7223,6 +7429,7 @@ class TimingForOneBinaryButtonPress(
             *self.destinations,
         )
 
+
 class TimingForMultipleButtonPresses(
     UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
 ):
@@ -7269,6 +7476,7 @@ class TimingForMultipleButtonPresses(
     def render(self, *args) -> bytearray:
         return super().render(self.start_accepting_input, *self.destinations)
 
+
 class TimingForButtonMashUnknown(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
 ):
@@ -7288,6 +7496,7 @@ class TimingForButtonMashUnknown(
     """
 
     _opcode = 0xD1
+
 
 class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Determine the cap for a timed hit that counts up to a certain number of A/B/X/Y inputs of an indiscriminate window.
@@ -7326,6 +7535,7 @@ class TimingForButtonMashCount(UsableAnimationScriptCommand, AnimationScriptComm
 
     def render(self, *args) -> bytearray:
         return super().render(self.max_presses)
+
 
 class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Define a timed hit that counts up to a certain number of D-pad inputs within a specified frame window.
@@ -7411,6 +7621,7 @@ class TimingForRotationCount(UsableAnimationScriptCommand, AnimationScriptComman
         return super().render(
             self.end_accepting_input, self.start_accepting_input, self.max_presses
         )
+
 
 class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Define a timed hit that requires you to hold down one of A/B/X/Y for a continuous interval, with results differing based on how long it is held.
@@ -7556,6 +7767,7 @@ class TimingForChargePress(UsableAnimationScriptCommand, AnimationScriptCommand)
             self.charge_level_4_end,
             self.overcharge_end,
         )
+
 
 class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Summon a monster of a specified enemy class.
@@ -7727,6 +7939,7 @@ class SummonMonster(UsableAnimationScriptCommand, AnimationScriptCommand):
         )
         return super().render(byte1, self.monster().monster_id, self.position)
 
+
 class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
     """(unknown, related somehow to Mute attack timing)
 
@@ -7750,6 +7963,7 @@ class MuteTimingJmp(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
     def render(self, *args) -> bytearray:
         return super().render(*self.destinations)
 
+
 class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
     """Display the "Can't Run" dialog
 
@@ -7767,6 +7981,7 @@ class DisplayCantRunDialog(UsableAnimationScriptCommand, AnimationScriptCommandN
     """
 
     _opcode = 0xD9
+
 
 class StoreOMEM60ToItemInventory(
     UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
@@ -7787,6 +8002,7 @@ class StoreOMEM60ToItemInventory(
     """
 
     _opcode = 0xE0
+
 
 class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Run a battle event (battle animation script type) by ID.
@@ -7841,6 +8057,7 @@ class RunBattleEvent(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.script_id, self.offset)
 
+
 class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
     """Catch-all command class representing any command not represented by other AnimationScriptCommand subclasses.
     Use this sparingly as there are no safety checks to make sure that the number of arguments in the command are correct.
@@ -7881,7 +8098,10 @@ class UnknownCommand(UsableAnimationScriptCommand, AnimationScriptCommand):
     def render(self, *args) -> bytearray:
         return super().render(self.contents)
 
-class ActorExitBattleEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandNoArgs):
+
+class ActorExitBattleEXPERIMENTAL(
+    UsableAnimationScriptCommand, AnimationScriptCommandNoArgs
+):
     """Run opcode 0x02, which is only used in animations where an actor is leaving the battle (escape, deaths, etc).
     Unsure what this actually does. Treating it as a terminating byte to see if it solves any animation code mysteries.
 
@@ -7894,10 +8114,13 @@ class ActorExitBattleEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptC
     Args:
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
-    
+
     _opcode = 0x02
 
-class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationScriptCommandWithJmps):
+
+class SpriteQueueReferenceEXPERIMENTAL(
+    UsableAnimationScriptCommand, AnimationScriptCommandWithJmps
+):
     """Run opcode 0x47. Treating it as a sprite queue pointer to see if it solves any animation code mysteries.
 
     ## Opcode
@@ -7906,12 +8129,12 @@ class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationSc
     ## Size
         4 bytes
 
-    Args:   
+    Args:
         unknown_byte (int): (unknown)
         destinations (list[str]): This should be a list of exactly one `str`. The `str` should be the label of the command to start at.
         identifier (str | None): Give this command a label if you want another command to jump to it.
     """
-    
+
     _opcode = 0x47
     _size: int = 4
 
@@ -7938,6 +8161,7 @@ class SpriteQueueReferenceEXPERIMENTAL(UsableAnimationScriptCommand, AnimationSc
 
     def render(self, *args) -> bytearray:
         return super().render(self.unknown_byte, *self.destinations)
+
 
 commands = [
     NewSpriteAtCoords,
@@ -7969,18 +8193,18 @@ commands = [
     JmpIfAMEM16BitGreaterOrEqualThanConst,
     SetAMEM8BitToUnknownShort,
     SetAMEM16BitToUnknownShort,
-    SetAMEM8BitTo7E1x,
-    SetAMEM16BitTo7E1x,
-    Set7E1xToAMEM8Bit,
-    Set7E1xToAMEM16Bit,
-    JmpIfAMEM8BitEquals7E1x,
-    JmpIfAMEM16BitEquals7E1x,
-    JmpIfAMEM8BitNotEquals7E1x,
-    JmpIfAMEM16BitNotEquals7E1x,
-    JmpIfAMEM8BitLessThan7E1x,
-    JmpIfAMEM16BitLessThan7E1x,
-    JmpIfAMEM8BitGreaterOrEqualThan7E1x,
-    JmpIfAMEM16BitGreaterOrEqualThan7E1x,
+    SetAMEM8BitToAbsolute7E,
+    SetAMEM16BitToAbsolute7E,
+    SetAbsolute7EToAMEM8Bit,
+    SetAbsolute7EToAMEM16Bit,
+    JmpIfAMEM8BitEqualsAbsolute7E,
+    JmpIfAMEM16BitEqualsAbsolute7E,
+    JmpIfAMEM8BitNotEqualsAbsolute7E,
+    JmpIfAMEM16BitNotEqualsAbsolute7E,
+    JmpIfAMEM8BitLessThanAbsolute7E,
+    JmpIfAMEM16BitLessThanAbsolute7E,
+    JmpIfAMEM8BitGreaterOrEqualThanAbsolute7E,
+    JmpIfAMEM16BitGreaterOrEqualThanAbsolute7E,
     SetAMEM8BitTo7F,
     SetAMEM16BitTo7F,
     Set7FToAMEM8Bit,
@@ -8017,18 +8241,18 @@ commands = [
     JmpIfAMEM16BitLessThanOMEMCurrent,
     JmpIfAMEM8BitGreaterOrEqualThanOMEMCurrent,
     JmpIfAMEM16BitGreaterOrEqualThanOMEMCurrent,
-    SetAMEM8BitTo7E5x,
-    SetAMEM16BitTo7E5x,
-    Set7E5xToAMEM8Bit,
-    Set7E5xToAMEM16Bit,
-    JmpIfAMEM8BitEquals7E5x,
-    JmpIfAMEM16BitEquals7E5x,
-    JmpIfAMEM8BitNotEquals7E5x,
-    JmpIfAMEM16BitNotEquals7E5x,
-    JmpIfAMEM8BitLessThan7E5x,
-    JmpIfAMEM16BitLessThan7E5x,
-    JmpIfAMEM8BitGreaterOrEqualThan7E5x,
-    JmpIfAMEM16BitGreaterOrEqualThan7E5x,
+    SetAMEM8BitToRAMRelative7E,
+    SetAMEM16BitToRAMRelative7E,
+    SetRAMRelative7EToAMEM8Bit,
+    SetRAMRelative7EToAMEM16Bit,
+    JmpIfAMEM8BitEqualsRAMRelative7E,
+    JmpIfAMEM16BitEqualsRAMRelative7E,
+    JmpIfAMEM8BitNotEqualsRAMRelative7E,
+    JmpIfAMEM16BitNotEqualsRAMRelative7E,
+    JmpIfAMEM8BitLessThanRAMRelative7E,
+    JmpIfAMEM16BitLessThanRAMRelative7E,
+    JmpIfAMEM8BitGreaterOrEqualThanRAMRelative7E,
+    JmpIfAMEM16BitGreaterOrEqualThanRAMRelative7E,
     SetAMEM8BitToOMEMMain,
     SetAMEM16BitToOMEMMain,
     SetOMEMMainToAMEM8Bit,
@@ -8052,32 +8276,32 @@ commands = [
     JmpIfAMEM8BitGreaterOrEqualThanUnknownShort,
     JmpIfAMEM16BitGreaterOrEqualThanUnknownShort,
     IncAMEM8BitByConst,
-    IncAMEM8BitBy7E1x,
+    IncAMEM8BitByAbsolute7E,
     IncAMEM8BitBy7F,
     IncAMEM8BitByAMEM,
     IncAMEM8BitByOMEMCurrent,
-    IncAMEM8BitBy7E5x,
+    IncAMEM8BitByRAMRelative7E,
     IncAMEM8BitByOMEMMain,
     IncAMEM16BitByConst,
-    IncAMEM16BitBy7E1x,
+    IncAMEM16BitByAbsolute7E,
     IncAMEM16BitBy7F,
     IncAMEM16BitByAMEM,
     IncAMEM16BitByOMEMCurrent,
-    IncAMEM16BitBy7E5x,
+    IncAMEM16BitByRAMRelative7E,
     IncAMEM16BitByOMEMMain,
     DecAMEM8BitByConst,
-    DecAMEM8BitBy7E1x,
+    DecAMEM8BitByAbsolute7E,
     DecAMEM8BitBy7F,
     DecAMEM8BitByAMEM,
     DecAMEM8BitByOMEMCurrent,
-    DecAMEM8BitBy7E5x,
+    DecAMEM8BitByRAMRelative7E,
     DecAMEM8BitByOMEMMain,
     DecAMEM16BitByConst,
-    DecAMEM16BitBy7E1x,
+    DecAMEM16BitByAbsolute7E,
     DecAMEM16BitBy7F,
     DecAMEM16BitByAMEM,
     DecAMEM16BitByOMEMCurrent,
-    DecAMEM16BitBy7E5x,
+    DecAMEM16BitByRAMRelative7E,
     DecAMEM16BitByOMEMMain,
     IncAMEM8BitByUnknownShort,
     IncAMEM16BitByUnknownShort,
@@ -8171,5 +8395,5 @@ commands = [
     JmpIfTimedHitSuccess,
     UnknownCommand,
     ActorExitBattleEXPERIMENTAL,
-    SpriteQueueReferenceEXPERIMENTAL
+    SpriteQueueReferenceEXPERIMENTAL,
 ]
