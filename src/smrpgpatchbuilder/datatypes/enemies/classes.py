@@ -43,6 +43,7 @@ from .enums import (
     EntranceStyle,
 )
 
+
 class Enemy:
     """Class representing an enemy in the game."""
 
@@ -486,14 +487,18 @@ class Enemy:
             valueerror: if name contains non-latin-1 characters or is too long
         """
         if len(name) > 13:
-            raise ValueError(f"Enemy name must be 13 characters or less, got {len(name)}")
+            raise ValueError(
+                f"Enemy name must be 13 characters or less, got {len(name)}"
+            )
         try:
-            name.encode('latin-1')
+            name.encode("latin-1")
         except UnicodeEncodeError:
             raise ValueError("name contains characters not encodable in latin-1")
         self._name = name
 
-    def render(self, enemy_address: int | None = None, reward_address: int | None = None) -> dict[int, bytearray]:
+    def render(
+        self, enemy_address: int | None = None, reward_address: int | None = None
+    ) -> dict[int, bytearray]:
         """get data for this enemy in `{0x123456: bytearray([0x00])}` format.
 
         args:
@@ -504,7 +509,9 @@ class Enemy:
 
         # use provided addresses or calculate from monster_id
         addr = enemy_address if enemy_address is not None else self.address
-        reward_addr = reward_address if reward_address is not None else self.reward_address
+        reward_addr = (
+            reward_address if reward_address is not None else self.reward_address
+        )
 
         # main stats.
         data = bytearray()
@@ -519,7 +526,9 @@ class Enemy:
         data += ByteField(self.fp).as_bytes()
         data += ByteField(self.evade).as_bytes()
         data += ByteField(self.magic_evade).as_bytes()
-        data += ByteField(self.disable_auto_death * 1 + self.share_palette * 2).as_bytes()
+        data += ByteField(
+            self.disable_auto_death * 1 + self.share_palette * 2
+        ).as_bytes()
         patch[addr] = data
 
         # special defense bits, sound on hit is top half.
@@ -557,7 +566,11 @@ class Enemy:
 
         # other properties
         data = bytearray()
-        data += ByteField((self.entrance_style & 0x0F) + ((self.elevate & 0x03) << 4) + (self.coin_sprite << 6)).as_bytes()
+        data += ByteField(
+            (self.entrance_style & 0x0F)
+            + ((self.elevate & 0x03) << 4)
+            + (self.coin_sprite << 6)
+        ).as_bytes()
         patch[addr + 15] = data
 
         # flower bonus.
@@ -586,14 +599,14 @@ class Enemy:
         # encode the name with special character replacements
         if self._name:
             for char in self._name[:13]:
-                if char == '-':
+                if char == "-":
                     name_bytes.append(0x7D)  # hyphen -> 0x7d
-                elif char == '\u2019':  # closing quote (u+2019: ')
+                elif char == "\u2019":  # closing quote (u+2019: ')
                     name_bytes.append(0x7E)  # closing quote -> 0x7e
                 else:
                     try:
                         # encode regular latin-1 characters
-                        name_bytes.extend(char.encode('latin-1'))
+                        name_bytes.extend(char.encode("latin-1"))
                     except UnicodeEncodeError:
                         # if character can't be encoded, use '?'
                         name_bytes.append(0x3F)
@@ -609,6 +622,7 @@ class Enemy:
         patch[cursor_addr] = bytearray([cursor_byte])
 
         return patch
+
 
 class EnemyCollection:
     """Collection of enemies with rendering support for psychopath messages and pointer tables."""
@@ -666,19 +680,17 @@ class EnemyCollection:
             # The pointer value is the offset from 0x390000
             enemy_ptr_addr = ENEMY_POINTER_TABLE_ADDRESS + enemy.monster_id * 2
             enemy_data_offset = enemy.address - 0x390000  # Offset from bank start
-            patch[enemy_ptr_addr] = bytearray([
-                enemy_data_offset & 0xFF,
-                (enemy_data_offset >> 8) & 0xFF
-            ])
+            patch[enemy_ptr_addr] = bytearray(
+                [enemy_data_offset & 0xFF, (enemy_data_offset >> 8) & 0xFF]
+            )
 
             # Write reward data pointer table entry
             # Reward pointer table is at 0x39142A, each entry is 2 bytes
             reward_ptr_addr = REWARD_POINTER_TABLE_ADDRESS + enemy.monster_id * 2
             reward_data_offset = enemy.reward_address - REWARD_DATA_BANK
-            patch[reward_ptr_addr] = bytearray([
-                reward_data_offset & 0xFF,
-                (reward_data_offset >> 8) & 0xFF
-            ])
+            patch[reward_ptr_addr] = bytearray(
+                [reward_data_offset & 0xFF, (reward_data_offset >> 8) & 0xFF]
+            )
 
         # now handle psychopath messages
         # Battle dialog character encoding (NO word compression like overworld dialogs)
@@ -687,19 +699,77 @@ class EnemyCollection:
             # Control characters
             "\n": 0x01,
             # Standard ASCII characters that map directly
-            " ": 32, "!": 33,
-            "(": 40, ")": 41, ",": 44, "-": 45, ".": 46, "/": 47,
-            "0": 48, "1": 49, "2": 50, "3": 51, "4": 52,
-            "5": 53, "6": 54, "7": 55, "8": 56, "9": 57,
+            " ": 32,
+            "!": 33,
+            "(": 40,
+            ")": 41,
+            ",": 44,
+            "-": 45,
+            ".": 46,
+            "/": 47,
+            "0": 48,
+            "1": 49,
+            "2": 50,
+            "3": 51,
+            "4": 52,
+            "5": 53,
+            "6": 54,
+            "7": 55,
+            "8": 56,
+            "9": 57,
             "?": 63,
-            "A": 65, "B": 66, "C": 67, "D": 68, "E": 69, "F": 70, "G": 71,
-            "H": 72, "I": 73, "J": 74, "K": 75, "L": 76, "M": 77, "N": 78,
-            "O": 79, "P": 80, "Q": 81, "R": 82, "S": 83, "T": 84, "U": 85,
-            "V": 86, "W": 87, "X": 88, "Y": 89, "Z": 90,
-            "a": 97, "b": 98, "c": 99, "d": 100, "e": 101, "f": 102, "g": 103,
-            "h": 104, "i": 105, "j": 106, "k": 107, "l": 108, "m": 109, "n": 110,
-            "o": 111, "p": 112, "q": 113, "r": 114, "s": 115, "t": 116, "u": 117,
-            "v": 118, "w": 119, "x": 120, "y": 121, "z": 122,
+            "A": 65,
+            "B": 66,
+            "C": 67,
+            "D": 68,
+            "E": 69,
+            "F": 70,
+            "G": 71,
+            "H": 72,
+            "I": 73,
+            "J": 74,
+            "K": 75,
+            "L": 76,
+            "M": 77,
+            "N": 78,
+            "O": 79,
+            "P": 80,
+            "Q": 81,
+            "R": 82,
+            "S": 83,
+            "T": 84,
+            "U": 85,
+            "V": 86,
+            "W": 87,
+            "X": 88,
+            "Y": 89,
+            "Z": 90,
+            "a": 97,
+            "b": 98,
+            "c": 99,
+            "d": 100,
+            "e": 101,
+            "f": 102,
+            "g": 103,
+            "h": 104,
+            "i": 105,
+            "j": 106,
+            "k": 107,
+            "l": 108,
+            "m": 109,
+            "n": 110,
+            "o": 111,
+            "p": 112,
+            "q": 113,
+            "r": 114,
+            "s": 115,
+            "t": 116,
+            "u": 117,
+            "v": 118,
+            "w": 119,
+            "x": 120,
+            "y": 121,
+            "z": 122,
             # Quote characters (remapped from ASCII)
             '"': 34,  # Opening double quote (ASCII " is 34)
             """: 34,  # Curly opening double quote
@@ -708,15 +778,20 @@ class EnemyCollection:
             "\u2018": 38,  # Curly opening single quote
             "\u2019": 39,  # Curly closing single quote
             # Special symbols
-            "♥": 36, "♪": 37,
-            "•": 42, "··": 43,  # Note: •• handled specially below
+            "♥": 36,
+            "♪": 37,
+            "•": 42,
+            "··": 43,  # Note: •• handled specially below
             "~": 58,
-            "「": 59, "」": 60, "『": 61, "』": 62,
+            "「": 59,
+            "」": 60,
+            "『": 61,
+            "』": 62,
             "©": 64,
             # Elemental/status symbols for psychopath messages
-            "{": 123,   # Weakness symbol
-            "|": 124,   # Resistance symbol
-            "}": 125,   # Ice symbol (repurposed from ASCII })
+            "{": 123,  # Weakness symbol
+            "|": 124,  # Resistance symbol
+            "}": 125,  # Ice symbol (repurposed from ASCII })
             "~ice~": 125,
             "~fire~": 126,
             "~thunder~": 127,
@@ -728,10 +803,22 @@ class EnemyCollection:
             "~jump~": 133,
             "~empty~": 141,  # Invisible placeholder (same width as element symbols)
             # Punctuation remapped to higher values
-            ":": 142, ";": 143, "<": 144, ">": 145,
-            "…": 146, "···": 146,  # Ellipsis
-            "#": 147, "+": 148, "×": 149, "%": 150,
-            "↑": 151, "→": 152, "←": 153, "*": 154, "&": 156,
+            ":": 142,
+            ";": 143,
+            "<": 144,
+            ">": 145,
+            "…": 146,
+            "···": 146,  # Ellipsis
+            "#": 147,
+            "+": 148,
+            "×": 149,
+            "%": 150,
+            "↑": 151,
+            "→": 152,
+            "←": 153,
+            "*": 154,
+            "&": 156,
+            "[await]": 0x02,
         }
 
         def encode_battle_text(text: str) -> bytearray:
@@ -742,7 +829,7 @@ class EnemyCollection:
                 # Check for multi-char sequences first (longest match)
                 matched = False
                 for length in range(min(10, len(text) - i), 0, -1):
-                    substr = text[i:i+length]
+                    substr = text[i : i + length]
                     if substr in BATTLE_CHAR_MAP:
                         result.append(BATTLE_CHAR_MAP[substr])
                         i += length
@@ -786,10 +873,9 @@ class EnemyCollection:
 
             # write pointer at the correct position based on monster_id
             pointer_addr = PSYCHOPATH_POINTER_ADDRESS + enemy.monster_id * 2
-            patch[pointer_addr] = bytearray([
-                pointer_value & 0xFF,
-                (pointer_value >> 8) & 0xFF
-            ])
+            patch[pointer_addr] = bytearray(
+                [pointer_value & 0xFF, (pointer_value >> 8) & 0xFF]
+            )
 
             # write message to rom
             patch[current_data_addr] = message_bytes
