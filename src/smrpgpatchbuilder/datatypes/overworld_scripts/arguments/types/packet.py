@@ -1,5 +1,3 @@
-
-
 from smrpgpatchbuilder.datatypes.numbers.classes import UInt8, UInt16
 
 # Constants to avoid circular imports
@@ -20,7 +18,7 @@ class Packet:
 
     Structure (5 bytes total at 0x1DB000 + packet_id * 5):
     - Byte 0: sprite (bits 0-5), b0 (bits 6-7)
-    - Byte 1: b1a (bits 0-2), b1b (bits 3-4), b1c (bits 5-7)
+    - Byte 1: vram_size (bits 0-2), sprite_priority (bits 3-4), layer_priority (bits 5-7)
     - Byte 2: bits 0-1 unused, b2b2 (bit 2), b2b3 (bit 3), b2b4 (bit 4), show_shadow (bit 5), b2 (bits 6-7)
     - Bytes 3-4: action_script_id (bits 0-9), b4 (byte 4 bits 4-7)
 
@@ -30,9 +28,9 @@ class Packet:
     _packet_id: UInt8 = UInt8(0)
     _sprite_id: UInt16 = UInt16(PACKET_SPRITE_BASE)  # Sprite ID (any valid sprite)
     _b0: UInt8 = UInt8(0)  # B0,b6-7: bits 6-7 of byte 0 (0-3)
-    _b1a: UInt8 = UInt8(0)  # B1,b0-2: bits 0-2 of byte 1 (0-7)
-    _b1b: UInt8 = UInt8(0)  # B1,b3-4: bits 3-4 of byte 1 (0-3)
-    _b1c: UInt8 = UInt8(0)  # B1,b5-7: bits 5-7 of byte 1 (0-7)
+    _vram_size: UInt8 = UInt8(0)  # B1,b0-2: bits 0-2 of byte 1 (0-7)
+    _sprite_priority: UInt8 = UInt8(0)  # B1,b3-4: bits 3-4 of byte 1 (0-3)
+    _layer_priority: UInt8 = UInt8(0)  # B1,b5-7: bits 5-7 of byte 1 (0-7)
     _b2b2: bool = False  # B2,b2: bit 2 of byte 2
     _b2b3: bool = False  # B2,b3: bit 3 of byte 2
     _b2b4: bool = False  # B2,b4: bit 4 of byte 2
@@ -55,8 +53,9 @@ class Packet:
         """Set the sprite ID for the packet.
         Any valid sprite ID (0-1023) is accepted. During render(), only the
         lower 6 bits are used, so sprites are effectively grouped in ranges of 64."""
-        assert 0 <= sprite_id < TOTAL_SPRITES, \
-            f"sprite_id must be 0-{TOTAL_SPRITES-1}, got {sprite_id}"
+        assert (
+            0 <= sprite_id < TOTAL_SPRITES
+        ), f"sprite_id must be 0-{TOTAL_SPRITES-1}, got {sprite_id}"
         self._sprite_id = UInt16(sprite_id)
 
     @property
@@ -70,34 +69,38 @@ class Packet:
         self._b0 = UInt8(b0)
 
     @property
-    def b1a(self) -> UInt8:
+    def vram_size(self) -> UInt8:
         """B1,b0-2: bits 0-2 of byte 1 (0-7)."""
-        return self._b1a
+        return self._vram_size
 
-    def _set_b1a(self, b1a: int) -> None:
+    def _set_vram_size(self, vram_size: int) -> None:
         """Set B1,b0-2 (0-7)."""
-        assert 0 <= b1a <= 7, f"b1a must be 0-7, got {b1a}"
-        self._b1a = UInt8(b1a)
+        assert 0 <= vram_size <= 7, f"vram_size must be 0-7, got {vram_size}"
+        self._vram_size = UInt8(vram_size)
 
     @property
-    def b1b(self) -> UInt8:
+    def sprite_priority(self) -> UInt8:
         """B1,b3-4: bits 3-4 of byte 1 (0-3)."""
-        return self._b1b
+        return self._sprite_priority
 
-    def _set_b1b(self, b1b: int) -> None:
+    def _set_sprite_priority(self, sprite_priority: int) -> None:
         """Set B1,b3-4 (0-3)."""
-        assert 0 <= b1b <= 3, f"b1b must be 0-3, got {b1b}"
-        self._b1b = UInt8(b1b)
+        assert (
+            0 <= sprite_priority <= 3
+        ), f"sprite_priority must be 0-3, got {sprite_priority}"
+        self._sprite_priority = UInt8(sprite_priority)
 
     @property
-    def b1c(self) -> UInt8:
+    def layer_priority(self) -> UInt8:
         """B1,b5-7: bits 5-7 of byte 1 (0-7)."""
-        return self._b1c
+        return self._layer_priority
 
-    def _set_b1c(self, b1c: int) -> None:
+    def _set_layer_priority(self, layer_priority: int) -> None:
         """Set B1,b5-7 (0-7)."""
-        assert 0 <= b1c <= 7, f"b1c must be 0-7, got {b1c}"
-        self._b1c = UInt8(b1c)
+        assert (
+            0 <= layer_priority <= 7
+        ), f"layer_priority must be 0-7, got {layer_priority}"
+        self._layer_priority = UInt8(layer_priority)
 
     @property
     def b2b2(self) -> bool:
@@ -153,8 +156,9 @@ class Packet:
     def _set_action_script_id(self, action_script_id: int) -> None:
         """Set the action script for this packet to run when spawned.
         It is recommended to use action script ID constant names for this."""
-        assert 0 <= action_script_id <= 1023, \
-            f"action_script_id must be 0-1023, got {action_script_id}"
+        assert (
+            0 <= action_script_id <= 1023
+        ), f"action_script_id must be 0-1023, got {action_script_id}"
         self._action_script_id = UInt16(action_script_id)
 
     @property
@@ -173,9 +177,9 @@ class Packet:
         sprite_id: int = PACKET_SPRITE_BASE,
         action_script_id: int = 0,
         b0: int = 0,
-        b1a: int = 0,
-        b1b: int = 0,
-        b1c: int = 0,
+        vram_size: int = 0,
+        sprite_priority: int = 0,
+        layer_priority: int = 0,
         b2b2: bool = False,
         b2b3: bool = False,
         b2b4: bool = False,
@@ -187,9 +191,9 @@ class Packet:
         self._set_sprite_id(sprite_id)
         self._set_action_script_id(action_script_id)
         self._set_b0(b0)
-        self._set_b1a(b1a)
-        self._set_b1b(b1b)
-        self._set_b1c(b1c)
+        self._set_vram_size(vram_size)
+        self._set_sprite_priority(sprite_priority)
+        self._set_layer_priority(layer_priority)
         self._set_b2b2(b2b2)
         self._set_b2b3(b2b3)
         self._set_b2b4(b2b4)
@@ -202,7 +206,7 @@ class Packet:
 
         Structure:
         - Byte 0: sprite offset (bits 0-5) | b0 (bits 6-7)
-        - Byte 1: b1a (bits 0-2) | b1b (bits 3-4) | b1c (bits 5-7)
+        - Byte 1: vram_size (bits 0-2) | sprite_priority (bits 3-4) | layer_priority (bits 5-7)
         - Byte 2: b2b2 (bit 2) | b2b3 (bit 3) | b2b4 (bit 4) | show_shadow (bit 5) | b2 (bits 6-7)
         - Byte 3: action_script_id low byte
         - Byte 4: action_script_id high bits (bits 0-1) | b4 (bits 4-7)
@@ -214,16 +218,20 @@ class Packet:
         sprite_offset = self.sprite_id & 0x3F
         output[0] = sprite_offset | (self.b0 << 6)
 
-        # Byte 1: b1a (bits 0-2), b1b (bits 3-4), b1c (bits 5-7)
-        output[1] = (self.b1a & 0x07) | ((self.b1b & 0x03) << 3) | ((self.b1c & 0x07) << 5)
+        # Byte 1: vram_size (bits 0-2), sprite_priority (bits 3-4), layer_priority (bits 5-7)
+        output[1] = (
+            (self.vram_size & 0x07)
+            | ((self.sprite_priority & 0x03) << 3)
+            | ((self.layer_priority & 0x07) << 5)
+        )
 
         # Byte 2: b2b2 (bit 2), b2b3 (bit 3), b2b4 (bit 4), show_shadow (bit 5), b2 (bits 6-7)
         output[2] = (
-            ((1 if self.b2b2 else 0) << 2) |
-            ((1 if self.b2b3 else 0) << 3) |
-            ((1 if self.b2b4 else 0) << 4) |
-            ((1 if self.show_shadow else 0) << 5) |
-            ((self.b2 & 0x03) << 6)
+            ((1 if self.b2b2 else 0) << 2)
+            | ((1 if self.b2b3 else 0) << 3)
+            | ((1 if self.b2b4 else 0) << 4)
+            | ((1 if self.show_shadow else 0) << 5)
+            | ((self.b2 & 0x03) << 6)
         )
 
         # Byte 3: action_script_id low 8 bits
