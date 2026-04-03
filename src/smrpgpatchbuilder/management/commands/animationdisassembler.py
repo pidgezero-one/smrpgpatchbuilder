@@ -1098,7 +1098,7 @@ class Command(BaseCommand):
                         cls = "SetAMEM8BitToConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "SetAMEM8BitTo7E1x"
+                        cls = "SetAMEM8BitToAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "SetAMEM8BitTo7F"
@@ -1134,7 +1134,7 @@ class Command(BaseCommand):
                         cls = "SetAMEM16BitToConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "SetAMEM16BitTo7E1x"
+                        cls = "SetAMEM16BitToAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "SetAMEM16BitTo7F"
@@ -1166,7 +1166,7 @@ class Command(BaseCommand):
                         raise Exception("invalid amem shift type: %r" % command)
                 elif opcode == 0x22:
                     if byte2 == 0x10:
-                        cls = "Set7E1xToAMEM8Bit"
+                        cls = "SetAbsolute7EToAMEM8Bit"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "Set7FToAMEM8Bit"
@@ -1199,7 +1199,7 @@ class Command(BaseCommand):
                     args["amem"] = f"0x{((cmd[1] & 0x0F) + 0x60):02X}"
                 elif opcode == 0x23:
                     if byte2 == 0x10:
-                        cls = "Set7E1xToAMEM16Bit"
+                        cls = "SetAbsolute7EToAMEM16Bit"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "Set7FToAMEM16Bit"
@@ -1236,7 +1236,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM8BitEqualsConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM8BitEquals7E1x"
+                        cls = "JmpIfAMEM8BitEqualsAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM8BitEquals7F"
@@ -1271,7 +1271,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM16BitEqualsConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM16BitEquals7E1x"
+                        cls = "JmpIfAMEM16BitEqualsAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM16BitEquals7F"
@@ -1308,7 +1308,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM8BitNotEqualsConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM8BitNotEquals7E1x"
+                        cls = "JmpIfAMEM8BitNotEqualsAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM8BitNotEquals7F"
@@ -1345,7 +1345,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM16BitNotEqualsConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM16BitNotEquals7E1x"
+                        cls = "JmpIfAMEM16BitNotEqualsAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM16BitNotEquals7F"
@@ -1382,7 +1382,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM8BitLessThanConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM8BitLessThan7E1x"
+                        cls = "JmpIfAMEM8BitLessThanAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM8BitLessThan7F"
@@ -1419,7 +1419,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM16BitLessThanConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM16BitLessThan7E1x"
+                        cls = "JmpIfAMEM16BitLessThanAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM16BitLessThan7F"
@@ -1456,7 +1456,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM8BitGreaterOrEqualThanConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM8BitGreaterOrEqualThan7E1x"
+                        cls = "JmpIfAMEM8BitGreaterOrEqualThanAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM8BitGreaterOrEqualThan7F"
@@ -1493,7 +1493,7 @@ class Command(BaseCommand):
                         cls = "JmpIfAMEM16BitGreaterOrEqualThanConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "JmpIfAMEM16BitGreaterOrEqualThan7E1x"
+                        cls = "JmpIfAMEM16BitGreaterOrEqualThanAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "JmpIfAMEM16BitGreaterOrEqualThan7F"
@@ -1530,7 +1530,7 @@ class Command(BaseCommand):
                         cls = "IncAMEM8BitByConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "IncAMEM8BitBy7E1x"
+                        cls = "IncAMEM8BitByAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "IncAMEM8BitBy7F"
@@ -1566,7 +1566,7 @@ class Command(BaseCommand):
                         cls = "IncAMEM16BitByConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "IncAMEM16BitBy7E1x"
+                        cls = "IncAMEM16BitByAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "IncAMEM16BitBy7F"
@@ -1602,7 +1602,7 @@ class Command(BaseCommand):
                         cls = "DecAMEM8BitByConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "DecAMEM8BitBy7E1x"
+                        cls = "DecAMEM8BitByAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "DecAMEM8BitBy7F"
@@ -1638,7 +1638,7 @@ class Command(BaseCommand):
                         cls = "DecAMEM16BitByConst"
                         args["value"] = str(shortify(cmd, 2))
                     elif byte2 == 0x10:
-                        cls = "DecAMEM16BitBy7E1x"
+                        cls = "DecAMEM16BitByAbsolute7E"
                         args["address"] = f"0x7E{shortify(cmd, 2):04X}"
                     elif byte2 == 0x20:
                         cls = "DecAMEM16BitBy7F"

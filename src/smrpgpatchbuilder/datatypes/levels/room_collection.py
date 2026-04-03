@@ -335,7 +335,10 @@ class RoomCollection:
         # We need ALL signatures here because a signature might appear in a clone group in one room
         # but as a standalone object in another room
         global_fallback_mapping = {}
-        for sig in sorted(all_signatures, key=lambda t: tuple((0,) if x is None else (1, x) for x in t)):
+        for sig in sorted(
+            all_signatures,
+            key=lambda t: tuple((0,) if x is None else (1, x) for x in t),
+        ):
             # Check if this signature was placed via force_id
             if sig in sig_to_forced_index:
                 global_fallback_mapping[sig] = sig_to_forced_index[sig]
@@ -586,12 +589,6 @@ class RoomCollection:
         for idx, npc in enumerate(unique_npcs):
             offset = npc_start + (idx * 7)
             patches[offset] = self._render_npc(npc)
-            # Debug: find NPCs with dimensions 5/5/10 or 3/3/11
-            if (npc.acute_axis == 5 and npc.obtuse_axis == 5 and npc.height == 10) or \
-               (npc.acute_axis == 3 and npc.obtuse_axis == 3 and npc.height == 11):
-                import sys
-                print(f"DEBUG NPC table idx {idx}: sprite_id={npc.sprite_id}, dims={npc.acute_axis}/{npc.obtuse_axis}/{npc.height}")
-                sys.stdout.flush()
 
         # Fill remaining NPC slots with 0xFF
         # End address depends on whether we're using large partition table
@@ -836,20 +833,6 @@ class RoomCollection:
             sig_to_index = clone_group_mapping[(-1, -1)]
 
         npc_index = sig_to_index[obj_sig]
-
-        # Debug: trace room 325 NPC 3
-        if room_idx == 325 and obj_idx == 3:
-            import sys
-            print(f"DEBUG Room 325 NPC 3:")
-            print(f"  obj._npc sprite_id: {obj._npc.sprite_id}")
-            print(f"  obj._npc dimensions: {obj._npc.acute_axis}/{obj._npc.obtuse_axis}/{obj._npc.height}")
-            print(f"  room_obj override acute_axis: {obj.acute_axis}")
-            print(f"  room_obj override obtuse_axis: {obj.obtuse_axis}")
-            print(f"  room_obj override height: {obj.height}")
-            print(f"  signature (first 10 elements): {obj_sig[:10]}")
-            print(f"  signature override portion (elements 21-26): {obj_sig[21:27] if len(obj_sig) > 26 else 'N/A'}")
-            print(f"  npc_index from lookup: {npc_index}")
-            sys.stdout.flush()
 
         if isinstance(obj, Clone):
             # Clone: 4 bytes
