@@ -1153,6 +1153,8 @@ class SpriteCollection:
                     # Skip clone optimization for sprites that need vanilla-compatible
                     # animation layout (e.g., Smithy sprites used in battle events)
                     skip_clones = no_clone_sprites is not None and sprite_index in no_clone_sprites
+                    if skip_clones and mold_index == 0:
+                        print(f"[GFX] Skipping clone optimization for sprite {sprite_index}")
                     if not this_mold.gridplane and not skip_clones:
                         clones = find_clones(these_tiles, molds, sprite_index, mold_index)
                         these_tiles = clones
