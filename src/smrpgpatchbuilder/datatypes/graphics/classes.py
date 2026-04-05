@@ -739,7 +739,7 @@ class SpriteCollection:
         
         return bytearray(sprite_data), bytearray(image_data), bytearray(animation_pointers), anim_tile_ranges, output_tile_ranges
 
-    def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False, shared_image_groups: list[list[int]] | None = None) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
+    def assemble_from_tables(self, sprites: list[CompleteSprite], insert_whitespace=False, shared_image_groups: list[list[int]] | None = None, no_clone_sprites: list[int] | None = None) -> tuple[bytearray, bytearray, bytearray, list[tuple[int, bytearray]], list[tuple[int, bytearray]]]:
         # CRITICAL: Reset all banks before assembling to prevent data from previous runs
         for bank in self.uncompressed_tile_banks:
             bank.tiles = bytearray([])
@@ -1150,7 +1150,10 @@ class SpriteCollection:
                     this_mold = copy.deepcopy(m)
 
                     # create clones and use in mold
-                    if not this_mold.gridplane:
+                    # Skip clone optimization for sprites that need vanilla-compatible
+                    # animation layout (e.g., Smithy sprites used in battle events)
+                    skip_clones = no_clone_sprites is not None and sprite_index in no_clone_sprites
+                    if not this_mold.gridplane and not skip_clones:
                         clones = find_clones(these_tiles, molds, sprite_index, mold_index)
                         these_tiles = clones
                     this_mold.tiles = these_tiles
@@ -1207,8 +1210,8 @@ class SpriteCollection:
 
         return self.assemble_from_tables_(complete_sprites, complete_images, complete_animations, output_tile_ranges)
 
-    def render(self, whitespace: bool = False, shared_image_groups: list[list[int]] | None = None) -> list[tuple[int, bytearray]]:
-        sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace, shared_image_groups)
+    def render(self, whitespace: bool = False, shared_image_groups: list[list[int]] | None = None, no_clone_sprites: list[int] | None = None) -> list[tuple[int, bytearray]]:
+        sprite_data, image_data, animation_pointers, animation_data, tiles = self.assemble_from_tables(self.sprites, whitespace, shared_image_groups, no_clone_sprites)
 
         # Zero out all sprite data ranges before writing to prevent leftover data
         zero_ranges = []
